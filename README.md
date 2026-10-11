@@ -13,18 +13,30 @@ recorded as one.
 
 ![Summary view](docs/summary.png)
 
-Measured on a GTX 1070 Ti (8 GB), reasoning off, prompts of 512 → 20k tokens:
+Two cards, same models, same prompts, reasoning off — prefill throughput at a
+10,000-token prompt, and decode speed:
 
-| Model | Fits in VRAM | Prefill @10k | Decode 512 → 20k | TTFT @20k |
-|---|---|---|---|---|
-| gemma-4-e4b (5.1 GB) | yes | 549 tk/s | 26.0 → 23.8 tk/s | 38 s |
-| qwen3.5-9b (7.2 GB) | barely | 430 tk/s | 17.7 → **11.4** tk/s | 48 s |
-| qwen3.8-27b IQ4_XS (15 GB) | no, spills to RAM | 96 tk/s | 2.1 → **1.0** tk/s | **275 s** |
+| Model | GTX 1070 Ti 8 GB | RTX 5060 Ti 16 GB | |
+|---|---|---|---|
+| gemma-4-e4b — prefill | 549 tk/s | **2090 tk/s** | 3.8× |
+| gemma-4-e4b — decode | 24.9 tk/s | **69.3 tk/s** | 2.8× |
+| qwen3.5-9b — prefill | 430 tk/s | **1741 tk/s** | 4.1× |
+| qwen3.5-9b — decode | 14.0 tk/s | **54.0 tk/s** | 3.9× |
+| qwen3.8-27b — prefill | 96 tk/s | 250 tk/s | 2.6× |
+| qwen3.8-27b — decode | 1.4 tk/s | 2.7 tk/s | 1.9× |
 
-The 9B loses 36% of its decode speed as context grows while the 7.5B loses 8% —
-that is the KV cache fighting the weights for the last of 8 GB. The 27B takes
-four and a half minutes to say its first word. Numbers like these are the whole
-point: they do not appear on any spec sheet.
+The third model is the interesting one: 27B at Q4_K_M does not fit in 16 GB
+either, so it still spills to system RAM and still crawls. Buying twice the VRAM
+moved the wall without removing it — which is exactly the kind of thing you want
+to know before spending the money, and exactly what no spec sheet tells you.
+
+Two more things the numbers show. On the 1070 Ti the 9B loses 36% of its decode
+speed between 512 and 20k tokens while the smaller model loses 8%, because at
+7.2 GB of 8 GB it is fighting its own KV cache for the last of the VRAM; on the
+5060 Ti that collapse disappears. And prefill keeps *climbing* with prompt
+length on the newer card — 207 tk/s at 512 tokens, 2971 at 40k — because short
+prompts are dominated by fixed overhead and only long ones actually saturate the
+hardware.
 
 **[Send us your card's results →](CONTRIBUTING.md)** Old and slow is as useful
 as new and fast.
