@@ -117,7 +117,7 @@ async function init() {
     if (id) selectRun(id);
   });
   $$("[data-select]").forEach((btn) => btn.addEventListener("click", () => selectModels(btn.dataset.select)));
-  ["#max-tokens", "#repeats", "#no-think"].forEach((sel) => {
+  ["#max-tokens", "#repeats", "#no-think", "#offload"].forEach((sel) => {
     const node = $(sel);
     if (node) node.addEventListener("change", updatePlan);
   });
@@ -366,7 +366,8 @@ function checkComparability() {
   const prior = state.runs.filter((r) => r.n_ok > 0 && r.max_tokens);
   if (!prior.length) { box.innerHTML = ""; return; }
   const ref = prior[0];                       // most recent run with results
-  const mine = { max_tokens: Number($("#max-tokens").value), no_think: $("#no-think").checked };
+  const mine = { max_tokens: Number($("#max-tokens").value), no_think: $("#no-think").checked,
+    offload: $("#offload").value };
   const diffs = [];
   if (ref.max_tokens && mine.max_tokens !== ref.max_tokens) {
     diffs.push(`output tokens <b>${mine.max_tokens}</b> vs <b>${ref.max_tokens}</b> in your existing runs`);
@@ -374,6 +375,9 @@ function checkComparability() {
   if (ref.reasoning_disabled !== undefined && ref.reasoning_disabled !== null
       && mine.no_think !== !!ref.reasoning_disabled) {
     diffs.push(`reasoning <b>${mine.no_think ? "off" : "on"}</b> vs <b>${ref.reasoning_disabled ? "off" : "on"}</b>`);
+  }
+  if (ref.gpu_offload && mine.offload !== ref.gpu_offload) {
+    diffs.push(`GPU offload <b>${esc(mine.offload)}</b> vs <b>${esc(ref.gpu_offload)}</b>`);
   }
   if (!diffs.length) { box.innerHTML = ""; return; }
   box.innerHTML = `<div class="banner warn"><div>
@@ -384,6 +388,7 @@ function checkComparability() {
   </div></div>`;
   $("#match-prior").addEventListener("click", () => {
     if (ref.max_tokens) $("#max-tokens").value = ref.max_tokens;
+    if (ref.gpu_offload) $("#offload").value = ref.gpu_offload;
     if (ref.reasoning_disabled !== undefined && ref.reasoning_disabled !== null) {
       $("#no-think").checked = !!ref.reasoning_disabled;
       $("#no-think").closest(".chip").dataset.on = ref.reasoning_disabled ? "1" : "0";

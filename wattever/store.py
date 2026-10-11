@@ -150,6 +150,7 @@ def summarise(run):
         # the settings that decide whether this run can be compared with another
         "max_tokens": (run.get("config") or {}).get("max_tokens"),
         "reasoning_disabled": (run.get("config") or {}).get("disable_thinking"),
+        "gpu_offload": (run.get("config") or {}).get("gpu_offload"),
         "n_results": len(results),
         "n_ok": len(ok),
         "n_failed": len(results) - len(ok),

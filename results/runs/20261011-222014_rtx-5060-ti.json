@@ -58,7 +58,7 @@
   "notes": "",
   "gpu_index": 0
  },
- "status": "running",
+ "status": "cancelled",
  "results": [
   {
    "model": "unsloth/qwen3.8-27b",
@@ -303,6 +303,28 @@
     "clock_mhz_avg": 1862.8717105263158,
     "samples": 925
    }
+  },
+  {
+   "model": "unsloth/qwen3.8-27b",
+   "target_tokens": 40000,
+   "mtp": false,
+   "repeat": 0,
+   "requested_context": 40768,
+   "context_length": 40960,
+   "gpu_offload": "auto",
+   "quantization": "IQ4_XS",
+   "architecture": "qwen35",
+   "params": "27B",
+   "load_s": 18.13312130000031,
+   "prompt_chars": 203894,
+   "corpus_wraps": 0,
+   "nonce": "1a2c44f310d1",
+   "max_tokens": 256,
+   "reasoning_disabled": true,
+   "timestamp": "2026-10-11T22:30:06",
+   "status": "cancelled",
+   "fail_kind": "cancelled",
+   "message": "Cancelled by the user."
   }
  ],
  "corpus": {
@@ -317,5 +339,6 @@
   "vram_mb": 785.0,
   "source": "nvidia-smi"
  },
- "power_source": "nvidia-smi"
+ "power_source": "nvidia-smi",
+ "finished_at": "2026-10-11T22:31:57"
 }

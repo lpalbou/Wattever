@@ -30,10 +30,30 @@ rather than about the cards. That build is **17.74 GB at Q4_K_M**, so it does no
 fit in 16 GB any more than in 8 GB: it spills to system RAM on both cards and
 crawls on both. Twice the VRAM moved the wall without removing it.
 
-The same model at **IQ4_XS is 15.18 GB and does fit** — measured resident at
-14.8 GB of 16.3 GB on the 5060 Ti, at 40k context. Same weights, same card, and
-the difference between unusable and usable is the quantisation you downloaded.
-Check the file size against your VRAM before concluding anything about a card.
+The same model at **IQ4_XS is 15.18 GB and does fit**. Same weights, same card,
+and the difference between unusable and usable is the quantisation you
+downloaded. Check the file size against your VRAM before concluding anything
+about a card.
+
+### The offload trap
+
+Getting the IQ4_XS build to fit is only half of it. LM Studio's **automatic**
+layer placement is deliberately cautious, and on a model that only just fits it
+declines to use the last few GB — which is catastrophic for decode, because
+every generated token then has to cross to system RAM and back. Measured on the
+5060 Ti, same model, same prompts, only the offload policy changed:
+
+| offload | VRAM used | prefill @5k | decode |
+|---|---|---|---|
+| `auto` | 12.9 GB of 16.3 | 313 tk/s | **2.9 tk/s** |
+| `max` | 15.4 GB of 16.3 | 649 tk/s | **23.4 tk/s** |
+
+**Eight times the decode speed, from one setting.** A 27B model goes from
+unusable to comfortable. This is why Wattever defaults to `max` and falls back
+only when a load genuinely fails: a benchmark should report what the card can
+do, not how cautious the runtime chose to be. If you see decode in the low
+single digits on a model that ought to fit, check VRAM usage before blaming the
+card.
 
 Two more things the numbers show. On the 1070 Ti the 9B loses 36% of its decode
 speed between 512 and 20k tokens while the smaller model loses 8%, because at

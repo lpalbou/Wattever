@@ -105,13 +105,16 @@
         <div class="field">
           <label for="offload">GPU offload</label>
           <select id="offload">
-            <option value="auto">Auto (LM Studio decides)</option>
-            <option value="max">Max (full GPU, fail if it will not fit)</option>
+            <option value="max">Max — use the whole GPU (recommended)</option>
+            <option value="auto">Auto — let LM Studio decide</option>
             <option value="0.75">75% of layers</option>
             <option value="0.5">50% of layers</option>
             <option value="0.25">25% of layers</option>
             <option value="off">CPU only</option>
           </select>
+          <span class="note">Auto is conservative: on a model that only just fits it can
+            leave several GB of VRAM unused, which costs ~8× on decode. Max falls back
+            automatically when it genuinely will not fit.</span>
         </div>
       </div>
 

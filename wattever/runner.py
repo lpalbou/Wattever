@@ -29,7 +29,13 @@ DEFAULT_CONFIG = {
     "sizes": [512, 5000, 10000, 20000, 40000],
     "max_tokens": 256,
     "repeats": 1,
-    "gpu_offload": "auto",
+    # "max" rather than "auto": LM Studio's automatic placement is deliberately
+    # conservative and will leave several GB of VRAM unused on a model that only
+    # just fits, which costs an order of magnitude on decode. Measured on a
+    # 5060 Ti with a 14.1 GB model: auto used 12.9 of 16.3 GB and gave 2.9 tk/s,
+    # max used 15.4 GB and gave 23.4 tk/s. A benchmark should report what the
+    # card can do; the fallback ladder covers the case where max does not fit.
+    "gpu_offload": "max",
     "fallback_on_failure": True,
     "stop_model_after_failure": True,
     "context_headroom": 512,
