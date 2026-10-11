@@ -22,13 +22,18 @@ Two cards, same models, same prompts, reasoning off — prefill throughput at a
 | gemma-4-e4b — decode | 24.9 tk/s | **69.3 tk/s** | 2.8× |
 | qwen3.5-9b — prefill | 430 tk/s | **1741 tk/s** | 4.1× |
 | qwen3.5-9b — decode | 14.0 tk/s | **54.0 tk/s** | 3.9× |
-| qwen3.8-27b — prefill | 96 tk/s | 250 tk/s | 2.6× |
-| qwen3.8-27b — decode | 1.4 tk/s | 2.7 tk/s | 1.9× |
+| qwen3.8-27b Q4_K_M — prefill | 96 tk/s | 250 tk/s | 2.6× |
+| qwen3.8-27b Q4_K_M — decode | 1.4 tk/s | 2.7 tk/s | 1.9× |
 
-The third model is the interesting one: 27B at Q4_K_M does not fit in 16 GB
-either, so it still spills to system RAM and still crawls. Buying twice the VRAM
-moved the wall without removing it — which is exactly the kind of thing you want
-to know before spending the money, and exactly what no spec sheet tells you.
+The third row is the interesting one, and it is a lesson about quantisation
+rather than about the cards. That build is **17.74 GB at Q4_K_M**, so it does not
+fit in 16 GB any more than in 8 GB: it spills to system RAM on both cards and
+crawls on both. Twice the VRAM moved the wall without removing it.
+
+The same model at **IQ4_XS is 15.18 GB and does fit** — measured resident at
+14.8 GB of 16.3 GB on the 5060 Ti, at 40k context. Same weights, same card, and
+the difference between unusable and usable is the quantisation you downloaded.
+Check the file size against your VRAM before concluding anything about a card.
 
 Two more things the numbers show. On the 1070 Ti the 9B loses 36% of its decode
 speed between 512 and 20k tokens while the smaller model loses 8%, because at

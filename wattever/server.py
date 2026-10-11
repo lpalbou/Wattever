@@ -28,11 +28,16 @@ DEFAULT_PORT = 8713
 # The four models this was built for. Matching is loose because publishers
 # rename and quantisation suffixes vary; a model still downloading simply will
 # not appear in LM Studio's list yet, and the UI says so.
+# Each entry lists patterns in order of preference, because publishers ship the
+# same model at several quantisations under different ids and the difference
+# decides whether it fits in VRAM at all: the 27B is 17.7 GB at Q4_K_M and
+# 15.2 GB at IQ4_XS, which is the difference between fitting in 16 GB and not.
 DEFAULT_MODEL_PATTERNS = [
-    ("google/gemma-4-e4b", r"gemma-?4.*e4b"),
-    ("qwen/qwen3.5-9b", r"qwen3\.5-9b"),
-    ("qwen/qwen3.6-35b-a3b", r"qwen3\.6-35b-a3b"),
-    ("unsloth/Qwen3.8-27B-GGUF (IQ4_XS)", r"qwen3\.8.*27b"),
+    ("google/gemma-4-e4b", [r"gemma-?4.*e4b"]),
+    ("qwen/qwen3.5-9b", [r"qwen3\.5-9b"]),
+    ("qwen/qwen3.6-35b-a3b", [r"qwen3\.6-35b-a3b"]),
+    ("unsloth/Qwen3.8-27B-GGUF (IQ4_XS)",
+     [r"unsloth.*qwen3\.8.*27b", r"qwen3\.8.*27b"]),
 ]
 
 BENCH = runner.BenchRunner()
@@ -63,8 +68,12 @@ def default_selection(models):
     """Return (selected ids, descriptions of defaults that are not installed yet)."""
     ids = [m["id"] for m in models if m.get("type") != "embeddings"]
     selected, missing = [], []
-    for label, pattern in DEFAULT_MODEL_PATTERNS:
-        hit = next((i for i in ids if re.search(pattern, i, re.I)), None)
+    for label, patterns in DEFAULT_MODEL_PATTERNS:
+        hit = None
+        for pattern in patterns:          # first pattern that matches anything wins
+            hit = next((i for i in ids if re.search(pattern, i, re.I)), None)
+            if hit:
+                break
         if hit:
             selected.append(hit)
         else:
