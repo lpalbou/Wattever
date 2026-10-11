@@ -25,15 +25,42 @@ Two cards, same models, same prompts, reasoning off — prefill throughput at a
 | qwen3.8-27b Q4_K_M — prefill | 96 tk/s | 250 tk/s | 2.6× |
 | qwen3.8-27b Q4_K_M — decode | 1.4 tk/s | 2.7 tk/s | 1.9× |
 
-The third row is the interesting one, and it is a lesson about quantisation
-rather than about the cards. That build is **17.74 GB at Q4_K_M**, so it does not
-fit in 16 GB any more than in 8 GB: it spills to system RAM on both cards and
-crawls on both. Twice the VRAM moved the wall without removing it.
+The third row is the interesting one, and it is not really about the cards at
+all. That build is **17.74 GB at Q4_K_M**, so it does not fit in 16 GB any more
+than in 8 GB: it spills to system RAM on both and crawls on both. Twice the VRAM
+moved the wall without removing it.
 
-The same model at **IQ4_XS is 15.18 GB and does fit**. Same weights, same card,
-and the difference between unusable and usable is the quantisation you
-downloaded. Check the file size against your VRAM before concluding anything
-about a card.
+### Making a 27B usable on 16 GB
+
+Two settings turn that 2.7 tk/s into something you would actually use, and
+neither is the graphics card. Same model, same 5060 Ti:
+
+| build | offload | VRAM used | decode @10k |
+|---|---|---|---|
+| Q4_K_M, 17.74 GB | auto | 12.8 of 15.9 GB | 2.7 tk/s |
+| IQ4_XS, 15.18 GB | auto | 12.8 of 15.9 GB | 2.6 tk/s |
+| IQ4_XS, 15.18 GB | **max** | **15.2 of 15.9 GB** | **23.0 tk/s** |
+
+First pick a build that fits — IQ4_XS is 15.18 GB where Q4_K_M is 17.74 GB. Then
+make the runtime actually use the card, because a model that fits is not a model
+that is *loaded*: with automatic placement the IQ4_XS build still sat at 12.8 GB
+and left the rest in system RAM, scoring no better than the build that genuinely
+could not fit.
+
+And the context ceiling is real. On 16 GB the IQ4_XS 27B holds 23 tk/s out to a
+10k prompt, then the KV cache starts competing with the weights:
+
+| prompt | prefill | decode | VRAM (of 15.9 GB) |
+|---|---|---|---|
+| 512 | 174 tk/s | 23.9 tk/s | 14.8 GB |
+| 5k | 654 tk/s | 23.4 tk/s | 15.1 GB |
+| 10k | 769 tk/s | 23.0 tk/s | 15.2 GB |
+| 20k | 631 tk/s | **10.9 tk/s** | **15.5 GB** (97%) |
+| 40k | — | — | does not fit |
+
+So a 27B on a 16 GB card is comfortable for ordinary chat and short-context
+work, halves in speed by 20k, and is out of room at 40k. That is the kind of
+answer the tool exists to produce, and no spec sheet contains it.
 
 ### The offload trap
 
@@ -45,15 +72,44 @@ every generated token then has to cross to system RAM and back. Measured on the
 
 | offload | VRAM used | prefill @5k | decode |
 |---|---|---|---|
-| `auto` | 12.9 GB of 16.3 | 313 tk/s | **2.9 tk/s** |
-| `max` | 15.4 GB of 16.3 | 649 tk/s | **23.4 tk/s** |
+| `auto` | 12.6 of 15.9 GB | 313 tk/s | **2.9 tk/s** |
+| `max` | 15.1 of 15.9 GB | 649 tk/s | **23.4 tk/s** |
 
 **Eight times the decode speed, from one setting.** A 27B model goes from
 unusable to comfortable. This is why Wattever defaults to `max` and falls back
 only when a load genuinely fails: a benchmark should report what the card can
 do, not how cautious the runtime chose to be. If you see decode in the low
 single digits on a model that ought to fit, check VRAM usage before blaming the
-card.
+card — if peak VRAM is well under what you have, layers are sitting in system
+RAM.
+
+#### Where to change it
+
+**In Wattever** — Run tab → *Benchmark* → **GPU offload**. `Max` is the
+default. Every result records the placement that actually worked under
+`gpu_offload`, so a row that fell back to `auto` says so, and the Run tab warns
+you if the setting differs from the runs you already have.
+
+**In LM Studio, from the CLI** — this is the authoritative control, and what
+Wattever drives:
+
+```
+lms load <model> --gpu max     # every layer on the GPU
+lms load <model> --gpu 0.5     # half the layers
+lms load <model> --gpu off     # CPU only
+lms load <model>               # LM Studio decides (the cautious default)
+```
+
+**In the LM Studio app** — open *My Models*, click the ⚙️ gear on the model,
+and set its GPU offload in the load settings; saving it there makes it that
+model's default. The same control appears when you load a model manually.
+
+Note that a bigger offload is not always better: if the weights plus the KV
+cache genuinely exceed VRAM, forcing `max` can make the driver page memory and
+run *slower* than letting it offload deliberately. The rule of thumb is to use
+`max` whenever the model fits with room for the cache, and to compare against
+`auto` when it is marginal — which is exactly what the offload column in the
+results is for.
 
 Two more things the numbers show. On the 1070 Ti the 9B loses 36% of its decode
 speed between 512 and 20k tokens while the smaller model loses 8%, because at
