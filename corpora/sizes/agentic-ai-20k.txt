@@ -1,0 +1,917 @@
+# The State of Agentic AI — October 2026
+
+> **Benchmark fixture.** This document exists to be summarised by a local model at
+> controlled context lengths. It is a synthetic reference report: the shape of the
+> argument and the technical vocabulary are realistic, but individual figures,
+> company details and incident narratives are illustrative and should not be cited
+> as verified fact. Prefill throughput does not depend on whether prose is true, so
+> this costs the benchmark nothing — but it matters if you read the output.
+
+## Executive summary
+
+Three years after tool-calling language models became reliable enough to put in
+production, the agentic layer of the software industry has settled into a shape
+that would have been hard to predict in 2024. The dominant architecture is not a
+society of autonomous agents negotiating with one another. It is a single capable
+model in a tight loop with a small set of well-described tools, a carefully
+engineered context window, and a human somewhere on the escalation path. Almost
+every successful deployment looks like that loop wrapped in ordinary software
+engineering: retries, idempotency keys, audit logs, and a kill switch.
+
+The capability story of 2026 has been less about raw model scale and more about
+inference-time compute, context length, and the quality of the scaffolding. Models
+that can hold two hundred thousand tokens of working state and spend a variable
+amount of thinking per step have made long-horizon tasks tractable: multi-file
+refactors, multi-day research syntheses, claims adjudication, migration work. The
+hard problems that remain are unglamorous. Evaluation is still mostly bespoke.
+Prompt injection remains unsolved in the general case and is now the primary
+security concern for any agent with both private data access and untrusted input.
+Cost discipline, not capability, decides most build-versus-buy arguments.
+
+The most consequential shift for individual practitioners has been the collapse in
+the cost of competent local inference. Open-weight models in the four-to-forty
+billion parameter range, quantised to four bits and served by commodity runtimes,
+now handle summarisation, extraction, classification, routing and much light
+coding at a quality that was frontier-grade eighteen months earlier. Mixture-of-
+experts architectures with small active parameter counts changed the hardware
+calculus: a thirty-five billion parameter model with three billion active
+parameters decodes at conversational speed on a mid-range consumer GPU, provided
+the weights fit in memory. What local deployment buys is privacy, determinism and
+marginal cost near zero. What it costs is prefill throughput at long context,
+which is exactly where consumer hardware is weakest and where measurement matters
+most.
+
+## 1. What "agentic" came to mean
+
+The word was contested for two years and has since narrowed to something useful. An
+agentic system is one in which a model decides what to do next, repeatedly, against
+an environment it can change — as opposed to a pipeline in which a human or a fixed
+program decides the sequence of calls. The distinction is about control flow
+ownership, not about autonomy, intelligence, or how impressive the demo looks.
+
+Practitioners now talk about four rough tiers. **Assistive** systems propose and a
+human commits every change; most enterprise rollouts start here and many
+deliberately stay. **Supervised agentic** systems execute multi-step plans but
+check in at defined gates — a pull request, a draft invoice, a proposed refund.
+**Bounded autonomous** systems run to completion inside a sandbox with a budget
+and a blast radius, and are judged on outcomes rather than steps; coding agents
+operating on a branch are the canonical example. **Open autonomous** systems, with
+unbounded tool access and no review, remain rare outside research, and the reasons
+are mostly liability and security rather than capability.
+
+The tiering matters because it predicts where engineering effort goes. Assistive
+systems live or die on latency and interface design. Supervised systems live or die
+on the quality of the gate: what gets surfaced to the reviewer, and how much
+context the reviewer needs. Bounded autonomous systems live or die on
+verification — whether the system can tell, without a human, that the work is
+actually done.
+
+## 2. The loop that won
+
+The architecture that generalised is embarrassingly simple. A model receives a
+goal, a set of tool schemas, and whatever context has been assembled. It emits
+either a tool call or a final answer. Tool results are appended and the loop runs
+again. Everything interesting is in the details: which tools exist, how they are
+described, what goes into the context, and when the loop is allowed to stop.
+
+Two design principles have hardened into consensus. The first is that tools should
+be few, orthogonal and coarse-grained. Twenty overlapping micro-tools produce
+worse behaviour than five well-chosen ones, because selection error compounds over
+a long trajectory and every schema consumes context. The second is that tool
+descriptions are prompts and deserve the same scrutiny: naming, argument shape,
+error strings and examples all measurably change behaviour. Teams that version and
+test their tool descriptions outperform teams that treat them as documentation.
+
+The loop's failure modes are well catalogued. Models get stuck repeating a failing
+call with minor variations; they declare success without verifying; they lose track
+of the original goal after a long detour; they silently narrow scope to the part of
+the task they can do. Mitigations are correspondingly mundane: step budgets,
+duplicate-call detection, an explicit verification step before finishing, and
+periodic re-grounding of the goal in the context window.
+
+## 3. Context engineering
+
+Context engineering replaced prompt engineering as the central craft. The window is
+a budget, and the question is always what deserves space in it. Four techniques
+account for most of the practice.
+
+**Compaction** replaces old turns with a summary when the window fills. Done
+naively it destroys exactly the detail the agent will need later; done well it is
+lossy in a controlled way, preserving decisions, open questions and file paths
+while discarding tool output bodies. Most mature stacks compact asymmetrically,
+keeping the first instruction block and the most recent turns verbatim.
+
+**Retrieval** pulls in only what the current step needs. The 2026 consensus is that
+retrieval for agents looks less like classical RAG and more like giving the model
+good search tools and letting it navigate — grep and read over embed and hope,
+especially over codebases and structured corpora. Embedding retrieval persists
+where the corpus is large, unstructured and semantically indexed.
+
+**Memory tiers** separate the scratchpad from durable facts. Working memory is the
+window; episodic memory is the trajectory log; semantic memory is a curated store
+of learned facts and preferences. The hard part is write policy, not read policy:
+deciding what is worth remembering, and garbage-collecting what has gone stale.
+Systems that write too eagerly poison themselves within weeks.
+
+**Sub-agents** are a context management device as much as a division of labour. A
+sub-agent explores a large surface — reads forty files, runs a dozen searches — and
+returns a conclusion, so the parent's window absorbs the answer rather than the
+search. This is the one multi-agent pattern that is unambiguously load-bearing in
+production.
+
+## 4. Tool interfaces and protocols
+
+Tool integration standardised faster than most observers expected. A client-server
+protocol for exposing tools, resources and prompts to models became the common
+substrate, which collapsed the N-by-M integration problem: a tool server written
+once is usable by any compliant host. The practical effect is an ecosystem of
+reusable servers for filesystems, databases, browsers, ticketing systems and
+internal APIs, and a corresponding supply-chain question about what a given server
+is actually allowed to do.
+
+Agent-to-agent interoperability progressed more slowly and remains mostly
+aspirational outside controlled settings. Cross-organisation delegation runs into
+identity, authorisation, auditability and payment problems that are institutional
+rather than technical, and the economic case is thin when a direct API call works.
+
+Computer use — agents driving a GUI by screenshot and synthetic input — matured
+into a reliable fallback rather than a primary interface. It is slow, expensive in
+tokens, and brittle against interface change, but it is the only option for systems
+with no API, and it carries a distinctive risk profile because the agent's actions
+are indistinguishable from a user's in most audit trails.
+
+Sandboxing is now table stakes. The standard pattern is a container or
+microVM per session, with an explicit egress allowlist, a read-only mount of
+anything the agent must not modify, and credentials scoped to the narrowest role
+that permits the task. The sandbox is the primary defence against both model error
+and injection, because it is the only layer that does not depend on the model
+behaving well.
+
+## 5. Capability and inference-time compute
+
+The scaling story of 2026 is that quality became purchasable at inference time.
+Models trained to use a variable thinking budget turned latency into a tuning
+parameter: the same model answers a routing question in fifty tokens and a
+proof-shaped question in fifteen thousand. For agentic work this is more valuable
+than it sounds, because long-horizon tasks are dominated by a handful of hard
+decisions surrounded by easy mechanical steps, and spending uniformly on every step
+is wasteful.
+
+The practical corollary is that cost modelling got harder. A single agent run no
+longer has a predictable token count; it has a distribution with a long tail. Teams
+that budget on medians get surprised monthly. The mitigations are per-run token
+caps, thinking-budget ceilings per step class, and routing: a small model triages,
+a large model handles the few steps that need it. Routing is where local inference
+earns its place in otherwise cloud-based stacks.
+
+Context length grew but the useful length grew more slowly. Models with very large
+nominal windows still degrade on retrieval in the middle of a long context, and
+attention cost means that filling a window is rarely the cheapest way to solve a
+problem. The operational rule of thumb is that a long window is a safety margin
+rather than a design target, and that engineering the context down is almost always
+cheaper than paying to ingest it.
+
+## 6. Evaluation
+
+Evaluation is the least solved part of the stack and the most reliable predictor of
+whether a team ships something that works. Public agentic benchmarks — software
+engineering issue resolution, web navigation, tool-use suites, long-horizon
+research tasks — are useful for model selection and nearly useless for product
+decisions, because the distribution of tasks in any real deployment is narrow,
+idiosyncratic and drifting.
+
+What works in practice is a small, curated, versioned task set drawn from real
+traffic, graded at the trajectory level rather than the final-answer level. Did the
+agent take an irreversible action it should have escalated? Did it verify before
+declaring done? Did it spend forty steps on something that needed four? These
+process questions predict production behaviour better than answer accuracy, and
+they are also what regression testing needs: a change that preserves accuracy while
+doubling step count is a regression.
+
+Model-graded evaluation is now standard and is understood to be biased in specific
+ways: graders favour verbose answers, reward surface structure, and are unreliable
+on precisely the hard cases where a human would disagree with another human. The
+discipline that makes it work is calibration — a periodically re-graded human gold
+set, and tracking grader-human agreement as a first-class metric.
+
+Benchmark contamination and benchmark gaming both got worse as agentic evaluations
+became commercially salient. The credible response has been private held-out sets,
+rolling task refreshes, and reporting cost and step count alongside accuracy, since
+an agent that solves more tasks by spending ten times more compute is a different
+product, not a better one.
+
+## 7. Reliability engineering
+
+Agentic systems fail in ways that distributed systems engineers find familiar and
+application developers do not. The failure taxonomy that teams converged on
+separates **capability failures** (the model cannot do the task), **grounding
+failures** (it acts on a wrong belief about the environment), **specification
+failures** (it does what was asked rather than what was meant), and
+**compounding failures** (an early small error makes every later step wrong).
+Only the first is addressed by a better model.
+
+The engineering response is to treat every tool call as a potentially retried,
+potentially duplicated operation. Idempotency keys on anything that mutates state;
+checkpointing so a failed run resumes rather than restarts; explicit
+compensating actions for partial completion; and a transactional boundary around
+sequences that must not half-apply. None of this is novel. It is simply that the
+caller is now nondeterministic, which removes the usual excuse for skipping it.
+
+Observability for agents needs trajectory-level primitives. A span per tool call is
+necessary but insufficient; what operators actually need is the ability to replay a
+run with its exact context, diff two runs of the same task, and search trajectories
+by behaviour ("find runs where the agent retried the same call more than three
+times"). Teams that built this early debug in minutes; teams that did not debug by
+reading transcripts.
+
+## 8. Security
+
+Prompt injection is the defining unsolved problem. Any system that mixes
+instruction-bearing untrusted content with private data access and the ability to
+act externally is exploitable in principle, and no amount of prompt hardening
+changes that, because the model has no reliable channel-level distinction between
+instruction and data. The practical framing that stuck is that the danger requires
+the conjunction of untrusted input, sensitive data and an exfiltration path, and
+that the engineering job is to break the conjunction rather than to make the model
+immune.
+
+The defences that work are architectural. Keep untrusted content out of the
+privileged context entirely, processing it in a quarantined agent whose output is
+structured data rather than prose. Enforce egress allowlists so there is no channel
+to exfiltrate to. Require human confirmation for actions that are irreversible or
+externally visible. Scope credentials per task, not per application. Treat tool
+output as hostile input and validate it against a schema before it reaches the
+model.
+
+The confused-deputy problem is the organisational mirror of this. An agent acting
+with a service account's permissions will happily do, on behalf of a low-privilege
+requester, anything that account can do. The fix is to propagate the requester's
+identity into the tool layer and authorise there, which most internal APIs were not
+built to support and which accounts for a surprising share of agent platform
+engineering effort.
+
+Supply chain risk arrived with the tool-server ecosystem. A tool server is code
+running with the agent's privileges, and its description is an instruction the model
+will follow, so a malicious or compromised server is both a code-execution and a
+prompt-injection vector. Pinning versions, reviewing descriptions as code, and
+running third-party servers in their own sandbox are the emerging hygiene.
+
+## 9. Economics
+
+Three cost curves shape the market. Per-token prices for a given capability level
+have fallen steeply and continue to; prompt caching made repeated-prefix workloads
+dramatically cheaper and reshaped how agent contexts are structured, since a stable
+prefix is now worth engineering for. And inference-time compute pushed in the
+opposite direction, letting teams spend arbitrarily more per task for quality.
+
+The consequence is a barbell. Cheap, small, fast models absorb the enormous volume
+of mechanical steps — classification, extraction, routing, summarisation, patch
+generation for trivial diffs. Expensive, slow, high-compute models handle the
+decisions that actually need judgement. The middle is squeezed. Stacks designed
+around a single model for everything are usually paying two to five times more than
+necessary, or shipping lower quality than they could.
+
+Local inference is the extreme end of the cheap pole. Marginal cost is electricity;
+fixed cost is a GPU; privacy is structural rather than contractual. The economics
+work when volume is high and the task is one a small model does well, and they fail
+when the workload is bursty, needs frontier capability, or needs long-context
+prefill on hardware that cannot do it quickly. Measuring that last constraint on
+specific hardware is the only way to know which side of the line a workload falls
+on.
+
+## 10. Local and open-weight agents
+
+The open-weight ecosystem in 2026 covers the low and middle of the capability range
+competently. Four classes of local deployment are common: small dense models in the
+one-to-nine billion parameter range for embedded and high-volume work; mid-size
+dense models around twenty to thirty billion for general assistant quality;
+sparse mixture-of-experts models with large total and small active parameter counts
+for throughput; and quantised large models run slowly for privacy-critical batch
+work.
+
+Quantisation is the enabling technology and the main source of confusion.
+Four-bit weight quantisation of a well-trained model typically costs a few percent
+on knowledge benchmarks and rather more on tasks needing precise arithmetic or long
+chains of reasoning, and the loss is uneven across models. The practical guidance is
+that a larger model quantised harder usually beats a smaller model quantised
+lightly, until roughly three bits, below which degradation becomes erratic.
+
+The hardware constraint that matters for agentic work is not parameter count but
+the key-value cache. Cache size grows linearly with context length and with the
+number of attention key-value heads, which modern architectures reduce
+aggressively through grouped-query and multi-head latent attention. A model whose
+weights occupy six of eight available gigabytes has two gigabytes for cache, which
+at long context is the binding constraint. When the cache or the weights do not
+fit, runtimes offload to system memory, and throughput falls by an order of
+magnitude or more because every token must cross the bus.
+
+This produces the characteristic performance shape of consumer-hardware agents.
+Decode throughput is memory-bandwidth-bound and roughly constant with context
+until offload begins, at which point it collapses. Prefill is
+compute-bound and scales with available arithmetic throughput, so it is where
+newer architectures with tensor cores and faster memory show their largest
+advantage over older cards — often several-fold, far more than the gap in nominal
+memory bandwidth would suggest. Energy per token follows the same pattern, and
+energy is the metric that translates most directly into whether a local deployment
+makes sense at volume.
+
+For agentic workloads specifically, prefill dominates. An agent re-ingests a
+growing context on every step, so a loop with twenty steps over a twenty-thousand
+token context pays prefill twenty times unless prefix caching is working. This is
+why prefill throughput at realistic context lengths, rather than decode speed on a
+short prompt, is the number that predicts whether a local model is usable as an
+agent — and why measuring it per card, per model, per context length is worth the
+trouble.
+
+## 11. Orchestration stacks
+
+The platform layer consolidated into a recognisable set of components: a model
+gateway handling routing, fallback, rate limits and spend caps; a tool registry
+with versioning and permissions; a session store for trajectories and memory; a
+sandbox provisioner; an evaluation harness; and an observability plane. Teams
+either buy this as a managed platform or assemble it, and the assembly is
+substantial but not research-grade work.
+
+Framework fatigue was real and has largely resolved in favour of thin libraries
+over opinionated frameworks. The loop itself is thirty lines of code; what teams
+actually need is the surrounding infrastructure, and heavyweight abstractions over
+the loop tended to obstruct exactly the context control that determines quality.
+The surviving frameworks are the ones that stayed close to the model API and
+invested in the platform concerns instead.
+
+Durable execution emerged as the most useful borrowed idea. Modelling an agent run
+as a workflow with persisted state, replayable steps and timers solves resumption,
+long-running human approval gates, and the operational need to migrate a running
+agent across deployments. The pattern imposes discipline on side effects that
+agentic code otherwise lacks.
+
+## 12. Multi-agent systems
+
+The evidence for multi-agent architectures is narrower than the discourse. Three
+patterns earn their complexity. **Sub-agent delegation** for context isolation, as
+described above. **Parallel fan-out** over independent work items, where a dozen
+agents each handle one file or one document and a cheap aggregation step combines
+results. **Adversarial review**, where a second agent with a different prompt and
+no stake in the first agent's conclusion checks the work — reliably better than
+asking the same agent to self-critique.
+
+Patterns that mostly do not earn their complexity include role-playing teams of
+specialists with elaborate personas, free-form negotiation between peers, and
+hierarchies deeper than two levels. The failure mode is consistent: coordination
+overhead and error propagation grow faster than the division of labour helps, and
+debugging becomes extremely hard because no single trajectory explains the
+outcome.
+
+The honest summary is that multi-agent systems are an optimisation for context
+limits and parallelism, not a route to emergent capability. A single strong model
+with good tools and well-managed context is the baseline to beat, and it is a
+higher baseline than most multi-agent papers assume.
+
+## 13. Enterprise adoption
+
+Adoption settled into a predictable progression. Organisations start with
+assistive deployments in a single function, usually support, sales engineering or
+internal documentation search. The second phase is a supervised agentic workflow
+with a review gate, where the measurable win is reviewer throughput. The third
+phase, which many have not reached, is bounded autonomy on a narrow,
+well-instrumented process with a clear verification signal.
+
+The binding constraints are rarely model quality. They are data access
+(integrations, permissions, identity propagation), process definition (the
+organisation often cannot articulate the rules the agent must follow because the
+rules live in people's heads), evaluation (no ground truth, no acceptance
+criteria), and change management (reviewers must be trained and compensated for a
+job that looks different). Projects that fail usually fail on the second and
+fourth.
+
+A reliability expectation has crystallised around the idea that an agent must be
+better than the process it replaces on the dimension that matters, not better on
+average. A claims agent that is more accurate overall but makes a new category of
+catastrophic error is not deployable. This asymmetry explains the persistence of
+human gates in high-consequence domains far beyond the point where aggregate
+accuracy would justify removing them.
+
+## 14. Governance and regulation
+
+The regulatory picture is a patchwork with a few consistent threads. Obligations
+attach to risk and to deployment context rather than to model capability as such.
+Transparency requirements — disclosure that a user is interacting with an AI
+system, documentation of training data provenance, logging of automated decisions —
+are the most widely adopted and the least contested. Requirements for human
+oversight of consequential decisions are common and vaguely specified, which in
+practice means organisations implement a review gate and document it.
+
+For agentic systems specifically, three questions recur and are not well settled:
+who is liable when an autonomous action causes harm and the chain includes a model
+vendor, a platform, a tool server and a deploying organisation; what records
+constitute an adequate audit trail for an action taken by a model; and when an
+agent acting on a person's behalf can bind them contractually. Sectoral regulators
+in finance and healthcare have moved fastest, mostly by extending existing
+model-risk and clinical-decision-support regimes.
+
+Procurement became the de facto regulator for most vendors. Enterprise security
+questionnaires now ask about injection defences, egress controls, trajectory
+retention, credential scoping and sub-processor lists, and answering them well is a
+competitive advantage. This has done more to standardise agent security practice
+than any statute.
+
+## 15. Labour and practice
+
+The effect on knowledge work has been uneven and mostly not the one predicted. Work
+that was already decomposable into verifiable units — fixing a well-specified bug,
+drafting a routine document, extracting structured data — absorbed agents quickly.
+Work whose difficulty is in deciding what to do, negotiating with people, or
+carrying accountability absorbed them slowly or not at all. The common pattern is
+not replacement but a shift in the ratio of production to review, which changes
+what the job requires: specification, verification and judgement about when to
+trust output.
+
+Within software engineering, the measurable changes are that the cost of writing
+code fell faster than the cost of understanding it, that review became the
+bottleneck, and that the premium on clear interfaces, strong test suites and
+legible architecture rose, because those are what make a codebase tractable to an
+agent as well as to a newcomer. Teams that invested in verification infrastructure
+got disproportionate returns.
+
+A quieter effect is the rise of the practitioner who runs capable models locally.
+Falling model sizes, improved quantisation and cheap consumer accelerators made it
+practical to own an inference stack outright, which matters for privacy-sensitive
+work, for offline settings, for cost at volume, and for the simple ability to
+understand a system end to end. Knowing what a particular card can actually do —
+at what context length, at what throughput, at what wattage — became a genuinely
+useful piece of professional knowledge rather than a hobbyist concern.
+
+## 16. Research frontiers
+
+Four directions look most likely to change the picture. **Continual learning**:
+agents that durably improve from their own experience without full retraining,
+currently approximated by memory stores and example banks, and limited by the lack
+of a reliable signal about which experiences to learn from. **Verification**:
+training models to check work as well as produce it, which is the bottleneck for
+autonomy because self-reported completion is unreliable. **World models and
+planning**: explicit learned models of an environment that permit search rather
+than greedy stepping, promising on tasks with crisp dynamics and unproven on messy
+ones. **Interpretability for behaviour**: tools that explain why an agent chose an
+action, which both debugging and governance need and neither currently has.
+
+The sober view is that none of these is likely to arrive as a discontinuity. The
+pattern of the last three years has been steady, compounding improvement in a
+system with many parts, where the scaffolding improved roughly as fast as the
+models and the binding constraint moved around. There is no obvious reason for that
+to stop, and no obvious reason to expect a single breakthrough to reorganise the
+field.
+
+## 17. Open problems and outlook
+
+The honest list of things that do not work well: long-horizon tasks beyond a few
+hours of equivalent human work still fail at rates that require supervision;
+agents cannot reliably tell when they are out of their depth; evaluation does not
+transfer between deployments; injection defence is architectural rather than
+solved; and cost at the frontier is high enough that most organisations
+substantially underuse the capability available to them.
+
+What to expect over the next year, stated as tendencies rather than predictions:
+further consolidation of the platform layer, with the gateway-registry-sandbox-
+evaluation stack becoming a product category rather than an in-house build; a
+continued shift of volume to small and local models as the capability floor rises;
+more regulation of deployment context and less of model capability; and slow,
+real progress on verification, which is the hinge on which broader autonomy turns.
+
+For anyone building on their own hardware, the practical conclusion is unchanged
+and worth stating plainly. Decide what the workload actually is, measure the
+specific model on the specific card at the context length the work requires, and
+pay attention to prefill rather than to the headline decode number. The hardware
+question is not whether a model runs; it is whether it runs fast enough, at the
+context you need, inside the power and memory you have.
+
+---
+
+# Appendices
+
+The appendices below extend the report with reference material: platform
+profiles, deployment case studies, incident post-mortems, evaluation suite
+specifications, hardware sizing notes, a regulatory digest, a glossary,
+practitioner questions and a reading list. They are synthetic composites,
+generated deterministically so that every card under test receives
+byte-identical prompts.
+
+## Appendix A — Platform and vendor profiles
+
+Illustrative profiles of the agent-platform vendors and internal platform
+teams referenced throughout this report. Entries are synthetic composites.
+
+### A.1 Marchmont Media
+
+Marchmont Media positions itself as an evaluation and observability plane for utility grid operations. The platform covers trajectory storage and replay, with identity propagation handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is a router that triages locally and escalates hard steps to a frontier model.
+
+The documented differentiator is an opinionated evaluation harness. Customers in property and casualty insurance report that reviewer throughput roughly doubled, while the most common complaint is that prefix caching broke when a timestamp was injected into the system prompt. Pricing is structured around resolved items, which aligns incentives with tool selection error rate but obscures the cost of failed runs.
+
+Technical notes: context budgets default to 32,768 tokens with sub-agent offloading of search; the supported autonomy ceiling is assistive; and human confirmation is required before any irreversible action. Observed verified-completion rate sits around 76% on the vendor's own published regression set, measured with a calibrated model grader.
+
+### A.2 Rivet Media
+
+Rivet Media positions itself as a self-hosted inference and orchestration stack for media rights management. The platform covers evaluation harnesses and regression sets, with credential scoping handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is parallel fan-out over independent work items with a cheap aggregator.
+
+The documented differentiator is air-gapped deployment. Customers in clinical trial coordination report that unit cost per processed item fell by over half, while the most common complaint is that tool descriptions drifted out of sync with the underlying API. Pricing is structured around runtime hours, which aligns incentives with verified-completion rate but obscures evaluation overhead.
+
+Technical notes: context budgets default to 262,144 tokens with asymmetric compaction; the supported autonomy ceiling is bounded autonomous; and a policy-engine decision is required before any irreversible action. Observed context budget utilisation sits around 89% on the vendor's own published regression set, measured with trajectory grading.
+
+### A.3 Longford Manufacturing
+
+Longford Manufacturing positions itself as a tool-governance layer for e-commerce merchandising. The platform covers trajectory storage and replay, with credential scoping handled as a first-class concern rather than left to application teams. Deployments are typically supervised agentic, and the reference architecture is a quarantined reader feeding a privileged executor structured data only.
+
+The documented differentiator is bring-your-own-model support. Customers in property and casualty insurance report that median handling time fell by about a third, while the most common complaint is that cost per run developed a long tail that medians hid. Pricing is structured around resolved items, which aligns incentives with trajectory pass rate but obscures the cost of failed runs.
+
+Technical notes: context budgets default to 262,144 tokens with summary-on-overflow; the supported autonomy ceiling is supervised agentic; and a policy-engine decision is required before any irreversible action. Observed grader-human agreement sits around 80% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.4 Wavelength Payments
+
+Wavelength Payments positions itself as a tool-governance layer for pharmaceutical regulatory affairs. The platform covers spend caps and quota enforcement, with injection canary monitoring handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is a router that triages locally and escalates hard steps to a frontier model.
+
+The documented differentiator is native durable workflows. Customers in aviation maintenance planning report that first-pass acceptance rose into the high eighties, while the most common complaint is that step counts doubled after a model upgrade with no accuracy gain. Pricing is structured around seats plus metered tokens, which aligns incentives with tool selection error rate but obscures evaluation overhead.
+
+Technical notes: context budgets default to 131,072 tokens with asymmetric compaction; the supported autonomy ceiling is assistive; and a dry run with side effects suppressed is required before any irreversible action. Observed tool selection accuracy sits around 93% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.5 Pinnacle Software
+
+Pinnacle Software positions itself as an evaluation and observability plane for telecommunications support. The platform covers spend caps and quota enforcement, with prefix-cache stability handled as a first-class concern rather than left to application teams. Deployments are typically supervised agentic, and the reference architecture is a router that triages locally and escalates hard steps to a frontier model.
+
+The documented differentiator is bring-your-own-model support. Customers in municipal permitting report that reviewer throughput roughly doubled, while the most common complaint is that long-context retrieval degraded in the middle of the window. Pricing is structured around a flat platform fee with metered sandboxes, which aligns incentives with irreversible-action escalation rate but obscures evaluation overhead.
+
+Technical notes: context budgets default to 32,768 tokens with retrieval-first assembly; the supported autonomy ceiling is supervised agentic; and a dry run with side effects suppressed is required before any irreversible action. Observed trajectory pass rate sits around 86% on the vendor's own published regression set, measured with a calibrated model grader.
+
+### A.6 Juniper Telecom
+
+Juniper Telecom positions itself as a tool-governance layer for agricultural supply chain. The platform covers model routing and fallback, with prefix-cache stability handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is a single tool-calling loop with a review gate.
+
+The documented differentiator is an opinionated evaluation harness. Customers in semiconductor process engineering report that cycle time became predictable enough to publish an SLA, while the most common complaint is that the verification step was skipped whenever the model was confident. Pricing is structured around a flat platform fee with metered sandboxes, which aligns incentives with context budget utilisation but obscures evaluation overhead.
+
+Technical notes: context budgets default to 32,768 tokens with asymmetric compaction; the supported autonomy ceiling is bounded autonomous; and a second-agent review is required before any irreversible action. Observed context budget utilisation sits around 81% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.7 Brightline Software
+
+Brightline Software positions itself as a durable-execution substrate for agents for pharmaceutical regulatory affairs. The platform covers trajectory storage and replay, with per-step budget enforcement handled as a first-class concern rather than left to application teams. Deployments are typically supervised agentic, and the reference architecture is a durable workflow with persisted checkpoints and human approval timers.
+
+The documented differentiator is trajectory-level observability. Customers in pharmaceutical regulatory affairs report that reviewer throughput roughly doubled, while the most common complaint is that an upstream schema change produced confidently wrong extractions. Pricing is structured around runtime hours, which aligns incentives with trajectory pass rate but obscures evaluation overhead.
+
+Technical notes: context budgets default to 65,536 tokens with retrieval-first assembly; the supported autonomy ceiling is assistive; and a dry run with side effects suppressed is required before any irreversible action. Observed tool selection accuracy sits around 91% on the vendor's own published regression set, measured with sampling audit at 5% of runs.
+
+### A.8 Wexford Financial
+
+Wexford Financial positions itself as a durable-execution substrate for agents for payments risk and disputes. The platform covers evaluation harnesses and regression sets, with credential scoping handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is a retrieval-first loop with grep-style navigation over an indexed corpus.
+
+The documented differentiator is first-class replay and run diffing. Customers in aviation maintenance planning report that first-pass acceptance rose into the high eighties, while the most common complaint is that cost per run developed a long tail that medians hid. Pricing is structured around seats plus metered tokens, which aligns incentives with injection canary trip rate but obscures the cost of failed runs.
+
+Technical notes: context budgets default to 131,072 tokens with retrieval-first assembly; the supported autonomy ceiling is bounded autonomous; and a second-agent review is required before any irreversible action. Observed first-pass acceptance sits around 82% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.9 Cobalt Analytics
+
+Cobalt Analytics positions itself as an evaluation and observability plane for clinical trial coordination. The platform covers tool registry and permissions, with per-step budget enforcement handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is a quarantined reader feeding a privileged executor structured data only.
+
+The documented differentiator is an opinionated evaluation harness. Customers in retail banking report that backlog age dropped from weeks to days, while the most common complaint is that step counts doubled after a model upgrade with no accuracy gain. Pricing is structured around tool-call volume, which aligns incentives with tool selection error rate but obscures sandbox cost at peak.
+
+Technical notes: context budgets default to 65,536 tokens with asymmetric compaction; the supported autonomy ceiling is supervised agentic; and a policy-engine decision is required before any irreversible action. Observed grader-human agreement sits around 72% on the vendor's own published regression set, measured with trajectory grading.
+
+### A.10 Nightjar Software
+
+Nightjar Software positions itself as a durable-execution substrate for agents for telecommunications support. The platform covers evaluation harnesses and regression sets, with prefix-cache stability handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is a router that triages locally and escalates hard steps to a frontier model.
+
+The documented differentiator is bring-your-own-model support. Customers in hospital operations report that reviewer throughput roughly doubled, while the most common complaint is that reviewers rubber-stamped output until a sampling audit was introduced. Pricing is structured around resolved items, which aligns incentives with verified-completion rate but obscures evaluation overhead.
+
+Technical notes: context budgets default to 131,072 tokens with summary-on-overflow; the supported autonomy ceiling is assistive; and a dry run with side effects suppressed is required before any irreversible action. Observed grader-human agreement sits around 89% on the vendor's own published regression set, measured with sampling audit at 5% of runs.
+
+### A.11 Belmont Software
+
+Belmont Software positions itself as a durable-execution substrate for agents for payments risk and disputes. The platform covers model routing and fallback, with prefix-cache stability handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is a router that triages locally and escalates hard steps to a frontier model.
+
+The documented differentiator is bring-your-own-model support. Customers in clinical trial coordination report that coverage extended to a long tail nobody had staffed, while the most common complaint is that cost per run developed a long tail that medians hid. Pricing is structured around runtime hours, which aligns incentives with p95 end-to-end latency but obscures the cost of failed runs.
+
+Technical notes: context budgets default to 65,536 tokens with sub-agent offloading of search; the supported autonomy ceiling is bounded autonomous; and a policy-engine decision is required before any irreversible action. Observed grader-human agreement sits around 87% on the vendor's own published regression set, measured with trajectory grading.
+
+### A.12 Rivet Infrastructure
+
+Rivet Infrastructure positions itself as an evaluation and observability plane for payments risk and disputes. The platform covers tool registry and permissions, with egress control handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is a single tool-calling loop with a review gate.
+
+The documented differentiator is air-gapped deployment. Customers in municipal permitting report that first-pass acceptance rose into the high eighties, while the most common complaint is that long-context retrieval degraded in the middle of the window. Pricing is structured around a flat platform fee with metered sandboxes, which aligns incentives with tool selection error rate but obscures evaluation overhead.
+
+Technical notes: context budgets default to 65,536 tokens with sub-agent offloading of search; the supported autonomy ceiling is supervised agentic; and human confirmation is required before any irreversible action. Observed first-pass acceptance sits around 83% on the vendor's own published regression set, measured with a calibrated model grader.
+
+### A.13 Meridian Biosciences
+
+Meridian Biosciences positions itself as a durable-execution substrate for agents for media rights management. The platform covers spend caps and quota enforcement, with identity propagation handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is a router that triages locally and escalates hard steps to a frontier model.
+
+The documented differentiator is trajectory-level observability. Customers in freight logistics report that cycle time became predictable enough to publish an SLA, while the most common complaint is that the agent silently narrowed scope on ambiguous items. Pricing is structured around resolved items, which aligns incentives with injection canary trip rate but obscures egress charges.
+
+Technical notes: context budgets default to 16,384 tokens with retrieval-first assembly; the supported autonomy ceiling is assistive; and a policy-engine decision is required before any irreversible action. Observed context budget utilisation sits around 64% on the vendor's own published regression set, measured with a calibrated model grader.
+
+### A.14 Brightline Energy
+
+Brightline Energy positions itself as an evaluation and observability plane for property and casualty insurance. The platform covers tool registry and permissions, with credential scoping handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is parallel fan-out over independent work items with a cheap aggregator.
+
+The documented differentiator is first-class replay and run diffing. Customers in payments risk and disputes report that first-pass acceptance rose into the high eighties, while the most common complaint is that cost per run developed a long tail that medians hid. Pricing is structured around runtime hours, which aligns incentives with steps per completed task but obscures egress charges.
+
+Technical notes: context budgets default to 262,144 tokens with sub-agent offloading of search; the supported autonomy ceiling is supervised agentic; and a second-agent review is required before any irreversible action. Observed trajectory pass rate sits around 77% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.15 Parkview Systems
+
+Parkview Systems positions itself as a managed agent platform for utility grid operations. The platform covers evaluation harnesses and regression sets, with injection canary monitoring handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is parallel fan-out over independent work items with a cheap aggregator.
+
+The documented differentiator is fine-grained tool permissions. Customers in freight logistics report that backlog age dropped from weeks to days, while the most common complaint is that reviewers rubber-stamped output until a sampling audit was introduced. Pricing is structured around resolved items, which aligns incentives with trajectory pass rate but obscures sandbox cost at peak.
+
+Technical notes: context budgets default to 262,144 tokens with asymmetric compaction; the supported autonomy ceiling is assistive; and a policy-engine decision is required before any irreversible action. Observed trajectory pass rate sits around 95% on the vendor's own published regression set, measured with sampling audit at 5% of runs.
+
+### A.16 Oakfield Education
+
+Oakfield Education positions itself as a tool-governance layer for agricultural supply chain. The platform covers tool registry and permissions, with injection canary monitoring handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is an adversarial reviewer checking a producer agent's output.
+
+The documented differentiator is first-class replay and run diffing. Customers in hospital operations report that cycle time became predictable enough to publish an SLA, while the most common complaint is that step counts doubled after a model upgrade with no accuracy gain. Pricing is structured around runtime hours, which aligns incentives with context budget utilisation but obscures the token tail.
+
+Technical notes: context budgets default to 16,384 tokens with retrieval-first assembly; the supported autonomy ceiling is supervised agentic; and a dry run with side effects suppressed is required before any irreversible action. Observed first-pass acceptance sits around 89% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.17 Trellis Health
+
+Trellis Health positions itself as a self-hosted inference and orchestration stack for telecommunications support. The platform covers model routing and fallback, with credential scoping handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is parallel fan-out over independent work items with a cheap aggregator.
+
+The documented differentiator is bring-your-own-model support. Customers in higher education administration report that first-pass acceptance rose into the high eighties, while the most common complaint is that long-context retrieval degraded in the middle of the window. Pricing is structured around seats plus metered tokens, which aligns incentives with verified-completion rate but obscures the token tail.
+
+Technical notes: context budgets default to 32,768 tokens with sub-agent offloading of search; the supported autonomy ceiling is bounded autonomous; and a policy-engine decision is required before any irreversible action. Observed tool selection accuracy sits around 85% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.18 Longford Software
+
+Longford Software positions itself as an evaluation and observability plane for higher education administration. The platform covers tool registry and permissions, with injection canary monitoring handled as a first-class concern rather than left to application teams. Deployments are typically supervised agentic, and the reference architecture is an adversarial reviewer checking a producer agent's output.
+
+The documented differentiator is a strict policy engine. Customers in retail banking report that cycle time became predictable enough to publish an SLA, while the most common complaint is that the verification step was skipped whenever the model was confident. Pricing is structured around resolved items, which aligns incentives with p95 end-to-end latency but obscures the cost of failed runs.
+
+Technical notes: context budgets default to 32,768 tokens with asymmetric compaction; the supported autonomy ceiling is bounded autonomous; and a policy-engine decision is required before any irreversible action. Observed tool selection accuracy sits around 91% on the vendor's own published regression set, measured with a calibrated model grader.
+
+### A.19 Yewtree Retail
+
+Yewtree Retail positions itself as a tool-governance layer for media rights management. The platform covers evaluation harnesses and regression sets, with injection canary monitoring handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is a retrieval-first loop with grep-style navigation over an indexed corpus.
+
+The documented differentiator is air-gapped deployment. Customers in clinical trial coordination report that escalation rate to specialists fell materially, while the most common complaint is that the agent silently narrowed scope on ambiguous items. Pricing is structured around seats plus metered tokens, which aligns incentives with cost per resolved item but obscures evaluation overhead.
+
+Technical notes: context budgets default to 65,536 tokens with summary-on-overflow; the supported autonomy ceiling is bounded autonomous; and human confirmation is required before any irreversible action. Observed first-pass acceptance sits around 92% on the vendor's own published regression set, measured with trajectory grading.
+
+### A.20 Tessera Payments
+
+Tessera Payments positions itself as an evaluation and observability plane for higher education administration. The platform covers evaluation harnesses and regression sets, with identity propagation handled as a first-class concern rather than left to application teams. Deployments are typically supervised agentic, and the reference architecture is a durable workflow with persisted checkpoints and human approval timers.
+
+The documented differentiator is fine-grained tool permissions. Customers in e-commerce merchandising report that backlog age dropped from weeks to days, while the most common complaint is that an upstream schema change produced confidently wrong extractions. Pricing is structured around seats plus metered tokens, which aligns incentives with irreversible-action escalation rate but obscures evaluation overhead.
+
+Technical notes: context budgets default to 65,536 tokens with asymmetric compaction; the supported autonomy ceiling is assistive; and human confirmation is required before any irreversible action. Observed grader-human agreement sits around 65% on the vendor's own published regression set, measured with sampling audit at 5% of runs.
+
+### A.21 Oakfield Infrastructure
+
+Oakfield Infrastructure positions itself as an agent runtime and gateway for pharmaceutical regulatory affairs. The platform covers trajectory storage and replay, with per-step budget enforcement handled as a first-class concern rather than left to application teams. Deployments are typically supervised agentic, and the reference architecture is a supervisor delegating to task-scoped sub-agents.
+
+The documented differentiator is an opinionated evaluation harness. Customers in retail banking report that backlog age dropped from weeks to days, while the most common complaint is that prefix caching broke when a timestamp was injected into the system prompt. Pricing is structured around resolved items, which aligns incentives with cost per resolved item but obscures evaluation overhead.
+
+Technical notes: context budgets default to 262,144 tokens with retrieval-first assembly; the supported autonomy ceiling is assistive; and a dry run with side effects suppressed is required before any irreversible action. Observed first-pass acceptance sits around 68% on the vendor's own published regression set, measured with trajectory grading.
+
+### A.22 Ironwood Education
+
+Ironwood Education positions itself as a managed agent platform for aviation maintenance planning. The platform covers model routing and fallback, with per-step budget enforcement handled as a first-class concern rather than left to application teams. Deployments are typically supervised agentic, and the reference architecture is a single tool-calling loop with a review gate.
+
+The documented differentiator is native durable workflows. Customers in capital markets research report that backlog age dropped from weeks to days, while the most common complaint is that memory writes accumulated stale preferences and had to be garbage-collected. Pricing is structured around runtime hours, which aligns incentives with context budget utilisation but obscures evaluation overhead.
+
+Technical notes: context budgets default to 65,536 tokens with asymmetric compaction; the supported autonomy ceiling is bounded autonomous; and a dry run with side effects suppressed is required before any irreversible action. Observed context budget utilisation sits around 91% on the vendor's own published regression set, measured with trajectory grading.
+
+### A.23 Stonebridge Analytics
+
+Stonebridge Analytics positions itself as a durable-execution substrate for agents for property and casualty insurance. The platform covers evaluation harnesses and regression sets, with prefix-cache stability handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is a router that triages locally and escalates hard steps to a frontier model.
+
+The documented differentiator is first-class replay and run diffing. Customers in capital markets research report that reviewer throughput roughly doubled, while the most common complaint is that tool descriptions drifted out of sync with the underlying API. Pricing is structured around tool-call volume, which aligns incentives with injection canary trip rate but obscures sandbox cost at peak.
+
+Technical notes: context budgets default to 262,144 tokens with summary-on-overflow; the supported autonomy ceiling is bounded autonomous; and a second-agent review is required before any irreversible action. Observed trajectory pass rate sits around 77% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.24 Harbour Logistics
+
+Harbour Logistics positions itself as an evaluation and observability plane for telecommunications support. The platform covers evaluation harnesses and regression sets, with injection canary monitoring handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is a supervisor delegating to task-scoped sub-agents.
+
+The documented differentiator is first-class replay and run diffing. Customers in e-commerce merchandising report that unit cost per processed item fell by over half, while the most common complaint is that step counts doubled after a model upgrade with no accuracy gain. Pricing is structured around seats plus metered tokens, which aligns incentives with context budget utilisation but obscures egress charges.
+
+Technical notes: context budgets default to 131,072 tokens with summary-on-overflow; the supported autonomy ceiling is assistive; and a policy-engine decision is required before any irreversible action. Observed tool selection accuracy sits around 64% on the vendor's own published regression set, measured with trajectory grading.
+
+### A.25 Westmark Software
+
+Westmark Software positions itself as an agent runtime and gateway for utility grid operations. The platform covers trajectory storage and replay, with prefix-cache stability handled as a first-class concern rather than left to application teams. Deployments are typically supervised agentic, and the reference architecture is parallel fan-out over independent work items with a cheap aggregator.
+
+The documented differentiator is air-gapped deployment. Customers in municipal permitting report that reviewer throughput roughly doubled, while the most common complaint is that cost per run developed a long tail that medians hid. Pricing is structured around a flat platform fee with metered sandboxes, which aligns incentives with trajectory pass rate but obscures egress charges.
+
+Technical notes: context budgets default to 16,384 tokens with sub-agent offloading of search; the supported autonomy ceiling is assistive; and a policy-engine decision is required before any irreversible action. Observed trajectory pass rate sits around 64% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.26 Northwind Energy
+
+Northwind Energy positions itself as a durable-execution substrate for agents for payments risk and disputes. The platform covers trajectory storage and replay, with credential scoping handled as a first-class concern rather than left to application teams. Deployments are typically supervised agentic, and the reference architecture is a retrieval-first loop with grep-style navigation over an indexed corpus.
+
+The documented differentiator is native durable workflows. Customers in retail banking report that coverage extended to a long tail nobody had staffed, while the most common complaint is that step counts doubled after a model upgrade with no accuracy gain. Pricing is structured around a flat platform fee with metered sandboxes, which aligns incentives with injection canary trip rate but obscures the cost of failed runs.
+
+Technical notes: context budgets default to 262,144 tokens with sub-agent offloading of search; the supported autonomy ceiling is assistive; and a second-agent review is required before any irreversible action. Observed trajectory pass rate sits around 82% on the vendor's own published regression set, measured with a calibrated model grader.
+
+### A.27 Verity Public Services
+
+Verity Public Services positions itself as an evaluation and observability plane for municipal permitting. The platform covers sandbox provisioning, with injection canary monitoring handled as a first-class concern rather than left to application teams. Deployments are typically supervised agentic, and the reference architecture is a quarantined reader feeding a privileged executor structured data only.
+
+The documented differentiator is air-gapped deployment. Customers in media rights management report that backlog age dropped from weeks to days, while the most common complaint is that reviewers rubber-stamped output until a sampling audit was introduced. Pricing is structured around tool-call volume, which aligns incentives with irreversible-action escalation rate but obscures the token tail.
+
+Technical notes: context budgets default to 32,768 tokens with retrieval-first assembly; the supported autonomy ceiling is bounded autonomous; and human confirmation is required before any irreversible action. Observed trajectory pass rate sits around 72% on the vendor's own published regression set, measured with a calibrated model grader.
+
+### A.28 Belmont Retail
+
+Belmont Retail positions itself as a tool-governance layer for public-sector benefits administration. The platform covers model routing and fallback, with identity propagation handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is a durable workflow with persisted checkpoints and human approval timers.
+
+The documented differentiator is a strict policy engine. Customers in clinical trial coordination report that escalation rate to specialists fell materially, while the most common complaint is that the verification step was skipped whenever the model was confident. Pricing is structured around a flat platform fee with metered sandboxes, which aligns incentives with trajectory pass rate but obscures the cost of failed runs.
+
+Technical notes: context budgets default to 32,768 tokens with asymmetric compaction; the supported autonomy ceiling is assistive; and a policy-engine decision is required before any irreversible action. Observed verified-completion rate sits around 92% on the vendor's own published regression set, measured with sampling audit at 5% of runs.
+
+### A.29 Inkwell Health
+
+Inkwell Health positions itself as an evaluation and observability plane for capital markets research. The platform covers tool registry and permissions, with egress control handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is an adversarial reviewer checking a producer agent's output.
+
+The documented differentiator is an opinionated evaluation harness. Customers in freight logistics report that escalation rate to specialists fell materially, while the most common complaint is that step counts doubled after a model upgrade with no accuracy gain. Pricing is structured around resolved items, which aligns incentives with irreversible-action escalation rate but obscures evaluation overhead.
+
+Technical notes: context budgets default to 262,144 tokens with sub-agent offloading of search; the supported autonomy ceiling is bounded autonomous; and human confirmation is required before any irreversible action. Observed tool selection accuracy sits around 66% on the vendor's own published regression set, measured with a calibrated model grader.
+
+### A.30 Halcyon Insurance
+
+Halcyon Insurance positions itself as a durable-execution substrate for agents for commercial legal services. The platform covers evaluation harnesses and regression sets, with credential scoping handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is a single tool-calling loop with a review gate.
+
+The documented differentiator is a strict policy engine. Customers in industrial maintenance report that coverage extended to a long tail nobody had staffed, while the most common complaint is that cost per run developed a long tail that medians hid. Pricing is structured around seats plus metered tokens, which aligns incentives with cost per resolved item but obscures the cost of failed runs.
+
+Technical notes: context budgets default to 32,768 tokens with summary-on-overflow; the supported autonomy ceiling is bounded autonomous; and human confirmation is required before any irreversible action. Observed grader-human agreement sits around 78% on the vendor's own published regression set, measured with trajectory grading.
+
+### A.31 Stonebridge Public Services
+
+Stonebridge Public Services positions itself as an evaluation and observability plane for commercial legal services. The platform covers model routing and fallback, with prefix-cache stability handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is parallel fan-out over independent work items with a cheap aggregator.
+
+The documented differentiator is air-gapped deployment. Customers in semiconductor process engineering report that cycle time became predictable enough to publish an SLA, while the most common complaint is that long-context retrieval degraded in the middle of the window. Pricing is structured around tool-call volume, which aligns incentives with irreversible-action escalation rate but obscures the cost of failed runs.
+
+Technical notes: context budgets default to 16,384 tokens with sub-agent offloading of search; the supported autonomy ceiling is supervised agentic; and human confirmation is required before any irreversible action. Observed grader-human agreement sits around 69% on the vendor's own published regression set, measured with a calibrated model grader.
+
+### A.32 Wavelength Education
+
+Wavelength Education positions itself as a durable-execution substrate for agents for industrial maintenance. The platform covers evaluation harnesses and regression sets, with per-step budget enforcement handled as a first-class concern rather than left to application teams. Deployments are typically supervised agentic, and the reference architecture is a router that triages locally and escalates hard steps to a frontier model.
+
+The documented differentiator is an opinionated evaluation harness. Customers in public-sector benefits administration report that coverage extended to a long tail nobody had staffed, while the most common complaint is that long-context retrieval degraded in the middle of the window. Pricing is structured around runtime hours, which aligns incentives with verified-completion rate but obscures evaluation overhead.
+
+Technical notes: context budgets default to 131,072 tokens with summary-on-overflow; the supported autonomy ceiling is bounded autonomous; and human confirmation is required before any irreversible action. Observed grader-human agreement sits around 82% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.33 Wavelength Biosciences
+
+Wavelength Biosciences positions itself as a self-hosted inference and orchestration stack for hospital operations. The platform covers evaluation harnesses and regression sets, with per-step budget enforcement handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is a router that triages locally and escalates hard steps to a frontier model.
+
+The documented differentiator is bring-your-own-model support. Customers in higher education administration report that unit cost per processed item fell by over half, while the most common complaint is that prefix caching broke when a timestamp was injected into the system prompt. Pricing is structured around a flat platform fee with metered sandboxes, which aligns incentives with injection canary trip rate but obscures evaluation overhead.
+
+Technical notes: context budgets default to 16,384 tokens with asymmetric compaction; the supported autonomy ceiling is supervised agentic; and human confirmation is required before any irreversible action. Observed first-pass acceptance sits around 89% on the vendor's own published regression set, measured with sampling audit at 5% of runs.
+
+### A.34 Vantage Payments
+
+Vantage Payments positions itself as a durable-execution substrate for agents for commercial legal services. The platform covers sandbox provisioning, with per-step budget enforcement handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is an adversarial reviewer checking a producer agent's output.
+
+The documented differentiator is air-gapped deployment. Customers in semiconductor process engineering report that cycle time became predictable enough to publish an SLA, while the most common complaint is that cost per run developed a long tail that medians hid. Pricing is structured around seats plus metered tokens, which aligns incentives with tool selection error rate but obscures the token tail.
+
+Technical notes: context budgets default to 131,072 tokens with asymmetric compaction; the supported autonomy ceiling is assistive; and human confirmation is required before any irreversible action. Observed grader-human agreement sits around 89% on the vendor's own published regression set, measured with trajectory grading.
+
+### A.35 Quarry Education
+
+Quarry Education positions itself as a self-hosted inference and orchestration stack for public-sector benefits administration. The platform covers evaluation harnesses and regression sets, with per-step budget enforcement handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is a durable workflow with persisted checkpoints and human approval timers.
+
+The documented differentiator is bring-your-own-model support. Customers in hospital operations report that reviewer throughput roughly doubled, while the most common complaint is that the verification step was skipped whenever the model was confident. Pricing is structured around resolved items, which aligns incentives with verified-completion rate but obscures the token tail.
+
+Technical notes: context budgets default to 32,768 tokens with summary-on-overflow; the supported autonomy ceiling is assistive; and human confirmation is required before any irreversible action. Observed context budget utilisation sits around 96% on the vendor's own published regression set, measured with sampling audit at 5% of runs.
+
+### A.36 Pinnacle Health
+
+Pinnacle Health positions itself as an evaluation and observability plane for public-sector benefits administration. The platform covers sandbox provisioning, with injection canary monitoring handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is a quarantined reader feeding a privileged executor structured data only.
+
+The documented differentiator is native durable workflows. Customers in commercial legal services report that median handling time fell by about a third, while the most common complaint is that prefix caching broke when a timestamp was injected into the system prompt. Pricing is structured around tool-call volume, which aligns incentives with irreversible-action escalation rate but obscures sandbox cost at peak.
+
+Technical notes: context budgets default to 32,768 tokens with sub-agent offloading of search; the supported autonomy ceiling is assistive; and a dry run with side effects suppressed is required before any irreversible action. Observed first-pass acceptance sits around 68% on the vendor's own published regression set, measured with trajectory grading.
+
+### A.37 Parkview Payments
+
+Parkview Payments positions itself as a tool-governance layer for industrial maintenance. The platform covers spend caps and quota enforcement, with prefix-cache stability handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is a durable workflow with persisted checkpoints and human approval timers.
+
+The documented differentiator is trajectory-level observability. Customers in aviation maintenance planning report that median handling time fell by about a third, while the most common complaint is that tool descriptions drifted out of sync with the underlying API. Pricing is structured around seats plus metered tokens, which aligns incentives with irreversible-action escalation rate but obscures sandbox cost at peak.
+
+Technical notes: context budgets default to 32,768 tokens with asymmetric compaction; the supported autonomy ceiling is bounded autonomous; and a dry run with side effects suppressed is required before any irreversible action. Observed context budget utilisation sits around 85% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.38 Ironwood Software
+
+Ironwood Software positions itself as a tool-governance layer for semiconductor process engineering. The platform covers model routing and fallback, with credential scoping handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is a single tool-calling loop with a review gate.
+
+The documented differentiator is native durable workflows. Customers in aviation maintenance planning report that median handling time fell by about a third, while the most common complaint is that memory writes accumulated stale preferences and had to be garbage-collected. Pricing is structured around seats plus metered tokens, which aligns incentives with p95 end-to-end latency but obscures the token tail.
+
+Technical notes: context budgets default to 16,384 tokens with asymmetric compaction; the supported autonomy ceiling is bounded autonomous; and a dry run with side effects suppressed is required before any irreversible action. Observed tool selection accuracy sits around 63% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.39 Westmark Media
+
+Westmark Media positions itself as an agent runtime and gateway for utility grid operations. The platform covers model routing and fallback, with identity propagation handled as a first-class concern rather than left to application teams. Deployments are typically supervised agentic, and the reference architecture is an adversarial reviewer checking a producer agent's output.
+
+The documented differentiator is a strict policy engine. Customers in freight logistics report that cycle time became predictable enough to publish an SLA, while the most common complaint is that reviewers rubber-stamped output until a sampling audit was introduced. Pricing is structured around a flat platform fee with metered sandboxes, which aligns incentives with injection canary trip rate but obscures sandbox cost at peak.
+
+Technical notes: context budgets default to 131,072 tokens with summary-on-overflow; the supported autonomy ceiling is assistive; and a dry run with side effects suppressed is required before any irreversible action. Observed trajectory pass rate sits around 87% on the vendor's own published regression set, measured with sampling audit at 5% of runs.
+
+### A.40 Redstone Analytics
+
+Redstone Analytics positions itself as an agent runtime and gateway for pharmaceutical regulatory affairs. The platform covers tool registry and permissions, with egress control handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is parallel fan-out over independent work items with a cheap aggregator.
+
+The documented differentiator is native durable workflows. Customers in public-sector benefits administration report that cycle time became predictable enough to publish an SLA, while the most common complaint is that reviewers rubber-stamped output until a sampling audit was introduced. Pricing is structured around seats plus metered tokens, which aligns incentives with trajectory pass rate but obscures the cost of failed runs.
+
+Technical notes: context budgets default to 32,768 tokens with asymmetric compaction; the supported autonomy ceiling is assistive; and a dry run with side effects suppressed is required before any irreversible action. Observed tool selection accuracy sits around 82% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.41 Oakfield Energy
+
+Oakfield Energy positions itself as a durable-execution substrate for agents for property and casualty insurance. The platform covers sandbox provisioning, with injection canary monitoring handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is a supervisor delegating to task-scoped sub-agents.
+
+The documented differentiator is first-class replay and run diffing. Customers in municipal permitting report that median handling time fell by about a third, while the most common complaint is that long-context retrieval degraded in the middle of the window. Pricing is structured around tool-call volume, which aligns incentives with tool selection error rate but obscures evaluation overhead.
+
+Technical notes: context budgets default to 32,768 tokens with retrieval-first assembly; the supported autonomy ceiling is bounded autonomous; and human confirmation is required before any irreversible action. Observed context budget utilisation sits around 90% on the vendor's own published regression set, measured with a calibrated model grader.
+
+### A.42 Halcyon Energy
+
+Halcyon Energy positions itself as a self-hosted inference and orchestration stack for semiconductor process engineering. The platform covers trajectory storage and replay, with identity propagation handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is a durable workflow with persisted checkpoints and human approval timers.
+
+The documented differentiator is native durable workflows. Customers in industrial maintenance report that first-pass acceptance rose into the high eighties, while the most common complaint is that prefix caching broke when a timestamp was injected into the system prompt. Pricing is structured around seats plus metered tokens, which aligns incentives with steps per completed task but obscures the cost of failed runs.
+
+Technical notes: context budgets default to 65,536 tokens with retrieval-first assembly; the supported autonomy ceiling is supervised agentic; and a dry run with side effects suppressed is required before any irreversible action. Observed verified-completion rate sits around 84% on the vendor's own published regression set, measured with sampling audit at 5% of runs.
+
+### A.43 Eastgate Analytics
+
+Eastgate Analytics positions itself as a tool-governance layer for aviation maintenance planning. The platform covers tool registry and permissions, with injection canary monitoring handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is a single tool-calling loop with a review gate.
+
+The documented differentiator is air-gapped deployment. Customers in e-commerce merchandising report that coverage extended to a long tail nobody had staffed, while the most common complaint is that the verification step was skipped whenever the model was confident. Pricing is structured around seats plus metered tokens, which aligns incentives with injection canary trip rate but obscures the token tail.
+
+Technical notes: context budgets default to 16,384 tokens with sub-agent offloading of search; the supported autonomy ceiling is supervised agentic; and a dry run with side effects suppressed is required before any irreversible action. Observed verified-completion rate sits around 76% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.44 Granite Labs
+
+Granite Labs positions itself as an evaluation and observability plane for municipal permitting. The platform covers spend caps and quota enforcement, with per-step budget enforcement handled as a first-class concern rather than left to application teams. Deployments are typically supervised agentic, and the reference architecture is a single tool-calling loop with a review gate.
+
+The documented differentiator is bring-your-own-model support. Customers in utility grid operations report that median handling time fell by about a third, while the most common complaint is that tool descriptions drifted out of sync with the underlying API. Pricing is structured around seats plus metered tokens, which aligns incentives with steps per completed task but obscures the token tail.
+
+Technical notes: context budgets default to 262,144 tokens with asymmetric compaction; the supported autonomy ceiling is assistive; and a second-agent review is required before any irreversible action. Observed verified-completion rate sits around 79% on the vendor's own published regression set, measured with a calibrated model grader.
+
+### A.45 Pinnacle Financial
+
+Pinnacle Financial positions itself as a tool-governance layer for payments risk and disputes. The platform covers model routing and fallback, with per-step budget enforcement handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is a retrieval-first loop with grep-style navigation over an indexed corpus.
+
+The documented differentiator is an opinionated evaluation harness. Customers in municipal permitting report that first-pass acceptance rose into the high eighties, while the most common complaint is that memory writes accumulated stale preferences and had to be garbage-collected. Pricing is structured around seats plus metered tokens, which aligns incentives with context budget utilisation but obscures the token tail.
+
+Technical notes: context budgets default to 16,384 tokens with asymmetric compaction; the supported autonomy ceiling is bounded autonomous; and a policy-engine decision is required before any irreversible action. Observed tool selection accuracy sits around 96% on the vendor's own published regression set, measured with sampling audit at 5% of runs.
+
+### A.46 Longford Insurance
+
+Longford Insurance positions itself as a tool-governance layer for telecommunications support. The platform covers tool registry and permissions, with per-step budget enforcement handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is a durable workflow with persisted checkpoints and human approval timers.
+
+The documented differentiator is native durable workflows. Customers in retail banking report that backlog age dropped from weeks to days, while the most common complaint is that the agent silently narrowed scope on ambiguous items. Pricing is structured around seats plus metered tokens, which aligns incentives with grader-human agreement but obscures egress charges.
+
+Technical notes: context budgets default to 16,384 tokens with summary-on-overflow; the supported autonomy ceiling is bounded autonomous; and a second-agent review is required before any irreversible action. Observed context budget utilisation sits around 65% on the vendor's own published regression set, measured with sampling audit at 5% of runs.
+
+### A.47 Cobalt Public Services
+
+Cobalt Public Services positions itself as an agent runtime and gateway for agricultural supply chain. The platform covers evaluation harnesses and regression sets, with identity propagation handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is a durable workflow with persisted checkpoints and human approval timers.
+
+The documented differentiator is fine-grained tool permissions. Customers in higher education administration report that median handling time fell by about a third, while the most common complaint is that memory writes accumulated stale preferences and had to be garbage-collected. Pricing is structured around resolved items, which aligns incentives with steps per completed task but obscures evaluation overhead.
+
+Technical notes: context budgets default to 65,536 tokens with retrieval-first assembly; the supported autonomy ceiling is assistive; and a policy-engine decision is required before any irreversible action. Observed grader-human agreement sits around 92% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.48 Dunmore Energy
+
+Dunmore Energy positions itself as an agent runtime and gateway for telecommunications support. The platform covers model routing and fallback, with prefix-cache stability handled as a first-class concern rather than left to application teams. Deployments are typically bounded autonomous, and the reference architecture is a supervisor delegating to task-scoped sub-agents.
+
+The documented differentiator is fine-grained tool permissions. Customers in e-commerce merchandising report that first-pass acceptance rose into the high eighties, while the most common complaint is that reviewers rubber-stamped output until a sampling audit was introduced. Pricing is structured around resolved items, which aligns incentives with verified-completion rate but obscures evaluation overhead.
+
+Technical notes: context budgets default to 65,536 tokens with sub-agent offloading of search; the supported autonomy ceiling is assistive; and human confirmation is required before any irreversible action. Observed first-pass acceptance sits around 62% on the vendor's own published regression set, measured with sampling audit at 5% of runs.
+
+### A.49 Tessera Biosciences
+
+Tessera Biosciences positions itself as a self-hosted inference and orchestration stack for semiconductor process engineering. The platform covers trajectory storage and replay, with identity propagation handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is an adversarial reviewer checking a producer agent's output.
+
+The documented differentiator is fine-grained tool permissions. Customers in aviation maintenance planning report that reviewer throughput roughly doubled, while the most common complaint is that the verification step was skipped whenever the model was confident. Pricing is structured around runtime hours, which aligns incentives with irreversible-action escalation rate but obscures the cost of failed runs.
+
+Technical notes: context budgets default to 32,768 tokens with retrieval-first assembly; the supported autonomy ceiling is assistive; and human confirmation is required before any irreversible action. Observed verified-completion rate sits around 63% on the vendor's own published regression set, measured with trajectory grading.
+
+### A.50 Harbour Public Services
+
+Harbour Public Services positions itself as a durable-execution substrate for agents for capital markets research. The platform covers trajectory storage and replay, with per-step budget enforcement handled as a first-class concern rather than left to application teams. Deployments are typically supervised agentic, and the reference architecture is a router that triages locally and escalates hard steps to a frontier model.
+
+The documented differentiator is bring-your-own-model support. Customers in agricultural supply chain report that first-pass acceptance rose into the high eighties, while the most common complaint is that cost per run developed a long tail that medians hid. Pricing is structured around a flat platform fee with metered sandboxes, which aligns incentives with cost per resolved item but obscures egress charges.
+
+Technical notes: context budgets default to 65,536 tokens with asymmetric compaction; the supported autonomy ceiling is bounded autonomous; and a second-agent review is required before any irreversible action. Observed grader-human agreement sits around 91% on the vendor's own published regression set, measured with sampling audit at 5% of runs.
+
+### A.51 Juniper Software
+
+Juniper Software positions itself as a tool-governance layer for capital markets research. The platform covers trajectory storage and replay, with egress control handled as a first-class concern rather than left to application teams. Deployments are typically supervised agentic, and the reference architecture is a router that triages locally and escalates hard steps to a frontier model.
+
+The documented differentiator is air-gapped deployment. Customers in e-commerce merchandising report that coverage extended to a long tail nobody had staffed, while the most common complaint is that tool descriptions drifted out of sync with the underlying API. Pricing is structured around a flat platform fee with metered sandboxes, which aligns incentives with trajectory pass rate but obscures sandbox cost at peak.
+
+Technical notes: context budgets default to 16,384 tokens with asymmetric compaction; the supported autonomy ceiling is assistive; and a second-agent review is required before any irreversible action. Observed verified-completion rate sits around 61% on the vendor's own published regression set, measured with a human gold set of 200 tasks.
+
+### A.52 Nightjar Manufacturing
+
+Nightjar Manufacturing positions itself as a durable-execution substrate for agents for clinical trial coordination. The platform covers evaluation harnesses and regression sets, with prefix-cache stability handled as a first-class concern rather than left to application teams. Deployments are typically assistive, and the reference architecture is an adversarial reviewer checking a producer agent's output.
+
+The documented differentiator is fine-grained tool permissions. Customers in media rights management report that reviewer throughput roughly doubled, while the most common complaint is that the agent silently narrowed scope on ambiguous items. Pricing is structured around tool-call volume, which aligns incentives with p95 end-to-end latency but obscures evaluation overhead.
+
+Technical notes: context budgets default to 32,768 tokens with retrieval-first assembly; the supported autonomy ceiling is assistive; and a policy-engine decision is required before any irreversible action. Observed trajectory pass rate sits around 92% on the vendor's own published regression set, measured with trajectory grading.

@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LLM GPU Benchmark</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <h1>LLM GPU Benchmark</h1>
+    <span class="ver">LM Studio · prefill / decode / watts</span>
+  </div>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-panel="summary" aria-selected="false">Summary</button>
+    <button class="tab" role="tab" data-panel="run" aria-selected="true">Run</button>
+    <button class="tab" role="tab" data-panel="results" aria-selected="false">Results</button>
+    <button class="tab" role="tab" data-panel="compare" aria-selected="false">Compare</button>
+  </div>
+  <div class="spacer"></div>
+  <span class="pill" id="pill-gpu"><span class="dot"></span><span>detecting…</span></span>
+  <span class="pill" id="pill-lms"><span class="dot"></span><span>LM Studio</span></span>
+  <span class="pill" id="pill-power" hidden><span class="num">—</span> W</span>
+  <button class="btn-sm" id="theme-toggle" title="Switch light / dark">◐</button>
+</div>
+
+<main>
+
+<!-- ============================ SUMMARY ============================ -->
+<section class="panel" id="panel-summary">
+  <div class="card" style="margin-bottom:16px">
+    <header><h3>Summary — everything on one chart</h3><div class="spacer"></div>
+      <a id="summary-export" class="btn-sm"
+         style="text-decoration:none;padding:5px 10px;border:1px solid var(--border);border-radius:8px"
+         href="/api/export.csv">Export CSV</a>
+    </header>
+    <p class="hint">Every selected model, setup and measure overlaid on one figure.
+      Measures that share a unit go on the same axis; a different unit gets its own chart,
+      because two scales on one axis invent a relationship that is not in the data.</p>
+    <div class="field">
+      <label>Measures</label>
+      <div class="chips" id="summary-metrics"></div>
+    </div>
+    <div class="field">
+      <label>Setups</label>
+      <div class="chips" id="summary-runs"></div>
+    </div>
+    <div class="field" style="margin-bottom:0">
+      <label>Models <span class="note" style="font-weight:400">— none ticked means all</span></label>
+      <div class="chips" id="summary-models"></div>
+    </div>
+  </div>
+  <div id="summary-body"></div>
+</section>
+
+<!-- ============================= RUN ============================= -->
+<section class="panel active" id="panel-run">
+  <div id="env-banners"></div>
+
+  <div class="card" style="margin-bottom:16px">
+    <header><h3>This machine</h3><div class="spacer"></div>
+      <span class="dim" style="font-size:12px" id="machine-sub"></span>
+    </header>
+    <div class="live-stats" id="machine-stats"></div>
+  </div>
+
+  <div class="grid cols-2" style="margin-bottom:16px">
+    <div class="card">
+      <header><h3>Models</h3><div class="spacer"></div>
+        <button class="btn-sm" data-select="defaults">Defaults</button>
+        <button class="btn-sm" data-select="all">All</button>
+        <button class="btn-sm" data-select="none">None</button>
+      </header>
+      <p class="hint">Models LM Studio has indexed. The four defaults are pre-selected;
+        anything still downloading appears once it finishes.</p>
+      <div class="model-list" id="model-list"></div>
+    </div>
+
+    <div class="card">
+      <header><h3>Benchmark</h3></header>
+      <div class="field">
+        <label>Prefill sizes — how long a prompt to feed the model</label>
+        <div class="chips" id="size-chips"></div>
+        <div class="btn-row" style="margin-top:9px">
+          <span class="note">Quick pick:</span>
+          <span class="btn-row" id="size-quick" style="gap:6px"></span>
+        </div>
+        <span class="note" style="margin-top:7px">Each selected size is one measurement.
+          Larger prefills on a small card will offload to system RAM — or fail to load,
+          which is recorded as a result rather than treated as an error.</span>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="max-tokens">Output tokens</label>
+          <input type="number" id="max-tokens" min="16" max="4096" step="16" value="256">
+          <span class="note">Decode sample length</span>
+        </div>
+        <div class="field">
+          <label for="repeats">Repeats</label>
+          <input type="number" id="repeats" min="1" max="10" value="1">
+          <span class="note">Per model × size</span>
+        </div>
+        <div class="field">
+          <label for="offload">GPU offload</label>
+          <select id="offload">
+            <option value="auto">Auto (LM Studio decides)</option>
+            <option value="max">Max (full GPU, fail if it will not fit)</option>
+            <option value="0.75">75% of layers</option>
+            <option value="0.5">50% of layers</option>
+            <option value="0.25">25% of layers</option>
+            <option value="off">CPU only</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Speculative decoding (MTP)</label>
+        <div class="chips" id="mtp-chips">
+          <label class="chip" data-on="1"><input type="radio" name="mtp" value="off" checked>Off</label>
+          <label class="chip" data-on="0"><input type="radio" name="mtp" value="on">On</label>
+          <label class="chip" data-on="0"><input type="radio" name="mtp" value="both">Both — A/B in one run</label>
+        </div>
+        <span class="note">Off by default. Only a GGUF with a bundled MTP head supports it;
+          for any other model the MTP pass is recorded as “not applicable”. Results are kept
+          separate per MTP mode, so an MTP run never overwrites a plain one.</span>
+      </div>
+
+      <details class="adv">
+        <summary>Advanced</summary>
+        <div>
+          <div class="row" style="margin-bottom:12px">
+            <div class="field">
+              <label for="per-test-timeout">Per-test timeout (s)</label>
+              <input type="number" id="per-test-timeout" min="60" max="7200" step="60" value="1800">
+            </div>
+            <div class="field">
+              <label for="load-timeout">Load timeout (s)</label>
+              <input type="number" id="load-timeout" min="60" max="3600" step="30" value="900">
+            </div>
+            <div class="field">
+              <label for="headroom">Context headroom</label>
+              <input type="number" id="headroom" min="0" max="8192" step="128" value="512">
+            </div>
+          </div>
+          <div class="row" style="margin-bottom:12px">
+            <div class="field">
+              <label for="other-idle">Non-GPU system power (W)</label>
+              <input type="number" id="other-idle" min="0" max="500" step="5" value="60">
+              <span class="note">Board + RAM + disks + CPU at idle</span>
+            </div>
+            <div class="field">
+              <label for="cpu-tdp">CPU TDP (W)</label>
+              <input type="number" id="cpu-tdp" min="10" max="500" step="5" value="140">
+              <span class="note">Scaled by measured CPU load</span>
+            </div>
+            <div class="field">
+              <label for="power-interval">Power sampling (ms)</label>
+              <input type="number" id="power-interval" min="50" max="1000" step="25" value="150">
+            </div>
+          </div>
+          <div class="chips">
+            <label class="chip" data-on="1"><input type="checkbox" id="fallback" checked>Fall back to more CPU offload if a load fails</label>
+            <label class="chip" data-on="1"><input type="checkbox" id="stop-after-fail" checked>Stop a model after its first failure</label>
+            <label class="chip" data-on="1"><input type="checkbox" id="warmup" checked>Warm up after each load</label>
+            <label class="chip" data-on="1"><input type="checkbox" id="no-think" checked>Disable model reasoning</label>
+          </div>
+          <p class="hint" style="margin-top:12px">Reasoning is disabled by default
+            (<code>reasoning_effort: none</code>). With it on, thinking consumes most of the
+            output budget, so decode tk/s would describe the chain of thought rather than the
+            answer — and stop being comparable between models that think by default and models
+            that do not.</p>
+          <p class="hint" style="margin-top:12px">GPU watts are <b>measured</b> —
+            <code>nvidia-smi</code> on Windows/Linux, <code>powermetrics</code> on macOS.
+            Total system watts are <b>estimated</b>: GPU + non-GPU idle + CPU TDP × measured
+            CPU load, except on macOS where the CPU rail is measured directly and the TDP
+            field is ignored. Set the constants from a wall meter if you have one.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <header><h3>Launch</h3></header>
+    <div class="row" style="margin-bottom:14px">
+      <div class="field" style="flex:2 1 260px">
+        <label for="run-label">Run label</label>
+        <input type="text" id="run-label" placeholder="e.g. GTX 1070 Ti — stock">
+      </div>
+      <div class="field" style="flex:3 1 300px">
+        <label for="run-notes">Notes</label>
+        <input type="text" id="run-notes" placeholder="e.g. riser card, 180 W limit, ambient 22 °C">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" id="start-btn">Start benchmark</button>
+      <button id="cancel-btn" class="btn-danger hidden">Stop</button>
+      <span class="dim" id="plan-summary"></span>
+    </div>
+  </div>
+
+  <div class="card hidden" id="live-card" style="margin-bottom:16px">
+    <header><h3>Progress</h3><div class="spacer"></div>
+      <span class="st st-running" id="live-phase"></span>
+    </header>
+    <div class="progress"><div id="progress-bar"></div></div>
+    <div class="live-stats" id="live-stats"></div>
+    <div class="log" id="log"></div>
+  </div>
+
+  <div class="card hidden" id="live-results">
+    <header><h3>Results this run</h3><div class="spacer"></div>
+      <button class="btn-sm" id="goto-results">Open in Results →</button>
+    </header>
+    <div class="table-wrap"><table id="live-table"></table></div>
+  </div>
+</section>
+
+<!-- ============================ RESULTS ============================ -->
+<section class="panel" id="panel-results">
+  <div class="grid" style="grid-template-columns:minmax(260px,320px) 1fr; align-items:start">
+    <div class="card">
+      <header><h3>Cached runs</h3><div class="spacer"></div>
+        <button class="btn-sm" id="refresh-runs">↻</button>
+      </header>
+      <p class="hint">One entry per benchmark session, kept on disk under
+        <code>results/runs/</code> so they survive a card swap.</p>
+      <div class="runs" id="runs-list"></div>
+    </div>
+    <div id="run-detail"></div>
+  </div>
+</section>
+
+<!-- ============================ COMPARE ============================ -->
+<section class="panel" id="panel-compare">
+  <div class="card" style="margin-bottom:16px">
+    <header><h3>Compare runs</h3><div class="spacer"></div>
+      <a id="export-csv" class="btn-sm" style="text-decoration:none;padding:5px 10px;border:1px solid var(--border);border-radius:8px" href="/api/export.csv">Export CSV</a>
+    </header>
+    <div class="field">
+      <label>Runs (colour follows the run, consistently across every chart)</label>
+      <div class="chips" id="compare-runs"></div>
+    </div>
+    <div class="toolbar" style="margin:14px 0 0">
+      <div class="seg" id="metric-seg"></div>
+      <div class="spacer" style="flex:1"></div>
+      <label class="dim" style="font-size:12px">MTP
+        <select id="mtp-filter">
+          <option value="all">Both modes</option>
+          <option value="off">Off only</option>
+          <option value="on">On only</option>
+        </select>
+      </label>
+      <label class="dim" style="font-size:12px">Models
+        <select id="model-filter"><option value="">All</option></select>
+      </label>
+    </div>
+  </div>
+  <div id="compare-body"></div>
+</section>
+
+</main>
+
+<script src="/static/charts.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

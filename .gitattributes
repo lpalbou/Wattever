@@ -1,0 +1,13 @@
+# Normalise to LF in the repo. The macOS launcher is the one that really
+# matters: a CRLF shell script fails on Mac with "bash: \r: command not found".
+* text=auto eol=lf
+
+*.command text eol=lf
+*.sh      text eol=lf
+*.bat     text eol=crlf
+
+*.png binary
+
+# Generated benchmark text: committed so every contributor sends the exact same
+# prompts, but it should not count towards the repo's language stats.
+corpora/** linguist-generated=true

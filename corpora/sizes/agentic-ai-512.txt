@@ -1,0 +1,36 @@
+# The State of Agentic AI — October 2026
+
+> **Benchmark fixture.** This document exists to be summarised by a local model at
+> controlled context lengths. It is a synthetic reference report: the shape of the
+> argument and the technical vocabulary are realistic, but individual figures,
+> company details and incident narratives are illustrative and should not be cited
+> as verified fact. Prefill throughput does not depend on whether prose is true, so
+> this costs the benchmark nothing — but it matters if you read the output.
+
+## Executive summary
+
+Three years after tool-calling language models became reliable enough to put in
+production, the agentic layer of the software industry has settled into a shape
+that would have been hard to predict in 2024. The dominant architecture is not a
+society of autonomous agents negotiating with one another. It is a single capable
+model in a tight loop with a small set of well-described tools, a carefully
+engineered context window, and a human somewhere on the escalation path. Almost
+every successful deployment looks like that loop wrapped in ordinary software
+engineering: retries, idempotency keys, audit logs, and a kill switch.
+
+The capability story of 2026 has been less about raw model scale and more about
+inference-time compute, context length, and the quality of the scaffolding. Models
+that can hold two hundred thousand tokens of working state and spend a variable
+amount of thinking per step have made long-horizon tasks tractable: multi-file
+refactors, multi-day research syntheses, claims adjudication, migration work. The
+hard problems that remain are unglamorous. Evaluation is still mostly bespoke.
+Prompt injection remains unsolved in the general case and is now the primary
+security concern for any agent with both private data access and untrusted input.
+Cost discipline, not capability, decides most build-versus-buy arguments.
+
+The most consequential shift for individual practitioners has been the collapse in
+the cost of competent local inference. Open-weight models in the four-to-forty
+billion parameter range, quantised to four bits and served by commodity runtimes,
+now handle summarisation, extraction, classification, routing and much light
+coding at a quality that was frontier-grade eighteen months earlier. Mixture-of-
+experts architectures with small active parameter
