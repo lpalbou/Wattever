@@ -117,6 +117,10 @@ async function init() {
     if (id) selectRun(id);
   });
   $$("[data-select]").forEach((btn) => btn.addEventListener("click", () => selectModels(btn.dataset.select)));
+  ["#max-tokens", "#repeats", "#no-think"].forEach((sel) => {
+    const node = $(sel);
+    if (node) node.addEventListener("change", updatePlan);
+  });
   $("#model-filter").addEventListener("change", (e) => { state.modelFilter = e.target.value; renderCompare(); });
   $("#mtp-filter").addEventListener("change", (e) => { state.mtpFilter = e.target.value; renderCompare(); });
   $$("#mtp-chips input").forEach((input) => input.addEventListener("change", () => {
@@ -349,6 +353,45 @@ function mtpModes() {
   return choice === "both" ? ["off", "on"] : [choice];
 }
 
+/* Guard the one thing the whole dataset rests on.
+ *
+ * Output length and the reasoning switch change what decode tk/s *means*, so a
+ * run taken with different values cannot be compared with the ones already
+ * cached — and nothing about the form makes that obvious, because the field
+ * remembers whatever was used last. Say so before the benchmark runs, not
+ * after, and offer to put it back in one click. */
+function checkComparability() {
+  const box = $("#comparability");
+  if (!box) return;
+  const prior = state.runs.filter((r) => r.n_ok > 0 && r.max_tokens);
+  if (!prior.length) { box.innerHTML = ""; return; }
+  const ref = prior[0];                       // most recent run with results
+  const mine = { max_tokens: Number($("#max-tokens").value), no_think: $("#no-think").checked };
+  const diffs = [];
+  if (ref.max_tokens && mine.max_tokens !== ref.max_tokens) {
+    diffs.push(`output tokens <b>${mine.max_tokens}</b> vs <b>${ref.max_tokens}</b> in your existing runs`);
+  }
+  if (ref.reasoning_disabled !== undefined && ref.reasoning_disabled !== null
+      && mine.no_think !== !!ref.reasoning_disabled) {
+    diffs.push(`reasoning <b>${mine.no_think ? "off" : "on"}</b> vs <b>${ref.reasoning_disabled ? "off" : "on"}</b>`);
+  }
+  if (!diffs.length) { box.innerHTML = ""; return; }
+  box.innerHTML = `<div class="banner warn"><div>
+    <b>These settings will not be comparable with “${esc(ref.label || ref.id)}”</b> —
+    ${diffs.join(", ")}. Decode speed depends on both, so the two runs cannot sit on the
+    same chart honestly. Prefill speed is unaffected.
+    <div style="margin-top:9px"><button class="btn-sm" id="match-prior">Match existing runs</button></div>
+  </div></div>`;
+  $("#match-prior").addEventListener("click", () => {
+    if (ref.max_tokens) $("#max-tokens").value = ref.max_tokens;
+    if (ref.reasoning_disabled !== undefined && ref.reasoning_disabled !== null) {
+      $("#no-think").checked = !!ref.reasoning_disabled;
+      $("#no-think").closest(".chip").dataset.on = ref.reasoning_disabled ? "1" : "0";
+    }
+    updatePlan();
+  });
+}
+
 function updatePlan() {
   const modes = mtpModes();
   const tests = state.models.size * state.sizes.size * modes.length
@@ -358,6 +401,7 @@ function updatePlan() {
     ? `${tests} test${tests === 1 ? "" : "s"} · ${state.models.size} model${state.models.size === 1 ? "" : "s"} × ${state.sizes.size} size${state.sizes.size === 1 ? "" : "s"}${modes.length > 1 ? " × MTP off+on" : (modes[0] === "on" ? " · MTP on" : "")} · largest prefill ${fmtTokens(biggest)}`
     : "Select at least one model and one size.";
   $("#start-btn").disabled = !tests;
+  checkComparability();
 }
 
 /* ---------------- run control ---------------- */
@@ -522,6 +566,7 @@ async function loadRuns() {
   state.runs = runs;
   renderRunsList();
   renderCompareRuns();
+  checkComparability();
   if ($("#panel-summary").classList.contains("active")) renderSummary();
   if (state.selected) selectRun(state.selected);
   else if (runs.length) selectRun(runs[0].id);

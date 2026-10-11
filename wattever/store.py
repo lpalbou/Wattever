@@ -147,6 +147,9 @@ def summarise(run):
         "sizes": sorted({r.get("target_tokens") for r in results
                          if r.get("target_tokens")}),
         "mtp_modes": sorted({"on" if r.get("mtp") else "off" for r in results}),
+        # the settings that decide whether this run can be compared with another
+        "max_tokens": (run.get("config") or {}).get("max_tokens"),
+        "reasoning_disabled": (run.get("config") or {}).get("disable_thinking"),
         "n_results": len(results),
         "n_ok": len(ok),
         "n_failed": len(results) - len(ok),
