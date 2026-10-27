@@ -1104,15 +1104,67 @@ async function openExtendDialog(run) {
   $("#extend-start").textContent = "Add tests";
   dialog.showModal();
   try {
-    const plan = await api("/api/bench/extend-plan?run_id=" + encodeURIComponent(run.id));
+    const [plan, source] = await Promise.all([
+      api("/api/bench/extend-plan?run_id=" + encodeURIComponent(run.id)),
+      api("/api/runs/" + encodeURIComponent(run.id)),
+    ]);
     if (!dialog.open || state.extension !== pending) return;
-    state.extension = {runId: run.id, sourceConfig: run.config || {}, models: (plan.models || []).filter(m => m.type !== "embeddings"),
-      modelModes: {}, sizes: new Set(plan.sizes || []), concurrency: new Set(plan.concurrency_levels || [1]), action: "add", revision: 0};
+    const cfg = source.config || {}, installed = (plan.models || []).filter(m => m.type !== "embeddings");
+    const existing = cfg.models || [];
+    const models = [...existing.map(id => installed.find(model => model.id === id) || {id, unavailable: true}),
+      ...installed.filter(model => !existing.includes(model.id))];
+    state.extension = {runId: run.id, source, sourceConfig: cfg, models,
+      modelModes: originalModelSelection(cfg, models), sizes: new Set(plan.sizes || []), concurrency: new Set(plan.concurrency_levels || [1]), action: "add", revision: 0};
     renderExtendForm();
     previewExtension();
   } catch (error) {
     if (state.extension === pending) $("#extend-content").innerHTML = banner("err", "Could not load available tests", esc(error.message));
   }
+}
+
+function benchmarkTechniques(cfg, model) {
+  return [...new Set((cfg.model_modes?.[model] || cfg.mtp_modes || ["off"]).map(mode =>
+    mode === true || ["on", "true", "1", "mtp"].includes(String(mode).toLowerCase()) ? "on" : "off"))];
+}
+
+function originalModelSelection(cfg, models) {
+  return Object.fromEntries(models.filter(model => !model.unavailable && (cfg.models || []).includes(model.id))
+    .map(model => [model.id, benchmarkTechniques(cfg, model.id)]));
+}
+
+function extensionModelProgress(extension, model) {
+  const cfg = extension.sourceConfig, original = (cfg.models || []).includes(model.id);
+  const modes = [...new Set([...(original ? benchmarkTechniques(cfg, model.id) : []),
+    ...(extension.modelModes[model.id] || [])])];
+  if (!modes.length) modes.push("off");
+  const repeats = Math.max(1, Number(cfg.repeats) || 1), cases = new Map();
+  const rank = {ok: 4, failed: 3, skipped: 2, cancelled: 1};
+  for (const row of extension.source.results || []) {
+    if (row.model !== model.id || !extension.sizes.has(row.target_tokens) || !extension.concurrency.has(row.concurrency || 1)) continue;
+    const mode = row.mtp ? "on" : "off";
+    if (!modes.includes(mode)) continue;
+    for (const repeat of row.repeat == null ? Array.from({length: repeats}, (_, i) => i) : [row.repeat]) {
+      if (!Number.isInteger(repeat) || repeat < 0 || repeat >= repeats) continue;
+      const key = [mode, row.target_tokens, row.concurrency || 1, repeat].join(":");
+      if ((rank[row.status] || 0) > (rank[cases.get(key)] || 0)) cases.set(key, row.status);
+    }
+  }
+  const counts = {ok: 0, failed: 0, skipped: 0, unfinished: 0,
+    total: modes.length * extension.sizes.size * extension.concurrency.size * repeats};
+  for (const status of cases.values()) if (status in counts) counts[status]++;
+  counts.unfinished = counts.total - counts.ok - counts.failed - counts.skipped;
+  return counts;
+}
+
+function extensionProgressMarkup(extension, model) {
+  const progress = extensionModelProgress(extension, model);
+  const original = (extension.sourceConfig.models || []).includes(model.id);
+  const parts = [`<span class="extend-model-origin">${original ? "In this benchmark" : "New model"}${model.unavailable ? " / Not installed" : ""}</span>`];
+  if (progress.ok) parts.push(`<span class="extend-count-ok">${progress.ok} successful</span>`);
+  if (progress.failed) parts.push(`<span>${progress.failed} failed</span>`);
+  if (progress.skipped) parts.push(`<span>${progress.skipped} skipped</span>`);
+  parts.push(`<span class="extend-count-pending">${progress.unfinished} unfinished</span>`);
+  return `<div class="extend-model-progress" title="For the prompt sizes, query counts and techniques shown here. Successful tests are retained unless you choose Rerun selected tests.">${parts.join("<span aria-hidden=\"true\"> · </span>")}</div>`;
 }
 
 function extendBody(extension) {
@@ -1125,23 +1177,19 @@ function renderExtendForm() {
   const extension = state.extension;
   const sizes = [...new Set([...(state.env.size_presets || []), ...extension.sizes])].sort((a,b) => a-b);
   const levels = [...new Set([...CONCURRENCY_PRESETS, ...extension.concurrency])].sort((a,b) => a-b);
-  $("#extend-content").innerHTML = `<div class="field"><label>Models and techniques</label><p class="hint">Choose Standard and/or MTP separately for each model. MTP support depends on the model and runtime.</p><button type="button" class="btn-sm" id="extend-select-existing" title="Select installed benchmark models and their techniques">Select benchmark models</button><div class="extend-models">${extension.models.map((m, i) => `<div class="extend-model"><strong>${esc(m.id)}</strong><label title="Standard decoding without MTP"><input type="checkbox" data-model="${i}" data-mode="off" ${(extension.modelModes[m.id] || []).includes("off") ? "checked" : ""}> Standard</label><label title="Speculative decoding; model and runtime support is not guaranteed"><input type="checkbox" data-model="${i}" data-mode="on" ${(extension.modelModes[m.id] || []).includes("on") ? "checked" : ""}> MTP</label></div>`).join("") || '<p class="hint">No installed language models found.</p>'}</div></div><div class="field"><label>Prompt sizes</label><p class="hint">Select a maximum to include every smaller size.</p><div class="chips" id="extend-sizes"></div></div><div class="field"><label>Concurrent queries</label><p class="hint">Select a maximum to include every smaller level.</p><div class="chips" id="extend-concurrency"></div></div><fieldset class="extend-actions"><legend>Action</legend><label><input type="radio" name="extend-action" value="add" ${extension.action === "add" ? "checked" : ""}> Add missing tests</label><label><input type="radio" name="extend-action" value="retry" ${extension.action === "retry" ? "checked" : ""}> Retry failed tests <span class="hint">(includes missing and skipped)</span></label><label><input type="radio" name="extend-action" value="rerun" ${extension.action === "rerun" ? "checked" : ""}> Rerun selected tests <span class="hint">(includes successful, failed, skipped and missing)</span></label>${extension.action === "rerun" ? '<p class="banner warn">Selected measurements will be replaced; previous attempts are kept.</p>' : ""}</fieldset>`;
+  $("#extend-content").innerHTML = `<div class="field"><label>Models and techniques</label><p class="hint">Your benchmark models are selected. Add missing tests keeps saved results and continues unfinished work. New models are unchecked.</p><p class="extend-continuity" role="status">Successful tests will not run again unless you choose Rerun selected tests.</p><div class="btn-row"><button type="button" class="btn-sm" id="extend-select-existing" title="Restore the benchmark models and techniques; saved measurements remain untouched">Restore benchmark selection</button><button type="button" class="btn-sm" id="extend-clear-selection" title="Clear which models will run; saved results are retained">Clear selection</button></div><p class="hint extend-progress-caption">Progress below covers saved techniques and selected additions at the prompt sizes and query counts shown below. Unchecking a model keeps its results.</p><div class="extend-models">${extension.models.map((m, i) => `<div class="extend-model" data-progress-model="${i}"><div class="extend-model-info"><strong>${esc(m.id)}</strong>${extensionProgressMarkup(extension, m)}</div><label title="Standard decoding without MTP"><input type="checkbox" data-model="${i}" data-mode="off" ${(extension.modelModes[m.id] || []).includes("off") ? "checked" : ""} ${m.unavailable ? "disabled" : ""}> Standard</label><label title="Speculative decoding; model and runtime support is not guaranteed"><input type="checkbox" data-model="${i}" data-mode="on" ${(extension.modelModes[m.id] || []).includes("on") ? "checked" : ""} ${m.unavailable ? "disabled" : ""}> MTP</label></div>`).join("") || '<p class="hint">No installed language models found.</p>'}</div></div><div class="field"><label>Prompt sizes</label><p class="hint">Select a maximum to include every smaller size.</p><div class="chips" id="extend-sizes"></div></div><div class="field"><label>Concurrent queries</label><p class="hint">Select a maximum to include every smaller level.</p><div class="chips" id="extend-concurrency"></div></div><fieldset class="extend-actions"><legend>Action</legend><label><input type="radio" name="extend-action" value="add" ${extension.action === "add" ? "checked" : ""}> Add missing tests</label><label><input type="radio" name="extend-action" value="retry" ${extension.action === "retry" ? "checked" : ""}> Retry failed tests <span class="hint">(includes missing and skipped)</span></label><label><input type="radio" name="extend-action" value="rerun" ${extension.action === "rerun" ? "checked" : ""}> Rerun selected tests <span class="hint">(includes successful, failed, skipped and missing)</span></label>${extension.action === "rerun" ? '<p class="banner warn">Selected measurements will be replaced; previous attempts are kept.</p>' : ""}</fieldset>`;
   $("#extend-select-existing").addEventListener("click", () => {
-    const cfg = extension.sourceConfig;
-    const existing = new Set(cfg.models || Object.keys(cfg.model_modes || {}));
-    extension.modelModes = {};
-    extension.models.forEach(model => {
-      if (!existing.has(model.id)) return;
-      const modes = cfg.model_modes?.[model.id] || cfg.mtp_modes || ["off"];
-      extension.modelModes[model.id] = modes.filter(mode => mode === "off" || mode === "on");
-    });
+    extension.modelModes = originalModelSelection(extension.sourceConfig, extension.models);
     renderExtendForm(); previewExtension();
   });
+  $("#extend-clear-selection").addEventListener("click", () => { extension.modelModes = {}; renderExtendForm(); previewExtension(); });
   $$("#extend-content input[data-model]").forEach(input => input.addEventListener("change", () => {
     const id = extension.models[Number(input.dataset.model)].id;
     const modes = new Set(extension.modelModes[id] || []);
     if (input.checked) modes.add(input.dataset.mode); else modes.delete(input.dataset.mode);
     if (modes.size) extension.modelModes[id] = [...modes]; else delete extension.modelModes[id];
+    const info = input.closest(".extend-model").querySelector(".extend-model-info");
+    info.querySelector(".extend-model-progress").outerHTML = extensionProgressMarkup(extension, extension.models[Number(input.dataset.model)]);
     previewExtension();
   }));
   renderRange("#extend-sizes", sizes, extension.sizes, value => { extension.sizes = through(sizes, value); renderExtendForm(); previewExtension(); }, fmtTokens, "prompt tokens");

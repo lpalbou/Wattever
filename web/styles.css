@@ -604,6 +604,17 @@ tfoot td { white-space: normal; font-size: 11px; text-align: left; }
 .extend-model label { white-space: nowrap; }
 .extend-dialog input[type=checkbox] { accent-color: var(--accent); }
 .extend-preview { margin: 14px 0; }
+.extend-continuity { margin: 10px 0; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--surface-2); font-size: 12px; }
+.extend-progress-caption { margin: 12px 0 6px; }
+.extend-model-info { min-width: 0; }
+.extend-model-progress { display: flex; flex-wrap: wrap; gap: 3px 5px; min-height: 18px; margin-top: 6px; color: var(--text-muted); font-size: 11px; line-height: 1.5; }
+.extend-model-origin { color: var(--text-secondary); }
+.extend-count-ok { color: var(--status-good); }
+.extend-count-pending { color: var(--text-secondary); }
+@media (max-width: 560px) {
+  .extend-model { grid-template-columns: 1fr auto; gap: 8px; }
+  .extend-model-info { grid-column: 1 / -1; }
+}
 
 .extend-actions { display: grid; gap: 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); margin: 12px 0; padding: 12px; }
 .extend-actions legend { color: var(--text-secondary); padding: 0 5px; }

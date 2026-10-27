@@ -17,3 +17,5 @@ The helper's request deadline uses successful same-model prefill throughput when
 Prompt presets are 512, 5k, 10k, 20k, 40k, 80k, 100k, 120k, 150k, 200k and 260k tokens; concurrency presets are 1 through 10, 15, 20, 30, 40, 50, 75 and 100 simultaneous queries. Compare cases at matching dimensions.
 
 Older schemas and planner settings remain readable. Extending a legacy benchmark can produce sessions with different context planning; compare session settings rather than treating them as identical. See [API](api.md), [FAQ](faq.md), and [results guidance](../results/README.md).
+
+The Add / rerun tests dialog preselects installed benchmark models and their saved techniques. New models are unchecked; unavailable benchmark models remain visible. Per-model successful, failed, skipped and unfinished counts cover saved techniques and selected additions at the displayed prompt sizes and query counts. Changing or clearing this selection leaves recorded measurements intact. The preview shows which cases the chosen action will execute.

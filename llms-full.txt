@@ -149,6 +149,8 @@ Prompt presets are 512, 5k, 10k, 20k, 40k, 80k, 100k, 120k, 150k, 200k and 260k 
 
 Older schemas and planner settings remain readable. Extending a legacy benchmark can produce sessions with different context planning; compare session settings rather than treating them as identical. See [API](docs/api.md), [FAQ](docs/faq.md), and [results guidance](results/README.md).
 
+The Add / rerun tests dialog preselects installed benchmark models and their saved techniques. New models are unchecked; unavailable benchmark models remain visible. Per-model successful, failed, skipped and unfinished counts cover saved techniques and selected additions at the displayed prompt sizes and query counts. Changing or clearing this selection leaves recorded measurements intact. The preview shows which cases the chosen action will execute.
+
 ---
 
 ## docs/architecture.md
@@ -323,6 +325,10 @@ Treat participants with respect. Be constructive, welcome differing experience l
 Canonical source: [CHANGELOG.md](CHANGELOG.md)
 
 # Changelog
+
+## Unreleased
+
+- Preselects existing benchmark models when adding tests and shows each model's successful, failed, skipped and unfinished cases. New and unavailable models are distinguished; saved measurements remain intact when changing the selection.
 
 ## 2.4.0 - 2026-10-27
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Preselects existing benchmark models when adding tests and shows each model's successful, failed, skipped and unfinished cases. New and unavailable models are distinguished; saved measurements remain intact when changing the selection.
+
 ## 2.4.0 - 2026-10-27
 
 - Introduces measurement protocol 2, cross-platform hardware inventory, Linux support, concurrent queries and per-session provenance.

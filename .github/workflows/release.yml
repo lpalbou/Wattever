@@ -37,6 +37,7 @@ jobs:
       - run: node --check web/tables.js
       - run: node --check web/browser.js
       - run: node tests/test_ui.js
+      - run: node tests/test_extension_ui.js
       - run: node tests/test_tables.js
       - run: node tests/test_live_results.js
       - run: node tests/test_browser_backend.js
