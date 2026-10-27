@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 2.4.1 - 2026-10-27
+
+- Keeps viewport position and keyboard focus stable when toggling measures in Summary, Table and Compare.
+- Includes a labelled preliminary RTX 5060 Ti result snapshot with its incompleteness and measurement limitations recorded.
 
 - Preselects existing benchmark models when adding tests and shows each model's successful, failed, skipped and unfinished cases. New and unavailable models are distinguished; saved measurements remain intact when changing the selection.
 

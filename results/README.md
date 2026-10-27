@@ -101,3 +101,7 @@ records the settings used by that execution; result `session_id` links back to
 it. `execution_config` is the most recent workload selection. This provenance
 matters when extending an older planner run or adding MTP for one model.
 `remaining_tests` counts requested cases with no terminal result.
+
+## Preliminary results
+
+The `20261027-004834_rtx-5060-ti_0987cbf436_preliminary.json` file is an exploratory checkpoint, not a completed isolated hardware comparison. Its `publication` metadata identifies the source run, snapshot time and limitations. It contains an incomplete matrix and mixed planner versions; legacy concurrent context failures are not hardware-capacity evidence. The source benchmark continues independently.

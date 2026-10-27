@@ -9,7 +9,7 @@ Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/), start an O
 ## Full local helper quick start
 
 1. Install LM Studio, download the models you want to test, and run `lms bootstrap` once so the `lms` command is available.
-2. Get the [v2.4.0 source archive](https://github.com/lpalbou/Wattever/releases/tag/v2.4.0) or clone the repository. The source archive includes historical tracked results.
+2. Get the [v2.4.1 source archive](https://github.com/lpalbou/Wattever/releases/tag/v2.4.1) or clone the repository. The source archive includes historical tracked results.
 3. On Windows run `Wattever.bat`; on macOS run `Wattever.command`; on Linux run `sh Wattever.sh`. Alternatively run `python -m wattever.server` from the repository.
 4. Open the displayed local URL, select models and workloads on **Run**, and start. Leave the server running until the benchmark finishes. Results appear as cases complete.
 
@@ -23,6 +23,6 @@ See [Getting started](docs/getting-started.md) for setup and [Measurements and s
 
 ## For AI agents
 
-Register and use the [Wattever agent skill](https://github.com/lpalbou/Wattever/tree/v2.4.0/skills/wattever) to operate the local API safely. Copy `skills/wattever/` from the version you use into your agent's skills directory.
+Register and use the [Wattever agent skill](https://github.com/lpalbou/Wattever/tree/v2.4.1/skills/wattever) to operate the local API safely. Copy `skills/wattever/` from the version you use into your agent's skills directory.
 
 Wattever is [MIT licensed](LICENSE).

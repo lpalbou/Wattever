@@ -4,7 +4,7 @@ description: Operate Wattever local LM Studio benchmarks and interpret GPU throu
 license: MIT
 compatibility: Python 3.9+, LM Studio, local Wattever server; Windows, Linux, or macOS.
 metadata:
-  package-version: "2.4.0"
+  package-version: "2.4.1"
 ---
 
 # Wattever
@@ -15,7 +15,7 @@ Use Wattever to measure LM Studio prefill, decode and optional GPU power across 
 
 ## Install and verify
 
-Extract the v2.4.0 release source archive or clone `https://github.com/lpalbou/Wattever.git`; install Python 3.9+ and LM Studio, download models and run `lms bootstrap`. Launch `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux, or run `python -m wattever.server` from the repository. Keep the server open. Starting can reuse an existing instance and replace an idle older instance; do not restart it while a benchmark is active.
+Extract the v2.4.1 release source archive or clone `https://github.com/lpalbou/Wattever.git`; install Python 3.9+ and LM Studio, download models and run `lms bootstrap`. Launch `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux, or run `python -m wattever.server` from the repository. Keep the server open. Starting can reuse an existing instance and replace an idle older instance; do not restart it while a benchmark is active.
 
 Check the printed URL with this read-only probe. Replace the URL with the printed address; the server may select a different port. Compare the printed version with `metadata.package-version`; the installed version's documentation wins when they differ.
 
@@ -76,9 +76,9 @@ The helper applies a deadline based on prior comparable prefill and a decode ina
 
 ## Go deeper
 
-- [Getting started](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.0/docs/getting-started.md): setup and first run.
-- [Browser mode](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.0/docs/browser.md): hosted setup and limitations.
-- [Measurements](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.0/docs/measurements.md): metric boundaries and session semantics.
-- [API](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.0/docs/api.md): routes and side effects.
-- [Troubleshooting](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.0/docs/troubleshooting.md): symptoms and remedies.
-- [Full documentation](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.0/llms-full.txt): complete context.
+- [Getting started](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/docs/getting-started.md): setup and first run.
+- [Browser mode](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/docs/browser.md): hosted setup and limitations.
+- [Measurements](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/docs/measurements.md): metric boundaries and session semantics.
+- [API](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/docs/api.md): routes and side effects.
+- [Troubleshooting](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/docs/troubleshooting.md): symptoms and remedies.
+- [Full documentation](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/llms-full.txt): complete context.

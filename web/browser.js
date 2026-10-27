@@ -145,13 +145,13 @@
     for (const key of ['max_tokens','repeats','per_test_timeout_s']) if (!Number.isInteger(cfg[key]) || cfg[key] < 1 || cfg[key] > (key === 'per_test_timeout_s' ? 7200 : key === 'repeats' ? 100 : 1000000)) throw new Error('Invalid ' + key + '.');
     cfg.sizes = [...new Set(cfg.sizes)].sort((a,b)=>a-b); cfg.concurrency_levels = [...new Set(cfg.concurrency_levels)].sort((a,b)=>a-b);
     cfg.context_policy = 'provider_managed'; cfg.warmup = false; cfg.mtp_modes = []; cfg.mtp_control = 'provider_managed'; cfg.disable_thinking = null;
-    const run = {id:'browser-'+random(), created_at:new Date().toISOString(), label:String(cfg.label || 'Browser benchmark'), notes:String(cfg.notes || ''), status:'running', measurement_mode:'browser', browser_schema_version:1, application:{name:'Wattever',version:root.WATTEVER_VERSION || '2.4.0',protocol_version:'browser-1'}, hardware:env().hardware, host:env().host, gpu:env().gpu, config:cfg, results:[]};
+    const run = {id:'browser-'+random(), created_at:new Date().toISOString(), label:String(cfg.label || 'Browser benchmark'), notes:String(cfg.notes || ''), status:'running', measurement_mode:'browser', browser_schema_version:1, application:{name:'Wattever',version:root.WATTEVER_VERSION || '2.4.1',protocol_version:'browser-1'}, hardware:env().hardware, host:env().host, gpu:env().gpu, config:cfg, results:[]};
     active=run; running=true; cancelling=false; events=[]; live={phase:'starting',done:0,total:cfg.models.length*cfg.sizes.length*cfg.concurrency_levels.length*cfg.repeats}; put(run); execute(run,cfg); return {run_id:run.id};
   }
   async function request(path, options = {}) {
     const url = new URL(path, 'http://local.invalid'), route = url.pathname, method = (options.method || 'GET').toUpperCase();
     let body = {}; if (options.body) { try { body = JSON.parse(options.body); } catch (_) { throw new Error('Invalid JSON request.'); } }
-    if (route === '/api/version') return {application:'Wattever',version:root.WATTEVER_VERSION || '2.4.0'};
+    if (route === '/api/version') return {application:'Wattever',version:root.WATTEVER_VERSION || '2.4.1'};
     if (route === '/api/env') return env();
     if (route === '/api/models') return {models};
     if (route === '/api/status') return status();

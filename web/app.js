@@ -288,8 +288,8 @@ async function init() {
       }
     });
   });
-  $("#show-all-models").addEventListener("click", () => { state.visibleModels = null; redrawModelSelection(); });
-  $("#hide-all-models").addEventListener("click", () => { state.visibleModels = new Set(); redrawModelSelection(); });
+  $("#show-all-models").addEventListener("click", () => { state.visibleModels = null; redrawResultsWithoutScrolling(); });
+  $("#hide-all-models").addEventListener("click", () => { state.visibleModels = new Set(); redrawResultsWithoutScrolling(); });
   $$("[data-color-by]").forEach(button => button.addEventListener("click", () => {
     state.colorBy = button.dataset.colorBy;
     $$("[data-color-by]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
@@ -1306,13 +1306,13 @@ function modelColor(model, allModels) {
 function shownModels(models) {
   return state.visibleModels === null ? models : models.filter(model => state.visibleModels.has(model));
 }
-async function redrawModelSelection() {
+async function redrawResultsWithoutScrolling() {
   const view = $(".result-view.active");
   const left = window.scrollX, top = window.scrollY;
   // Keep enough space for the current viewport when filtering removes chart panels.
   if (view && !view.hidden) view.style.minHeight = `${view.getBoundingClientRect().height}px`;
-  await renderResultsView();
-  window.scrollTo({left, top, behavior: "instant"});
+  try { await renderResultsView(); }
+  finally { window.scrollTo({left, top, behavior: "instant"}); }
 }
 
 function renderVisibleModels(models) {
@@ -1326,7 +1326,7 @@ function renderVisibleModels(models) {
     $$("#visible-models input").forEach(input => input.addEventListener("change", async () => {
       if (state.visibleModels === null) state.visibleModels = new Set(models);
       if (input.checked) state.visibleModels.add(input.value); else state.visibleModels.delete(input.value);
-      await redrawModelSelection();
+      await redrawResultsWithoutScrolling();
     }));
   }
   const shapes = {circle: "&#9679;", square: "&#9632;", triangle: "&#9650;", diamond: "&#9670;"};
@@ -1471,14 +1471,20 @@ function measureAppearance(base, key, keys, mtp) {
   return {...base, dash: mtp ? (dash ? dash + " 2 2" : "2 2") : dash};
 }
 function renderMetricSeg() {
+  const inputs = $$("#result-metrics input");
+  if (inputs.length === Object.keys(METRICS).length) {
+    inputs.forEach(input => {
+      input.checked = state.metrics.has(input.value);
+      input.closest(".chip").dataset.on = input.checked ? "1" : "0";
+    });
+    return;
+  }
   $("#result-metrics").innerHTML = Object.entries(METRICS).map(([key, metric]) => `<label class="chip" data-on="${state.metrics.has(key) ? 1 : 0}" title="${esc(metric.blurb)}"><input type="checkbox" value="${key}" ${state.metrics.has(key) ? "checked" : ""}>${esc(metric.label)}</label>`).join("");
   $$("#result-metrics input").forEach(input => input.addEventListener("change", async () => {
     const key = input.value;
     if (input.checked) state.metrics.add(key); else state.metrics.delete(key);
     renderMetricSeg();
-    await renderResultsView();
-    const replacement = $$("#result-metrics input").find(item => item.value === key);
-    if (replacement) replacement.focus({preventScroll: true});
+    await redrawResultsWithoutScrolling();
   }));
 }
 

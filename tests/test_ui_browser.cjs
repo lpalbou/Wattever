@@ -83,7 +83,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     }
     await check('!!document.querySelector("#run-detail h3")', 'UI boots');
     await check('document.querySelector("#panel-run").classList.contains("active")', 'Run is the default screen');
-    await check('document.querySelector("#app-version").textContent === "v2.4.0"', 'Version comes from the server');
+    await check('document.querySelector("#app-version").textContent === "v2.4.1"', 'Version comes from the server');
     await check('!document.querySelector("#machine-card").open && !document.querySelector("#advanced-settings").open', 'Details start collapsed');
     await check('!document.querySelector("#size-quick, #concurrency-quick, #cpu-tdp, #other-idle")', 'No duplicate shortcuts or power inputs');
     await check('document.querySelector("#run-label").value.includes("RTX 5060 Ti") && document.querySelector("#run-label").value.includes("32 GB RAM")', 'Hardware name is filled automatically');
@@ -260,6 +260,21 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     await evaluate('document.querySelector("#results-all-measurements").parentElement.open=true');
     await delay(50);
     await check('Array.from(document.querySelectorAll("#results-all-measurements table")).every(table => table.scrollWidth <= table.clientWidth + 1)', 'Detailed tables also fit');
+
+    // Shrinking measure groups must keep both pointer position and keyboard focus stable.
+    for (const view of ['summary', 'table', 'compare']) {
+      await evaluate(`state.metrics=new Set(['prefill_tps','decode_tps','ttft_s']);renderMetricSeg();showResultsView(${JSON.stringify(view)})`);
+      await delay(100);
+      for (const key of ['ttft_s', 'decode_tps', 'prefill_tps', 'prefill_tps', 'decode_tps']) {
+        await evaluate(`Array.from(document.querySelectorAll('#result-metrics input')).find(input=>input.value===${JSON.stringify(key)}).closest('.chip').scrollIntoView({block:'center'});window.__metricTop=scrollY;window.__metricInput=Array.from(document.querySelectorAll('#result-metrics input')).find(input=>input.value===${JSON.stringify(key)})`);
+        const metricPosition = await evaluate(`(()=>{const r=window.__metricInput.closest('.chip').getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);
+        await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',buttons:1,clickCount:1,...metricPosition});
+        await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',buttons:0,clickCount:1,...metricPosition});
+        await delay(120);
+        await check('Math.abs(scrollY-window.__metricTop)<1 && window.__metricInput.isConnected && document.activeElement===window.__metricInput', 'Measure toggles preserve scroll and focus in '+view+' for '+key);
+      }
+    }
+    await evaluate('showResultsView("summary")');
 
     // Fake extension endpoints exercise the complete dialog without running inference.
     await evaluate('selectRun("smoke")');
