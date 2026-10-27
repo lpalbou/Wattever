@@ -29,6 +29,21 @@ class FakeBench:
     running = False
     run = None
     events = []
+    last_extension = None
+    def extension_options(self, run_id):
+        return {'models': [{'id':'model-a', 'type':'llm'}, {'id':'model-b', 'type':'llm'}],
+                'sizes': [512], 'concurrency_levels': [1]}
+    def plan_extension(self, body):
+        modes = body.get('model_modes', {})
+        existing = int('off' in modes.get('model-a', []))
+        new = int('on' in modes.get('model-b', []))
+        retry = int(bool(body.get('retry_failed')) and 'off' in modes.get('model-b', []))
+        rerun = existing if body.get('rerun_existing') else 0
+        return {'existing': existing, 'new_tests': new, 'retry_tests': retry, 'rerun_tests': rerun,
+                'total_tests': new + retry + rerun, 'warnings': []}
+    def extend(self, body):
+        self.last_extension = copy.deepcopy(body)
+        return body['run_id']
     def status(self):
         return {'running': self.running, 'run_id': (self.run or {}).get('id'),
                 'run': store.summarise(self.run) if self.run else None,
@@ -42,6 +57,10 @@ class FakeBench:
 server.BENCH = FakeBench()
 
 class Handler(server.Handler):
+    def do_GET(self):
+        if self.path == '/test/last-extension':
+            return self._json(server.BENCH.last_extension)
+        return super().do_GET()
     def do_POST(self):
         if self.path == '/test/start':
             live = copy.deepcopy(run)
@@ -68,7 +87,7 @@ class Handler(server.Handler):
         return super().do_POST()
 
     def env_payload(self):
-        return {'gpu':run['gpu'], 'gpus':[], 'host':run['host'], 'hardware':{'os':{'name':'Windows'},'cpu':{'name':'Smoke CPU'},'system':{'memory_bytes':34359738368},'gpus':[{'name':'NVIDIA GeForce RTX 5060 Ti','sensor_index':0,'memory_bytes':17179869184}]}, 'lms':{'cli':True,'server':True},'power':{'source':'none'},'models':[{'id': name, 'type':'llm','max_context_length':300000, 'quantization':'Q4_K_M'} for name in ['model-a', 'model-b'] + ['publisher/qwen-large-instruct-model-%s-GGUF' % i for i in range(10)]], 'default_models':['model-a'],'missing_defaults':[],'corpus':{'approx_tokens':260000}, 'defaults':runner.DEFAULT_CONFIG,'last_config':None,'running':False}
+        return {'gpu':run['gpu'], 'gpus':[], 'host':run['host'], 'hardware':{'os':{'name':'Windows'},'cpu':{'name':'Smoke CPU'},'system':{'memory_bytes':34359738368},'gpus':[{'name':'NVIDIA GeForce RTX 5060 Ti','sensor_index':0,'memory_bytes':17179869184}]}, 'lms':{'cli':True,'server':True},'power':{'source':'none'},'models':[{'id': name, 'type':'llm','max_context_length':300000, 'quantization':'Q4_K_M'} for name in ['model-a', 'model-b'] + ['publisher/qwen-large-instruct-model-%s-GGUF' % i for i in range(10)]], 'default_models':['model-a'],'missing_defaults':[],'corpus':{'approx_tokens':260000}, 'defaults':runner.DEFAULT_CONFIG,'last_config':None,'running':False, 'capabilities':{'extend':True}}
 httpd=ThreadingHTTPServer(('127.0.0.1',0),Handler)
 print(httpd.server_port,flush=True)
 try: httpd.serve_forever()

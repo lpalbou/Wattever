@@ -11,7 +11,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
   const browserPath = process.env.WATTEVER_BROWSER || [
     'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-    '/usr/bin/chromium', '/usr/bin/google-chrome',
+    '/usr/bin/google-chrome', '/usr/bin/chromium',
   ].find(candidate => fs.existsSync(candidate));
   assert(browserPath, 'Set WATTEVER_BROWSER to an installed Chrome/Edge executable.');
   const artifacts = fs.mkdtempSync(path.join(os.tmpdir(), 'wattever-ui-'));
@@ -24,10 +24,21 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
       fixture.once('error', reject);
       fixture.once('exit', code => reject(Error('Fixture exited: ' + code)));
     });
-    browser = spawn(browserPath, ['--headless=new', '--no-first-run', '--disable-gpu',
-      '--remote-debugging-port=0', '--user-data-dir=' + path.join(artifacts, 'profile'), 'about:blank'], {windowsHide: true, stdio: 'ignore'});
+    const browserArgs = ['--headless=new', '--no-first-run', '--disable-gpu',
+      '--remote-debugging-port=0', '--user-data-dir=' + path.join(artifacts, 'profile'), 'about:blank'];
+    // Hosted Linux runners can prohibit Chrome's user-namespace sandbox.
+    // This flag is confined to the isolated CI fixture, never the application.
+    if (process.env.CI && process.platform === 'linux') browserArgs.unshift('--no-sandbox');
+    let browserErrors = '';
+    browser = spawn(browserPath, browserArgs, {windowsHide: true, stdio: ['ignore', 'ignore', 'pipe']});
+    browser.stderr.on('data', chunk => { browserErrors = (browserErrors + chunk).slice(-4000); });
+    browser.on('error', error => { browserErrors += String(error); });
     const debugFile = path.join(artifacts, 'profile', 'DevToolsActivePort');
-    for (let attempt = 0; attempt < 150 && !fs.existsSync(debugFile); attempt++) await delay(100);
+    for (let attempt = 0; attempt < 150 && !fs.existsSync(debugFile); attempt++) {
+      if (browser.exitCode !== null) throw Error('Browser exited before startup: ' + browserErrors);
+      await delay(100);
+    }
+    if (!fs.existsSync(debugFile)) throw Error('Browser did not expose its debugging port: ' + browserErrors);
     const debugPort = Number(fs.readFileSync(debugFile, 'utf8').split('\n')[0]);
     const pages = await (await fetch(`http://127.0.0.1:${debugPort}/json/list`)).json();
     ws = new WebSocket(pages.find(page => page.type === 'page').webSocketDebuggerUrl);
@@ -249,6 +260,28 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     await evaluate('document.querySelector("#results-all-measurements").parentElement.open=true');
     await delay(50);
     await check('Array.from(document.querySelectorAll("#results-all-measurements table")).every(table => table.scrollWidth <= table.clientWidth + 1)', 'Detailed tables also fit');
+
+    // Fake extension endpoints exercise the complete dialog without running inference.
+    await evaluate('selectRun("smoke")');
+    for (let i=0; i<40 && !await evaluate('!!document.querySelector("#extend-run")'); i++) await delay(50);
+    await evaluate('document.querySelector("#extend-run").click()');
+    for (let i=0; i<40 && !await evaluate('!!document.querySelector("#extend-content input[data-model]")'); i++) await delay(50);
+    await check('document.querySelector("#extend-dialog").open && document.querySelector("#extend-preview").textContent.includes("Choose models") && document.querySelector("#extend-start").disabled', 'Extension opens with no model selected');
+    await evaluate('Array.from(document.querySelectorAll("#extend-content input[data-model]")).find(input=>input.dataset.model==="0" && input.dataset.mode==="off").click();Array.from(document.querySelectorAll("#extend-content input[data-model]")).find(input=>input.dataset.model==="1" && input.dataset.mode==="on").click()');
+    for (let i=0; i<40 && !await evaluate('document.querySelector("#extend-preview").textContent.includes("1 new tests")'); i++) await delay(50);
+    await check('document.querySelector("#extend-preview").textContent.includes("1 new tests") && document.querySelector("#extend-preview").textContent.includes("1 already present") && document.querySelector("#extend-preview").textContent.includes("0 successful tests to rerun")', 'Preview distinguishes missing and existing model-specific techniques');
+    await evaluate('document.querySelector("#extend-content input[name=extend-action][value=retry]").click()');
+    await evaluate('Array.from(document.querySelectorAll("#extend-content input[data-model]")).find(input=>input.dataset.model==="1" && input.dataset.mode==="off").click()');
+    for (let i=0; i<40 && !await evaluate('document.querySelector("#extend-preview").textContent.includes("1 retries")'); i++) await delay(50);
+    await check('document.querySelector("#extend-preview").textContent.includes("1 retries") && !document.querySelector("#extend-start").disabled', 'Retry action previews failed and missing tests');
+    await evaluate('document.querySelector("#extend-content input[name=extend-action][value=rerun]").click()');
+    for (let i=0; i<40 && !await evaluate('document.querySelector("#extend-start").textContent.includes("Rerun 3")'); i++) await delay(50);
+    await check('document.querySelector("#extend-preview").textContent.includes("1 successful tests to rerun") && document.querySelector("#extend-content").textContent.includes("previous attempts are kept")', 'Rerun warns and previews successful replacements');
+    await evaluate('document.querySelector("#extend-start").click()');
+    for (let i=0; i<40 && await evaluate('document.querySelector("#extend-dialog").open'); i++) await delay(50);
+    await check('!document.querySelector("#extend-dialog").open && document.querySelector("#live-card").dataset.runId === "smoke"', 'Rerun closes and launches against the same benchmark');
+    await check('(async()=>{const body=await (await fetch("/test/last-extension")).json();return body.run_id==="smoke" && body.rerun_existing && body.retry_failed && body.model_modes["model-a"].join() === "off" && body.model_modes["model-b"].includes("off") && body.model_modes["model-b"].includes("on") && body.sizes.join() === "512" && body.concurrency_levels.join() === "1"})()', 'Fake backend receives only the chosen model techniques and rerun options');
+    for (let i=0; i<40 && await evaluate('!!state.poller'); i++) await delay(50);
 
     await evaluate('window.confirm=()=>false; document.querySelector("#runs-list .run-delete").click()');
     await check('state.runs.length === 2', 'Cancel delete keeps the benchmarks');
