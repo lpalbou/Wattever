@@ -54,7 +54,7 @@
       try {
         const work = (async () => {
         const base = new URL('benchmarks/', document.baseURI);
-        const response = await fetch(new URL('index.json', base), {credentials:'omit', redirect:'error', signal:controller.signal, cache: force ? 'no-cache' : 'default'});
+        const response = await fetch(new URL('index.json', base), {credentials:'omit', redirect:'error', signal:controller.signal, cache:'no-cache'});
         if (!response.ok) throw new Error('Catalog unavailable');
         const manifest = await response.json();
         if (!manifest || manifest.version !== 1 || !Array.isArray(manifest.benchmarks)) throw new Error('Invalid catalog');
@@ -62,7 +62,9 @@
         const entries = await Promise.all(manifest.benchmarks.map(async item => {
           if (!item || typeof item.id !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9_.-]{0,199}$/.test(item.id) || item.file !== item.id + '.json' || !/^[a-f0-9]{64}$/.test(item.sha256) || seen.has(item.id)) throw new Error('Invalid catalog entry');
           seen.add(item.id);
-          const file = await fetch(new URL(item.file, base), {credentials:'omit', redirect:'error', signal:controller.signal, cache: force ? 'no-cache' : 'default'});
+          const fileUrl = new URL(item.file, base);
+          fileUrl.searchParams.set('sha256', item.sha256);
+          const file = await fetch(fileUrl, {credentials:'omit', redirect:'error', signal:controller.signal});
           if (!file.ok) throw new Error('Shared benchmark unavailable');
           const bytes = await file.arrayBuffer();
           if (!root.crypto?.subtle) throw new Error('Cannot verify shared benchmark');

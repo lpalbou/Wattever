@@ -1056,6 +1056,14 @@ function sessionSettings(run) {
   }).join("")}</div></details>`;
 }
 
+function benchmarkIncompleteNotice(run) {
+  if (run.status === "running" || !(run.error || Number(run.remaining_tests) > 0 || run.source_status === "running")) return "";
+  const error = String(run.error || "");
+  const reason = error ? (/WinError 5|PermissionError|Permission denied|Access is denied/i.test(error)
+    ? "A file access error stopped this benchmark." : "The benchmark stopped before finishing.") : "";
+  return `<div class="banner warn"><div><b>${run.source_status === "running" ? "Shared checkpoint" : "Benchmark incomplete"}</b>${reason ? ` - ${reason}` : ""}${Number(run.remaining_tests) > 0 ? ` ${esc(run.remaining_tests)} tests remaining.` : ""} ${browserMode() ? 'Download the JSON and use the desktop app to continue where supported.' : 'Use Add / rerun tests to continue where supported.'}${error ? `<details class="benchmark-error-details"><summary>Technical details</summary><pre>${esc(error)}</pre></details>` : ""}</div></div>`;
+}
+
 function renderRunDetail(run) {
   if (!run) {
     $("#run-detail").innerHTML = emptyState("Select a benchmark", "Click a name or tick benchmarks in the list on the left.");
@@ -1074,8 +1082,7 @@ function renderRunDetail(run) {
   }
   const sessionAllocationNotice = new Set(allocationConfigs(run).map(allocationKey)).size > 1
     ? '<p class="hint" role="status">Sessions in this benchmark used different context allocation settings. Memory use and speed may differ; see session settings below.</p>' : "";
-  const incompleteNotice = run.error || Number(run.remaining_tests) > 0 || run.source_status === "running"
-    ? `<div class="banner warn"><div><b>${run.source_status === "running" ? "Shared checkpoint" : "Benchmark incomplete"}</b>${run.error ? ` - ${esc(run.error)}` : ""}${Number(run.remaining_tests) > 0 ? ` - ${esc(run.remaining_tests)} tests remaining` : ""}. ${browserMode() ? 'Download the JSON and use the desktop app to continue where supported.' : 'Use Add / rerun tests to continue where supported.'}</div></div>` : "";
+  const incompleteNotice = benchmarkIncompleteNotice(run);
   const gpu = run.gpu || {}, host = run.host || {}, cfg = run.config || {};
   const ok = (run.results || []).filter((row) => row.status === "ok");
   const best = (key) => Math.max(0, ...ok.map((row) => row[key] || 0));

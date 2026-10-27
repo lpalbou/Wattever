@@ -309,6 +309,8 @@ Canonical source: [docs/troubleshooting.md](docs/troubleshooting.md)
 - **Extension rejected:** hardware, selected GPU and driver, corpus and LM Studio version must match. Start a separate benchmark if they changed or cannot be verified. See [sessions](docs/measurements.md).
 - **No response from Wattever:** check the URL printed by its launcher and keep the server window open. The default starting port is 8713 but another available port may be selected. See [getting started](docs/getting-started.md).
 
+- **File-save warning:** update and restart the desktop helper, then use **Add / rerun tests ? Add missing tests** to continue. Completed records remain saved. The warning?s **Technical details** disclosure contains the original diagnostic.
+
 ---
 
 ## CONTRIBUTING.md
@@ -364,6 +366,8 @@ Canonical source: [CHANGELOG.md](CHANGELOG.md)
 # Changelog
 
 ## Unreleased
+
+- Shows readable benchmark-save errors with optional technical details and refreshes shared data consistently after updates.
 
 - Retains the latest RTX 5060 Ti session in the shared results library; removes older runs and preliminary snapshots.
 

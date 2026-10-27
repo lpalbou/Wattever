@@ -9,3 +9,5 @@
 - **Load failure or context overflow:** reduce prompt size or simultaneous queries, inspect model context limits and available memory, or choose a smaller model. A failure is retained in results; use the retry option after correcting the cause.
 - **Extension rejected:** hardware, selected GPU and driver, corpus and LM Studio version must match. Start a separate benchmark if they changed or cannot be verified. See [sessions](measurements.md).
 - **No response from Wattever:** check the URL printed by its launcher and keep the server window open. The default starting port is 8713 but another available port may be selected. See [getting started](getting-started.md).
+
+- **File-save warning:** update and restart the desktop helper, then use **Add / rerun tests ? Add missing tests** to continue. Completed records remain saved. The warning?s **Technical details** disclosure contains the original diagnostic.

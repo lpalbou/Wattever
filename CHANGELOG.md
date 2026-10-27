@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Shows readable benchmark-save errors with optional technical details and refreshes shared data consistently after updates.
+
 - Retains the latest RTX 5060 Ti session in the shared results library; removes older runs and preliminary snapshots.
 
 - Adds a shared results catalog to the hosted Results view and a guide for contributing and continuing benchmark files.

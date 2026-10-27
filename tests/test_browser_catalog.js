@@ -10,7 +10,7 @@ let broken = false, requests = [];
 const storage = {getItem:k=>local.get(k) || null, setItem:(k,v)=>local.set(k,v)};
 const window = {WATTEVER_STATIC:true, localStorage:storage, crypto:crypto.webcrypto};
 const fetch = async url => {
-  const u = String(url); requests.push(u);
+  const u = new URL(String(url)).pathname; requests.push(String(url));
   if (u.endsWith('/index.json')) return {ok:true,json:async()=>({version:1,benchmarks:[{id:'shared.1',file:'shared.1.json',sha256:broken?'0'.repeat(64):digest}]})};
   if (u.endsWith('/shared.1.json')) return {ok:true,arrayBuffer:async()=>new TextEncoder().encode(raw).buffer};
   throw Error('unexpected fetch '+u);
@@ -23,6 +23,7 @@ vm.runInNewContext(fs.readFileSync('web/browser.js','utf8'),ctx);
   let listing = await api.request('/api/runs');
   assert.equal(listing.runs.length,1); assert.equal(listing.runs[0].community,true); assert.equal(listing.runs[0].status,'interrupted');
   assert(requests.every(url=>url.startsWith('https://example.test/site/benchmarks/')));
+  assert(requests.some(url=>new URL(url).searchParams.get('sha256')===digest),'Changed data must not reuse stale cached benchmark JSON');
   assert.equal(local.has('wattever.browser.runs.v1'),false);
   const shared = await api.request('/api/runs/shared.1'); assert.equal(shared.label,'Shared'); assert.equal(shared.status,'interrupted'); assert.equal(shared.source_status,'running'); assert.equal(JSON.parse(raw).status,'running');
   const downloaded = await api.request('/api/runs/shared.1/download'); assert.equal(downloaded.community, undefined);

@@ -17,6 +17,9 @@ vm.runInContext(source, context);
 vm.runInContext(`
   if (benchmarkFilename('a.1') !== 'a.1.json' || benchmarkFilename('../bad') !== 'benchmark.json') throw Error('filename');
   state.models = new Set(['model']); state.sizes = new Set([512]); state.concurrencyLevels = new Set([1, 10]);
+  const issue = benchmarkIncompleteNotice({status:'error',remaining_tests:24,error:'WinError 5: Access is denied: local.json.tmp'});
+  if(!issue.includes('A file access error') || !issue.includes('24 tests remaining') || !issue.includes('<summary>Technical details</summary>')) throw Error('Storage errors need readable guidance and optional diagnostics');
+  if(benchmarkIncompleteNotice({status:'completed',remaining_tests:0}) || benchmarkIncompleteNotice({status:'running',remaining_tests:24})) throw Error('Completed and active benchmarks must not show stale incomplete warnings');
   if ([...through(CONCURRENCY_PRESETS, 5)].join(',') !== '1,2,3,4,5') throw Error('select five');
   if ([...through(CONCURRENCY_PRESETS, 2)].join(',') !== '1,2') throw Error('lower selection');
   if ([...through([512,5000,10000,20000,40000], 20000)].join(',') !== '512,5000,10000,20000') throw Error('context selection');
