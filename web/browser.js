@@ -2,6 +2,8 @@
 (function (root) {
   "use strict";
   const KEY = "wattever.browser.runs.v1";
+  const HIDDEN_KEY = "wattever.browser.hidden-community.v1";
+  let community = [], communityError = null, communityPromise = null, hiddenIds = null, communityGeneration = 0;
   const sizes = [512, 5000, 10000, 20000, 40000, 80000, 100000, 120000, 150000, 200000, 260000];
   const levels = [1,2,3,4,5,6,7,8,9,10,15,20,30,40,50,75,100];
   const defaults = {models: [], sizes: [512,5000,10000,20000,40000], concurrency_levels: [1], max_tokens: 256, repeats: 1, mtp_modes: ["off"], warmup: false, disable_thinking: null, per_test_timeout_s: 1800, context_policy: "provider_managed"};
@@ -30,7 +32,64 @@
   }
   function save(runs) { cachedRuns = runs; try { root.localStorage.setItem(KEY, JSON.stringify(runs)); storageError = null; } catch (_) { storageError = 'Browser storage is unavailable or full; export results before closing this page.'; } }
   function put(run) { const runs = read().filter(r => r.id !== run.id); runs.push(run); save(runs); }
-  function summary(run) { const rows = run.results || []; return {id:run.id, label:run.label, notes:run.notes, created_at:run.created_at, status:run.status, gpu:run.gpu || {}, host:run.host || {}, hardware:run.hardware || {}, config:run.config || {}, models:[...new Set(rows.map(r=>r.model).filter(Boolean))], sizes:[...new Set(rows.map(r=>r.target_tokens).filter(Boolean))], concurrency_levels:[...new Set(rows.map(r=>r.concurrency || 1))], n_results:rows.length, n_ok:rows.filter(r=>r.status === "ok").length, n_failed:rows.filter(r=>r.status !== "ok").length}; }
+  function hidden() {
+    if (hiddenIds === null) {
+      try { const ids = JSON.parse(root.localStorage.getItem(HIDDEN_KEY) || '[]'); hiddenIds = new Set(Array.isArray(ids) ? ids.filter(x => typeof x === 'string') : []); }
+      catch (_) { hiddenIds = new Set(); storageError = 'Browser storage is unavailable'; }
+    }
+    return hiddenIds;
+  }
+  function hideCommunity(id) {
+    hidden().add(id);
+    try { root.localStorage.setItem(HIDDEN_KEY, JSON.stringify([...hiddenIds])); }
+    catch (_) { storageError = 'Browser storage is unavailable'; }
+  }
+  async function loadCommunity(force = false) {
+    if (!root.WATTEVER_STATIC) return [];
+    if (communityPromise && !force) return communityPromise;
+    const generation = ++communityGeneration;
+    const controller = new AbortController();
+    let timer;
+    const promise = (async () => {
+      try {
+        const work = (async () => {
+        const base = new URL('benchmarks/', document.baseURI);
+        const response = await fetch(new URL('index.json', base), {credentials:'omit', redirect:'error', signal:controller.signal, cache: force ? 'no-cache' : 'default'});
+        if (!response.ok) throw new Error('Catalog unavailable');
+        const manifest = await response.json();
+        if (!manifest || manifest.version !== 1 || !Array.isArray(manifest.benchmarks)) throw new Error('Invalid catalog');
+        const seen = new Set();
+        const entries = await Promise.all(manifest.benchmarks.map(async item => {
+          if (!item || typeof item.id !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9_.-]{0,199}$/.test(item.id) || item.file !== item.id + '.json' || !/^[a-f0-9]{64}$/.test(item.sha256) || seen.has(item.id)) throw new Error('Invalid catalog entry');
+          seen.add(item.id);
+          const file = await fetch(new URL(item.file, base), {credentials:'omit', redirect:'error', signal:controller.signal, cache: force ? 'no-cache' : 'default'});
+          if (!file.ok) throw new Error('Shared benchmark unavailable');
+          const bytes = await file.arrayBuffer();
+          if (!root.crypto?.subtle) throw new Error('Cannot verify shared benchmark');
+          const hash = [...new Uint8Array(await root.crypto.subtle.digest('SHA-256', bytes))].map(b => b.toString(16).padStart(2,'0')).join('');
+          if (hash !== item.sha256) throw new Error('Shared benchmark verification failed');
+          const run = JSON.parse(new TextDecoder().decode(bytes));
+          if (!valid(run) || run.id !== item.id) throw new Error('Invalid shared benchmark');
+          return Object.assign({}, run, run.status === "running" ? {status:"interrupted", source_status:"running"} : {}, {community:true});
+        }));
+        return entries;
+        })();
+        const timeout = new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error('Catalog timed out')); }, 10000); });
+        const entries = await Promise.race([work, timeout]);
+        if (generation === communityGeneration) { community = entries; communityError = null; }
+      } catch (_) { if (generation === communityGeneration) communityError = 'Shared benchmarks are unavailable or could not be verified. Your local results are still available.'; }
+      finally { clearTimeout(timer); }
+      return community;
+    })();
+    communityPromise = promise;
+    return promise;
+  }
+  function mergedRuns() {
+    const local = read(), localIds = new Set(local.map(r => r.id));
+    return [...local, ...community.filter(r => !localIds.has(r.id) && !hidden().has(r.id))];
+  }
+  function exportRun(run) { const copy = {...run}; delete copy.community; return copy; }
+  function summary(run) { const rows = run.results || []; return {community:!!run.community, id:run.id, label:run.label, notes:run.notes, created_at:run.created_at, status:run.status, gpu:run.gpu || {}, host:run.host || {}, hardware:run.hardware || {}, config:run.config || {}, models:[...new Set(rows.map(r=>r.model).filter(Boolean))], sizes:[...new Set(rows.map(r=>r.target_tokens).filter(Boolean))], concurrency_levels:[...new Set(rows.map(r=>r.concurrency || 1))], n_results:rows.length, n_ok:rows.filter(r=>r.status === "ok").length, n_failed:rows.filter(r=>r.status !== "ok").length}; }
   function status() { return {running, cancelling, run_id:active && active.id, run:active && summary(active), live, storage_error:storageError}; }
   function emit(kind, extra) { events.push(Object.assign({kind, seq:events.length}, extra)); }
   function configure(config) {
@@ -67,8 +126,11 @@
   function importRun(input) {
     let run; try { run = typeof input === 'string' ? JSON.parse(input) : JSON.parse(JSON.stringify(input)); } catch (_) { throw new Error('Invalid benchmark JSON.'); }
     if (!valid(run)) throw new Error('Invalid benchmark structure or result rows.');
-    if (!run.id || read().some(r => r.id === run.id)) run.id = 'import-' + random();
-    while (read().some(r => r.id === run.id)) run.id = 'import-' + random();
+    delete run.community;
+    const existingId = run.id;
+    const collides = id => read().some(r => r.id === id) || community.some(r => r.id === id);
+    if (!run.id || collides(run.id)) { if (existingId) run.source_run_id = existingId; run.id = 'import-' + random(); }
+    while (collides(run.id)) run.id = 'import-' + random();
     if (run.status === 'running') run.status = 'interrupted';
     put(run); return run;
   }
@@ -156,19 +218,19 @@
     if (route === '/api/models') return {models};
     if (route === '/api/status') return status();
     if (route === '/api/events') { const cursor = Math.max(0, Number(url.searchParams.get('cursor')) || 0); return {events:events.slice(cursor),cursor:events.length,status:status()}; }
-    if (route === '/api/runs' && method === 'GET') return {runs:read().map(summary),storage_error:storageError};
-    if (route === '/api/import' && method === 'POST') { const items = Array.isArray(body.runs) ? body.runs : [body]; if (!items.every(valid)) throw new Error('Invalid benchmark structure or result rows.'); return {runs:items.map(importRun),storage_error:storageError}; }
-    if (route === '/api/export.json' && method === 'GET') { const ids=(url.searchParams.get('ids') || '').split(',').filter(Boolean); return {runs:read().filter(r=>!ids.length || ids.includes(r.id))}; }
-    if (route === '/api/export.csv' && method === 'GET') { const ids=(url.searchParams.get('ids') || '').split(',').filter(Boolean); const quote = v => '"' + String(v == null ? '' : v).replace(/"/g,'""') + '"'; return [['run_id','model','target_tokens','concurrency','status','prefill_tps','decode_tps','aggregate_completion_tps','measurement_mode','protocol_version','completion_tokens_estimated','aggregate_completion_tokens_estimated'].join(','), ...read().filter(r=>!ids.length || ids.includes(r.id)).flatMap(r=>(r.results || []).map(x=>[r.id,x.model,x.target_tokens,x.concurrency,x.status,x.prefill_tps,x.decode_tps,x.aggregate_completion_tps,r.measurement_mode || 'helper',(r.application || {}).protocol_version,x.completion_tokens_estimated,x.aggregate_completion_tokens_estimated].map(quote).join(',')))].join('\n'); }
+    if (route === '/api/runs' && method === 'GET') { await loadCommunity(); return {runs:mergedRuns().map(summary),storage_error:storageError,community_error:communityError}; }
+    if (route === '/api/import' && method === 'POST') { await loadCommunity(); const items = Array.isArray(body.runs) ? body.runs : [body]; if (!items.every(valid)) throw new Error('Invalid benchmark structure or result rows.'); return {runs:items.map(importRun),storage_error:storageError}; }
+    if (route === '/api/export.json' && method === 'GET') { await loadCommunity(); const ids=(url.searchParams.get('ids') || '').split(',').filter(Boolean); return {runs:mergedRuns().filter(r=>!ids.length || ids.includes(r.id)).map(exportRun)}; }
+    if (route === '/api/export.csv' && method === 'GET') { await loadCommunity(); const ids=(url.searchParams.get('ids') || '').split(',').filter(Boolean); const quote = v => '"' + String(v == null ? '' : v).replace(/"/g,'""') + '"'; return [['run_id','model','target_tokens','concurrency','status','prefill_tps','decode_tps','aggregate_completion_tps','measurement_mode','protocol_version','completion_tokens_estimated','aggregate_completion_tokens_estimated'].join(','), ...mergedRuns().filter(r=>!ids.length || ids.includes(r.id)).flatMap(r=>(r.results || []).map(x=>[r.id,x.model,x.target_tokens,x.concurrency,x.status,x.prefill_tps,x.decode_tps,x.aggregate_completion_tps,r.measurement_mode || 'helper',(r.application || {}).protocol_version,x.completion_tokens_estimated,x.aggregate_completion_tokens_estimated].map(quote).join(',')))].join('\n'); }
     if (route === '/api/bench/start' && method === 'POST') return start(body);
     if (route === '/api/bench/cancel' && method === 'POST') { cancelling=true; controllers.forEach(c=>c.abort()); return {ok:true}; }
     const match = route.match(/^\/api\/runs\/([^/]+)(?:\/(meta|download))?$/);
-    if (match) { const id=decodeURIComponent(match[1]), run=(active && active.id===id ? active : read().find(r=>r.id===id)); if (!run) throw new Error('No such benchmark.');
-      if (method === 'DELETE') { if (running && active.id===id) throw new Error('Stop the active benchmark before deleting it.'); save(read().filter(r=>r.id!==id)); if (active && active.id===id) active=null; return {deleted:true,storage_error:storageError}; }
-      if (method === 'POST' && match[2] === 'meta') { if (running && active.id===id) throw new Error('Wait for the active benchmark to finish.'); if (body.label != null) run.label=String(body.label); if (body.notes != null) run.notes=String(body.notes); put(run); return summary(run); }
-      if (method === 'GET') return run;
+    if (match) { const id=decodeURIComponent(match[1]); let run=(active && active.id===id ? active : read().find(r=>r.id===id)); if (!run) { await loadCommunity(); run=mergedRuns().find(r=>r.id===id); } if (!run) throw new Error('No such benchmark.');
+      if (method === 'DELETE') { if (run.community) { hideCommunity(id); return {deleted:true,storage_error:storageError}; } if (running && active.id===id) throw new Error('Stop the active benchmark before deleting it.'); save(read().filter(r=>r.id!==id)); if (active && active.id===id) active=null; return {deleted:true,storage_error:storageError}; }
+      if (method === 'POST' && match[2] === 'meta') { if (run.community) throw new Error('Shared benchmarks are read-only. Download and import a copy to edit.'); if (running && active.id===id) throw new Error('Wait for the active benchmark to finish.'); if (body.label != null) run.label=String(body.label); if (body.notes != null) run.notes=String(body.notes); put(run); return summary(run); }
+      if (method === 'GET') return match[2] === 'download' ? exportRun(run) : run;
     }
     throw new Error('This operation is unavailable in browser mode.');
   }
-  root.WatteverBrowser = {enabled:root.WATTEVER_STATIC === true, request, configure, connect, importRun};
+  root.WatteverBrowser = {enabled:root.WATTEVER_STATIC === true, request, configure, connect, importRun, loadCommunity};
 })(window);

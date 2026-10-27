@@ -30,6 +30,45 @@ class StorageTests(unittest.TestCase):
                     "results": [{"model": "model", "target_tokens": 512, "concurrency": 1,
                                  "status": "ok", "decode_tps": 10}]}
 
+    def test_save_retries_transient_permission_error(self):
+        store.save(self.run)
+        updated = copy.deepcopy(self.run)
+        updated["label"] = "updated"
+        replace = store.os.replace
+        calls = []
+        def transient(src, dst):
+            calls.append((src, dst))
+            if len(calls) == 1:
+                raise PermissionError("temporarily locked")
+            return replace(src, dst)
+        with patch.object(store.os, "replace", side_effect=transient), patch.object(store.time, "sleep") as sleep:
+            store.save(updated)
+        self.assertEqual(store.load("sample"), updated)
+        self.assertEqual(len(calls), 2)
+        sleep.assert_called_once_with(0.025)
+        self.assertEqual(list(Path(store.RUNS_DIR).glob("*.tmp")), [])
+
+    def test_save_permanent_permission_error_preserves_original(self):
+        store.save(self.run)
+        original = Path(store.path_for("sample")).read_bytes()
+        updated = copy.deepcopy(self.run)
+        updated["label"] = "unsaved"
+        with patch.object(store.os, "replace", side_effect=PermissionError("locked")) as replace, patch.object(store.time, "sleep") as sleep:
+            with self.assertRaises(PermissionError):
+                store.save(updated)
+        self.assertEqual(replace.call_count, 7)
+        self.assertEqual(sleep.call_count, 6)
+        self.assertEqual(Path(store.path_for("sample")).read_bytes(), original)
+        self.assertEqual(list(Path(store.RUNS_DIR).glob("*.tmp")), [])
+
+    def test_save_does_not_retry_other_errors(self):
+        with patch.object(store.os, "replace", side_effect=OSError("other error")) as replace, patch.object(store.time, "sleep") as sleep:
+            with self.assertRaises(OSError):
+                store.save(self.run)
+        self.assertEqual(replace.call_count, 1)
+        sleep.assert_not_called()
+        self.assertEqual(list(Path(store.RUNS_DIR).glob("*.tmp")), [])
+
     def test_portable_metadata_classification_and_validation(self):
         machine = {"os": {"name": "Windows", "release": "11", "architecture": "AMD64"},
                    "cpu": {"name": "CPU", "physical_cores": 8, "logical_cores": 16},

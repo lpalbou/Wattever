@@ -1,6 +1,7 @@
 # Documentation
 
 - [Browser mode](browser.md): hosted setup, privacy, storage and measurement limits.
+- [Sharing results](sharing-results.md): shared catalog, contributions and completing a benchmark later.
 - [Getting started](getting-started.md): requirements and first benchmark.
 - [Measurements and sessions](measurements.md): metrics, hardware, context planning, retries and comparisons.
 - [Architecture](architecture.md): components and data flow.

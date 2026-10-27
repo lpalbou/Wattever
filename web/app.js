@@ -72,6 +72,10 @@ async function api(path, opts = {}) {
   if (browserMode()) {
     const result = await window.WatteverBrowser.request(path, opts);
     updateBrowserStorageWarning(result);
+    if (Object.prototype.hasOwnProperty.call(result || {}, "community_error")) {
+      const warning = $("#community-warning");
+      if (warning) { warning.hidden = !result.community_error; warning.innerHTML = result.community_error ? banner("warn", "Shared library unavailable", esc(result.community_error)) : ""; }
+    }
     return result;
   }
   const res = await fetch(path, opts);
@@ -180,6 +184,10 @@ async function connectBrowser() {
   } catch (error) { status.textContent = "Connection failed: " + error.message + ". Check the endpoint, CORS and local network permission."; }
   finally { button.disabled = false; }
 }
+function benchmarkFilename(id) {
+  const value = typeof id === "string" && /^[A-Za-z0-9][A-Za-z0-9_.-]{0,199}$/.test(id) ? id : "benchmark";
+  return value + ".json";
+}
 function downloadBlob(content, name, type) {
   const url = URL.createObjectURL(new Blob([content], {type}));
   const anchor = document.createElement("a"); anchor.href = url; anchor.download = name; anchor.click();
@@ -193,9 +201,10 @@ async function browserDownload(event) {
   if (!path || !(/^\/api\/runs\/[^/]+\/download$/.test(path) || path.startsWith("/api/export.csv"))) return;
   event.preventDefault();
   try {
-    const result = await api(path);
+    let result = await api(path);
     const csv = path.startsWith("/api/export.csv");
-    downloadBlob(csv ? result : JSON.stringify(result, null, 2), csv ? "wattever.csv" : "benchmark.json", csv ? "text/csv" : "application/json");
+    if (!csv && result.community) { result = {...result}; delete result.community; }
+    downloadBlob(csv ? result : JSON.stringify(result, null, 2), csv ? "wattever.csv" : benchmarkFilename(result.id), csv ? "text/csv" : "application/json");
   } catch (error) { alert("Could not export: " + error.message); }
 }
 async function importBrowserRun(event) {
@@ -263,7 +272,7 @@ async function init() {
   }));
   $("#start-btn").addEventListener("click", startBench);
   $("#cancel-btn").addEventListener("click", cancelBench);
-  $("#refresh-runs").addEventListener("click", loadRuns);
+  $("#refresh-runs").addEventListener("click", async () => { if (browserMode()) { await window.WatteverBrowser.loadCommunity(true); for (const [id, run] of Object.entries(state.runCache)) if (run.community) delete state.runCache[id]; state.detailSignature = null; } await loadRuns(); });
   $("#goto-results").addEventListener("click", () => {
     showPanel("results");
     const id = $("#live-card").dataset.runId;
@@ -316,6 +325,7 @@ async function init() {
   renderMetricSeg();
   await loadRuns();
   const hash = location.hash.slice(1);
+  if (!hash && browserMode()) showPanel("results", false);
   if (["summary", "run", "results", "compare"].includes(hash)) {
     showPanel(hash, false);
   }
@@ -982,13 +992,14 @@ function renderRunsList() {
           <span class="t">${esc(run.label || run.id)}</span>
           <span class="s">${esc((run.created_at || "").replace("T", " "))} · ${run.n_results} test${run.n_results === 1 ? "" : "s"}</span>
           <span class="counts">
+            ${run.community ? '<span class="badge accent badge-shared">Shared</span>' : ""}
             <span class="badge">${run.n_ok} ok</span>
             ${run.n_failed ? `<span class="badge">${run.n_failed} failed</span>` : ""}
             ${(run.mtp_modes || []).includes("on") ? '<span class="badge accent">MTP</span>' : ""}
             ${run.status === "running" ? '<span class="badge badge-live">Live</span>' : run.status !== "completed" ? `<span class="badge">${esc(run.status)}</span>` : ""}
           </span>
         </span>
-      </button><button class="run-delete" data-delete="${esc(run.id)}" title="${run.status === "running" ? "This benchmark is still running" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""} aria-label="Delete ${esc(run.label || run.id)}"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 5h14M8 3h4m-7 2 1 12h8l1-12M8 8v6m4-6v6"/></svg><span>Delete</span></button></div>`).join("")}`).join("");
+      </button><button class="run-delete" data-delete="${esc(run.id)}" title="${run.status === "running" ? "This benchmark is still running" : run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""} aria-label="Delete ${esc(run.label || run.id)}"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 5h14M8 3h4m-7 2 1 12h8l1-12M8 8v6m4-6v6"/></svg><span>Delete</span></button></div>`).join("")}`).join("");
   $$("#runs-list .run").forEach((btn) => btn.addEventListener("click", () => selectRun(btn.dataset.id)));
   $$("#runs-list [data-run-select]").forEach((input) => input.addEventListener("change", async () => {
     if (input.checked) state.compare.add(input.dataset.runSelect); else state.compare.delete(input.dataset.runSelect);
@@ -999,7 +1010,7 @@ function renderRunsList() {
 }
 
 async function deleteRun(run) {
-  if (!run || !confirm(browserMode() ? `Delete benchmark "${run.label || run.id}" from this browser?` : `Delete benchmark "${run.label || run.id}" from this computer? A copy will remain in the local archive.`)) return;
+  if (!run || !confirm(browserMode() ? (run.community ? `Hide shared benchmark "${run.label || run.id}" in this browser? The shared file will remain published.` : `Delete benchmark "${run.label || run.id}" from this browser?`) : `Delete benchmark "${run.label || run.id}" from this computer? A copy will remain in the local archive.`)) return;
   try {
     await api("/api/runs/" + encodeURIComponent(run.id), {method: "DELETE"});
     delete state.runCache[run.id];
@@ -1063,13 +1074,15 @@ function renderRunDetail(run) {
   }
   const sessionAllocationNotice = new Set(allocationConfigs(run).map(allocationKey)).size > 1
     ? '<p class="hint" role="status">Sessions in this benchmark used different context allocation settings. Memory use and speed may differ; see session settings below.</p>' : "";
+  const incompleteNotice = run.error || Number(run.remaining_tests) > 0 || run.source_status === "running"
+    ? `<div class="banner warn"><div><b>${run.source_status === "running" ? "Shared checkpoint" : "Benchmark incomplete"}</b>${run.error ? ` - ${esc(run.error)}` : ""}${Number(run.remaining_tests) > 0 ? ` - ${esc(run.remaining_tests)} tests remaining` : ""}. ${browserMode() ? 'Download the JSON and use the desktop app to continue where supported.' : 'Use Add / rerun tests to continue where supported.'}</div></div>` : "";
   const gpu = run.gpu || {}, host = run.host || {}, cfg = run.config || {};
   const ok = (run.results || []).filter((row) => row.status === "ok");
   const best = (key) => Math.max(0, ...ok.map((row) => row[key] || 0));
   const levelRows = (run.results || []).filter(row => (row.concurrency || 1) === state.comparisonConcurrency);
   const failureNotice = levelRows.length && !levelRows.some(row => row.status === "ok")
     ? `<p class="hint" role="status">No successful tests at concurrency ${state.comparisonConcurrency}. Check All measurements for failure details.</p>` : "";
-  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${state.env?.capabilities?.extend ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" ? "disabled" : ""} title="${state.benchmarkRunning || run.status === "running" ? "Wait for the active benchmark to finish" : "Add or rerun tests in this benchmark"}">Add / rerun tests</button>` : ""}<button class="btn-sm" id="rename-run" title="Edit this benchmark's name and notes" ${run.status === "running" ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="Delete this benchmark from this computer" ${run.status === "running" ? "disabled" : ""}>Delete</button></header>${liveNotice}${measurementNotice}${failureNotice}${sessionAllocationNotice}<div class="result-stats">${stat("Best prefill", best("prefill_tps") ? fmt(best("prefill_tps"), 0) : "?", "tk/s")}${stat("Best output", best("decode_tps") ? fmt(best("decode_tps"), 1) : "?", "tk/s")}${stat("Successful tests", `${ok.length}/${(run.results || []).length}`, "")}</div><details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
+  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${state.env?.capabilities?.extend ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" ? "disabled" : ""} title="${state.benchmarkRunning || run.status === "running" ? "Wait for the active benchmark to finish" : "Add or rerun tests in this benchmark"}">Add / rerun tests</button>` : ""}<button class="btn-sm" id="rename-run" title="${run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : "Edit this benchmark name and notes"}" ${run.status === "running" || run.community ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="${run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""}>${run.community ? "Hide" : "Delete"}</button></header>${liveNotice}${measurementNotice}${failureNotice}${sessionAllocationNotice}${incompleteNotice}<div class="result-stats">${stat("Best prefill", best("prefill_tps") ? fmt(best("prefill_tps"), 0) : "?", "tk/s")}${stat("Best output", best("decode_tps") ? fmt(best("decode_tps"), 1) : "?", "tk/s")}${stat("Successful tests", `${ok.length}/${(run.results || []).length}`, "")}</div><details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
   $("#extend-run")?.addEventListener("click", () => openExtendDialog(run));
   $("#delete-run").addEventListener("click", () => deleteRun(run));
   $("#rename-run").addEventListener("click", async () => {

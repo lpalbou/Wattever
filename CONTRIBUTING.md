@@ -1,6 +1,6 @@
 # Contributing
 
-Share benchmark results by opening a pull request with the JSON file from `results/runs/`. Review the file for information you do not want to publish and follow [results guidance](results/README.md). Record model builds, placement and relevant settings so readers can interpret results.
+Share benchmark results by opening a pull request with one JSON file in `results/runs/`. The [sharing guide](docs/sharing-results.md) explains the GitHub upload workflow and how to add missing tests later. Review the file for information you do not want to publish and follow [results guidance](results/README.md). Record model builds, placement and relevant settings so readers can interpret results.
 
 For code changes, preserve old result readability, distinguish measured values from estimates, and document changes in measurement semantics. Wattever uses the Python standard library and local browser assets. See [architecture](docs/architecture.md), [API](docs/api.md), [changelog](CHANGELOG.md), and [security](SECURITY.md).
 

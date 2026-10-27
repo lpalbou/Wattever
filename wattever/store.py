@@ -15,6 +15,7 @@ import time
 import uuid
 import hashlib
 import shutil
+import tempfile
 
 from .platform_util import IS_MAC, IS_WINDOWS, platform_label, run as prun, sysctl
 
@@ -146,10 +147,31 @@ def prepare_run(run):
 
 def save(run):
     ensure_dirs()
-    tmp = path_for(run["id"]) + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as fh:
-        json.dump(run, fh, indent=1, ensure_ascii=False, allow_nan=False)
-    os.replace(tmp, path_for(run["id"]))
+    destination = path_for(run["id"])
+    tmp = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=RUNS_DIR,
+                                         prefix=".wattever-", suffix=".tmp", delete=False) as fh:
+            tmp = fh.name
+            json.dump(run, fh, indent=1, ensure_ascii=False, allow_nan=False)
+        delays = (0.025, 0.05, 0.1, 0.2, 0.4, 0.8)
+        for attempt in range(len(delays) + 1):
+            try:
+                os.replace(tmp, destination)
+                break
+            except PermissionError:
+                if attempt == len(delays):
+                    raise
+                time.sleep(delays[attempt])
+    finally:
+        if tmp:
+            try:
+                os.unlink(tmp)
+            except FileNotFoundError:
+                pass
+            except OSError:
+                # Preserve the original save error if cleanup is also blocked.
+                pass
     return run
 
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Adds a shared results catalog to the hosted Results view and a guide for contributing and continuing benchmark files.
+
 ## 2.4.1 - 2026-10-27
 
 - Keeps viewport position and keyboard focus stable when toggling measures in Summary, Table and Compare.

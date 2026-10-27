@@ -7,6 +7,7 @@
 - [Overview](README.md): quick start and project scope.
 - [Documentation index](docs/README.md): full guide map.
 - [Browser mode](docs/browser.md): hosted connection, measurement and storage limits.
+- [Sharing results](docs/sharing-results.md): shared catalog, contributions and continuing helper sessions.
 - [Getting started](docs/getting-started.md): setup and first run.
 - [Measurements](docs/measurements.md): metrics, context planning and sessions.
 - [Architecture](docs/architecture.md): components and boundaries.
@@ -56,6 +57,8 @@ See [Getting started](docs/getting-started.md) for setup and [Measurements and s
 
 **Results** provides Summary, Table and Compare views with common benchmark, model, measure and concurrency filters. Tables can be copied as tab-separated text. In helper mode, use **Add / rerun tests** to extend a benchmark or replace selected cases. One JSON file stores each benchmark; download it from Results or share it as described in [results guidance](results/README.md). Review its contents before publication.
 
+The hosted Results view also includes a shared catalog that you can browse without connecting a model provider. See [sharing results](docs/sharing-results.md) to contribute your benchmark or add missing tests later.
+
 ## Documentation
 
 [Documentation index](docs/README.md) | [Architecture](docs/architecture.md) | [API](docs/api.md) | [FAQ](docs/faq.md) | [Troubleshooting](docs/troubleshooting.md) | [Changelog](CHANGELOG.md) | [Contributing](CONTRIBUTING.md) | [Security](SECURITY.md)
@@ -75,6 +78,7 @@ Canonical source: [docs/README.md](docs/README.md)
 # Documentation
 
 - [Browser mode](docs/browser.md): hosted setup, privacy, storage and measurement limits.
+- [Sharing results](docs/sharing-results.md): shared catalog, contributions and completing a benchmark later.
 - [Getting started](docs/getting-started.md): requirements and first benchmark.
 - [Measurements and sessions](docs/measurements.md): metrics, hardware, context planning, retries and comparisons.
 - [Architecture](docs/architecture.md): components and data flow.
@@ -122,6 +126,35 @@ GPU, CPU, RAM and VRAM fields are optional user-supplied descriptions, not hardw
 Browser results record `measurement_mode: browser`, `browser_schema_version: 1` and protocol `browser-1`, with the bundled corpus identity and a SHA-256 hash when available. Timing occurs in the client; it includes network and browser overhead and is not directly comparable to helper protocol measurements. Prompt throughput is unavailable when the provider does not report exact prompt usage. Output token counts and throughput are marked estimated when completion usage is unavailable. A failed request is recorded as a failure, not zero throughput.
 
 Results are stored in browser storage and can be downloaded or imported as JSON. Storage can be cleared or unavailable; if a storage warning appears, download the in-memory results before closing the page. Closing or reloading the page stops the browser benchmark, and a previously running result is shown as interrupted. On timeout the browser aborts its requests and stops the run, but cannot verify that the provider stopped inference or unload its model. Check the provider before starting another workload. Helper benchmarks instead continue in the local server when the page closes; see [measurements and sessions](docs/measurements.md).
+
+Results also shows a read-only shared catalog without requiring an endpoint connection. Hiding a shared result affects only this browser. See [sharing results](docs/sharing-results.md) to contribute a benchmark.
+
+---
+
+## docs/sharing-results.md
+
+Canonical source: [docs/sharing-results.md](docs/sharing-results.md)
+
+# Sharing and continuing benchmark results
+
+The hosted Results view includes a shared catalog built from benchmark JSON files in this repository, alongside results stored in your browser. You can browse shared results without connecting a model provider or entering an API key. Shared entries are read-only; deleting one in the hosted view hides it in that browser and does not delete it from GitHub. Local browser results can be renamed and deleted locally.
+
+## Contribute a benchmark
+
+1. Run a benchmark using the [full helper](docs/getting-started.md) or [browser mode](docs/browser.md). Partial sessions and failures are useful contributions too.
+2. In Results, download the benchmark's **JSON**. Review the hardware information, notes and model names before sharing. Browser results identify their separate client-timed protocol; helper results include the sensor and session settings.
+3. Sign in to GitHub and open [upload files to results/runs](https://github.com/lpalbou/Wattever/upload/main/results/runs). Upload the single JSON file, named after its `id` with a `.json` extension. If you do not have write access, follow GitHub's fork prompt and propose the change from your fork.
+4. Open the proposed pull request. The repository's validation checks run on the contribution. Once merged and the site deployment completes, the shared catalog updates automatically.
+
+For a command-line contribution, fork and clone the repository, create a branch, and copy the single result file to `results/runs/`. Run `python tools/validate_results.py results/runs/<id>.json`, then `git add results/runs/<id>.json`, commit, push your branch and open a pull request. Stage the specific result file so unrelated local files and deletions are excluded.
+
+## Add missing tests later
+
+A benchmark does not need every planned case before you contribute it. To complete or extend a helper benchmark later, download its JSON and put it in the local helper's `results/runs/` directory using its `id` as the filename. In Results select it and choose **Add / rerun tests**. Existing models are preselected; select the models, sizes and query counts you want, review the preview, and choose **Add missing tests**. Existing terminal cases are preserved. Select **Retry failed tests** explicitly if you also want to retry failures and skipped cases.
+
+The helper checks hardware, selected GPU and driver, corpus and LM Studio version for compatibility. Start a separate benchmark when those differ or cannot be verified. The same file records the added session and the helper saves a backup before modifying it. To update a contribution, submit the updated file with the same ID in a pull request; the saved cases travel with it. Do not manually edit measurements or replace failures with zeroes.
+
+Browser mode can import and display JSON but cannot continue an existing benchmark. Its provider controls model execution and context. See [measurements and sessions](docs/measurements.md) for retry, replacement and comparison rules.
 
 ---
 
@@ -254,6 +287,10 @@ Older files remain readable. Compare protocol, model, corpus, settings, context 
 
 No. Failures and skipped cases are recorded and can be retried. See [troubleshooting](docs/troubleshooting.md) for common causes.
 
+## Must a benchmark be complete before I share it?
+
+No. Partial sessions are useful contributions. The helper can add missing cases to the same file later, subject to its compatibility checks. See [sharing results](docs/sharing-results.md).
+
 ---
 
 ## docs/troubleshooting.md
@@ -280,7 +317,7 @@ Canonical source: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 # Contributing
 
-Share benchmark results by opening a pull request with the JSON file from `results/runs/`. Review the file for information you do not want to publish and follow [results guidance](results/README.md). Record model builds, placement and relevant settings so readers can interpret results.
+Share benchmark results by opening a pull request with one JSON file in `results/runs/`. The [sharing guide](docs/sharing-results.md) explains the GitHub upload workflow and how to add missing tests later. Review the file for information you do not want to publish and follow [results guidance](results/README.md). Record model builds, placement and relevant settings so readers can interpret results.
 
 For code changes, preserve old result readability, distinguish measured values from estimates, and document changes in measurement semantics. Wattever uses the Python standard library and local browser assets. See [architecture](docs/architecture.md), [API](docs/api.md), [changelog](CHANGELOG.md), and [security](SECURITY.md).
 
@@ -325,6 +362,10 @@ Treat participants with respect. Be constructive, welcome differing experience l
 Canonical source: [CHANGELOG.md](CHANGELOG.md)
 
 # Changelog
+
+## Unreleased
+
+- Adds a shared results catalog to the hosted Results view and a guide for contributing and continuing benchmark files.
 
 ## 2.4.1 - 2026-10-27
 
@@ -412,9 +453,10 @@ session. Historical unversioned files remain readable without rewriting them.
    only. It does not change where LM Studio executes the model.
 4. Run the benchmark. Failures and partial sessions remain useful data.
 5. Download **JSON** in Results, or take the matching file from `results/runs/`.
-   Run `python tools/validate_results.py results/runs/<id>.json`.
-6. Open a PR containing that file. No database, index or aggregate file changes
-   are needed. Stage that specific file, especially after deleting old runs locally.
+   Review it for details you do not want to publish.
+6. Follow the [sharing guide](docs/sharing-results.md) to upload the file and
+   propose a pull request. Validation runs on the contribution and the shared
+   catalog updates after merge. No index or aggregate file changes are needed.
 
 ## Standard format
 
@@ -497,6 +539,5 @@ it. `execution_config` is the most recent workload selection. This provenance
 matters when extending an older planner run or adding MTP for one model.
 `remaining_tests` counts requested cases with no terminal result.
 
-## Preliminary results
-
-The `20261027-004834_rtx-5060-ti_0987cbf436_preliminary.json` file is an exploratory checkpoint, not a completed isolated hardware comparison. Its `publication` metadata identifies the source run, snapshot time and limitations. It contains an incomplete matrix and mixed planner versions; legacy concurrent context failures are not hardware-capacity evidence. The source benchmark continues independently.
+Partial and completed benchmarks can both be shared. To add missing tests later,
+use the same file and follow [sharing results](docs/sharing-results.md).

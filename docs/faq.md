@@ -19,3 +19,7 @@ Older files remain readable. Compare protocol, model, corpus, settings, context 
 ## Does a failed case invalidate the benchmark?
 
 No. Failures and skipped cases are recorded and can be retried. See [troubleshooting](troubleshooting.md) for common causes.
+
+## Must a benchmark be complete before I share it?
+
+No. Partial sessions are useful contributions. The helper can add missing cases to the same file later, subject to its compatibility checks. See [sharing results](sharing-results.md).

@@ -15,6 +15,7 @@ const context = {Charts: {fmtNum: String}, document: {querySelector: (s) => elem
 vm.createContext(context);
 vm.runInContext(source, context);
 vm.runInContext(`
+  if (benchmarkFilename('a.1') !== 'a.1.json' || benchmarkFilename('../bad') !== 'benchmark.json') throw Error('filename');
   state.models = new Set(['model']); state.sizes = new Set([512]); state.concurrencyLevels = new Set([1, 10]);
   if ([...through(CONCURRENCY_PRESETS, 5)].join(',') !== '1,2,3,4,5') throw Error('select five');
   if ([...through(CONCURRENCY_PRESETS, 2)].join(',') !== '1,2') throw Error('lower selection');

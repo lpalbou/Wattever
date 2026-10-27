@@ -25,7 +25,7 @@
 </div>
 
 <main>
-<div id="browser-storage-warning" role="alert" hidden></div>
+<div id="browser-storage-warning" role="alert" hidden></div><div id="community-warning" role="status" hidden></div>
 
 <!-- RUN -->
 <section class="panel active" id="panel-run">
@@ -76,7 +76,7 @@
 <section class="panel" id="panel-results">
   <div class="page-intro"><div><span class="eyebrow">YOUR BENCHMARK LIBRARY</span><h2>Explore your results.</h2><p>Select benchmarks on the left. Switch views without losing your selection.</p></div></div>
   <div class="results-grid">
-    <aside class="card benchmark-library"><header><h3>Benchmarks</h3><span class="spacer"></span><button class="btn-sm" id="refresh-runs" title="Refresh saved benchmarks" aria-label="Refresh saved benchmarks">&#8635;</button></header><p class="hint">Click a name to open it. Tick several to compare.</p><div id="browser-import" hidden><label class="btn-sm">Import JSON <input id="browser-import-file" type="file" accept="application/json,.json"></label><p class="hint" id="browser-import-status" role="status"></p></div><div class="runs" id="runs-list"></div></aside>
+    <aside class="card benchmark-library"><header><h3>Benchmarks</h3><span class="spacer"></span><button class="btn-sm" id="refresh-runs" title="Refresh saved benchmarks" aria-label="Refresh saved benchmarks">&#8635;</button></header><p class="hint">Click a name to open it. Tick several to compare.</p><details class="adv"><summary>Share a benchmark</summary><div><p class="hint">Download the benchmark JSON, then upload it to <code>results/runs/</code> in a fork and open a pull request. Once merged, it will appear in the shared library.</p><a href="https://github.com/lpalbou/Wattever/blob/main/docs/sharing-results.md" target="_blank" rel="noopener noreferrer">Contribution guide</a></div></details><div id="browser-import" hidden><label class="btn-sm">Import JSON <input id="browser-import-file" type="file" accept="application/json,.json"></label><p class="hint" id="browser-import-status" role="status"></p></div><div class="runs" id="runs-list"></div></aside>
     <div class="results-workspace">
       <div id="run-detail"></div>
       <div class="card results-controls" id="results-controls">

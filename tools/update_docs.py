@@ -6,7 +6,7 @@ import re
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCUMENTS = ["README.md", "docs/README.md", "docs/getting-started.md", "docs/browser.md", "docs/measurements.md",
+DOCUMENTS = ["README.md", "docs/README.md", "docs/getting-started.md", "docs/browser.md", "docs/sharing-results.md", "docs/measurements.md",
              "docs/architecture.md", "docs/api.md", "docs/faq.md", "docs/troubleshooting.md",
              "CONTRIBUTING.md", "SECURITY.md", "CODE_OF_CONDUCT.md", "CHANGELOG.md",
              "ACKNOWLEDGEMENTS.md", "LICENSE", "results/README.md"]

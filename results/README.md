@@ -17,9 +17,10 @@ session. Historical unversioned files remain readable without rewriting them.
    only. It does not change where LM Studio executes the model.
 4. Run the benchmark. Failures and partial sessions remain useful data.
 5. Download **JSON** in Results, or take the matching file from `results/runs/`.
-   Run `python tools/validate_results.py results/runs/<id>.json`.
-6. Open a PR containing that file. No database, index or aggregate file changes
-   are needed. Stage that specific file, especially after deleting old runs locally.
+   Review it for details you do not want to publish.
+6. Follow the [sharing guide](../docs/sharing-results.md) to upload the file and
+   propose a pull request. Validation runs on the contribution and the shared
+   catalog updates after merge. No index or aggregate file changes are needed.
 
 ## Standard format
 
@@ -102,6 +103,5 @@ it. `execution_config` is the most recent workload selection. This provenance
 matters when extending an older planner run or adding MTP for one model.
 `remaining_tests` counts requested cases with no terminal result.
 
-## Preliminary results
-
-The `20261027-004834_rtx-5060-ti_0987cbf436_preliminary.json` file is an exploratory checkpoint, not a completed isolated hardware comparison. Its `publication` metadata identifies the source run, snapshot time and limitations. It contains an incomplete matrix and mixed planner versions; legacy concurrent context failures are not hardware-capacity evidence. The source benchmark continues independently.
+Partial and completed benchmarks can both be shared. To add missing tests later,
+use the same file and follow [sharing results](../docs/sharing-results.md).

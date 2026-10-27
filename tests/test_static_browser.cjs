@@ -111,6 +111,11 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     await send('Page.navigate',{url:requestedSite.href});
     await until('typeof state !== "undefined" && !!state.env && !!window.WatteverBrowser?.enabled','Built static UI booted');
     const site=await evaluate('new URL(".",document.baseURI).href');
+    await until('state.runs.some(run=>run.community)', 'Repository benchmarks load without an endpoint connection');
+    await check('document.querySelectorAll("#runs-list .badge-shared").length > 0', 'Shared benchmarks are identified in Results');
+    // Hide public data only in this isolated test profile before exercising local workflows.
+    await evaluate('(async()=>{for(const run of (await api("/api/runs")).runs.filter(run=>run.community)){await api("/api/runs/"+encodeURIComponent(run.id),{method:"DELETE"})}await loadRuns()})()');
+    await until('state.runs.length===0', 'Hiding shared data affects only the browser view');
     if(publicSite) {
       assert.equal(new URL(site).protocol,'https:','Public-site redirects must preserve HTTPS');
       try {

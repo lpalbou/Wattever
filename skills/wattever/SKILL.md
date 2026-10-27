@@ -46,6 +46,7 @@ except (urllib.error.URLError, OSError, ValueError) as exc:
 ## Capability map
 
 - Hosted browser mode: open `https://lpalbou.github.io/Wattever/`, connect explicitly to an OpenAI-compatible endpoint, and use browser storage and JSON import/export. It requires CORS and may require browser local-network permission. No helper install is needed. The optional key is memory-only; do not put it in conversation or result files.
+- The hosted Results catalog is read-only and needs no provider connection. Hiding a shared entry is browser-local. To contribute, submit its JSON in a GitHub pull request; the hosted site does not write to GitHub.
 - Read version, environment, models, status, events and runs via GET endpoints in the API reference. `GET /api/bench/extend-plan?run_id=<id>` returns extension options.
 - Start, cancel, resume, preview and extend through `/api/bench/*`; these execute inference or change state except planning. Add missing, retry failed/skipped, or rerun selected cases.
 - Edit metadata, delete to local trash, export JSON/CSV, start or unload LM Studio, and stop Wattever through the local API. Results and snapshots are written under `results/`.
@@ -78,6 +79,7 @@ The helper applies a deadline based on prior comparable prefill and a decode ina
 
 - [Getting started](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/docs/getting-started.md): setup and first run.
 - [Browser mode](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/docs/browser.md): hosted setup and limitations.
+- [Sharing results](https://raw.githubusercontent.com/lpalbou/Wattever/main/docs/sharing-results.md): contributions and continuing helper benchmarks.
 - [Measurements](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/docs/measurements.md): metric boundaries and session semantics.
 - [API](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/docs/api.md): routes and side effects.
 - [Troubleshooting](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/docs/troubleshooting.md): symptoms and remedies.
