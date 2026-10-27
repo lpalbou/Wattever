@@ -14,6 +14,7 @@ from urllib.parse import urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 SECRET = "static-fixture-secret"
 stats = {"static_api": [], "models": 0, "completions": 0, "authorized": 0,
+         "preflights": 0, "rejected_authorization": 0,
          "origins": [], "prompts": []}
 lock = threading.Lock()
 
@@ -32,11 +33,15 @@ class Provider(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_OPTIONS(self):
+        with lock:
+            stats["preflights"] += 1
         self.headers_for(204)
 
     def authorized(self):
         valid = self.headers.get("Authorization") == "Bearer " + SECRET
         if not valid:
+            with lock:
+                stats["rejected_authorization"] += 1
             self.headers_for(401)
             self.wfile.write(b'{"error":"fixture authorization required"}')
             return False

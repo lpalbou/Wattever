@@ -1,0 +1,21 @@
+name: Verify hosted browser
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test public HTTPS site with an isolated loopback provider
+        env:
+          WATTEVER_PUBLIC_SITE_URL: https://lpalbou.github.io/Wattever/
+        run: node tests/test_static_browser.cjs

@@ -54,7 +54,9 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     ws = new WebSocket(pages.find(page => page.type === 'page').webSocketDebuggerUrl);
     await new Promise((resolve,reject) => { ws.addEventListener('open',resolve,{once:true}); ws.addEventListener('error',reject,{once:true}); });
     let next=0;
-    const pending = new Map(), errors=[], requests=[];
+    const pending = new Map(), errors=[], requests=[], loadingFailures=[];
+    const requestTargets = new Map();
+    const safeTarget = value => { try { const url=new URL(value);return url.origin+url.pathname; } catch (_) { return '[invalid URL]'; } };
     ws.addEventListener('message',event => {
       const message = JSON.parse(event.data);
       if(message.id && pending.has(message.id)) {
@@ -63,7 +65,15 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
         else request.resolve(message.result);
       }
       if(message.method === 'Runtime.exceptionThrown') errors.push(message.params.exceptionDetails);
-      if(message.method === 'Network.requestWillBeSent') requests.push(message.params.request.url);
+      if(message.method === 'Network.requestWillBeSent') {
+        requests.push(message.params.request.url);
+        requestTargets.set(message.params.requestId,safeTarget(message.params.request.url));
+      }
+      if(message.method === 'Network.loadingFailed') {
+        const failure=message.params;
+        loadingFailures.push({target:requestTargets.get(failure.requestId),errorText:failure.errorText,
+          corsErrorStatus:failure.corsErrorStatus,blockedReason:failure.blockedReason,canceled:failure.canceled});
+      }
     });
     const send=(method,params={})=>new Promise((resolve,reject)=>{
       const id=++next; pending.set(id,{resolve,reject}); ws.send(JSON.stringify({id,method,params}));
@@ -74,8 +84,27 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
       return result.result.value;
     };
     const check=async(expression,message)=>assert(await evaluate(expression),message);
+    const diagnose=async message=>{
+      const diagnostics={message,loadingFailures};
+      try { diagnostics.browser=await send('Browser.getVersion'); } catch (_) {}
+      try { diagnostics.page=await evaluate(`(async()=>({
+        origin:location.origin,secureContext:isSecureContext,
+        connectStatus:document.querySelector('#browser-connect-status')?.textContent,
+        loopbackPermission:await navigator.permissions.query({name:'loopback-network'}).then(result=>result.state).catch(error=>'unsupported: '+error.name),
+        loopbackPolicy:(document.permissionsPolicy || document.featurePolicy)?.allowsFeature('loopback-network')
+      }))()`); } catch(error) { diagnostics.pageError=error.message; }
+      try {
+        const counters=await (await fetch(new URL('/__fixture/stats',config.site))).json();
+        diagnostics.provider={models:counters.models,completions:counters.completions,
+          authorized:counters.authorized,preflights:counters.preflights,
+          rejectedAuthorization:counters.rejected_authorization,origins:counters.origins};
+      } catch(error) { diagnostics.providerError=error.message; }
+      // Never include request headers, body, API credentials or URL queries.
+      console.error('Static browser failure diagnostics: '+JSON.stringify(diagnostics).replace(/static-fixture-secret/g,'[redacted]'));
+    };
     const until=async(expression,message)=>{
       for(let i=0;i<150;i++) { if(await evaluate(expression)) return; await delay(100); }
+      await diagnose(message);
       throw Error(message);
     };
     await send('Runtime.enable'); await send('Page.enable'); await send('Network.enable');
@@ -85,13 +114,14 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     if(publicSite) {
       assert.equal(new URL(site).protocol,'https:','Public-site redirects must preserve HTTPS');
       try {
-        await send('Browser.setPermission',{permission:{name:'local-network-access'},setting:'granted',origin:new URL(site).origin});
-        const permission=await evaluate('navigator.permissions.query({name:"local-network-access"}).then(result=>result.state)');
-        assert.equal(permission,'granted','Local Network Access permission is granted for the isolated browser context');
+        await send('Browser.setPermission',{permission:{name:'loopback-network'},setting:'granted',origin:new URL(site).origin});
+        const permission=await evaluate('navigator.permissions.query({name:"loopback-network"}).then(result=>result.state)');
+        assert.equal(permission,'granted','Loopback Network permission is granted for the isolated browser context');
       } catch(error) {
-        throw Error('Public HTTPS-to-loopback test cannot grant and verify Local Network Access in this Chrome build: '+error.message);
+        await diagnose('Cannot grant and verify Loopback Network permission');
+        throw Error('Public HTTPS-to-loopback test cannot grant and verify Loopback Network permission in this Chrome build: '+error.message);
       }
-      console.log('Testing deployed HTTPS site with Local Network Access granted to its origin; provider remains the isolated loopback mock.');
+      console.log('Testing deployed HTTPS site with granular Loopback Network permission granted to its origin; provider remains the isolated loopback mock.');
     }
     await check('!document.querySelector("#browser-connect").hidden','Static connection form is visible');
     const before=await (await fetch(new URL('/__fixture/stats',config.site))).json();
