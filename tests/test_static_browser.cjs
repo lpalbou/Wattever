@@ -44,7 +44,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     browser.stderr.on('data',chunk=>{browserErrors=(browserErrors+chunk).slice(-4000);});
     browser.on('error',error=>{browserErrors+=String(error);});
     const debugFile = path.join(artifacts,'profile','DevToolsActivePort');
-    for(let i=0;i<150 && !fs.existsSync(debugFile);i++) {
+    for(let i=0;i<450 && !fs.existsSync(debugFile);i++) {
       if(browser.exitCode!==null) throw Error('Browser exited before startup: '+browserErrors);
       await delay(100);
     }
