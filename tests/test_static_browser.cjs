@@ -122,8 +122,8 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     await check('(async()=>{try{await api("/api/import",{method:"POST",body:JSON.stringify({id:"malformed",results:[null]})});return false;}catch(error){return (await api("/api/runs")).runs.length===1;}})()','Malformed imports are rejected without damaging the library');
     // Capture the UI download artifact instead of asking the browser to write to the user's Downloads.
     await evaluate('window.__downloads=[];downloadBlob=(content,name,type)=>window.__downloads.push({content,name,type});showPanel("results")');
-    await until('!!document.querySelector("#run-detail a[href$=\"/download\"]")','JSON download action available');
-    await evaluate('document.querySelector("#run-detail a[href$=\"/download\"]").click()');
+    await until(`!!document.querySelector('#run-detail a[href$="/download"]')`,'JSON download action available');
+    await evaluate(`document.querySelector('#run-detail a[href$="/download"]').click()`);
     await until('window.__downloads.length===1','UI JSON export resolves through adapter');
     const artifact=await evaluate('window.__downloads[0]');
     const exported=JSON.parse(artifact.content);
