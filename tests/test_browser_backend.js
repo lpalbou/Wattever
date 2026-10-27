@@ -66,4 +66,3 @@ const modelResponse=()=>({ok:true,json:async()=>({data:[{id:'test-model'}]})});
  await assert.rejects(adapter.connect(),/CORS/);
  console.log('browser backend tests passed');
 })().catch(e=>{console.error(e);process.exitCode=1});
-

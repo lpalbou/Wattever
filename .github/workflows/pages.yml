@@ -41,3 +41,10 @@ jobs:
       - name: Deploy site
         id: deployment
         uses: actions/deploy-pages@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify hosted HTTPS site against an isolated loopback provider
+        env:
+          WATTEVER_PUBLIC_SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: node tests/test_static_browser.cjs
