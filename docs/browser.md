@@ -13,3 +13,9 @@ Browser results record `measurement_mode: browser`, `browser_schema_version: 1` 
 Results are stored in browser storage and can be downloaded or imported as JSON. Storage can be cleared or unavailable; if a storage warning appears, download the in-memory results before closing the page. Closing or reloading the page stops the browser benchmark, and a previously running result is shown as interrupted. On timeout the browser aborts its requests and stops the run, but cannot verify that the provider stopped inference or unload its model. Check the provider before starting another workload. Helper benchmarks instead continue in the local server when the page closes; see [measurements and sessions](measurements.md).
 
 Results also shows a read-only shared catalog without requiring an endpoint connection. Hiding a shared result affects only this browser. See [sharing results](sharing-results.md) to contribute a benchmark.
+
+## Shared-results data boundary
+
+The hosted site opens the shared Results library by default. Browsing it reads only the same-origin GitHub Pages catalog and benchmark JSON; it does not query desktop helper APIs or local files. Shared records identify their GitHub source. The published JSON omits host-local diagnostic text and paths while preserving measurements, failure classifications, hardware descriptions, settings and session provenance. It is a public projection of the repository record.
+
+If the browser data client fails to load, the hosted site reports that failure rather than falling back to desktop APIs. Model-server access belongs to the optional Run workflow and starts only after an explicit Connect action.

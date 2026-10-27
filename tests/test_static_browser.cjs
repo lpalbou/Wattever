@@ -112,7 +112,35 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     await until('typeof state !== "undefined" && !!state.env && !!window.WatteverBrowser?.enabled','Built static UI booted');
     const site=await evaluate('new URL(".",document.baseURI).href');
     await until('state.runs.some(run=>run.community)', 'Repository benchmarks load without an endpoint connection');
+    await check('document.querySelector("#panel-results").classList.contains("active")','Hosted site opens shared Results before any provider connection');
     await check('document.querySelectorAll("#runs-list .badge-shared").length > 0', 'Shared benchmarks are identified in Results');
+    await evaluate('showPanel("results");showResultsView("table")');
+    if (!publicSite) {
+      await evaluate('selectRun("fixture-stored-diagnostic")');
+      await until('state.runCache["fixture-stored-diagnostic"]?.community === true','Stored-error shared fixture is available for inspection');
+    }
+    // Include one idle watcher tick: viewing or polling shared Results must not
+    // contact a provider, the Python helper, or a path contained in producer data.
+    await delay(3200);
+    const initialRequests=requests.slice();
+    const permittedOrigins=new Set([new URL(site).origin,requestedSite.origin]);
+    assert(initialRequests.every(value=>{
+      const url=new URL(value);
+      return ['http:','https:'].includes(url.protocol) && permittedOrigins.has(url.origin);
+    }),'Before Connect, Results requests only the hosted site and its canonical redirect origin');
+    assert(!initialRequests.some(value=>/file:\/\/|(?:^|\/)C:(?:\/|%5c)|localhost:1234|\/v1\/(?:models|chat\/completions)/i.test(value)),
+      'Stored Windows paths, file URLs and provider endpoints are never followed');
+    assert(!initialRequests.some(value=>/(?:^|\/)api\//.test(new URL(value).pathname)),
+      'Shared Results never makes Python helper API requests');
+    const initialStats=await (await fetch(new URL('/__fixture/stats',config.site))).json();
+    assert.equal(initialStats.models,0,'Shared Results never contacts the loopback provider');
+    assert.equal(initialStats.completions,0,'Shared Results never invokes inference');
+    assert.equal(initialStats.preflights,0,'Shared Results never attempts a provider CORS preflight');
+    assert.equal(initialStats.authorized,0,'Shared Results does not send provider credentials');
+    const sharedHtml=await evaluate('document.querySelector("#panel-results").innerHTML');
+    assert(!/WinError|\b[A-Za-z]:[\\/]|file:\/\//i.test(sharedHtml),
+      'Shared Results does not expose producer-local Windows/file diagnostics in text or titles');
+    console.log('Shared Results network boundary verified: hosted assets/catalog only, no helper, provider, local files or stored diagnostic URLs before Connect.');
     // Hide public data only in this isolated test profile before exercising local workflows.
     await evaluate('(async()=>{for(const run of (await api("/api/runs")).runs.filter(run=>run.community)){await api("/api/runs/"+encodeURIComponent(run.id),{method:"DELETE"})}await loadRuns()})()');
     await until('state.runs.length===0', 'Hiding shared data affects only the browser view');
@@ -128,7 +156,8 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
       }
       console.log('Testing deployed HTTPS site with granular Loopback Network permission granted to its origin; provider remains the isolated loopback mock.');
     }
-    await check('!document.querySelector("#browser-connect").hidden','Static connection form is visible');
+    await evaluate('showPanel("run")');
+    await check('!document.querySelector("#browser-connect").hidden','Static connection form is visible after explicitly opening Run');
     const before=await (await fetch(new URL('/__fixture/stats',config.site))).json();
     assert.equal(before.models,0,'No provider request before explicit connection');
     assert.equal(before.completions,0,'No inference before explicit start');

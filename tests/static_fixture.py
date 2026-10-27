@@ -1,5 +1,6 @@
 """Isolated static-site/provider fixture for remote browser CI; never calls LM Studio."""
 import functools
+import hashlib
 from http.server import BaseHTTPRequestHandler, SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
@@ -119,6 +120,24 @@ def main():
         subprocess.run([sys.executable, str(ROOT / "tools" / "build_pages.py"),
                         "--output-dir", str(site)], cwd=ROOT, check=True,
                        stdout=subprocess.DEVNULL)
+        # A saved producer error is inert JSON, never a URL or a browser I/O command.
+        # Inject only into this temporary built fixture, never the repository/site.
+        folder = site / "benchmarks"
+        manifest = json.loads((folder / "index.json").read_text(encoding="utf-8"))
+        diagnostic = (r"[WinError 5] Access denied: C:\tests\gpu-bench\results\runs\old.tmp; "
+                      "file:///C:/tests/gpu-bench/results/runs/old.json; "
+                      "http://localhost:1234/v1/models")
+        saved = {"id": "fixture-stored-diagnostic", "label": "Stored shared checkpoint",
+                 "status": "error", "remaining_tests": 24, "error": diagnostic,
+                 "config": {"models": ["saved-model"], "sizes": [512],
+                            "concurrency_levels": [1], "repeats": 1},
+                 "results": [{"model": "saved-model", "target_tokens": 512,
+                              "concurrency": 1, "status": "failed", "message": diagnostic}]}
+        raw = json.dumps(saved).encode("utf-8")
+        (folder / (saved["id"] + ".json")).write_bytes(raw)
+        manifest["benchmarks"].insert(0, {"id": saved["id"], "file": saved["id"] + ".json",
+                                          "sha256": hashlib.sha256(raw).hexdigest()})
+        (folder / "index.json").write_text(json.dumps(manifest), encoding="utf-8")
         provider = ThreadingHTTPServer(("127.0.0.1", 0), Provider)
         static = ThreadingHTTPServer(("127.0.0.1", 0),
                                      functools.partial(Static, directory=directory))

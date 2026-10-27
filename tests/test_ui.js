@@ -19,6 +19,9 @@ vm.runInContext(`
   state.models = new Set(['model']); state.sizes = new Set([512]); state.concurrencyLevels = new Set([1, 10]);
   const issue = benchmarkIncompleteNotice({status:'error',remaining_tests:24,error:'WinError 5: Access is denied: local.json.tmp'});
   if(!issue.includes('A file access error') || !issue.includes('24 tests remaining') || !issue.includes('<summary>Technical details</summary>')) throw Error('Storage errors need readable guidance and optional diagnostics');
+  const shared = sharedDisplayRun({community:true,status:'error',remaining_tests:24,error:'WinError 5 C:\\private',notes:'ordinary setup notes',hardware:{cpu:{name:'Test CPU'},gpus:[{name:'Test GPU'}]},config:{gpu_offload:'max'},sessions:[{id:'one',config:{context_policy:'fixed'},error:'C:\\private'}],results:[{message:'C:\\private',requests:[{message:'C:\\private'}]}]});
+  if (JSON.stringify(shared).includes('private') || benchmarkIncompleteNotice(shared).includes('WinError') || !benchmarkIncompleteNotice(shared).includes('24 unrecorded cases')) throw Error('shared diagnostic leakage');
+  if (shared.notes !== 'ordinary setup notes' || shared.hardware.gpus[0].name !== 'Test GPU' || shared.hardware.cpu.name !== 'Test CPU' || shared.config.gpu_offload !== 'max' || shared.sessions[0].config.context_policy !== 'fixed') throw Error('shared hardware/settings provenance lost');
   if(benchmarkIncompleteNotice({status:'completed',remaining_tests:0}) || benchmarkIncompleteNotice({status:'running',remaining_tests:24})) throw Error('Completed and active benchmarks must not show stale incomplete warnings');
   if ([...through(CONCURRENCY_PRESETS, 5)].join(',') !== '1,2,3,4,5') throw Error('select five');
   if ([...through(CONCURRENCY_PRESETS, 2)].join(',') !== '1,2') throw Error('lower selection');
@@ -65,3 +68,11 @@ vm.runInContext(`
   if (tracksFor([run]).length !== 0) throw Error('track filter');
 `, context);
 console.log('UI logic tests passed');
+
+(async()=>{
+  let contacted = false;
+  const staticContext = {window:{WATTEVER_STATIC:true}, fetch:()=>{contacted=true; throw Error('must not fetch');}, Charts:{fmtNum:String}, document:{querySelector:()=>null}};
+  vm.createContext(staticContext); vm.runInContext(source, staticContext);
+  await assert.rejects(vm.runInContext('api("/api/env")', staticContext), /Browser application failed to load/);
+  assert.equal(contacted,false);
+})().catch(error=>{console.error(error);process.exitCode=1});

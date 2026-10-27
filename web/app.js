@@ -57,7 +57,7 @@ function fmtDuration(seconds) {
   return (seconds / 3600).toFixed(1) + " h";
 }
 
-function browserMode() { return typeof window !== "undefined" && !!window.WatteverBrowser?.enabled; }
+function browserMode() { return typeof window !== "undefined" && window.WATTEVER_STATIC === true; }
 
 function updateBrowserStorageWarning(data) {
   if (!browserMode() || !data || typeof data !== "object") return;
@@ -70,6 +70,7 @@ function updateBrowserStorageWarning(data) {
 }
 async function api(path, opts = {}) {
   if (browserMode()) {
+    if (!window.WatteverBrowser?.enabled || typeof window.WatteverBrowser.request !== "function") throw new Error("Browser application failed to load. Reload this page.");
     const result = await window.WatteverBrowser.request(path, opts);
     updateBrowserStorageWarning(result);
     if (Object.prototype.hasOwnProperty.call(result || {}, "community_error")) {
@@ -318,7 +319,7 @@ async function init() {
   try {
     state.env = await api("/api/env");
   } catch (e) {
-    $("#env-banners").innerHTML = banner("err", "Cannot reach the local server", esc(e.message));
+    $("#env-banners").innerHTML = banner("err", browserMode() ? "Browser application unavailable" : "Cannot reach the local server", esc(e.message));
     return;
   }
   renderEnv();
@@ -1056,7 +1057,23 @@ function sessionSettings(run) {
   }).join("")}</div></details>`;
 }
 
+function sharedDisplayRun(run) {
+  if (!run.community) return run;
+  const sensitive = /^(?:error|message|recovery_error|error_message|log|logs|traceback|stdout|stderr|interrupted_note)$/i;
+  const localPath = /(?:[a-z]:[\\/]|\\\\|file:\/\/|\/(?:Users|home|tmp|var|mnt|private|Volumes)\/|WinError\s*\d+)/i;
+  function clean(value) {
+    if (typeof value === "string") return localPath.test(value) ? "" : value;
+    if (Array.isArray(value)) return value.map(clean);
+    if (!value || typeof value !== "object") return value;
+    return Object.fromEntries(Object.entries(value).filter(([key]) => !sensitive.test(key)).map(([key, item]) => [key, clean(item)]));
+  }
+  const copy = clean(run);
+  copy.shared_partial = run.status === "error" || !!run.error || Number(run.remaining_tests) > 0 || run.source_status === "running";
+  return copy;
+}
 function benchmarkIncompleteNotice(run) {
+  if (run.community) return run.shared_partial || run.error || Number(run.remaining_tests) > 0 || run.source_status === "running"
+    ? `<div class="banner warn"><div><b>Partial shared benchmark</b>${Number(run.remaining_tests) > 0 ? ` - ${esc(run.remaining_tests)} unrecorded cases` : ""}</div></div>` : "";
   if (run.status === "running" || !(run.error || Number(run.remaining_tests) > 0 || run.source_status === "running")) return "";
   const error = String(run.error || "");
   const reason = error ? (/WinError 5|PermissionError|Permission denied|Access is denied/i.test(error)
@@ -1083,13 +1100,14 @@ function renderRunDetail(run) {
   const sessionAllocationNotice = new Set(allocationConfigs(run).map(allocationKey)).size > 1
     ? '<p class="hint" role="status">Sessions in this benchmark used different context allocation settings. Memory use and speed may differ; see session settings below.</p>' : "";
   const incompleteNotice = benchmarkIncompleteNotice(run);
+  const sourceNotice = run.community ? `<p class="hint">Data source: <a target="_blank" rel="noopener noreferrer" href="https://github.com/lpalbou/Wattever/blob/main/results/runs/${encodeURIComponent(run.id)}.json">GitHub</a></p>` : "";
   const gpu = run.gpu || {}, host = run.host || {}, cfg = run.config || {};
   const ok = (run.results || []).filter((row) => row.status === "ok");
   const best = (key) => Math.max(0, ...ok.map((row) => row[key] || 0));
   const levelRows = (run.results || []).filter(row => (row.concurrency || 1) === state.comparisonConcurrency);
   const failureNotice = levelRows.length && !levelRows.some(row => row.status === "ok")
     ? `<p class="hint" role="status">No successful tests at concurrency ${state.comparisonConcurrency}. Check All measurements for failure details.</p>` : "";
-  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${state.env?.capabilities?.extend ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" ? "disabled" : ""} title="${state.benchmarkRunning || run.status === "running" ? "Wait for the active benchmark to finish" : "Add or rerun tests in this benchmark"}">Add / rerun tests</button>` : ""}<button class="btn-sm" id="rename-run" title="${run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : "Edit this benchmark name and notes"}" ${run.status === "running" || run.community ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="${run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""}>${run.community ? "Hide" : "Delete"}</button></header>${liveNotice}${measurementNotice}${failureNotice}${sessionAllocationNotice}${incompleteNotice}<div class="result-stats">${stat("Best prefill", best("prefill_tps") ? fmt(best("prefill_tps"), 0) : "?", "tk/s")}${stat("Best output", best("decode_tps") ? fmt(best("decode_tps"), 1) : "?", "tk/s")}${stat("Successful tests", `${ok.length}/${(run.results || []).length}`, "")}</div><details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
+  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${state.env?.capabilities?.extend ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" ? "disabled" : ""} title="${state.benchmarkRunning || run.status === "running" ? "Wait for the active benchmark to finish" : "Add or rerun tests in this benchmark"}">Add / rerun tests</button>` : ""}<button class="btn-sm" id="rename-run" title="${run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : "Edit this benchmark name and notes"}" ${run.status === "running" || run.community ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="${run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""}>${run.community ? "Hide" : "Delete"}</button></header>${liveNotice}${sourceNotice}${measurementNotice}${failureNotice}${sessionAllocationNotice}${incompleteNotice}<div class="result-stats">${stat("Best prefill", best("prefill_tps") ? fmt(best("prefill_tps"), 0) : "?", "tk/s")}${stat("Best output", best("decode_tps") ? fmt(best("decode_tps"), 1) : "?", "tk/s")}${stat("Successful tests", `${ok.length}/${(run.results || []).length}`, "")}</div><details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
   $("#extend-run")?.addEventListener("click", () => openExtendDialog(run));
   $("#delete-run").addEventListener("click", () => deleteRun(run));
   $("#rename-run").addEventListener("click", async () => {
@@ -1274,7 +1292,7 @@ function detailedResultsTable(run) {
     ["Load time (s)", row => row.load_s],
     ["Quantization", row => row.quantization],
     ["Speculative decoding", row => run.measurement_mode === "browser" ? "provider controlled" : row.mtp ? "on" : "off"],
-    ["VRAM peak (MB)", row => row.vram_peak_mb], ["Failure", row => row.message],
+    ["VRAM peak (MB)", row => row.vram_peak_mb], ["Failure", row => row.message || row.fail_kind],
   ];
   const rows = (run.results || []).flatMap(row => [...fields.map(([label, get]) => {
     const value = get(row);
@@ -1510,7 +1528,7 @@ function renderMetricSeg() {
 
 async function ensureRuns(ids) {
   await Promise.all(ids.map(async (id) => {
-    if (!state.runCache[id]) state.runCache[id] = await api("/api/runs/" + encodeURIComponent(id));
+    if (!state.runCache[id]) state.runCache[id] = sharedDisplayRun(await api("/api/runs/" + encodeURIComponent(id)));
   }));
 }
 

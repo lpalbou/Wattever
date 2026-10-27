@@ -14,6 +14,44 @@ from wattever import __version__
 from wattever.validation import validate_run
 
 
+LOCAL_DETAIL = re.compile(r"(?:\b[A-Za-z]:[\\/]|/(?:Users|home)/|file://|\bWinError\s*\d+)", re.I)
+DIAGNOSTIC_KEYS = {"error", "message", "log", "traceback", "exception", "stderr", "stdout"}
+
+
+def public_projection(value):
+    """Remove diagnostic text and local paths while retaining measurements."""
+    if isinstance(value, list):
+        return [public_projection(item) for item in value]
+    if isinstance(value, dict):
+        result = {}
+        redacted = False
+        storage_access = False
+        for key, item in value.items():
+            if LOCAL_DETAIL.search(key):
+                redacted = True
+                continue
+            if key.lower() in DIAGNOSTIC_KEYS:
+                redacted = True
+                if re.search(r"\bWinError\s*5\b", str(item), re.I):
+                    storage_access = True
+                continue
+            if isinstance(item, str) and LOCAL_DETAIL.search(item):
+                result[key] = "[local detail redacted]"
+                redacted = True
+                if re.search(r"\bWinError\s*5\b", item, re.I):
+                    storage_access = True
+            else:
+                result[key] = public_projection(item)
+        if redacted:
+            result["diagnostic_redacted"] = True
+        if storage_access:
+            result["diagnostic_category"] = "storage_access"
+        return result
+    if isinstance(value, str) and LOCAL_DETAIL.search(value):
+        return "[local detail redacted]"
+    return value
+
+
 def build_catalog(output, root=ROOT):
     """Publish committed contributions, never untracked local measurements."""
     root = Path(root)
@@ -28,7 +66,13 @@ def build_catalog(output, root=ROOT):
         errors = validate_run(run)
         if errors or run.get("id") != Path(name).stem:
             raise ValueError("Invalid shared benchmark %s: %s" % (name, errors))
-        records[run["id"]] = (run, raw)
+        public = public_projection(run)
+        public["public_export"] = {"diagnostics": "omitted", "source": "github"}
+        errors = validate_run(public)
+        if errors:
+            raise ValueError("Invalid public benchmark %s: %s" % (name, errors))
+        projected = (json.dumps(public, ensure_ascii=False, allow_nan=False, indent=1) + "\n").encode("utf-8")
+        records[run["id"]] = (public, projected)
     folder = Path(output) / "benchmarks"
     folder.mkdir(parents=True, exist_ok=True)
     entries = []
@@ -55,6 +99,11 @@ def build(output_dir):
         raise ValueError("The static browser backend is missing.")
     html = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
     html = html.replace('"/static/', '"./static/')
+    for source in assets.iterdir():
+        if source.suffix in (".js", ".css"):
+            digest = hashlib.sha256(source.read_bytes()).hexdigest()[:16]
+            html = html.replace('"./static/%s"' % source.name,
+                                '"./static/%s?sha256=%s"' % (source.name, digest))
     boot = '<script>window.WATTEVER_STATIC=true;window.WATTEVER_VERSION=%s;</script>' % json.dumps(__version__)
     html = html.replace("</head>", boot + "\n</head>")
     (output / "index.html").write_text(html, encoding="utf-8")

@@ -4,7 +4,9 @@ const vm = require('node:vm');
 const crypto = require('node:crypto');
 const {TextEncoder, TextDecoder} = require('node:util');
 const local = new Map();
-const raw = JSON.stringify({id:'shared.1', label:'Shared', status:'running', results:[]});
+const diagnostic = String.raw`[WinError 5] C:\tests\gpu-bench\results\old.tmp file:///C:/tests/old.json http://localhost:1234/v1/models`;
+const raw = JSON.stringify({id:'shared.1', label:'Shared', status:'running', error:diagnostic,
+  remaining_tests:24, results:[{model:'saved',target_tokens:512,status:'failed',message:diagnostic}]});
 const digest = crypto.createHash('sha256').update(raw).digest('hex');
 let broken = false, requests = [];
 const storage = {getItem:k=>local.get(k) || null, setItem:(k,v)=>local.set(k,v)};
@@ -27,6 +29,8 @@ vm.runInNewContext(fs.readFileSync('web/browser.js','utf8'),ctx);
   assert.equal(local.has('wattever.browser.runs.v1'),false);
   const shared = await api.request('/api/runs/shared.1'); assert.equal(shared.label,'Shared'); assert.equal(shared.status,'interrupted'); assert.equal(shared.source_status,'running'); assert.equal(JSON.parse(raw).status,'running');
   const downloaded = await api.request('/api/runs/shared.1/download'); assert.equal(downloaded.community, undefined);
+  assert(requests.every(value=>new URL(value).origin==='https://example.test' && new URL(value).pathname.startsWith('/site/benchmarks/')),
+    'Stored producer error paths and endpoint URLs never become network requests');
   assert.equal((await api.request('/api/export.json')).runs[0].community, undefined);
   await assert.rejects(api.request('/api/runs/shared.1/meta',{method:'POST',body:'{}'}),/read-only/);
   const imported = api.importRun({id:'shared.1',label:'Local',results:[]});

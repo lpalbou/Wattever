@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Keeps shared Results on GitHub-hosted catalog data, omits local execution diagnostics from public exports, and fails closed if the hosted data client is unavailable.
+
 - Shows readable benchmark-save errors with optional technical details and refreshes shared data consistently after updates.
 
 - Retains the latest RTX 5060 Ti session in the shared results library; removes older runs and preliminary snapshots.
