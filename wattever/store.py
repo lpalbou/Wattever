@@ -322,6 +322,7 @@ CSV_COLUMNS = [
     ("hardware_class", lambda r, run: (run.get("classification") or {}).get("hardware_class")),
     ("runtime_gpu_placement", lambda r, run: (run.get("measurement_scope") or {}).get("runtime_gpu_placement")),
     ("session_id", lambda r, _: r.get("session_id")),
+    ("measurement_mode", lambda r, run: run.get("measurement_mode", "helper")),
     ("context_planner_version", lambda r, run: _session_config(r, run).get("context_planner_version", "legacy")),
     ("context_policy", lambda r, run: _session_config(r, run).get("context_policy", "per_test")),
     ("context_safety_fraction", lambda r, run: _session_config(r, run).get("context_safety_fraction", 0)),

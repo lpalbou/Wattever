@@ -1,5 +1,7 @@
 # Local HTTP API
 
+This reference describes the full local helper. Hosted [browser mode](browser.md) uses an in-page adapter, not this HTTP service, and does not support extensions, resume, model unload or telemetry.
+
 The server binds to `127.0.0.1` on port 8713 by default, or the next available port. Set `GPU_BENCH_PORT` to change the starting port. This local interface is intended for a trusted local user, not exposure to a network. JSON errors have an `error` field; invalid input and runtime conflicts generally return 400, missing runs 404, active-run metadata edits or deletion 409, and unexpected failures 500.
 
 Read endpoints: `GET /api/version`, `/api/env`, `/api/models`, `/api/status`, `/api/events?cursor=0`, `/api/runs`, `/api/runs/<id>`, `/api/runs/<id>/download`, `/api/preview?tokens=512`, `/api/export.json` and `/api/export.csv`. Exports accept comma-separated `ids`; without them they include all runs. `GET /api/bench/extend-plan?run_id=<id>` supplies extension options.

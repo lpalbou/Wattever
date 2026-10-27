@@ -26,6 +26,10 @@ FAIL_ERROR = "error"
 FAIL_SKIPPED = "skipped_after_failure"
 FAIL_MTP = "mtp_unsupported"
 
+
+class RecoveryError(RuntimeError):
+    """The provider could not be brought to a verified quiescent state."""
+
 DEFAULT_CONFIG = {
     "models": [],
     "concurrency_levels": [1],
@@ -88,6 +92,27 @@ def context_budget(size, cfg, concurrency, model_max=None):
     if model_max:
         per_request = min(per_request, int(model_max))
     return per_request, per_request * concurrency
+
+
+def request_deadline(run, cfg, model, size, concurrency):
+    """Conservative deadline derived from prior same-model successful prefill."""
+    cap = float(cfg["per_test_timeout_s"])
+    candidates = [r for r in run.get("results", []) if r.get("status") == "ok"
+                  and r.get("model") == model and r.get("concurrency", 1) == concurrency
+                  and isinstance(r.get("prefill_tps"), (int, float))
+                  and r["prefill_tps"] > 0 and r.get("target_tokens", 0) <= size]
+    if not candidates and concurrency > 1:
+        candidates = [r for r in run.get("results", []) if r.get("status") == "ok"
+                      and r.get("model") == model and r.get("concurrency", 1) == 1
+                      and isinstance(r.get("prefill_tps"), (int, float))
+                      and r["prefill_tps"] > 0 and r.get("target_tokens", 0) <= size]
+    if not candidates:
+        return cap, "configured timeout; no comparable prefill"
+    prior = max(candidates, key=lambda r: r.get("target_tokens", 0))
+    expected = size / prior["prefill_tps"] * (concurrency if prior.get("concurrency", 1) == 1 else 1)
+    # Extra allowance for memory pressure and decode. Never exceed the user cap.
+    budget = min(cap, max(120.0, expected * 6.0 + 120.0))
+    return budget, "six times prior prefill estimate plus 120 seconds, capped by configured timeout"
 
 
 def completed_cases(run, cfg):
@@ -239,6 +264,8 @@ class BenchRunner:
 
     def status(self):
         live = dict(self.live)
+        if live.get("timeout_started_at") and live.get("phase") in ("prefill", "decode"):
+            live["timeout_elapsed_s"] = max(0.0, time.time() - live["timeout_started_at"])
         if self.sampler:
             telemetry = self.sampler.now()
             if telemetry:
@@ -438,6 +465,7 @@ class BenchRunner:
                 session["status"] = "interrupted"
                 session["interrupted_note"] = "The previous execution ended without a final status. Completed results were preserved."
         session_id = uuid.uuid4().hex[:12]
+        run.setdefault("measurement_mode", "helper")
         run["active_session_id"] = session_id
         run.setdefault("sessions", []).append({
             "id": session_id, "started_at": _now_iso(), "status": "running",
@@ -544,7 +572,8 @@ class BenchRunner:
                                 # A prior capacity failure still governs unmeasured larger sizes.
                                 if any(row.get("model") == model and bool(row.get("mtp")) == mtp
                                        and row.get("concurrency", 1) == concurrency and row.get("target_tokens") == size
-                                       and row.get("session_id") == run.get("active_session_id")
+                                       and (row.get("session_id") == run.get("active_session_id")
+                                            or row.get("manually_interrupted"))
                                        and row.get("status") == "failed" for row in run["results"]):
                                     mode_failed = True
                                 continue
@@ -601,10 +630,12 @@ class BenchRunner:
                                 cpt = result.pop("_cpt", cpt)
                                 result["chars_per_token_after"] = cpt
                                 self._record(run, result, done)
+                                if result.get("recovery_error"):
+                                    raise RecoveryError(result["recovery_error"])
                                 if result.get("status") == "cancelled":
                                     break
                                 if result.get("fail_kind") == FAIL_TIMEOUT:
-                                    raise RuntimeError("Request timed out; stopping to avoid contaminating subsequent tests.")
+                                    loaded = None  # timeout recovery unloaded the model
                                 if result.get("status") != "ok":
                                     mode_failed = True
                                     for later in pending:
@@ -696,6 +727,18 @@ class BenchRunner:
         except Exception:                            # noqa: BLE001 - warmup is best effort
             pass
 
+    def _recover_requests(self, model, threads, responses):
+        """Do not start another case until both model and HTTP workers stopped."""
+        for response in responses:
+            threading.Thread(target=response.close, daemon=True).start()
+        if not self.cli.unload_confirmed(model):
+            raise RecoveryError("Could not confirm model unload after timeout; stop and recover LM Studio manually.")
+        deadline = time.perf_counter() + 10
+        for thread in threads:
+            thread.join(timeout=max(0, deadline - time.perf_counter()))
+        if any(thread.is_alive() for thread in threads):
+            raise RecoveryError("Request workers did not stop after model unload; recover LM Studio manually.")
+
     def _one_test(self, run, cfg, model, size, rep, reps, load_detail, offload,
                   needed, vram_loaded, cpt, mtp=False, concurrency=1):
         prompt, meta = corpus.build_prompt(size, chars_per_token=cpt)
@@ -730,14 +773,21 @@ class BenchRunner:
             "_cpt": cpt,
         }
 
-        if concurrency > 1:
-            return self._concurrent_test(base, cfg, model, prompt, concurrency, vram_loaded)
+        budget, reason = request_deadline(run, cfg, model, size, concurrency)
+        base.update(timeout_budget_s=budget, timeout_reason=reason)
+        self.live.update(timeout_budget_s=budget, timeout_started_at=time.time(), timeout_reason=reason)
 
+        if concurrency > 1:
+            return self._concurrent_test(base, cfg, model, prompt, concurrency, vram_loaded, budget)
+
+        progress = {"last": None}
         def on_first(ttft):
+            progress["last"] = time.perf_counter()
             self.live.update({"phase": "decode", "ttft_s": ttft})
             self.emit("phase", phase="decode", model=model, size=size, ttft_s=ttft)
 
         def on_progress(count, elapsed):
+            progress["last"] = time.perf_counter()
             self.live.update({"tokens_out": count,
                               "decode_tps_live": (count / elapsed) if elapsed > 0 else None})
 
@@ -746,17 +796,60 @@ class BenchRunner:
                 self._responses.add(resp)
 
         try:
-            m = lmstudio.measure_completion(
-                model, prompt, cfg["max_tokens"],
-                timeout=cfg["per_test_timeout_s"],
-                on_first_token=on_first, on_progress=on_progress,
-                cancel=self.cancel_event,
-                disable_thinking=cfg["disable_thinking"],
-                on_response=keep_response)
+            result = {}
+            def worker():
+                try:
+                    result["value"] = lmstudio.measure_completion(
+                        model, prompt, cfg["max_tokens"], timeout=budget,
+                        on_first_token=on_first, on_progress=on_progress,
+                        cancel=self.cancel_event, disable_thinking=cfg["disable_thinking"],
+                        on_response=keep_response)
+                except Exception as exc:
+                    result["error"] = exc
+            thread = threading.Thread(target=worker, daemon=True)
+            thread.start()
+            started = time.perf_counter()
+            stall = min(120.0, budget)
+            while (thread.is_alive() and not self.cancel_event.is_set() and
+                   time.perf_counter() - started < budget and
+                   (progress["last"] is None or time.perf_counter() - progress["last"] < stall)):
+                thread.join(timeout=0.1)
+            if thread.is_alive():
+                deadline_reason = "decode inactivity" if progress["last"] is not None and time.perf_counter() - progress["last"] >= stall else "adaptive deadline"
+                with self._responses_lock:
+                    responses = list(self._responses)
+                try:
+                    self._recover_requests(model, [thread], responses)
+                except RecoveryError as exc:
+                    base.update(status="failed", fail_kind=FAIL_TIMEOUT,
+                                message="Request timed out; recovery could not be verified.",
+                                timeout_elapsed_s=time.perf_counter() - started,
+                                timeout_trigger=deadline_reason, recovery_error=str(exc))
+                    return base
+                if self.cancel_event.is_set():
+                    raise lmstudio.Cancelled()
+                base.update(status="failed", fail_kind=FAIL_TIMEOUT,
+                            message="Request exceeded %s; model unloaded before continuing." % deadline_reason,
+                            timeout_elapsed_s=time.perf_counter() - started, timeout_trigger=deadline_reason)
+                return base
+            if "error" in result:
+                if _classify(str(result["error"])) == FAIL_TIMEOUT:
+                    try:
+                        self._recover_requests(model, [thread], [])
+                    except RecoveryError as exc:
+                        base.update(status="failed", fail_kind=FAIL_TIMEOUT,
+                                    message="Request timed out; recovery could not be verified.",
+                                    timeout_elapsed_s=time.perf_counter() - started,
+                                    timeout_trigger="socket timeout", recovery_error=str(exc))
+                        return base
+                raise result["error"]
+            m = result["value"]
         except lmstudio.Cancelled:
             base.update({"status": "cancelled", "fail_kind": "cancelled",
                          "message": "Cancelled by the user."})
             return base
+        except RecoveryError:
+            raise
         except Exception as exc:                     # noqa: BLE001
             message = str(exc)
             if self.cancel_event.is_set():
@@ -853,7 +946,7 @@ class BenchRunner:
                  level="ok")
         return base
 
-    def _concurrent_test(self, base, cfg, model, prompt, concurrency, vram_loaded):
+    def _concurrent_test(self, base, cfg, model, prompt, concurrency, vram_loaded, budget=None):
         """Run a group of streams together; group power covers the entire window."""
         results = [None] * concurrency
         # A unique leading nonce prevents prefix cache reuse between requests.
@@ -870,6 +963,7 @@ class BenchRunner:
         cancel = CancelView()
         response_lock = threading.Lock()
         responses = set()
+        progress = [None] * concurrency
         def worker(index):
             def register(resp):
                 with response_lock:
@@ -883,8 +977,10 @@ class BenchRunner:
                 if cancel.is_set():
                     raise lmstudio.Cancelled()
                 m = lmstudio.measure_completion(
-                    model, prompts[index][0], cfg["max_tokens"], timeout=cfg["per_test_timeout_s"],
+                    model, prompts[index][0], cfg["max_tokens"], timeout=budget or cfg["per_test_timeout_s"],
                     cancel=cancel, disable_thinking=cfg["disable_thinking"],
+                    on_first_token=lambda _: progress.__setitem__(index, time.perf_counter()),
+                    on_progress=lambda *_: progress.__setitem__(index, time.perf_counter()),
                     on_response=register)
                 results[index] = {"status": "ok", "nonce": prompts[index][1], **{k: v for k, v in m.items()
                                   if not k.startswith("t_")}}
@@ -899,9 +995,13 @@ class BenchRunner:
             thread.start()
         start = time.perf_counter()
         gate.set()
-        deadline = start + float(cfg["per_test_timeout_s"])
+        deadline = start + float(budget or cfg["per_test_timeout_s"])
+        stalled = False
         while any(t.is_alive() for t in threads):
-            if self.cancel_event.is_set() or time.perf_counter() >= deadline:
+            stalled = any(t.is_alive() and progress[i] is not None and
+                          time.perf_counter() - progress[i] >= min(120.0, float(budget or cfg["per_test_timeout_s"]))
+                          for i, t in enumerate(threads))
+            if self.cancel_event.is_set() or time.perf_counter() >= deadline or stalled:
                 group_cancel.set()
                 with response_lock:
                     active = list(responses)
@@ -914,7 +1014,14 @@ class BenchRunner:
         end = time.perf_counter()
         with self._responses_lock:
             self._responses.difference_update(responses)
-        timed_out = not self.cancel_event.is_set() and any(t.is_alive() for t in threads)
+        timed_out = not self.cancel_event.is_set() and (any(t.is_alive() for t in threads) or
+                    any(r and r.get("fail_kind") == FAIL_TIMEOUT for r in results))
+        recovery_error = None
+        if any(t.is_alive() for t in threads) or timed_out:
+            try:
+                self._recover_requests(model, threads, list(responses))
+            except RecoveryError as exc:
+                recovery_error = str(exc)
         snapshot = [r if r is not None else {
             "nonce": prompts[i][1], "status": "cancelled" if self.cancel_event.is_set() else "failed",
             "fail_kind": "cancelled" if self.cancel_event.is_set() else FAIL_TIMEOUT,
@@ -931,10 +1038,15 @@ class BenchRunner:
                      "aggregate_completion_tokens_estimated": any(r.get("completion_tokens_estimated") for r in successes),
                      "vram_after_load_mb": vram_loaded,
                      "group_power": window})
+        if recovery_error:
+            base["recovery_error"] = recovery_error
         if base["status"] != "ok":
             failure = next((r for r in snapshot if r["status"] != "ok"), {})
             base.update({"fail_kind": FAIL_TIMEOUT if timed_out else failure.get("fail_kind", FAIL_ERROR),
                          "message": failure.get("message", "One or more requests failed.")})
+            if timed_out:
+                base.update(timeout_trigger="decode inactivity" if stalled else "adaptive deadline",
+                            timeout_elapsed_s=wall)
         return base
 
     def _record(self, run, result, done):

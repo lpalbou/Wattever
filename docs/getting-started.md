@@ -1,5 +1,7 @@
 # Getting started
 
+For hosted use without installing Wattever, see [Browser mode](browser.md). The instructions below cover the full local helper.
+
 Install Python 3.9 or newer and [LM Studio](https://lmstudio.ai/), download the models you want to measure, and run `lms bootstrap` to make the LM Studio CLI available. Wattever does not need Python packages or a JavaScript build. The LM Studio API defaults to `http://localhost:1234`; set `LMS_BASE_URL` before starting Wattever if needed.
 
 Download and extract the [release source archive](https://github.com/lpalbou/Wattever/releases/tag/v2.4.0), or clone the repository. Start `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux. You can also run `python -m wattever.server` in the repository. The server listens on loopback and prints its URL; keep its window open. `GPU_BENCH_PORT` sets the starting port (default 8713); `GPU_BENCH_NO_BROWSER=1` suppresses automatic browser opening.

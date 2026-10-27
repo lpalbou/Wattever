@@ -1,8 +1,12 @@
 # Wattever
 
-Wattever measures local LLM prefill and decode throughput and GPU power with LM Studio. It records successes and failures across prompt sizes, models and simultaneous query counts, and compares sessions in a local browser UI. Python 3.9 or newer and LM Studio are required; Wattever uses the Python standard library and local JavaScript with no package installation or CDN.
+Wattever measures local LLM prefill and decode throughput and GPU power with LM Studio. It records successes and failures across prompt sizes, models and simultaneous query counts, and compares sessions in a browser UI. Use the hosted browser mode with an OpenAI-compatible endpoint, or the full local helper with Python 3.9+ and LM Studio. Wattever uses the Python standard library and local JavaScript without a package installation or CDN.
 
-## Quick start
+## Browser quick start
+
+Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/), start an OpenAI-compatible server, enable its CORS support, and use **Connect** to select models and run tests. Browser and server permissions can affect access to a local endpoint. See [Browser mode](docs/browser.md) for settings, storage, privacy and measurement limits.
+
+## Full local helper quick start
 
 1. Install LM Studio, download the models you want to test, and run `lms bootstrap` once so the `lms` command is available.
 2. Get the [v2.4.0 source archive](https://github.com/lpalbou/Wattever/releases/tag/v2.4.0) or clone the repository. The source archive includes historical tracked results.
@@ -11,7 +15,7 @@ Wattever measures local LLM prefill and decode throughput and GPU power with LM 
 
 See [Getting started](docs/getting-started.md) for setup and [Measurements and sessions](docs/measurements.md) for interpretation and extending a benchmark. GPU monitoring selects a sensor only: configure actual model placement in LM Studio and record GPU setup notes. Power is measured for the selected GPU, not every GPU.
 
-**Results** provides Summary, Table and Compare views with common benchmark, model, measure and concurrency filters. Tables can be copied as tab-separated text. Use **Add / rerun tests** to extend a benchmark or replace selected cases. One JSON file stores each benchmark; download it from Results or share it as described in [results guidance](results/README.md). Review its contents before publication.
+**Results** provides Summary, Table and Compare views with common benchmark, model, measure and concurrency filters. Tables can be copied as tab-separated text. In helper mode, use **Add / rerun tests** to extend a benchmark or replace selected cases. One JSON file stores each benchmark; download it from Results or share it as described in [results guidance](results/README.md). Review its contents before publication.
 
 ## Documentation
 

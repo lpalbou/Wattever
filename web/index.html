@@ -25,10 +25,19 @@
 </div>
 
 <main>
+<div id="browser-storage-warning" role="alert" hidden></div>
 
 <!-- RUN -->
 <section class="panel active" id="panel-run">
   <div class="page-intro"><div><span class="eyebrow">YOUR LOCAL BENCHMARK</span><h2>See what your setup can do.</h2><p>Choose your models and workload. Keep one clean result to share.</p></div><button class="btn-sm" id="clean-run" title="Select all downloaded models and reset the benchmark settings.">Reset for all models</button></div>
+  <section class="card browser-connect" id="browser-connect" hidden>
+    <header><h3>Browser timing</h3></header>
+    <p class="hint">Connect to your OpenAI-compatible local server. Enable CORS in the server and allow local network access in your browser if prompted. Connections vary by browser and server.</p>
+    <p class="hint">Browser timing cannot measure GPU power or control model loading, context allocation, GPU placement or MTP. Use <a href="https://github.com/lpalbou/Wattever/releases/latest">the full desktop app</a> for those features.</p>
+    <div class="row"><div class="field"><label for="browser-endpoint">Server endpoint</label><input id="browser-endpoint" type="url" value="http://localhost:1234/v1" autocomplete="off"></div><div class="field"><label for="browser-key">API key (optional, memory only)</label><input id="browser-key" type="password" autocomplete="off"></div></div>
+    <details class="adv"><summary>Optional hardware details</summary><div class="row"><div class="field"><label for="browser-gpu">GPU</label><input id="browser-gpu" type="text"></div><div class="field"><label for="browser-cpu">CPU</label><input id="browser-cpu" type="text"></div><div class="field"><label for="browser-ram">System RAM (GB)</label><input id="browser-ram" type="number" min="0"></div><div class="field"><label for="browser-vram">VRAM (GB)</label><input id="browser-vram" type="number" min="0"></div></div></details>
+    <div class="btn-row"><button id="browser-connect-button" class="btn-primary">Connect</button><span id="browser-connect-status" role="status"></span></div>
+  </section>
   <div id="env-banners"></div>
   <details class="card machine-card" id="machine-card">
     <summary><span class="machine-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="13" rx="3"/><circle cx="10" cy="11.5" r="3.5"/><path d="M16 9h2m-2 3h2M7 18v3m4-3v3"/></svg></span><span class="machine-heading"><span class="eyebrow">THIS MACHINE</span><strong id="machine-name">Detecting your graphics card...</strong></span><span id="machine-memory" class="machine-memory"></span><span class="disclosure-label">Details</span><svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 8 4 4 4-4"/></svg></summary>
@@ -59,7 +68,7 @@
   <div class="card launch-card"><div class="row"><div class="field"><label for="run-label" data-help="Generated from your graphics cards, memory and CPU. You can edit it; clear the field and leave it to restore the automatic name.">Benchmark name</label><input type="text" id="run-label" placeholder="e.g. RTX 5060 Ti - all models"></div><div class="field"><label for="run-notes" data-help="Generated from the selected models and benchmark settings. You can edit it; clear the field and leave it to restore automatic notes.">Notes <span class="label-unit">from your settings</span></label><textarea id="run-notes" rows="3" placeholder="Filled from your settings"></textarea></div></div><div id="comparability"></div><div class="launch-actions"><span id="plan-summary" class="dim"></span><div class="btn-row"><button id="cancel-btn" class="btn-danger hidden">Stop benchmark</button><button class="btn-primary" id="start-btn">Start benchmark <span aria-hidden="true">&rarr;</span></button></div></div></div>
     </div>
   </div>
-  <div class="card hidden" id="live-card"><header><h3>Progress</h3><span class="spacer"></span><span class="st st-running" id="live-phase"></span></header><div class="progress"><div id="progress-bar"></div></div><div class="live-stats" id="live-stats"></div><details class="adv"><summary>Activity log</summary><div class="log" id="log"></div></details></div>
+  <div class="card hidden" id="live-card"><header><h3>Progress</h3><span class="spacer"></span><span class="st st-running" id="live-phase"></span></header><div class="progress"><div id="progress-bar"></div></div><p id="live-deadline" class="hint" hidden title="The adaptive deadline uses observed timing and context size, subject to the configured timeout cap. It is not a memory limit."></p><div class="live-stats" id="live-stats"></div><details class="adv"><summary>Activity log</summary><div class="log" id="log"></div></details></div>
   <div class="card hidden" id="live-results"><header><h3>Results this run</h3><span class="spacer"></span><button class="btn-sm" id="goto-results">Open in Results &rarr;</button></header><div class="table-wrap"><table id="live-table"></table></div></div>
 </section>
 
@@ -67,7 +76,7 @@
 <section class="panel" id="panel-results">
   <div class="page-intro"><div><span class="eyebrow">YOUR BENCHMARK LIBRARY</span><h2>Explore your results.</h2><p>Select benchmarks on the left. Switch views without losing your selection.</p></div></div>
   <div class="results-grid">
-    <aside class="card benchmark-library"><header><h3>Benchmarks</h3><span class="spacer"></span><button class="btn-sm" id="refresh-runs" title="Refresh saved benchmarks" aria-label="Refresh saved benchmarks">&#8635;</button></header><p class="hint">Click a name to open it. Tick several to compare.</p><div class="runs" id="runs-list"></div></aside>
+    <aside class="card benchmark-library"><header><h3>Benchmarks</h3><span class="spacer"></span><button class="btn-sm" id="refresh-runs" title="Refresh saved benchmarks" aria-label="Refresh saved benchmarks">&#8635;</button></header><p class="hint">Click a name to open it. Tick several to compare.</p><div id="browser-import" hidden><label class="btn-sm">Import JSON <input id="browser-import-file" type="file" accept="application/json,.json"></label><p class="hint" id="browser-import-status" role="status"></p></div><div class="runs" id="runs-list"></div></aside>
     <div class="results-workspace">
       <div id="run-detail"></div>
       <div class="card results-controls" id="results-controls">
@@ -95,6 +104,7 @@
 
 <script src="/static/charts.js"></script>
 <script src="/static/tables.js"></script>
+<script src="/static/browser.js"></script>
 <script src="/static/app.js"></script>
 </body>
 </html>

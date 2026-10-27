@@ -11,7 +11,7 @@ metadata:
 
 ## Purpose and limits
 
-Use Wattever to measure LM Studio prefill, decode and optional GPU power across models, prompt lengths and simultaneous queries. GPU sensor selection does not control inference placement; configure placement in LM Studio. GPU and system estimates are not wall-meter readings. Compare matching settings, model builds, corpus and protocol; inspect session provenance for mixed planner versions.
+Use Wattever to measure LM Studio prefill, decode and optional GPU power across models, prompt lengths and simultaneous queries. GPU sensor selection does not control inference placement; configure placement in LM Studio. GPU and system estimates are not wall-meter readings. Compare matching settings, model builds, corpus and protocol; inspect session provenance for mixed planner versions. The hosted browser mode uses a separate client-timed protocol and is not directly comparable to the helper.
 
 ## Install and verify
 
@@ -45,10 +45,12 @@ except (urllib.error.URLError, OSError, ValueError) as exc:
 
 ## Capability map
 
+- Hosted browser mode: open `https://lpalbou.github.io/Wattever/`, connect explicitly to an OpenAI-compatible endpoint, and use browser storage and JSON import/export. It requires CORS and may require browser local-network permission. No helper install is needed. The optional key is memory-only; do not put it in conversation or result files.
 - Read version, environment, models, status, events and runs via GET endpoints in the API reference. `GET /api/bench/extend-plan?run_id=<id>` returns extension options.
 - Start, cancel, resume, preview and extend through `/api/bench/*`; these execute inference or change state except planning. Add missing, retry failed/skipped, or rerun selected cases.
 - Edit metadata, delete to local trash, export JSON/CSV, start or unload LM Studio, and stop Wattever through the local API. Results and snapshots are written under `results/`.
 - There is no control of LM Studio placement through the GPU sensor index and no combined measurement of all GPUs. Hardware discovery and power availability are best effort.
+- Browser mode has manual hardware descriptions and no power telemetry, model load/unload, MTP or reasoning control, resume or same-file extension. Provider settings govern model execution and context. Closing the page stops its run; download in-memory results if storage fails.
 
 ## Workflow
 
@@ -62,6 +64,8 @@ except (urllib.error.URLError, OSError, ValueError) as exc:
 
 Do not start, cancel, unload models, delete runs, or shut down a server without authorization for that action. A benchmark is resource intensive and modifies LM Studio state. The selected sensor measures one GPU only. Missing power remains unavailable. Model execution may use other GPUs or CPU; record the actual setup. Failed and skipped cases are results, not zero performance. An extended legacy benchmark can contain different planner versions; inspect each session.
 
+The helper applies a deadline based on prior comparable prefill and a decode inactivity limit. It verifies model unload and request worker exit before continuing; if recovery cannot be verified it stops. Browser timeouts abort requests and stop the run but cannot verify provider-side cancellation or unload; check the provider before restarting.
+
 ## When things fail
 
 - No models: start LM Studio and confirm downloads and `LMS_BASE_URL`.
@@ -73,6 +77,7 @@ Do not start, cancel, unload models, delete runs, or shut down a server without 
 ## Go deeper
 
 - [Getting started](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.0/docs/getting-started.md): setup and first run.
+- [Browser mode](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.0/docs/browser.md): hosted setup and limitations.
 - [Measurements](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.0/docs/measurements.md): metric boundaries and session semantics.
 - [API](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.0/docs/api.md): routes and side effects.
 - [Troubleshooting](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.0/docs/troubleshooting.md): symptoms and remedies.

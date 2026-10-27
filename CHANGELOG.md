@@ -6,6 +6,8 @@
 - Stores a benchmark in one JSON file and adds live case results, shared Results filters, chart comparisons and copyable tables.
 - Adds same-file extensions, failed and skipped retries, selected-case reruns, attempt history and snapshots. Successful replacements remain separate from archived attempts.
 - Plans shared KV capacity per concurrent request with a 5% prompt margin and supports a fixed context policy. Standard and MTP modes can be chosen per model.
+- Adds hosted browser mode with direct OpenAI-compatible connections, local import/export and a separate measurement protocol.
+- Adds adaptive request deadlines and verified model unload and worker recovery before continuing after a timeout.
 - Adds a documentation set and an agent skill for the local API.
 - Older concurrent failures may reflect legacy context allocation rather than a model capacity limit; use the session planner information when interpreting them.
 - Older result schemas and planner settings remain readable. Extended files may contain sessions using different planners; compare provenance and settings before combining measurements.

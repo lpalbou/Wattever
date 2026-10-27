@@ -57,7 +57,23 @@ function fmtDuration(seconds) {
   return (seconds / 3600).toFixed(1) + " h";
 }
 
+function browserMode() { return typeof window !== "undefined" && !!window.WatteverBrowser?.enabled; }
+
+function updateBrowserStorageWarning(data) {
+  if (!browserMode() || !data || typeof data !== "object") return;
+  const source = Object.prototype.hasOwnProperty.call(data, "storage_error") ? data : data.status;
+  if (!source || !Object.prototype.hasOwnProperty.call(source, "storage_error")) return;
+  const node = $("#browser-storage-warning");
+  if (!node) return;
+  node.hidden = !source.storage_error;
+  node.innerHTML = source.storage_error ? banner("warn", "Browser storage is full or unavailable", "Download your results before closing this page.") : "";
+}
 async function api(path, opts = {}) {
+  if (browserMode()) {
+    const result = await window.WatteverBrowser.request(path, opts);
+    updateBrowserStorageWarning(result);
+    return result;
+  }
   const res = await fetch(path, opts);
   const text = await res.text();
   let data = {};
@@ -151,7 +167,61 @@ function decorateHelp() {
 }
 
 /* ---------------- boot ---------------- */
+async function connectBrowser() {
+  const button = $("#browser-connect-button"), status = $("#browser-connect-status");
+  button.disabled = true; status.textContent = "Connecting...";
+  try {
+    window.WatteverBrowser.configure({endpoint: $("#browser-endpoint").value.trim(), apiKey: $("#browser-key").value,
+      hardware: {gpu: $("#browser-gpu").value.trim(), cpu: $("#browser-cpu").value.trim(), ram_gb: Number($("#browser-ram").value) || null, vram_gb: Number($("#browser-vram").value) || null}});
+    await window.WatteverBrowser.connect();
+    $("#browser-key").value = "";
+    state.env = await api("/api/env"); renderEnv();
+    status.textContent = "Connected. Select models and start a benchmark.";
+  } catch (error) { status.textContent = "Connection failed: " + error.message + ". Check the endpoint, CORS and local network permission."; }
+  finally { button.disabled = false; }
+}
+function downloadBlob(content, name, type) {
+  const url = URL.createObjectURL(new Blob([content], {type}));
+  const anchor = document.createElement("a"); anchor.href = url; anchor.download = name; anchor.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+async function browserDownload(event) {
+  if (!browserMode()) return;
+  const anchor = event.target.closest("a[href]");
+  if (!anchor) return;
+  const path = anchor.getAttribute("href");
+  if (!path || !(/^\/api\/runs\/[^/]+\/download$/.test(path) || path.startsWith("/api/export.csv"))) return;
+  event.preventDefault();
+  try {
+    const result = await api(path);
+    const csv = path.startsWith("/api/export.csv");
+    downloadBlob(csv ? result : JSON.stringify(result, null, 2), csv ? "wattever.csv" : "benchmark.json", csv ? "text/csv" : "application/json");
+  } catch (error) { alert("Could not export: " + error.message); }
+}
+async function importBrowserRun(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const status = $("#browser-import-status");
+  try {
+    const run = JSON.parse(await file.text());
+    await api("/api/import", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(run)});
+    state.runCache = {}; state.selectionInitialized = false; await loadRuns();
+    status.textContent = "Imported successfully.";
+  } catch (error) { status.textContent = "Import failed: " + error.message; }
+  finally { event.target.value = ""; }
+}
+
 async function init() {
+  if (browserMode()) {
+    $("#browser-connect").hidden = false;
+    $("#browser-import").hidden = false;
+    $("#browser-connect-button").addEventListener("click", connectBrowser);
+    $("#browser-import-file").addEventListener("change", importBrowserRun);
+    document.addEventListener("click", browserDownload);
+    ["#offload", "#mtp-chips", "#load-timeout", "#headroom", "#gpu-index", "#runtime-gpu-placement", "#fallback", "#warmup", "#no-think"].forEach(selector => {
+      const node = $(selector); if (node) (node.closest(".field") || node.closest("label" ) || node).hidden = true;
+    });
+  }
   $("#extend-close").addEventListener("click", () => $("#extend-dialog").close());
   $("#extend-dialog").addEventListener("close", () => { state.extension = null; });
   $("#extend-start").addEventListener("click", startExtension);
@@ -352,7 +422,7 @@ function renderEnv() {
     ? gpu.name.replace(/^NVIDIA\s+/, "") : "no NVIDIA GPU";
   const lmsPill = $("#pill-lms");
   lmsPill.querySelector(".dot").className = "dot " + (env.lms.server ? "on" : "off");
-  lmsPill.querySelector("span:last-child").textContent = env.lms.server ? "LM Studio ready" : "LM Studio off";
+  lmsPill.querySelector("span:last-child").textContent = env.lms.server ? (browserMode() ? "Endpoint connected" : "LM Studio ready") : (browserMode() ? "Not connected" : "LM Studio off");
 
   const unified = gpu.memory_architecture === "unified";
   const src = (env.power || {}).source;
@@ -367,7 +437,7 @@ function renderEnv() {
     stat(unified ? "macOS" : "Driver", gpu.driver || "—",
       gpu.pcie_gen ? "PCIe gen " + gpu.pcie_gen : ""),
     stat("System RAM", host.ram_gb ? Math.round(host.ram_gb) : "—", "GB"),
-    stat("Corpus", Math.round((env.corpus.approx_tokens || 0) / 1000), "k tokens available"),
+    stat("Corpus", (env.corpus || {}).approx_tokens == null ? "unknown" : Math.round(env.corpus.approx_tokens / 1000), (env.corpus || {}).approx_tokens == null ? "" : "k tokens available"),
   ].join("");
   $("#machine-name").textContent = gpu.name ? gpu.name.replace(/^NVIDIA GeForce\s+/, "") : "CPU benchmark";
   $("#machine-memory").textContent = gpu.vram_total_mb ? `${(gpu.vram_total_mb / 1024).toFixed(0)} GB ${unified ? "unified memory" : "VRAM"}` : "";
@@ -375,7 +445,9 @@ function renderEnv() {
     .filter(Boolean).join("  ·  ");
 
   const banners = [];
-  if (!env.lms.cli) {
+  if (browserMode()) {
+    // Browser connections are made explicitly and do not control LM Studio.
+  } else if (!env.lms.cli) {
     banners.push(banner("err", "The lms CLI was not found",
       "Install LM Studio, then run <code>lms bootstrap</code> once and relaunch. " +
       "Context length and GPU offload can only be set through the CLI."));
@@ -383,20 +455,20 @@ function renderEnv() {
     banners.push(banner("warn", "LM Studio's local server is not running",
       "It will be started automatically when the benchmark begins."));
   }
-  if (!gpu.name) {
+  if (!browserMode() && !gpu.name) {
     banners.push(banner("warn", "No supported accelerator detected",
       "The benchmark still runs on CPU, but wattage and VRAM will be blank."));
-  } else if ((env.power || {}).needs_sudo) {
+  } else if (!browserMode() && (env.power || {}).needs_sudo) {
     banners.push(banner("warn", "Watts will not be recorded",
       "macOS exposes power only through <code>powermetrics</code>, which needs administrator " +
       "rights. Quit, relaunch with <b>Launch GPU Benchmark.command</b> and answer yes to the " +
       "power prompt. Prefill and decode speed are measured either way." +
       ((env.power || {}).note ? ` <span class="dim">(${esc(env.power.note)})</span>` : "")));
-  } else if (!gpu.power_readable) {
+  } else if (!browserMode() && !gpu.power_readable) {
     banners.push(banner("warn", "This GPU does not report power draw",
       "Speed will be measured; watts and joules will be blank."));
   }
-  if (!env.models.length) {
+  if (!browserMode() && !env.models.length) {
     banners.push(banner("err", "LM Studio has no models indexed", "Download at least one model first."));
   }
   $("#env-banners").innerHTML = banners.join("");
@@ -490,7 +562,7 @@ function hardwareMarkup(hw) {
 }
 function renderHardware() {
   const gpus = (state.env.hardware || {}).gpus || [];
-  $("#hardware-inventory").innerHTML = hardwareMarkup(state.env.hardware);
+  $("#hardware-inventory").innerHTML = (state.env.hardware?.source === "manual" ? '<p class="hint">Hardware details entered manually; not detected or measured.</p>' : "") + hardwareMarkup(state.env.hardware);
   const sensors = gpus.filter((g) => g.sensor_index != null);
   $("#gpu-index").innerHTML = sensors.length ? sensors.map((g) => `<option value="${esc(g.sensor_index)}">${esc(g.sensor_index)}: ${esc(g.name)}</option>`).join("") : '<option value="0">0 (default sensor)</option>';
 }
@@ -575,6 +647,7 @@ function mtpModes() {
  * remembers whatever was used last. Say so before the benchmark runs, not
  * after, and offer to put it back in one click. */
 function checkComparability() {
+  if (browserMode()) { $("#comparability").innerHTML = ""; return; }
   const box = $("#comparability");
   if (!box) return;
   const prior = state.runs.filter((r) => r.n_ok > 0 && r.max_tokens);
@@ -622,16 +695,18 @@ function generatedMetadata(env, cfg) {
   const selected = cfg.models || [];
   const models = selected.length && selected.length === allModels.length && allModels.every((id) => selected.includes(id))
     ? `all ${selected.length} installed models` : selected.join(", ") || "none";
-  const placement = {max: "prefer GPU", auto: "automatic", off: "CPU only"}[cfg.gpu_offload] || `${Number(cfg.gpu_offload) * 100}% on GPU`;
+  const placement = cfg.gpu_offload === "provider_managed" ? "provider controlled" : {max: "prefer GPU", auto: "automatic", off: "CPU only"}[cfg.gpu_offload] || `${Number(cfg.gpu_offload) * 100}% on GPU`;
   const notes = [
     `Models: ${models}`,
     `Prompt tokens: ${[...cfg.sizes].sort((a, b) => a - b).map(fmtTokens).join(", ") || "none"}`,
     `Simultaneous queries: ${cfg.concurrency_levels.join(", ") || "none"}`,
     `Answer: ${cfg.max_tokens} tokens; repeats: ${cfg.repeats}`,
-    `Placement: ${placement}; CPU fallback: ${cfg.fallback_on_failure ? "on" : "off"}`,
-    `Reasoning: ${cfg.disable_thinking ? "off" : "on"}; speculative decoding: ${cfg.mtp_modes.join(" + ")}`,
-    `Warmup: ${cfg.warmup ? "on" : "off"}; skip larger sizes after failure: ${cfg.stop_model_after_failure ? "on" : "off"}`,
-    `Context allocation: ${cfg.context_policy === "fixed" ? "fixed largest context and query capacity" : "matched to each test"}`,
+    ...(cfg.context_policy === "provider_managed" ? ["Reasoning, context allocation, placement and speculative decoding: provider controlled"] : [
+      `Placement: ${placement}; CPU fallback: ${cfg.fallback_on_failure ? "on" : "off"}`,
+      `Reasoning: ${cfg.disable_thinking ? "off" : "on"}; speculative decoding: ${cfg.mtp_modes.join(" + ")}`,
+      `Warmup: ${cfg.warmup ? "on" : "off"}; skip larger sizes after failure: ${cfg.stop_model_after_failure ? "on" : "off"}`,
+      `Context allocation: ${cfg.context_policy === "fixed" ? "fixed largest context and query capacity" : "matched to each test"}`,
+    ]),
   ];
   if (cards.length > 1) notes.push(`Power sensor: ${cards.find((gpu) => gpu.sensor_index === cfg.gpu_index)?.name || cfg.gpu_index} (monitoring only)`);
   if (cfg.runtime_gpu_placement) notes.push(`Runtime GPU setup: ${cfg.runtime_gpu_placement}`);
@@ -668,13 +743,13 @@ function collectConfig() {
     runtime_gpu_placement: $("#runtime-gpu-placement").value.trim(),
     max_tokens: Number($("#max-tokens").value) || 256,
     repeats: Number($("#repeats").value) || 1,
-    gpu_offload: $("#offload").value,
-    context_policy: $("#context-policy")?.value || "per_test",
+    gpu_offload: browserMode() ? "provider_managed" : $("#offload").value,
+    context_policy: browserMode() ? "provider_managed" : ($("#context-policy")?.value || "per_test"),
     mtp_modes: mtpModes(),
-    fallback_on_failure: $("#fallback").checked,
+    fallback_on_failure: browserMode() ? false : $("#fallback").checked,
     stop_model_after_failure: $("#stop-after-fail").checked,
-    warmup: $("#warmup").checked,
-    disable_thinking: $("#no-think").checked,
+    warmup: browserMode() ? false : $("#warmup").checked,
+    disable_thinking: browserMode() ? null : $("#no-think").checked,
     per_test_timeout_s: Number($("#per-test-timeout").value) || 1800,
     load_timeout_s: Number($("#load-timeout").value) || 900,
     context_headroom: Number($("#headroom").value) || 0,
@@ -809,6 +884,11 @@ function renderLive(status) {
   const phase = status.cancelling ? "stopping…" : (live.phase || "idle");
   $("#live-phase").textContent = `${phase}${live.model ? " · " + live.model : ""}${live.size ? " @ " + fmtTokens(live.size) : ""}${total ? `  (${done}/${total})` : ""}`;
 
+  const deadline = $("#live-deadline");
+  const hasDeadline = Number.isFinite(live.timeout_budget_s) && live.timeout_budget_s > 0;
+  deadline.hidden = !hasDeadline;
+  deadline.textContent = hasDeadline ? `Current test deadline: ${fmtDuration(live.timeout_elapsed_s ?? 0)} elapsed / ${fmtDuration(live.timeout_budget_s)} budget${live.timeout_reason ? " (" + live.timeout_reason + ")" : ""}. Adaptive timing is capped by the configured timeout; it is not a memory limit.` : "";
+
   const t = live.telemetry || {};
   if (t.gpu_w !== null && t.gpu_w !== undefined) {
     $("#pill-power").hidden = false;
@@ -843,7 +923,7 @@ function renderLiveTable() {
   const rows = state.liveResults.map((r) => `<tr>
     <td>${esc(r.model)}</td>
     <td class="num">${fmtTokens(r.target_tokens)}</td>
-    <td>${r.mtp ? '<span class="badge accent">MTP</span>' : '<span class="dim">off</span>'}</td>
+    <td>${browserMode() ? '<span class="dim">provider controlled</span>' : r.mtp ? '<span class="badge accent">MTP</span>' : '<span class="dim">off</span>'}</td>
     <td class="num">${fmtInt(r.prompt_tokens)}</td>
     <td>${statusCell(r)} ${requestDetails(r)}</td>
     <td class="num">${r.concurrency || 1}</td><td class="num">${fmt(r.aggregate_completion_tps, 1)}${r.aggregate_completion_tokens_estimated ? "*" : ""}</td>
@@ -919,7 +999,7 @@ function renderRunsList() {
 }
 
 async function deleteRun(run) {
-  if (!run || !confirm(`Delete benchmark "${run.label || run.id}" from this computer? A copy will remain in the local archive.`)) return;
+  if (!run || !confirm(browserMode() ? `Delete benchmark "${run.label || run.id}" from this browser?` : `Delete benchmark "${run.label || run.id}" from this computer? A copy will remain in the local archive.`)) return;
   try {
     await api("/api/runs/" + encodeURIComponent(run.id), {method: "DELETE"});
     delete state.runCache[run.id];
@@ -973,10 +1053,12 @@ function renderRunDetail(run) {
   const active = [...state.compare].map(id => state.runCache[id]).filter(item => item && item.status === "running");
   const selectedRuns = [...state.compare].map(id => state.runCache[id]).filter(Boolean);
   const allocationKeys = new Set(selectedRuns.flatMap(allocationConfigs).map(allocationKey));
+  const measurementModes = new Set(selectedRuns.map(item => item.measurement_mode || "helper"));
+  const measurementNotice = measurementModes.size > 1 ? '<p class="banner warn measurement-notice">These benchmarks use different measurement modes. Browser timings and desktop helper measurements may not be directly comparable.</p>' : selectedRuns.length ? `<p class="hint measurement-notice">Measurement mode: ${measurementModes.has("browser") ? "Browser timing" : "Desktop helper"}</p>` : "";
   const allocationNotice = allocationKeys.size > 1 ? '<p class="hint">Different context allocation settings: these benchmarks reserve different amounts of memory, which can affect speed. Check benchmark settings before comparing.</p>' : "";
   const liveNotice = active.length ? `<p class="live-result-notice" role="status"><span class="badge badge-live">Live</span> ${active.reduce((count, item) => count + (item.results || []).length, 0)} completed tests in the ongoing benchmark${active.length > 1 ? "s" : ""}. Results update as each test finishes.</p>` : "";
   if (state.compare.size > 1) {
-    $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${state.compare.size} benchmarks selected</h3></header><p class="hint">Your selection and filters apply to Summary, Table and Compare.</p>${liveNotice}${allocationNotice}<details class="adv"><summary>Selected benchmarks</summary><ul>${[...state.compare].map((id) => `<li>${esc((state.runCache[id] || {}).label || id)}</li>`).join("")}</ul></details></div>`;
+    $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${state.compare.size} benchmarks selected</h3></header><p class="hint">Your selection and filters apply to Summary, Table and Compare.</p>${liveNotice}${measurementNotice}${allocationNotice}<details class="adv"><summary>Selected benchmarks</summary><ul>${[...state.compare].map((id) => `<li>${esc((state.runCache[id] || {}).label || id)}</li>`).join("")}</ul></details></div>`;
     return;
   }
   const sessionAllocationNotice = new Set(allocationConfigs(run).map(allocationKey)).size > 1
@@ -987,7 +1069,7 @@ function renderRunDetail(run) {
   const levelRows = (run.results || []).filter(row => (row.concurrency || 1) === state.comparisonConcurrency);
   const failureNotice = levelRows.length && !levelRows.some(row => row.status === "ok")
     ? `<p class="hint" role="status">No successful tests at concurrency ${state.comparisonConcurrency}. Check All measurements for failure details.</p>` : "";
-  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${state.env?.capabilities?.extend ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" ? "disabled" : ""} title="${state.benchmarkRunning || run.status === "running" ? "Wait for the active benchmark to finish" : "Add or rerun tests in this benchmark"}">Add / rerun tests</button>` : ""}<button class="btn-sm" id="rename-run" title="Edit this benchmark's name and notes" ${run.status === "running" ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="Delete this benchmark from this computer" ${run.status === "running" ? "disabled" : ""}>Delete</button></header>${liveNotice}${failureNotice}${sessionAllocationNotice}<div class="result-stats">${stat("Best prefill", best("prefill_tps") ? fmt(best("prefill_tps"), 0) : "?", "tk/s")}${stat("Best output", best("decode_tps") ? fmt(best("decode_tps"), 1) : "?", "tk/s")}${stat("Successful tests", `${ok.length}/${(run.results || []).length}`, "")}</div><details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload || "auto")} / context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
+  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${state.env?.capabilities?.extend ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" ? "disabled" : ""} title="${state.benchmarkRunning || run.status === "running" ? "Wait for the active benchmark to finish" : "Add or rerun tests in this benchmark"}">Add / rerun tests</button>` : ""}<button class="btn-sm" id="rename-run" title="Edit this benchmark's name and notes" ${run.status === "running" ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="Delete this benchmark from this computer" ${run.status === "running" ? "disabled" : ""}>Delete</button></header>${liveNotice}${measurementNotice}${failureNotice}${sessionAllocationNotice}<div class="result-stats">${stat("Best prefill", best("prefill_tps") ? fmt(best("prefill_tps"), 0) : "?", "tk/s")}${stat("Best output", best("decode_tps") ? fmt(best("decode_tps"), 1) : "?", "tk/s")}${stat("Successful tests", `${ok.length}/${(run.results || []).length}`, "")}</div><details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
   $("#extend-run")?.addEventListener("click", () => openExtendDialog(run));
   $("#delete-run").addEventListener("click", () => deleteRun(run));
   $("#rename-run").addEventListener("click", async () => {
@@ -1123,7 +1205,7 @@ function detailedResultsTable(run) {
     ["Energy per output token (J)", row => (row.power || {}).j_per_token_decode],
     ["Load time (s)", row => row.load_s],
     ["Quantization", row => row.quantization],
-    ["Speculative decoding", row => row.mtp ? "on" : "off"],
+    ["Speculative decoding", row => run.measurement_mode === "browser" ? "provider controlled" : row.mtp ? "on" : "off"],
     ["VRAM peak (MB)", row => row.vram_peak_mb], ["Failure", row => row.message],
   ];
   const rows = (run.results || []).flatMap(row => [...fields.map(([label, get]) => {
@@ -1277,6 +1359,7 @@ async function renderSummary() {
       const metric = METRICS[key];
       for (const run of runs) {
         for (const mtp of (state.mtpFilter === "all" ? [false, true] : [state.mtpFilter === "on"])) {
+          if (run.measurement_mode === "browser" && (state.mtpFilter !== "all" || mtp)) continue;
           for (const model of models) {
             const pts = pointsFor(run, model, metric, mtp);
             if (!pts.length) continue;
@@ -1466,6 +1549,7 @@ function tracksFor(runs) {
   const tracks = [];
   for (const run of runs) {
     for (const mtp of modes) {
+      if (run.measurement_mode === "browser" && (state.mtpFilter !== "all" || mtp)) continue;
       const rows = (run.results || []).filter((r) => !!r.mtp === !!mtp && (r.concurrency || 1) === state.comparisonConcurrency);
       const meaningful = rows.some((r) => r.status === "ok" || r.fail_kind !== "mtp_unsupported");
       if (!rows.length || !meaningful) continue;

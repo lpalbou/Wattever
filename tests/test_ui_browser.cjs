@@ -294,7 +294,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
     await evaluate('state.comparisonConcurrency=1;document.querySelector(".comparison-concurrency").value="1";state.metrics=new Set(["prefill_tps"]);renderMetricSeg();state.visibleModels=null;fetch("/test/start",{method:"POST"}).then(response=>response.json())');
     await evaluate('showPanel("results");showResultsView("table")');
-    for(let attempt=0;attempt<80 && !await evaluate('!!state.runCache.live');attempt++) await delay(50);
+    for(let attempt=0;attempt<80 && !await evaluate('!!state.runCache.live && state.compare.has("live") && state.runs.some(run=>run.id==="live" && run.status==="running")');attempt++) await delay(50);
     await check('state.compare.has("live") && state.runs.some(run=>run.id==="live" && run.status==="running")', 'An ongoing benchmark appears before its first completed test');
     await check('!!document.querySelector("#run-detail .live-result-notice") && document.querySelector("#run-detail .live-result-notice").textContent.includes("0 completed")', 'Results marks the run Live while waiting for its first test');
     await check('document.querySelector("#run-detail #delete-run").disabled && document.querySelector("#runs-list .run-delete").disabled', 'Active benchmark cannot be deleted');

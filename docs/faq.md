@@ -1,5 +1,9 @@
 # FAQ
 
+## Can I run without installing Wattever?
+
+Yes. The hosted [browser mode](browser.md) connects directly to an OpenAI-compatible endpoint. The endpoint and browser must allow the connection; telemetry, model control and same-file extensions require the full helper.
+
 ## Does the selected GPU determine where inference runs?
 
 No. It selects a telemetry sensor. Configure LM Studio placement separately and record the setup in notes. See [measurements](measurements.md).

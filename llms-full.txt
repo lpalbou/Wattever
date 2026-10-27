@@ -6,6 +6,7 @@
 
 - [Overview](README.md): quick start and project scope.
 - [Documentation index](docs/README.md): full guide map.
+- [Browser mode](docs/browser.md): hosted connection, measurement and storage limits.
 - [Getting started](docs/getting-started.md): setup and first run.
 - [Measurements](docs/measurements.md): metrics, context planning and sessions.
 - [Architecture](docs/architecture.md): components and boundaries.
@@ -38,9 +39,13 @@ Canonical source: [README.md](README.md)
 
 # Wattever
 
-Wattever measures local LLM prefill and decode throughput and GPU power with LM Studio. It records successes and failures across prompt sizes, models and simultaneous query counts, and compares sessions in a local browser UI. Python 3.9 or newer and LM Studio are required; Wattever uses the Python standard library and local JavaScript with no package installation or CDN.
+Wattever measures local LLM prefill and decode throughput and GPU power with LM Studio. It records successes and failures across prompt sizes, models and simultaneous query counts, and compares sessions in a browser UI. Use the hosted browser mode with an OpenAI-compatible endpoint, or the full local helper with Python 3.9+ and LM Studio. Wattever uses the Python standard library and local JavaScript without a package installation or CDN.
 
-## Quick start
+## Browser quick start
+
+Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/), start an OpenAI-compatible server, enable its CORS support, and use **Connect** to select models and run tests. Browser and server permissions can affect access to a local endpoint. See [Browser mode](docs/browser.md) for settings, storage, privacy and measurement limits.
+
+## Full local helper quick start
 
 1. Install LM Studio, download the models you want to test, and run `lms bootstrap` once so the `lms` command is available.
 2. Get the [v2.4.0 source archive](https://github.com/lpalbou/Wattever/releases/tag/v2.4.0) or clone the repository. The source archive includes historical tracked results.
@@ -49,7 +54,7 @@ Wattever measures local LLM prefill and decode throughput and GPU power with LM 
 
 See [Getting started](docs/getting-started.md) for setup and [Measurements and sessions](docs/measurements.md) for interpretation and extending a benchmark. GPU monitoring selects a sensor only: configure actual model placement in LM Studio and record GPU setup notes. Power is measured for the selected GPU, not every GPU.
 
-**Results** provides Summary, Table and Compare views with common benchmark, model, measure and concurrency filters. Tables can be copied as tab-separated text. Use **Add / rerun tests** to extend a benchmark or replace selected cases. One JSON file stores each benchmark; download it from Results or share it as described in [results guidance](results/README.md). Review its contents before publication.
+**Results** provides Summary, Table and Compare views with common benchmark, model, measure and concurrency filters. Tables can be copied as tab-separated text. In helper mode, use **Add / rerun tests** to extend a benchmark or replace selected cases. One JSON file stores each benchmark; download it from Results or share it as described in [results guidance](results/README.md). Review its contents before publication.
 
 ## Documentation
 
@@ -69,6 +74,7 @@ Canonical source: [docs/README.md](docs/README.md)
 
 # Documentation
 
+- [Browser mode](docs/browser.md): hosted setup, privacy, storage and measurement limits.
 - [Getting started](docs/getting-started.md): requirements and first benchmark.
 - [Measurements and sessions](docs/measurements.md): metrics, hardware, context planning, retries and comparisons.
 - [Architecture](docs/architecture.md): components and data flow.
@@ -87,6 +93,8 @@ Canonical source: [docs/getting-started.md](docs/getting-started.md)
 
 # Getting started
 
+For hosted use without installing Wattever, see [Browser mode](docs/browser.md). The instructions below cover the full local helper.
+
 Install Python 3.9 or newer and [LM Studio](https://lmstudio.ai/), download the models you want to measure, and run `lms bootstrap` to make the LM Studio CLI available. Wattever does not need Python packages or a JavaScript build. The LM Studio API defaults to `http://localhost:1234`; set `LMS_BASE_URL` before starting Wattever if needed.
 
 Download and extract the [release source archive](https://github.com/lpalbou/Wattever/releases/tag/v2.4.0), or clone the repository. Start `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux. You can also run `python -m wattever.server` in the repository. The server listens on loopback and prints its URL; keep its window open. `GPU_BENCH_PORT` sets the starting port (default 8713); `GPU_BENCH_NO_BROWSER=1` suppresses automatic browser opening.
@@ -97,11 +105,31 @@ Use **Results** to select and compare benchmark files, download JSON, or copy ta
 
 ---
 
+## docs/browser.md
+
+Canonical source: [docs/browser.md](docs/browser.md)
+
+# Browser mode
+
+Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/) to run a quick benchmark without installing Wattever. Start LM Studio or another OpenAI-compatible server with models available. Enter its endpoint (the default is `http://localhost:1234/v1`) and select **Connect**; Wattever does not request the model list until you connect. Choose models and workloads, start the benchmark, and keep the page open until it finishes.
+
+The provider must permit cross-origin requests. LM Studio has an Enable CORS switch in its [server settings](https://lmstudio.ai/docs/developer/core/server/settings). Browsers may also require local-network permission, and HTTPS-to-localhost behavior depends on the browser and its security settings; see [Microsoft Edge local network access](https://learn.microsoft.com/en-us/deployedge/ms-edge-local-network-access). Wattever connects directly from the browser: it has no hosted proxy and does not use helper credentials. If the endpoint needs an API key, enter it in the page; the key stays in memory and the input clears after connecting. It is not saved in result files or browser storage.
+
+GPU, CPU, RAM and VRAM fields are optional user-supplied descriptions, not hardware discovery. Browser mode cannot measure GPU power or VRAM use, load or unload models, choose model placement, allocate context, control MTP or reasoning, resume a session, or add and rerun cases in the same file. The provider manages those settings; configure it separately. Use the [full local helper](docs/getting-started.md) when those controls and telemetry are needed.
+
+Browser results record `measurement_mode: browser`, `browser_schema_version: 1` and protocol `browser-1`, with the bundled corpus identity and a SHA-256 hash when available. Timing occurs in the client; it includes network and browser overhead and is not directly comparable to helper protocol measurements. Prompt throughput is unavailable when the provider does not report exact prompt usage. Output token counts and throughput are marked estimated when completion usage is unavailable. A failed request is recorded as a failure, not zero throughput.
+
+Results are stored in browser storage and can be downloaded or imported as JSON. Storage can be cleared or unavailable; if a storage warning appears, download the in-memory results before closing the page. Closing or reloading the page stops the browser benchmark, and a previously running result is shown as interrupted. On timeout the browser aborts its requests and stops the run, but cannot verify that the provider stopped inference or unload its model. Check the provider before starting another workload. Helper benchmarks instead continue in the local server when the page closes; see [measurements and sessions](docs/measurements.md).
+
+---
+
 ## docs/measurements.md
 
 Canonical source: [docs/measurements.md](docs/measurements.md)
 
 # Measurements and sessions
+
+The details below describe the full local helper. Browser mode has a separate `browser-1` protocol and client-side timings; its measurements are not directly comparable with helper measurements. See [Browser mode](docs/browser.md).
 
 A case combines a model, Standard or MTP mode, prompt size, simultaneous query count and repeat. The runner records successful, failed and skipped cases; inability to load or fit a workload is useful capacity information. MTP requires a model with a supported bundled MTP head. Reasoning is disabled by default; settings and runtime versions accompany results.
 
@@ -112,6 +140,8 @@ The default per-test context allocation reserves prompt tokens, output budget, 5
 NVIDIA telemetry uses `nvidia-smi` for the selected card's board power. macOS may use `powermetrics` for GPU and CPU rails with permission. These measure different boundaries; whole-system power is estimated, not a meter reading, and includes only the selected GPU sensor. GPU sensor selection does not direct LM Studio placement. Record placement separately. Missing sensor data remains unavailable. Hardware inventory is best effort and lists discoverable GPUs, CPU, memory and other equipment without serial numbers or unique IDs.
 
 Each new benchmark has one JSON file in `results/runs/`. **Add / rerun tests** on an existing benchmark can select models and their Standard/MTP modes, prompt sizes and query counts. Choose an action and review the case counts in the preview: the default adds missing cases; retry failed also retries skipped cases; rerun selected tests replaces selected cases including successful ones. A replaced attempt is archived in `previous_attempts`, not averaged or included in a median with its replacement. Before changing the file, an exact snapshot is kept under `results/.history/`. Each execution records its own session settings and provenance. Resume creates a new run for unfinished work. Extension and resume require compatible hardware, selected GPU and driver, corpus and LM Studio version; when compatibility cannot be verified, start a new benchmark.
+
+The helper's request deadline uses successful same-model prefill throughput when available: six times projected prefill time plus 120 seconds, capped by the configured test timeout. Without a comparable result it uses the configured timeout. After the first token, 120 seconds without output progress also triggers recovery (or the configured timeout if shorter). These are time limits, not detection of a physical freeze or GPU-memory threshold. A timeout is recorded; the helper verifies model unload and request workers exit before continuing. If verification fails, the run stops for manual recovery. With the default skip setting, larger cases for that model and concurrency are skipped after failure.
 
 Prompt presets are 512, 5k, 10k, 20k, 40k, 80k, 100k, 120k, 150k, 200k and 260k tokens; concurrency presets are 1 through 10, 15, 20, 30, 40, 50, 75 and 100 simultaneous queries. Compare cases at matching dimensions.
 
@@ -135,11 +165,16 @@ flowchart LR
     Runner --> Store[JSON results and history]
     Server --> Store
     Server --> UI
+    Hosted[Hosted browser UI] --> Adapter[Browser adapter]
+    Adapter -->|OpenAI-compatible API| Provider[Model provider]
+    Adapter --> BrowserStore[Browser storage and JSON export]
 ```
 
 The standard-library server serves local static assets and coordinates one benchmark at a time. The runner plans cases, loads models through LM Studio, collects streaming responses and optional power samples, and saves progress to JSON. The UI reads status and events and displays saved results. System discovery and sensor access are platform dependent; no external service is required by Wattever itself. The LM Studio endpoint can be configured separately.
 
 The selected sensor and model execution placement are separate. Result files preserve case and session provenance; power estimates have a different boundary from GPU measurements. See [measurements](docs/measurements.md), [API](docs/api.md), and [getting started](docs/getting-started.md).
+
+The hosted browser adapter connects directly to the configured provider after the user chooses Connect. It has no hosted proxy or helper credentials and cannot access helper telemetry or control model loading. The browser and helper use different measurement protocols; see [browser mode](docs/browser.md).
 
 ---
 
@@ -148,6 +183,8 @@ The selected sensor and model execution placement are separate. Result files pre
 Canonical source: [docs/api.md](docs/api.md)
 
 # Local HTTP API
+
+This reference describes the full local helper. Hosted [browser mode](docs/browser.md) uses an in-page adapter, not this HTTP service, and does not support extensions, resume, model unload or telemetry.
 
 The server binds to `127.0.0.1` on port 8713 by default, or the next available port. Set `GPU_BENCH_PORT` to change the starting port. This local interface is intended for a trusted local user, not exposure to a network. JSON errors have an `error` field; invalid input and runtime conflicts generally return 400, missing runs 404, active-run metadata edits or deletion 409, and unexpected failures 500.
 
@@ -193,6 +230,10 @@ Canonical source: [docs/faq.md](docs/faq.md)
 
 # FAQ
 
+## Can I run without installing Wattever?
+
+Yes. The hosted [browser mode](docs/browser.md) connects directly to an OpenAI-compatible endpoint. The endpoint and browser must allow the connection; telemetry, model control and same-file extensions require the full helper.
+
 ## Does the selected GPU determine where inference runs?
 
 No. It selects a telemetry sensor. Configure LM Studio placement separately and record the setup in notes. See [measurements](docs/measurements.md).
@@ -216,6 +257,10 @@ No. Failures and skipped cases are recorded and can be retried. See [troubleshoo
 Canonical source: [docs/troubleshooting.md](docs/troubleshooting.md)
 
 # Troubleshooting
+
+- **Hosted page cannot connect:** check the endpoint URL, server availability, CORS and your browser's local-network permission. HTTPS-to-localhost behavior varies by browser. See [browser mode](docs/browser.md).
+- **Browser storage warning:** download the result JSON before closing the page; an in-memory result is lost on reload.
+- **Helper timeout recovery stopped:** inspect LM Studio and ensure the model and requests have stopped before starting another run. See [measurements](docs/measurements.md).
 
 - **LM Studio or models unavailable:** install LM Studio, run `lms bootstrap`, start its server and check that the models are downloaded. Verify `LMS_BASE_URL` if using a different endpoint. Reopen Wattever and check the Run page.
 - **Power unavailable:** check `nvidia-smi` for NVIDIA sensors. On macOS, use the launcher and accept the optional power prompt; without authorization speed tests still work. Other sensors may not provide power. See [measurements](docs/measurements.md).
@@ -283,6 +328,8 @@ Canonical source: [CHANGELOG.md](CHANGELOG.md)
 - Stores a benchmark in one JSON file and adds live case results, shared Results filters, chart comparisons and copyable tables.
 - Adds same-file extensions, failed and skipped retries, selected-case reruns, attempt history and snapshots. Successful replacements remain separate from archived attempts.
 - Plans shared KV capacity per concurrent request with a 5% prompt margin and supports a fixed context policy. Standard and MTP modes can be chosen per model.
+- Adds hosted browser mode with direct OpenAI-compatible connections, local import/export and a separate measurement protocol.
+- Adds adaptive request deadlines and verified model unload and worker recovery before continuing after a timeout.
 - Adds a documentation set and an agent skill for the local API.
 - Older concurrent failures may reflect legacy context allocation rather than a model capacity limit; use the session planner information when interpreting them.
 - Older result schemas and planner settings remain readable. Extended files may contain sessions using different planners; compare provenance and settings before combining measurements.

@@ -114,6 +114,23 @@ class LmsCli:
         except (OSError, subprocess.SubprocessError, LoadError):
             pass
 
+    def unload_confirmed(self, model, timeout=90):
+        """Unload and verify the CLI's loaded-model list; errors are not success."""
+        try:
+            code, _, _ = self.run(["unload", model], timeout=timeout)
+            if code != 0:
+                return False
+            code, out, _ = self.run(["ps", "--json"], timeout=30)
+            start = out.find("[")
+            if code != 0 or start < 0:
+                return False
+            entries = json.loads(out[start:])
+            return isinstance(entries, list) and all(isinstance(item, dict) for item in entries) and not any(
+                item.get("modelKey") == model or item.get("identifier") == model
+                for item in entries)
+        except (OSError, subprocess.SubprocessError, ValueError, LoadError):
+            return False
+
     def load(self, model_key, context_length, gpu="auto", parallel=1, timeout=900,
              mtp=False):
         """Load one model. `gpu` is "auto" | "max" | "off" | "0.0".."1.0".
@@ -292,7 +309,7 @@ def measure_completion(model, prompt, max_tokens, base=DEFAULT_BASE, timeout=180
                 deltas += 1
                 if len(sample) < 60:
                     sample.append(piece)
-                if on_progress and deltas % 16 == 0:
+                if on_progress:
                     on_progress(deltas, now - (t_first or now))
 
     t_end = time.perf_counter()

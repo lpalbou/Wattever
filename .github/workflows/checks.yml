@@ -21,9 +21,11 @@ jobs:
       - run: python tools/update_docs.py --check
       - run: node --check web/app.js
       - run: node --check web/tables.js
+      - run: node --check web/browser.js
       - run: node tests/test_ui.js
       - run: node tests/test_tables.js
       - run: node tests/test_live_results.js
+      - run: node tests/test_browser_backend.js
 
   browser:
     runs-on: ubuntu-latest
@@ -36,3 +38,4 @@ jobs:
         with:
           node-version: '22'
       - run: node tests/test_ui_browser.cjs
+      - run: node tests/test_static_browser.cjs
