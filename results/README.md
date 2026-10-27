@@ -1,48 +1,103 @@
-# Results
+# Benchmark sessions
 
-Every benchmark run is one JSON file in `runs/`, named
-`<timestamp>_<gpu-slug>.json`. They are committed deliberately: a benchmark is
-only worth anything next to other people's numbers, and the point of this repo
-is to accumulate a picture of what real cards actually do with local models.
+One benchmark is one JSON file in `runs/`. A session contains every model,
+prompt size, concurrency level, repeat and failure measured for one machine
+configuration. Changing cards or runtime GPU placement means starting a new
+session. Historical unversioned files remain readable without rewriting them.
 
-**Please send yours.** A 1070 Ti and an M4 Max are equally interesting — the low
-end is usually under-reported, and "it did not fit" is a result too.
+## Run and contribute
 
-## Adding your run
+1. Launch Wattever and click **Reset for all models** to select every downloaded
+   language model and restore the standard measurement settings.
+2. Give the session a useful label, such as `RTX 5060 Ti - stock`. Choose prompt
+   sizes and concurrent request counts. Default concurrency is one; click **10**
+   to select all levels from one through ten. Prompt-length badges work the same way. Review the total request count.
+3. With multiple cards, configure placement in LM Studio and describe it in the
+   **Runtime GPU placement** field. The sensor selector controls power readings
+   only. It does not change where LM Studio executes the model.
+4. Run the benchmark. Failures and partial sessions remain useful data.
+5. Download **JSON** in Results, or take the matching file from `results/runs/`.
+   Run `python tools/validate_results.py results/runs/<id>.json`.
+6. Open a PR containing that file. No database, index or aggregate file changes
+   are needed. Stage that specific file, especially after deleting old runs locally.
 
-1. Run a benchmark. Give it a label that names the card, e.g. `RTX 5070 Ti`.
-2. Your run appears in `results/runs/`.
-3. Open a pull request with that file. Nothing else needs changing.
+## Standard format
 
-That is the whole process. The file is self-describing: it carries the GPU, the
-driver, the host CPU and RAM, the exact config, and every measurement.
+New files use `schema_version: 2`. See [benchmark.schema.json](benchmark.schema.json).
+Fields are additive; the existing `gpu`, `host`, `config` and `results` fields remain.
 
-### What makes a run useful
+| Field | Meaning |
+| --- | --- |
+| `application` | Tool version and measurement protocol version |
+| `hardware.os` | OS name, release and architecture |
+| `hardware.cpu` | CPU name, physical and logical core counts |
+| `hardware.system` | Manufacturer/model and physical RAM in bytes |
+| `hardware.gpus` | Separate entries for every discoverable adapter; name, vendor, memory in bytes, driver and optional sensor index |
+| `hardware.motherboard`, `hardware.firmware`, `hardware.storage` | Best-effort board model, firmware vendor/version and physical disk models/capacity/interface |
+| `classification` | Hardware configuration grouping hash, GPU names and platform; not a unique machine identity |
+| `measurement_scope` | Which GPU sensor supplies power and user-reported runtime placement |
+| `corpus.sha256` | Corpus fingerprint for comparing the exact workload |
+| `config` | Selected models, prompt targets, concurrency levels and measurement settings |
+| `results` | Measurements, failures, skips and cancellation records |
 
-- **Say which card it is** in the run label. `GTX 1070 Ti` beats `my pc`.
-- **Note anything unusual** in the notes field — a power limit, an undervolt, a
-  riser, a laptop on battery, an unusual ambient temperature.
-- **Leave the defaults alone** unless you mean to change them. Reasoning off and
-  MTP off are what make runs comparable; a run with reasoning on measures how
-  fast the model thinks, not how fast it answers.
-- **Failures are data.** A model that would not load at 40k context tells us
-  exactly where that card stops. Do not delete those rows.
+Unknown metadata is `null` or an empty collection. Hardware discovery is best
+effort; an empty adapter list does not prove that the machine has no GPU.
+New files omit GPU UUIDs, serial numbers, usernames and hostnames. User-entered
+notes and runtime/model names are included; review them before sharing. Historical
+files may still contain a GPU UUID; it may be removed without changing measurements.
 
-### What is in the file
+## Concurrent measurements
 
-Each run records the GPU (name, VRAM, driver, UUID), the host (CPU, RAM, OS),
-the config, and per test: prefill tk/s, decode tk/s, time to first token, actual
-prompt tokens, GPU watts, estimated system watts, joules per 1k prefill tokens
-and per output token, peak VRAM, the context length it was loaded at, the GPU
-offload placement that worked, and the model's own output sample.
+Each result row includes `concurrency`; missing means one in historical files.
+Single-request prefill/decode retain their original definitions. Groups above
+one contain `requests`, including per-request status, TTFT and decode speed.
+Each concurrent request has its own leading nonce to invalidate prefix caching.
+`lms load --parallel` sets the runtime's prediction capacity for that level.
 
-If you would rather not publish your machine's details, edit the `host` and
-`gpu` blocks before opening the PR — keep `name` and `vram_total_mb` so the
-numbers mean something, and drop whatever else you like. The GPU `uuid` in
-particular is a unique hardware identifier and nothing depends on it.
+`aggregate_completion_tps` is successful requests' total output tokens divided
+by group wall time, including prefill and queueing. It is not the sum of individual
+decode speeds. A group is successful only when every request succeeds. If usage
+counts are unavailable, stream chunks supply an estimate and the result says so.
+The UI marks estimated token counts and derived throughput with `*`.
 
-## Comparing
+`group_power` covers the group interval. Concurrent phases overlap, so they do
+not get invented prefill/decode energy splits. Power is for the selected GPU
+sensor, never the sum of all connected cards. Whole-system power remains an
+estimate and omits other GPUs' load; do not treat it as a wall-meter measurement.
+Compare equivalent model/quantization, context, concurrency, offload, reasoning,
+MTP, output budget, protocol and corpus before attributing differences to hardware.
 
-Clone the repo and launch the app: every run in `runs/` shows up in the
-**Summary** and **Compare** tabs automatically, including the ones other people
-contributed. You do not need to own a card to look at its numbers.
+## Local cleanup
+
+**Results -> Delete** removes that session from the local application and
+moves its JSON into ignored `results/.trash/`. Active runs must stop first. To
+restore a session, move its archived JSON back into `results/runs/` and rename it
+to the `id` inside the file plus `.json`, then refresh Results.
+
+Deleting a tracked result produces a local Git deletion. This does not remove
+the upstream copy; include only your new session file in a result contribution.
+
+## Add, continue or rerun tests
+
+In Results, select a benchmark and choose **Add / rerun tests**. Select models and
+their Standard/MTP techniques, prompt sizes and query counts. Choose an action:
+
+- **Add missing tests** runs cases without a completed result.
+- **Retry failed tests** includes failed and skipped cases as well as missing ones.
+- **Rerun selected tests** includes successful cases too. Select one model to
+  replace its measurements, or use **Select benchmark models** to select the
+  installed models and techniques from the benchmark.
+
+The preview separates new cases, failed retries, successful reruns and existing
+measurements. Replacement is explicit; existing successful cases are preserved
+when adding or retrying. Measurements use the same `results/runs/<id>.json` file.
+Before execution, an exact local backup is written under ignored
+`results/.history/`. Replaced rows move into `previous_attempts` with their
+original session identifier, archive time and reason. Charts and summary medians
+use active results, so replacements are not averaged with archived attempts.
+
+`config` describes the benchmark's combined selections. Each item in `sessions`
+records the settings used by that execution; result `session_id` links back to
+it. `execution_config` is the most recent workload selection. This provenance
+matters when extending an older planner run or adding MTP for one model.
+`remaining_tests` counts requested cases with no terminal result.

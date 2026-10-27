@@ -57,3 +57,17 @@ def platform_label():
     if IS_LINUX:
         return "linux"
     return sys.platform
+
+
+def linux_cpu_times():
+    """Return idle and total CPU ticks from /proc/stat, or None."""
+    try:
+        with open('/proc/stat', encoding='utf-8') as f:
+            fields = f.readline().split()
+        if not fields or fields[0] != 'cpu' or len(fields) < 5:
+            return None
+        ticks = [int(x) for x in fields[1:]]
+        # Guest time is already included in user/nice.
+        return ticks[3] + (ticks[4] if len(ticks) > 4 else 0), sum(ticks[:8])
+    except (OSError, ValueError):
+        return None

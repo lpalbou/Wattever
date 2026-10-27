@@ -23,7 +23,7 @@ import subprocess
 import threading
 import time
 
-from .platform_util import IS_MAC, IS_WINDOWS, popen, run, sysctl
+from .platform_util import IS_LINUX, IS_MAC, IS_WINDOWS, linux_cpu_times, popen, run, sysctl
 
 SMI_FIELDS = ["power.draw", "utilization.gpu", "memory.used", "clocks.sm", "temperature.gpu"]
 
@@ -78,7 +78,7 @@ def _nvidia_gpu_info(index=0):
 
 def _nvidia_list():
     try:
-        p = run(["nvidia-smi", "--query-gpu=index,name,memory.total",
+        p = run(["nvidia-smi", "--query-gpu=index,name,memory.total,pci.bus_id",
                  "--format=csv,noheader,nounits"])
     except (OSError, ValueError, subprocess.SubprocessError):
         return []
@@ -88,8 +88,13 @@ def _nvidia_list():
     for line in p.stdout.strip().splitlines():
         parts = [x.strip() for x in line.split(",")]
         if len(parts) >= 3:
-            out.append({"index": int(parts[0]), "name": parts[1],
-                        "vram_total_mb": _f(parts[2])})
+            try:
+                index = int(parts[0])
+            except ValueError:
+                continue
+            out.append({"index": index, "name": parts[1],
+                        "vram_total_mb": _f(parts[2]),
+                        "pci_bus_id": parts[3] if len(parts) > 3 else None})
     return out
 
 
@@ -202,7 +207,7 @@ def gpu_info(index=0):
     info = _nvidia_gpu_info(index)
     if info:
         return info
-    if IS_MAC:
+    if IS_MAC and index == 0:
         return _mac_gpu_info()
     return {}
 
@@ -240,9 +245,9 @@ class _CpuMeter:
         return idle.value, kern.value + user.value
 
     def sample(self):
-        if IS_WINDOWS:
+        if IS_WINDOWS or IS_LINUX:
             try:
-                cur = self._times()
+                cur = self._times() if IS_WINDOWS else linux_cpu_times()
             except (AttributeError, OSError):
                 return None
             if cur is None:
@@ -427,9 +432,9 @@ class PowerSampler:
         """
         if cpu_w is not None:
             return (gpu_w or 0.0) + cpu_w + self.other_idle_w
-        if gpu_w is None:
+        if gpu_w is None or cpu_util is None:
             return None
-        return gpu_w + self.other_idle_w + self.cpu_tdp_w * (cpu_util or 0.0)
+        return gpu_w + self.other_idle_w + self.cpu_tdp_w * cpu_util
 
     # -- analysis ----------------------------------------------------------
     def window(self, t0, t1):

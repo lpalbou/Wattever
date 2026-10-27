@@ -236,6 +236,7 @@ def measure_completion(model, prompt, max_tokens, base=DEFAULT_BASE, timeout=180
     usage = {}
     finish_reason = None
     sample = []
+    stream_complete = False
 
     try:
         resp = urllib.request.urlopen(req, timeout=timeout)
@@ -264,11 +265,14 @@ def measure_completion(model, prompt, max_tokens, base=DEFAULT_BASE, timeout=180
                 continue
             payload = line[6:]
             if payload == "[DONE]":
+                stream_complete = True
                 break
             try:
                 chunk = json.loads(payload)
             except ValueError:
                 continue
+            if chunk.get("error"):
+                raise RuntimeError("LM Studio stream error: %s" % chunk["error"])
             if chunk.get("usage"):
                 usage = chunk["usage"]
             choices = chunk.get("choices") or []
@@ -292,6 +296,8 @@ def measure_completion(model, prompt, max_tokens, base=DEFAULT_BASE, timeout=180
                     on_progress(deltas, now - (t_first or now))
 
     t_end = time.perf_counter()
+    if not stream_complete:
+        raise RuntimeError("LM Studio stream ended before [DONE].")
     if t_first is None:
         raise RuntimeError("The model produced no tokens (prefill may have been rejected).")
 
@@ -310,6 +316,7 @@ def measure_completion(model, prompt, max_tokens, base=DEFAULT_BASE, timeout=180
         "wall_s": t_end - t_start,
         "prompt_tokens": prompt_tokens,
         "completion_tokens": completion_tokens,
+        "completion_tokens_estimated": not bool(usage.get("completion_tokens")),
         "reasoning_tokens": details.get("reasoning_tokens"),
         "deltas": deltas,
         # prefill throughput: every prompt token had to be ingested before the

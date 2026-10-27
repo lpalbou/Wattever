@@ -1,0 +1,287 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Wattever benchmark session v2",
+  "description": "One file describes one machine benchmark, extended through recorded execution sessions. Unknown hardware values are null. Legacy unversioned sessions remain supported by the application.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "created_at",
+    "status",
+    "application",
+    "hardware",
+    "classification",
+    "measurement_scope",
+    "gpu",
+    "host",
+    "config",
+    "corpus",
+    "results"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,199}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "enum": [
+        "running",
+        "completed",
+        "cancelled",
+        "error",
+        "interrupted"
+      ]
+    },
+    "application": {
+      "type": "object",
+      "required": [
+        "name",
+        "version",
+        "protocol_version"
+      ]
+    },
+    "hardware": {
+      "type": "object",
+      "required": [
+        "os",
+        "cpu",
+        "system",
+        "gpus"
+      ],
+      "properties": {
+        "os": {
+          "type": "object",
+          "required": [
+            "name",
+            "release",
+            "architecture"
+          ]
+        },
+        "cpu": {
+          "type": "object",
+          "required": [
+            "name",
+            "physical_cores",
+            "logical_cores"
+          ]
+        },
+        "system": {
+          "type": "object",
+          "required": [
+            "manufacturer",
+            "model",
+            "memory_bytes"
+          ]
+        },
+        "gpus": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "vendor",
+              "memory_bytes",
+              "driver",
+              "sensor_index"
+            ]
+          }
+        },
+        "motherboard": {
+          "type": "object",
+          "required": [
+            "manufacturer",
+            "model"
+          ]
+        },
+        "firmware": {
+          "type": "object",
+          "required": [
+            "vendor",
+            "version"
+          ]
+        },
+        "storage": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "model",
+              "capacity_bytes",
+              "interface"
+            ]
+          }
+        }
+      }
+    },
+    "classification": {
+      "type": "object",
+      "required": [
+        "hardware_class",
+        "gpu_names",
+        "platform"
+      ]
+    },
+    "measurement_scope": {
+      "type": "object",
+      "required": [
+        "power_gpu_sensor_index",
+        "power_boundary",
+        "runtime_gpu_placement",
+        "runtime_gpu_placement_source"
+      ]
+    },
+    "gpu": {
+      "type": "object"
+    },
+    "host": {
+      "type": "object"
+    },
+    "config": {
+      "type": "object",
+      "required": [
+        "models",
+        "sizes",
+        "concurrency_levels"
+      ],
+      "properties": {
+        "concurrency_levels": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        }
+      }
+    },
+    "corpus": {
+      "type": "object",
+      "required": [
+        "sha256"
+      ],
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/result"
+      }
+    },
+    "sessions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "config",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "config": {
+            "type": "object"
+          },
+          "application": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "status": {
+            "enum": [
+              "running",
+              "completed",
+              "cancelled",
+              "error",
+              "interrupted"
+            ]
+          }
+        }
+      }
+    },
+    "active_session_id": {
+      "type": "string"
+    },
+    "execution_config": {
+      "type": "object"
+    },
+    "previous_attempts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "remaining_tests": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "$defs": {
+    "result": {
+      "type": "object",
+      "required": [
+        "model",
+        "target_tokens",
+        "status",
+        "concurrency"
+      ],
+      "properties": {
+        "model": {
+          "type": "string"
+        },
+        "target_tokens": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "failed",
+            "skipped",
+            "cancelled"
+          ]
+        },
+        "concurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "aggregate_completion_tps": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "aggregate_completion_tokens_estimated": {
+          "type": "boolean"
+        },
+        "group_power": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

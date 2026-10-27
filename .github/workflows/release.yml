@@ -1,0 +1,92 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to release
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ['3.9', '3.13']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python -m unittest discover -s tests -v
+      - run: python tools/validate_results.py
+      - run: python tools/update_docs.py --check
+      - run: node --check web/app.js
+      - run: node --check web/tables.js
+      - run: node tests/test_ui.js
+      - run: node tests/test_tables.js
+      - run: node tests/test_live_results.js
+
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tests/test_ui_browser.cjs
+
+  publish:
+    needs: [check, browser]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Verify version and prepare release notes
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import re
+          from wattever import __version__
+          tag = os.environ['RELEASE_TAG']
+          if tag != 'v' + __version__:
+              raise SystemExit('Tag must match wattever.__version__')
+          text = Path('CHANGELOG.md').read_text(encoding='utf-8')
+          match = re.search(r'^## (?:\[)?' + re.escape(__version__) + r'(?:\])?[^\n]*\n(.*?)(?=^## |\Z)', text, re.M | re.S)
+          if not match:
+              raise SystemExit('Missing changelog entry for ' + tag)
+          Path('release-notes.md').write_text(match.group(1).strip() + '\n', encoding='utf-8')
+          PY
+      - run: python tools/build_release.py --ref "$RELEASE_TAG"
+      - name: Publish portable source archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$RELEASE_TAG" --verify-tag --title "Wattever $RELEASE_TAG" --notes-file release-notes.md dist/Wattever-*.zip dist/SHA256SUMS.txt

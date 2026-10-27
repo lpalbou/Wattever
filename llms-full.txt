@@ -1,0 +1,440 @@
+# Wattever
+
+> Local LM Studio throughput and power benchmarking with a browser UI and JSON results.
+
+## Core docs
+
+- [Overview](README.md): quick start and project scope.
+- [Documentation index](docs/README.md): full guide map.
+- [Getting started](docs/getting-started.md): setup and first run.
+- [Measurements](docs/measurements.md): metrics, context planning and sessions.
+- [Architecture](docs/architecture.md): components and boundaries.
+- [API](docs/api.md): local routes and side effects.
+- [FAQ](docs/faq.md): common questions and limits.
+- [Troubleshooting](docs/troubleshooting.md): diagnosis and fixes.
+
+## Contributing
+
+- [Contributing](CONTRIBUTING.md): software and results contributions.
+- [Security](SECURITY.md): reporting and local interface safety.
+- [Code of conduct](CODE_OF_CONDUCT.md): community expectations.
+
+## Agent skill
+
+- [Wattever skill](skills/wattever/SKILL.md): operational guidance for agents.
+
+## Optional
+
+- [Changelog](CHANGELOG.md): release history.
+- [Acknowledgements](ACKNOWLEDGEMENTS.md): project credits.
+- [License](LICENSE): MIT terms.
+- [Results guidance](results/README.md): result contributions and formats.
+
+---
+
+## README.md
+
+Canonical source: [README.md](README.md)
+
+# Wattever
+
+Wattever measures local LLM prefill and decode throughput and GPU power with LM Studio. It records successes and failures across prompt sizes, models and simultaneous query counts, and compares sessions in a local browser UI. Python 3.9 or newer and LM Studio are required; Wattever uses the Python standard library and local JavaScript with no package installation or CDN.
+
+## Quick start
+
+1. Install LM Studio, download the models you want to test, and run `lms bootstrap` once so the `lms` command is available.
+2. Get the [v2.4.0 source archive](https://github.com/lpalbou/Wattever/releases/tag/v2.4.0) or clone the repository. The source archive includes historical tracked results.
+3. On Windows run `Wattever.bat`; on macOS run `Wattever.command`; on Linux run `sh Wattever.sh`. Alternatively run `python -m wattever.server` from the repository.
+4. Open the displayed local URL, select models and workloads on **Run**, and start. Leave the server running until the benchmark finishes. Results appear as cases complete.
+
+See [Getting started](docs/getting-started.md) for setup and [Measurements and sessions](docs/measurements.md) for interpretation and extending a benchmark. GPU monitoring selects a sensor only: configure actual model placement in LM Studio and record GPU setup notes. Power is measured for the selected GPU, not every GPU.
+
+**Results** provides Summary, Table and Compare views with common benchmark, model, measure and concurrency filters. Tables can be copied as tab-separated text. Use **Add / rerun tests** to extend a benchmark or replace selected cases. One JSON file stores each benchmark; download it from Results or share it as described in [results guidance](results/README.md). Review its contents before publication.
+
+## Documentation
+
+[Documentation index](docs/README.md) | [Architecture](docs/architecture.md) | [API](docs/api.md) | [FAQ](docs/faq.md) | [Troubleshooting](docs/troubleshooting.md) | [Changelog](CHANGELOG.md) | [Contributing](CONTRIBUTING.md) | [Security](SECURITY.md)
+
+## For AI agents
+
+Register and use the [Wattever agent skill](https://github.com/lpalbou/Wattever/tree/v2.4.0/skills/wattever) to operate the local API safely. Copy `skills/wattever/` from the version you use into your agent's skills directory.
+
+Wattever is [MIT licensed](LICENSE).
+
+---
+
+## docs/README.md
+
+Canonical source: [docs/README.md](docs/README.md)
+
+# Documentation
+
+- [Getting started](docs/getting-started.md): requirements and first benchmark.
+- [Measurements and sessions](docs/measurements.md): metrics, hardware, context planning, retries and comparisons.
+- [Architecture](docs/architecture.md): components and data flow.
+- [API](docs/api.md): local HTTP interface and side effects.
+- [FAQ](docs/faq.md): common interpretation questions.
+- [Troubleshooting](docs/troubleshooting.md): setup and runtime symptoms.
+- [Agent skill](skills/wattever/SKILL.md): operating procedure for automated users.
+
+Return to the [project overview](README.md); see [contributing](CONTRIBUTING.md) for development and results submissions.
+
+---
+
+## docs/getting-started.md
+
+Canonical source: [docs/getting-started.md](docs/getting-started.md)
+
+# Getting started
+
+Install Python 3.9 or newer and [LM Studio](https://lmstudio.ai/), download the models you want to measure, and run `lms bootstrap` to make the LM Studio CLI available. Wattever does not need Python packages or a JavaScript build. The LM Studio API defaults to `http://localhost:1234`; set `LMS_BASE_URL` before starting Wattever if needed.
+
+Download and extract the [release source archive](https://github.com/lpalbou/Wattever/releases/tag/v2.4.0), or clone the repository. Start `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux. You can also run `python -m wattever.server` in the repository. The server listens on loopback and prints its URL; keep its window open. `GPU_BENCH_PORT` sets the starting port (default 8713); `GPU_BENCH_NO_BROWSER=1` suppresses automatic browser opening.
+
+On **Run**, select installed models, prompt sizes, query counts and settings. Choose a GPU sensor and, for multiple GPUs, describe the LM Studio placement in GPU setup notes. Start the benchmark and view live results. Model loads and inference can take substantial time and change LM Studio's loaded models. The macOS launcher offers optional administrator authorization for `powermetrics`; speed measurements still work without it.
+
+Use **Results** to select and compare benchmark files, download JSON, or copy tables. See [measurements](docs/measurements.md) before comparing and [troubleshooting](docs/troubleshooting.md) if setup fails. Return to [overview](README.md); see [API](docs/api.md) for integration.
+
+---
+
+## docs/measurements.md
+
+Canonical source: [docs/measurements.md](docs/measurements.md)
+
+# Measurements and sessions
+
+A case combines a model, Standard or MTP mode, prompt size, simultaneous query count and repeat. The runner records successful, failed and skipped cases; inability to load or fit a workload is useful capacity information. MTP requires a model with a supported bundled MTP head. Reasoning is disabled by default; settings and runtime versions accompany results.
+
+Prefill throughput is prompt tokens divided by time to first token (TTFT), including overhead before the first token. Decode throughput is (completion tokens minus the first token) divided by the time from the first token to completion. Output token counts may be estimated when exact usage is unavailable. Group throughput for concurrent requests includes prefill and queueing and is distinct from per-request decode speed. Compare matching model builds, settings, corpus and protocol, and interpret differences in runtime placement and memory conditions.
+
+The default per-test context allocation reserves prompt tokens, output budget, 512 tokens of headroom and a 5% prompt safety margin, subject to the model's per-request maximum. The shared KV allocation is the per-request capacity multiplied by simultaneous queries. Workloads are grouped by model. The default per-test policy reloads for each context and concurrency allocation; the optional fixed policy uses the largest planned allocation for a model and MTP mode, reducing reloads while changing memory conditions. More concurrency consumes more memory; large contexts can fail to fit.
+
+NVIDIA telemetry uses `nvidia-smi` for the selected card's board power. macOS may use `powermetrics` for GPU and CPU rails with permission. These measure different boundaries; whole-system power is estimated, not a meter reading, and includes only the selected GPU sensor. GPU sensor selection does not direct LM Studio placement. Record placement separately. Missing sensor data remains unavailable. Hardware inventory is best effort and lists discoverable GPUs, CPU, memory and other equipment without serial numbers or unique IDs.
+
+Each new benchmark has one JSON file in `results/runs/`. **Add / rerun tests** on an existing benchmark can select models and their Standard/MTP modes, prompt sizes and query counts. Choose an action and review the case counts in the preview: the default adds missing cases; retry failed also retries skipped cases; rerun selected tests replaces selected cases including successful ones. A replaced attempt is archived in `previous_attempts`, not averaged or included in a median with its replacement. Before changing the file, an exact snapshot is kept under `results/.history/`. Each execution records its own session settings and provenance. Resume creates a new run for unfinished work. Extension and resume require compatible hardware, selected GPU and driver, corpus and LM Studio version; when compatibility cannot be verified, start a new benchmark.
+
+Prompt presets are 512, 5k, 10k, 20k, 40k, 80k, 100k, 120k, 150k, 200k and 260k tokens; concurrency presets are 1 through 10, 15, 20, 30, 40, 50, 75 and 100 simultaneous queries. Compare cases at matching dimensions.
+
+Older schemas and planner settings remain readable. Extending a legacy benchmark can produce sessions with different context planning; compare session settings rather than treating them as identical. See [API](docs/api.md), [FAQ](docs/faq.md), and [results guidance](results/README.md).
+
+---
+
+## docs/architecture.md
+
+Canonical source: [docs/architecture.md](docs/architecture.md)
+
+# Architecture
+
+```mermaid
+flowchart LR
+    UI[Local browser UI] -->|HTTP on loopback| Server[Wattever server]
+    Server --> Runner[Benchmark runner]
+    Runner -->|CLI and streaming API| LMS[LM Studio]
+    Runner --> Corpus[Local prompt corpus]
+    Runner --> Sensors[GPU and system telemetry]
+    Runner --> Store[JSON results and history]
+    Server --> Store
+    Server --> UI
+```
+
+The standard-library server serves local static assets and coordinates one benchmark at a time. The runner plans cases, loads models through LM Studio, collects streaming responses and optional power samples, and saves progress to JSON. The UI reads status and events and displays saved results. System discovery and sensor access are platform dependent; no external service is required by Wattever itself. The LM Studio endpoint can be configured separately.
+
+The selected sensor and model execution placement are separate. Result files preserve case and session provenance; power estimates have a different boundary from GPU measurements. See [measurements](docs/measurements.md), [API](docs/api.md), and [getting started](docs/getting-started.md).
+
+---
+
+## docs/api.md
+
+Canonical source: [docs/api.md](docs/api.md)
+
+# Local HTTP API
+
+The server binds to `127.0.0.1` on port 8713 by default, or the next available port. Set `GPU_BENCH_PORT` to change the starting port. This local interface is intended for a trusted local user, not exposure to a network. JSON errors have an `error` field; invalid input and runtime conflicts generally return 400, missing runs 404, active-run metadata edits or deletion 409, and unexpected failures 500.
+
+Read endpoints: `GET /api/version`, `/api/env`, `/api/models`, `/api/status`, `/api/events?cursor=0`, `/api/runs`, `/api/runs/<id>`, `/api/runs/<id>/download`, `/api/preview?tokens=512`, `/api/export.json` and `/api/export.csv`. Exports accept comma-separated `ids`; without them they include all runs. `GET /api/bench/extend-plan?run_id=<id>` supplies extension options.
+
+State-changing endpoints: `POST /api/bench/start` accepts benchmark configuration; `/api/bench/cancel` requests cancellation; `/api/bench/resume` accepts `run_id`; `/api/bench/extend-plan` previews a selection; `/api/bench/extend` starts it. Extension selection includes `run_id`, `model_modes` (model IDs mapped to arrays of `off` and/or `on`), `sizes`, `concurrency_levels`, `retry_failed`, and `rerun_existing`. Defaults add missing cases; `retry_failed` includes failed and skipped cases; `rerun_existing` includes successful selected cases. Plan first and review its counts. Starting, resuming or extending loads and unloads models, performs inference and writes results; extension saves a history snapshot.
+
+`POST /api/lmstudio/start` starts the LM Studio server, `/api/lmstudio/unload` unloads models, `POST /api/runs/<id>/meta` changes label and notes, `DELETE /api/runs/<id>` moves a run to local trash, and `POST /api/shutdown` stops Wattever. These calls change local state. The active run cannot be edited or deleted. See [measurements](docs/measurements.md) for compatibility and [architecture](docs/architecture.md) for the system boundary.
+
+## Configuration and examples
+
+`LMS_BASE_URL` selects the LM Studio API (default `http://localhost:1234`). `GPU_BENCH_PORT` selects the starting local port and `GPU_BENCH_NO_BROWSER=1` suppresses the browser. A new benchmark accepts a JSON object such as:
+
+```json
+{"models":["<installed-model-id>"],"sizes":[512,5000],"concurrency_levels":[1,2],"max_tokens":256,"repeats":1}
+```
+
+Send it to `POST /api/bench/start` only when ready to run inference. Omitted configuration uses these defaults:
+
+| Setting | Default |
+| --- | --- |
+| `sizes` | 512, 5000, 10000, 20000, 40000 |
+| `concurrency_levels`, `repeats`, `max_tokens` | `[1]`, 1, 256 |
+| `gpu_offload`, `fallback_on_failure`, `stop_model_after_failure` | `max`, true, true |
+| `context_policy`, `context_headroom`, `context_safety_fraction` | `per_test`, 512, 0.05 |
+| `mtp_modes`, `warmup`, `disable_thinking` | `["off"]`, true, true |
+| `load_timeout_s`, `per_test_timeout_s`, `power_interval_ms` | 900, 1800, 150 |
+| `gpu_index` | 0 (telemetry sensor only) |
+
+For `POST /api/bench/extend-plan`, use a selection like:
+
+```json
+{"run_id":"<run-id>","model_modes":{"<installed-model-id>":["off","on"]},"sizes":[512,5000],"concurrency_levels":[1,2],"retry_failed":false,"rerun_existing":false}
+```
+
+Review the returned counts and warnings before submitting the selection to `/api/bench/extend`. **Add / rerun tests** modifies the existing benchmark after taking a snapshot; `/api/bench/resume` instead creates a separate run with unfinished work and a link to its source. Compatibility checks apply to both; see [measurements](docs/measurements.md).
+
+---
+
+## docs/faq.md
+
+Canonical source: [docs/faq.md](docs/faq.md)
+
+# FAQ
+
+## Does the selected GPU determine where inference runs?
+
+No. It selects a telemetry sensor. Configure LM Studio placement separately and record the setup in notes. See [measurements](docs/measurements.md).
+
+## Are power numbers comparable?
+
+GPU board and SoC rail measurements have different boundaries; estimated whole-system power is not a wall meter and only includes the selected GPU. Compare like sources and settings.
+
+## Can I compare old and new files?
+
+Older files remain readable. Compare protocol, model, corpus, settings, context planner and session provenance; legacy and newer context allocation can differ within an extended benchmark. See [measurements](docs/measurements.md).
+
+## Does a failed case invalidate the benchmark?
+
+No. Failures and skipped cases are recorded and can be retried. See [troubleshooting](docs/troubleshooting.md) for common causes.
+
+---
+
+## docs/troubleshooting.md
+
+Canonical source: [docs/troubleshooting.md](docs/troubleshooting.md)
+
+# Troubleshooting
+
+- **LM Studio or models unavailable:** install LM Studio, run `lms bootstrap`, start its server and check that the models are downloaded. Verify `LMS_BASE_URL` if using a different endpoint. Reopen Wattever and check the Run page.
+- **Power unavailable:** check `nvidia-smi` for NVIDIA sensors. On macOS, use the launcher and accept the optional power prompt; without authorization speed tests still work. Other sensors may not provide power. See [measurements](docs/measurements.md).
+- **Load failure or context overflow:** reduce prompt size or simultaneous queries, inspect model context limits and available memory, or choose a smaller model. A failure is retained in results; use the retry option after correcting the cause.
+- **Extension rejected:** hardware, selected GPU and driver, corpus and LM Studio version must match. Start a separate benchmark if they changed or cannot be verified. See [sessions](docs/measurements.md).
+- **No response from Wattever:** check the URL printed by its launcher and keep the server window open. The default starting port is 8713 but another available port may be selected. See [getting started](docs/getting-started.md).
+
+---
+
+## CONTRIBUTING.md
+
+Canonical source: [CONTRIBUTING.md](CONTRIBUTING.md)
+
+# Contributing
+
+Share benchmark results by opening a pull request with the JSON file from `results/runs/`. Review the file for information you do not want to publish and follow [results guidance](results/README.md). Record model builds, placement and relevant settings so readers can interpret results.
+
+For code changes, preserve old result readability, distinguish measured values from estimates, and document changes in measurement semantics. Wattever uses the Python standard library and local browser assets. See [architecture](docs/architecture.md), [API](docs/api.md), [changelog](CHANGELOG.md), and [security](SECURITY.md).
+
+Run the software checks applicable to your change:
+
+```sh
+python -m unittest discover -s tests
+node --check web/app.js
+node tests/test_ui.js
+node tests/test_tables.js
+python tools/validate_results.py
+```
+
+The optional browser test is `node tests/test_ui_browser.cjs`. State which platforms and real hardware you exercised; software tests cannot establish GPU performance. Follow the [code of conduct](CODE_OF_CONDUCT.md).
+
+---
+
+## SECURITY.md
+
+Canonical source: [SECURITY.md](SECURITY.md)
+
+# Security
+
+Wattever serves a local interface that can start benchmarks, load or unload models, and change local results. Keep it bound to loopback and use it only on a trusted machine. Review result files before sharing them.
+
+Report suspected vulnerabilities privately to the repository maintainers through GitHub's private vulnerability reporting if available. Do not publish sensitive details before maintainers can respond. See [API](docs/api.md) for state-changing endpoints.
+
+---
+
+## CODE_OF_CONDUCT.md
+
+Canonical source: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+
+# Code of conduct
+
+Treat participants with respect. Be constructive, welcome differing experience levels, and avoid harassment, discrimination and personal attacks. Maintainers may remove inappropriate contributions or limit participation to protect the community. Report concerns privately to the repository maintainers through GitHub. See [contributing](CONTRIBUTING.md).
+
+---
+
+## CHANGELOG.md
+
+Canonical source: [CHANGELOG.md](CHANGELOG.md)
+
+# Changelog
+
+## 2.4.0 - 2026-10-27
+
+- Introduces measurement protocol 2, cross-platform hardware inventory, Linux support, concurrent queries and per-session provenance.
+- Stores a benchmark in one JSON file and adds live case results, shared Results filters, chart comparisons and copyable tables.
+- Adds same-file extensions, failed and skipped retries, selected-case reruns, attempt history and snapshots. Successful replacements remain separate from archived attempts.
+- Plans shared KV capacity per concurrent request with a 5% prompt margin and supports a fixed context policy. Standard and MTP modes can be chosen per model.
+- Adds a documentation set and an agent skill for the local API.
+- Older concurrent failures may reflect legacy context allocation rather than a model capacity limit; use the session planner information when interpreting them.
+- Older result schemas and planner settings remain readable. Extended files may contain sessions using different planners; compare provenance and settings before combining measurements.
+
+## 1.0.0
+
+- Initial release.
+
+---
+
+## ACKNOWLEDGEMENTS.md
+
+Canonical source: [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md)
+
+# Acknowledgements
+
+Wattever uses [LM Studio](https://lmstudio.ai/) for local model execution and the Python standard library for its server. Thanks to everyone who contributes code, documentation and benchmark results. See [contributing](CONTRIBUTING.md).
+
+---
+
+## LICENSE
+
+Canonical source: [LICENSE](LICENSE)
+
+MIT License
+
+Copyright (c) 2026 Laurent-Philippe Albou
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## results/README.md
+
+Canonical source: [results/README.md](results/README.md)
+
+# Benchmark sessions
+
+One benchmark is one JSON file in `runs/`. A session contains every model,
+prompt size, concurrency level, repeat and failure measured for one machine
+configuration. Changing cards or runtime GPU placement means starting a new
+session. Historical unversioned files remain readable without rewriting them.
+
+## Run and contribute
+
+1. Launch Wattever and click **Reset for all models** to select every downloaded
+   language model and restore the standard measurement settings.
+2. Give the session a useful label, such as `RTX 5060 Ti - stock`. Choose prompt
+   sizes and concurrent request counts. Default concurrency is one; click **10**
+   to select all levels from one through ten. Prompt-length badges work the same way. Review the total request count.
+3. With multiple cards, configure placement in LM Studio and describe it in the
+   **Runtime GPU placement** field. The sensor selector controls power readings
+   only. It does not change where LM Studio executes the model.
+4. Run the benchmark. Failures and partial sessions remain useful data.
+5. Download **JSON** in Results, or take the matching file from `results/runs/`.
+   Run `python tools/validate_results.py results/runs/<id>.json`.
+6. Open a PR containing that file. No database, index or aggregate file changes
+   are needed. Stage that specific file, especially after deleting old runs locally.
+
+## Standard format
+
+New files use `schema_version: 2`. See [benchmark.schema.json](results/benchmark.schema.json).
+Fields are additive; the existing `gpu`, `host`, `config` and `results` fields remain.
+
+| Field | Meaning |
+| --- | --- |
+| `application` | Tool version and measurement protocol version |
+| `hardware.os` | OS name, release and architecture |
+| `hardware.cpu` | CPU name, physical and logical core counts |
+| `hardware.system` | Manufacturer/model and physical RAM in bytes |
+| `hardware.gpus` | Separate entries for every discoverable adapter; name, vendor, memory in bytes, driver and optional sensor index |
+| `hardware.motherboard`, `hardware.firmware`, `hardware.storage` | Best-effort board model, firmware vendor/version and physical disk models/capacity/interface |
+| `classification` | Hardware configuration grouping hash, GPU names and platform; not a unique machine identity |
+| `measurement_scope` | Which GPU sensor supplies power and user-reported runtime placement |
+| `corpus.sha256` | Corpus fingerprint for comparing the exact workload |
+| `config` | Selected models, prompt targets, concurrency levels and measurement settings |
+| `results` | Measurements, failures, skips and cancellation records |
+
+Unknown metadata is `null` or an empty collection. Hardware discovery is best
+effort; an empty adapter list does not prove that the machine has no GPU.
+New files omit GPU UUIDs, serial numbers, usernames and hostnames. User-entered
+notes and runtime/model names are included; review them before sharing. Historical
+files may still contain a GPU UUID; it may be removed without changing measurements.
+
+## Concurrent measurements
+
+Each result row includes `concurrency`; missing means one in historical files.
+Single-request prefill/decode retain their original definitions. Groups above
+one contain `requests`, including per-request status, TTFT and decode speed.
+Each concurrent request has its own leading nonce to invalidate prefix caching.
+`lms load --parallel` sets the runtime's prediction capacity for that level.
+
+`aggregate_completion_tps` is successful requests' total output tokens divided
+by group wall time, including prefill and queueing. It is not the sum of individual
+decode speeds. A group is successful only when every request succeeds. If usage
+counts are unavailable, stream chunks supply an estimate and the result says so.
+The UI marks estimated token counts and derived throughput with `*`.
+
+`group_power` covers the group interval. Concurrent phases overlap, so they do
+not get invented prefill/decode energy splits. Power is for the selected GPU
+sensor, never the sum of all connected cards. Whole-system power remains an
+estimate and omits other GPUs' load; do not treat it as a wall-meter measurement.
+Compare equivalent model/quantization, context, concurrency, offload, reasoning,
+MTP, output budget, protocol and corpus before attributing differences to hardware.
+
+## Local cleanup
+
+**Results -> Delete** removes that session from the local application and
+moves its JSON into ignored `results/.trash/`. Active runs must stop first. To
+restore a session, move its archived JSON back into `results/runs/` and rename it
+to the `id` inside the file plus `.json`, then refresh Results.
+
+Deleting a tracked result produces a local Git deletion. This does not remove
+the upstream copy; include only your new session file in a result contribution.
+
+## Add, continue or rerun tests
+
+In Results, select a benchmark and choose **Add / rerun tests**. Select models and
+their Standard/MTP techniques, prompt sizes and query counts. Choose an action:
+
+- **Add missing tests** runs cases without a completed result.
+- **Retry failed tests** includes failed and skipped cases as well as missing ones.
+- **Rerun selected tests** includes successful cases too. Select one model to
+  replace its measurements, or use **Select benchmark models** to select the
+  installed models and techniques from the benchmark.
+
+The preview separates new cases, failed retries, successful reruns and existing
+measurements. Replacement is explicit; existing successful cases are preserved
+when adding or retrying. Measurements use the same `results/runs/<id>.json` file.
+Before execution, an exact local backup is written under ignored
+`results/.history/`. Replaced rows move into `previous_attempts` with their
+original session identifier, archive time and reason. Charts and summary medians
+use active results, so replacements are not averaged with archived attempts.
+
+`config` describes the benchmark's combined selections. Each item in `sessions`
+records the settings used by that execution; result `session_id` links back to
+it. `execution_config` is the most recent workload selection. This provenance
+matters when extending an older planner run or adding MTP for one model.
+`remaining_tests` counts requested cases with no terminal result.

@@ -12,14 +12,16 @@ import sys
 import threading
 import urllib.error
 import urllib.parse
+import urllib.request
+import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from wattever import corpus, lmstudio, platform_util, power, runner, store
+    from wattever import __version__, corpus, hardware, lmstudio, platform_util, power, runner, store
 else:
-    from . import corpus, lmstudio, platform_util, power, runner, store
+    from . import __version__, corpus, hardware, lmstudio, platform_util, power, runner, store
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_DIR = os.path.join(ROOT, "web")
@@ -82,7 +84,7 @@ def default_selection(models):
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "GpuBench/1.0"
+    server_version = "Wattever/" + __version__
     protocol_version = "HTTP/1.1"
 
     # -- helpers -----------------------------------------------------------
@@ -145,6 +147,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self._static(route[len("/static/"):])
             if route == "/api/env":
                 return self._json(self.env_payload())
+            if route == "/api/bench/extend-plan":
+                return self._json(BENCH.extension_options((query.get("run_id") or [None])[0]))
+            if route == "/api/version":
+                return self._json({"application": "Wattever", "version": __version__})
             if route == "/api/models":
                 return self._json({"models": self.models_payload()})
             if route == "/api/status":
@@ -157,7 +163,15 @@ class Handler(BaseHTTPRequestHandler):
             if route == "/api/runs":
                 return self._json({"runs": [_mark_interrupted(r) for r in store.list_runs()]})
             if route.startswith("/api/runs/"):
-                run = store.load(route[len("/api/runs/"):])
+                run_id = urllib.parse.unquote(route[len("/api/runs/"):])
+                download = run_id.endswith("/download")
+                if download:
+                    run_id = run_id[:-len("/download")]
+                run = store.load(run_id)
+                if run and download:
+                    return self._send(200, json.dumps(run, indent=1, ensure_ascii=False,
+                                                     allow_nan=False),
+                                      extra={"Content-Disposition": 'attachment; filename="%s.json"' % run_id})
                 return self._json(_mark_interrupted(run)) if run else self._error(404, "no such run")
             if route == "/api/export.csv":
                 runs = self._selected_runs(query)
@@ -186,15 +200,25 @@ class Handler(BaseHTTPRequestHandler):
             if route == "/api/bench/cancel":
                 BENCH.cancel()
                 return self._json({"ok": True})
+            if route == "/api/bench/resume":
+                run_id = BENCH.resume(self._body().get("run_id"))
+                return self._json({"run_id": run_id})
+            if route == "/api/bench/extend-plan":
+                return self._json(BENCH.plan_extension(self._body()))
+            if route == "/api/bench/extend":
+                return self._json({"run_id": BENCH.extend(self._body())})
             if route == "/api/lmstudio/start":
                 return self._json({"ok": BENCH.cli.start_server()})
             if route == "/api/lmstudio/unload":
                 BENCH.cli.unload_all()
                 return self._json({"ok": True})
             if route.endswith("/meta") and route.startswith("/api/runs/"):
-                run_id = route[len("/api/runs/"):-len("/meta")]
+                run_id = urllib.parse.unquote(route[len("/api/runs/"):-len("/meta")])
                 body = self._body()
-                run = store.set_meta(run_id, body.get("label"), body.get("notes"))
+                with BENCH._start_lock:
+                    if BENCH.running and (BENCH.run or {}).get("id") == run_id:
+                        return self._error(409, "Wait for this benchmark to stop before editing it.")
+                    run = store.set_meta(run_id, body.get("label"), body.get("notes"))
                 return self._json(store.summarise(run)) if run else self._error(404, "no such run")
             if route == "/api/shutdown":
                 self._json({"ok": True})
@@ -209,7 +233,19 @@ class Handler(BaseHTTPRequestHandler):
     def do_DELETE(self):
         route = urllib.parse.urlparse(self.path).path
         if route.startswith("/api/runs/"):
-            return self._json({"deleted": store.delete(route[len("/api/runs/"):])})
+            run_id = urllib.parse.unquote(route[len("/api/runs/"):])
+            try:
+                with BENCH._start_lock:
+                    if BENCH.running and (BENCH.run or {}).get("id") == run_id:
+                        return self._error(409, "Stop the active benchmark before deleting it.")
+                    deleted = store.delete(run_id)
+                    if deleted and (BENCH.run or {}).get("id") == run_id:
+                        BENCH.run = None
+                return self._json({"deleted": deleted}) if deleted else self._error(404, "no such run")
+            except ValueError as exc:
+                return self._error(400, str(exc))
+            except OSError as exc:
+                return self._error(500, str(exc))
         return self._error(404, "not found")
 
     # -- payloads ----------------------------------------------------------
@@ -242,6 +278,7 @@ class Handler(BaseHTTPRequestHandler):
                 "needs_sudo": platform_util.IS_MAC and not gpu.get("power_readable"),
             },
             "host": store.host_info(),
+            "hardware": hardware.inventory(),
             "lms": {"cli": BENCH.cli.available, "exe": BENCH.cli.exe,
                     "server": server_up, "version": BENCH.cli.version()},
             "models": models,
@@ -249,7 +286,10 @@ class Handler(BaseHTTPRequestHandler):
             "missing_defaults": missing,
             "corpus": corpus.master_stats(),
             "defaults": runner.DEFAULT_CONFIG,
-            "size_presets": [512, 5000, 10000, 20000, 40000, 80000],
+            "capabilities": {"resume": True, "extend": True, "context_planning": True, "context_planner_version": 1},
+            "size_presets": [512, 5000, 10000, 20000, 40000, 80000,
+                             100000, 120000, 150000, 200000, 260000],
+            "concurrency_presets": list(range(1, 11)) + [15, 20, 30, 40, 50, 75, 100],
             "last_config": store.load_config(),
             "running": BENCH.running,
         }
@@ -264,13 +304,52 @@ def find_port(start=DEFAULT_PORT, tries=20):
     raise RuntimeError("No free port found near %d" % start)
 
 
+def reuse_existing(port):
+    """Keep the desktop launcher on one instance and replace idle old versions."""
+    url = "http://127.0.0.1:%d/" % port
+    try:
+        with urllib.request.urlopen(url + "api/status", timeout=3) as response:
+            identity = response.headers.get("Server", "")
+            if not identity.startswith(("Wattever/", "GpuBench/")):
+                return False
+            status = json.load(response)
+        try:
+            with urllib.request.urlopen(url + "api/version", timeout=3) as response:
+                version = json.load(response).get("version")
+        except (urllib.error.URLError, OSError, ValueError):
+            version = None
+        if version == __version__ or status.get("running"):
+            print("Wattever is already running at %s" % url)
+            if version != __version__:
+                print("An older version is benchmarking. Relaunch after it finishes to update.")
+            if os.environ.get("GPU_BENCH_NO_BROWSER") != "1":
+                webbrowser.open(url)
+            return True
+        # Only an identified Wattever instance with no active benchmark is replaced.
+        request = urllib.request.Request(url + "api/shutdown", data=b"{}", method="POST",
+                                         headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(request, timeout=5):
+            pass
+        for _ in range(30):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                if sock.connect_ex(("127.0.0.1", port)) != 0:
+                    return False
+            time.sleep(0.1)
+        raise RuntimeError("The old Wattever instance is still stopping. Relaunch in a moment.")
+    except (urllib.error.URLError, OSError, ValueError):
+        return False
+
+
 def main():
     # the launcher window is the only place errors surface, so do not buffer it
     try:
         sys.stdout.reconfigure(line_buffering=True)
     except (AttributeError, OSError):
         pass
-    port = find_port(int(os.environ.get("GPU_BENCH_PORT", DEFAULT_PORT)))
+    requested_port = int(os.environ.get("GPU_BENCH_PORT", DEFAULT_PORT))
+    if reuse_existing(requested_port):
+        return
+    port = find_port(requested_port)
     url = "http://127.0.0.1:%d/" % port
     httpd = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     httpd.daemon_threads = True

@@ -6,18 +6,32 @@ const state = {
   runCache: {},          // id -> full run
   selected: null,        // results tab
   compare: new Set(),
-  metric: "prefill_tps",
-  summaryMetrics: new Set(["prefill_tps", "decode_tps"]),
-  summaryModels: new Set(),
-  modelFilter: "",
+  metrics: new Set(["prefill_tps"]),
+  visibleModels: null,
+  colorBy: "models",
   mtpFilter: "all",
   sizes: new Set(),
+  concurrencyLevels: new Set([1]),
+  comparisonConcurrency: 1,
+  resultView: "summary",
+  compareView: "charts",
+  selectionInitialized: false,
+  resultsRender: 0,
+  detailSignature: null,
   models: new Set(),
+  metadataOverrides: {label: false, notes: false},
   cursor: 0,
   liveResults: [],
   poller: null,
+  pollBusy: false,
+  liveRunId: null,
+  liveSignature: null,
+  idleWatcher: null,
+  benchmarkRunning: false,
+  extension: null,
 };
 
+const CONCURRENCY_PRESETS = [...Array.from({length: 10}, (_, i) => i + 1), 15, 20, 30, 40, 50, 75, 100];
 const SERIES_SLOTS = 8;
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -54,6 +68,7 @@ async function api(path, opts = {}) {
 
 /* ---------------- metrics ---------------- */
 const METRICS = {
+  aggregate_completion_tps: { label: "Aggregate output throughput", kind: "line", unit: "tk/s", better: "high", get: (r) => r.aggregate_completion_tps, blurb: "Total output tokens divided by group wall time." },
   prefill_tps: {
     label: "Prefill speed", kind: "line", unit: "tk/s", better: "high",
     get: (r) => r.prefill_tps,
@@ -100,14 +115,82 @@ function runColorIndex(runId) {
 }
 function runColor(runId) {
   const idx = runColorIndex(runId);
-  if (idx === null || idx >= SERIES_SLOTS) return "var(--text-muted)";
-  return `var(--series-${idx + 1})`;
+  if (idx === null) return "var(--text-muted)";
+  return idx < SERIES_SLOTS ? `var(--series-${idx + 1})` : `hsl(${Math.round(idx * 137.508) % 360} 65% 60%)`;
+}
+
+/* Field help is available on hover, keyboard focus, and touch. */
+const FIELD_HELP = {
+  "mtp-filter": "Compare ordinary decoding, speculative decoding, or both.",
+  "comparison-concurrency": "Compare runs at the same number of simultaneous queries.",
+};
+function applyFieldTooltips() {
+  $$("input, select, textarea").forEach((input) => {
+    if (input.title) return;
+    const label = input.closest("label") || (input.id ? document.querySelector(`label[for="${input.id}"]`) : null);
+    const field = input.closest(".field");
+    const help = field && field.querySelector("[data-help]");
+    input.title = (label && label.dataset.help) || (help && help.dataset.help) || FIELD_HELP[input.id] || (input.classList.contains("comparison-concurrency") ? FIELD_HELP["comparison-concurrency"] : "Include " + ((label && label.textContent.trim()) || "this option") + " in the selection.");
+    if (label && !label.title) label.title = input.title;
+  });
+}
+function decorateHelp() {
+  $$("[data-help]").forEach((label) => {
+    const help = document.createElement("span");
+    help.className = "field-help";
+    help.tabIndex = 0;
+    help.setAttribute("role", "note");
+    help.setAttribute("aria-label", label.dataset.help);
+    help.dataset.tooltip = label.dataset.help;
+    help.textContent = "?";
+    help.addEventListener("click", (event) => { event.preventDefault(); event.stopPropagation(); help.focus(); });
+    label.appendChild(help);
+  });
+  applyFieldTooltips();
+  new MutationObserver(applyFieldTooltips).observe(document.body, {childList: true, subtree: true});
 }
 
 /* ---------------- boot ---------------- */
 async function init() {
+  $("#extend-close").addEventListener("click", () => $("#extend-dialog").close());
+  $("#extend-dialog").addEventListener("close", () => { state.extension = null; });
+  $("#extend-start").addEventListener("click", startExtension);
+  decorateHelp();
+  Tables.init();
+  api("/api/version").then((info) => {
+    $("#app-version").textContent = "v" + info.version;
+  }).catch(() => { $("#app-version").textContent = "Server unavailable"; });
   $$(".tab").forEach((tab) => tab.addEventListener("click", () => showPanel(tab.dataset.panel)));
   $("#theme-toggle").addEventListener("click", toggleTheme);
+  $("#clean-run").addEventListener("click", prepareCleanRun);
+  $$(".comparison-concurrency").forEach((select) => {
+    select.innerHTML = CONCURRENCY_PRESETS.map((value) => `<option value="${value}">${value}</option>`).join("");
+    select.addEventListener("change", () => {
+      state.comparisonConcurrency = Number(select.value);
+      if (state.metrics.size === 1 && (state.metrics.has("prefill_tps") || state.metrics.has("aggregate_completion_tps"))) {
+        state.metrics = new Set([state.comparisonConcurrency > 1 ? "aggregate_completion_tps" : "prefill_tps"]);
+      }
+      renderMetricSeg(); renderResultsView();
+    });
+  });
+  $$("[data-result-view]").forEach((button) => button.addEventListener("click", () => showResultsView(button.dataset.resultView)));
+  ["[data-result-view]", "[data-compare-view]"].forEach((selector) => {
+    $$(selector).forEach((button, index, buttons) => button.addEventListener("keydown", (event) => {
+      let next;
+      if (event.key === "ArrowRight") next = (index + 1) % buttons.length;
+      if (event.key === "ArrowLeft") next = (index + buttons.length - 1) % buttons.length;
+      if (event.key === "Home") next = 0;
+      if (event.key === "End") next = buttons.length - 1;
+      if (next === undefined) return;
+      event.preventDefault(); buttons[next].focus(); buttons[next].click();
+    }));
+  });
+  $("#results-all-measurements").parentElement.addEventListener("toggle", renderAllMeasurements);
+  $$("[data-compare-view]").forEach((button) => button.addEventListener("click", () => {
+    state.compareView = button.dataset.compareView;
+    $$("[data-compare-view]").forEach((item) => item.setAttribute("aria-selected", String(item === button)));
+    renderResultsView();
+  }));
   $("#start-btn").addEventListener("click", startBench);
   $("#cancel-btn").addEventListener("click", cancelBench);
   $("#refresh-runs").addEventListener("click", loadRuns);
@@ -117,12 +200,32 @@ async function init() {
     if (id) selectRun(id);
   });
   $$("[data-select]").forEach((btn) => btn.addEventListener("click", () => selectModels(btn.dataset.select)));
-  ["#max-tokens", "#repeats", "#no-think", "#offload"].forEach((sel) => {
+  ["#max-tokens", "#repeats", "#no-think", "#offload", "#gpu-index",
+    "#runtime-gpu-placement", "#fallback", "#stop-after-fail", "#warmup",
+    "#per-test-timeout", "#load-timeout", "#headroom", "#context-policy"].forEach((sel) => {
     const node = $(sel);
-    if (node) node.addEventListener("change", updatePlan);
+    if (node) {
+      node.addEventListener("change", updatePlan);
+      if (node.type === "text" || node.type === "number") node.addEventListener("input", updatePlan);
+    }
   });
-  $("#model-filter").addEventListener("change", (e) => { state.modelFilter = e.target.value; renderCompare(); });
-  $("#mtp-filter").addEventListener("change", (e) => { state.mtpFilter = e.target.value; renderCompare(); });
+  [["#run-label", "label"], ["#run-notes", "notes"]].forEach(([selector, key]) => {
+    $(selector).addEventListener("input", () => { state.metadataOverrides[key] = true; });
+    $(selector).addEventListener("blur", () => {
+      if (!$(selector).value.trim()) {
+        state.metadataOverrides[key] = false;
+        updateGeneratedMetadata();
+      }
+    });
+  });
+  $("#show-all-models").addEventListener("click", () => { state.visibleModels = null; redrawModelSelection(); });
+  $("#hide-all-models").addEventListener("click", () => { state.visibleModels = new Set(); redrawModelSelection(); });
+  $$("[data-color-by]").forEach(button => button.addEventListener("click", () => {
+    state.colorBy = button.dataset.colorBy;
+    $$("[data-color-by]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
+    renderResultsView();
+  }));
+  $("#mtp-filter").addEventListener("change", (e) => { state.mtpFilter = e.target.value; renderResultsView(); });
   $$("#mtp-chips input").forEach((input) => input.addEventListener("change", () => {
     $$("#mtp-chips .chip").forEach((chip) => {
       chip.dataset.on = chip.querySelector("input").checked ? "1" : "0";
@@ -145,12 +248,10 @@ async function init() {
   const hash = location.hash.slice(1);
   if (["summary", "run", "results", "compare"].includes(hash)) {
     showPanel(hash, false);
-  } else if (state.runs.length) {
-    // there is something to look at: land on it rather than on the setup form
-    showPanel("summary", false);
   }
   const status = await api("/api/status");
   if (status.running) { enterRunningUi(); startPolling(); }
+  state.idleWatcher = setInterval(checkForActiveBenchmark, 3000);
 }
 
 function syncChip(input) {
@@ -164,18 +265,74 @@ function toggleTheme() {
   const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
   document.documentElement.dataset.theme = next;
   localStorage.setItem("gpu-bench-theme", next);
-  if ($("#panel-compare").classList.contains("active")) renderCompare();
-  if ($("#panel-summary").classList.contains("active")) renderSummary();
-  if (state.selected) renderRunDetail(state.runCache[state.selected]);
+  if ($("#panel-results").classList.contains("active")) renderResultsView();
 }
 
 function showPanel(name, pushHash = true) {
-  $$(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.panel === name)));
-  $$(".panel").forEach((p) => p.classList.toggle("active", p.id === "panel-" + name));
+  if (name === "summary" || name === "compare") {
+    state.resultView = name;
+    name = "results";
+  }
+  $$(".tab").forEach((tab) => tab.setAttribute("aria-selected", String(tab.dataset.panel === name)));
+  $$(".panel").forEach((panel) => panel.classList.toggle("active", panel.id === "panel-" + name));
   if (pushHash && location.hash.slice(1) !== name) history.replaceState(null, "", "#" + name);
-  if (name === "compare") renderCompare();
-  if (name === "summary") renderSummary();
+  if (name === "results") {
+    showResultsView(state.resultView);
+    checkForActiveBenchmark();
+  }
   Charts.hideTip();
+}
+
+function showResultsView(view) {
+  if (state.resultView !== view) $$(".result-view").forEach(panel => { panel.style.minHeight = ""; });
+  state.resultView = view;
+  const ids = {summary: "panel-summary", table: "result-table-view", compare: "panel-compare"};
+  $$("[data-result-view]").forEach((button) => button.setAttribute("aria-selected", String(button.dataset.resultView === view)));
+  $$(".result-view").forEach((panel) => {
+    panel.hidden = panel.id !== ids[view];
+    panel.classList.toggle("active", !panel.hidden);
+  });
+  renderResultsView();
+}
+
+async function renderResultsView() {
+  const generation = ++state.resultsRender;
+  const ids = [...state.compare];
+  await ensureRuns(ids);
+  if (generation !== state.resultsRender) return;
+  const runs = ids.map((id) => state.runCache[id]).filter(Boolean);
+  const models = allModelsOf(runs);
+  renderVisibleModels(models);
+  const shown = shownModels(models);
+  $("#summary-export").href = "/api/export.csv?ids=" + ids.map(encodeURIComponent).join(",");
+  $("#summary-export").hidden = !runs.length;
+  const detailSignature = JSON.stringify([state.selected, state.comparisonConcurrency, runs.map(run => [run.id, run.status, run.label, run.notes, (run.results || []).length])]);
+  if (detailSignature !== state.detailSignature) {
+    const selection = JSON.stringify([...state.compare]);
+    const keepDetailsOpen = state.detailSelection === selection && $("#run-detail details")?.open;
+    renderRunDetail(runs.find((run) => run.id === state.selected) || runs[0]);
+    if (keepDetailsOpen && $("#run-detail details")) $("#run-detail details").open = true;
+    state.detailSelection = selection;
+    state.detailSignature = detailSignature;
+  }
+  if (state.resultView === "summary") await renderSummary();
+  if (state.resultView === "compare") await renderCompare();
+  if (state.resultView === "table") {
+    const keys = selectedMetricKeys();
+    $("#results-table-heading").textContent = keys.length === 1 ? METRICS[keys[0]].label : "Measurements";
+    $("#results-table").innerHTML = !runs.length ? emptyState("Select a benchmark", "Choose a benchmark from the list on the left.")
+      : !keys.length ? emptyState("Choose measures to display", "Select one or more measure badges above.")
+      : compareTable(tracksFor(runs), shown, keys);
+    renderAllMeasurements();
+  }
+}
+
+function renderAllMeasurements() {
+  const target = $("#results-all-measurements");
+  const runs = [...state.compare].map(id => state.runCache[id]).filter(Boolean);
+  target.parentElement.hidden = !runs.length;
+  target.innerHTML = target.parentElement.open
+    ? runs.map(run => `<h4>${esc(run.label || run.id)}</h4>${detailedResultsTable({...run, results: (run.results || []).filter(row => state.visibleModels === null || state.visibleModels.has(row.model))})}`).join("") : "";
 }
 
 function banner(kind, title, body) {
@@ -185,6 +342,7 @@ function banner(kind, title, body) {
 /* ---------------- run tab: environment ---------------- */
 function renderEnv() {
   const env = state.env;
+  $("#context-policy-field").hidden = !env.capabilities?.context_planning;
   const gpu = env.gpu || {};
   const host = env.host || {};
 
@@ -211,6 +369,8 @@ function renderEnv() {
     stat("System RAM", host.ram_gb ? Math.round(host.ram_gb) : "—", "GB"),
     stat("Corpus", Math.round((env.corpus.approx_tokens || 0) / 1000), "k tokens available"),
   ].join("");
+  $("#machine-name").textContent = gpu.name ? gpu.name.replace(/^NVIDIA GeForce\s+/, "") : "CPU benchmark";
+  $("#machine-memory").textContent = gpu.vram_total_mb ? `${(gpu.vram_total_mb / 1024).toFixed(0)} GB ${unified ? "unified memory" : "VRAM"}` : "";
   $("#machine-sub").textContent = [host.cpu, host.cores_logical ? host.cores_logical + " threads" : "", host.os]
     .filter(Boolean).join("  ·  ");
 
@@ -236,23 +396,22 @@ function renderEnv() {
     banners.push(banner("warn", "This GPU does not report power draw",
       "Speed will be measured; watts and joules will be blank."));
   }
-  if (unified) {
-    banners.push(banner("info", "Unified memory",
-      "There is no separate VRAM pool on this machine, so the VRAM column stays blank and " +
-      "GPU-offload settings have little effect. Prefill speed, decode speed and watts are " +
-      "measured exactly as they are on a discrete card, and compare directly."));
-  }
-  if ((env.missing_defaults || []).length) {
-    banners.push(banner("info", "Not installed yet: " + env.missing_defaults.map(esc).join(", "),
-      "These appear in the list automatically once LM Studio finishes downloading them."));
-  }
   if (!env.models.length) {
     banners.push(banner("err", "LM Studio has no models indexed", "Download at least one model first."));
   }
   $("#env-banners").innerHTML = banners.join("");
 
+  const last = env.last_config || env.defaults || {};
+  const availableModels = new Set(env.models.filter((model) => model.type !== "embeddings").map((model) => model.id));
+  state.models = new Set((env.last_config && Array.isArray(last.models) ? last.models : (env.default_models || [])).filter((id) => availableModels.has(id)));
+  state.sizes = new Set(Array.isArray(last.sizes) ? last.sizes : (env.defaults.sizes || []));
+  state.concurrencyLevels = new Set(Array.isArray(last.concurrency_levels) ? last.concurrency_levels : [1]);
+  if (state.sizes.size) state.sizes = through([...new Set([...(env.size_presets || [512, 5000, 10000, 20000, 40000, 80000, 100000, 120000, 150000, 200000, 260000]), ...state.sizes])], Math.max(...state.sizes));
+  if (state.concurrencyLevels.size) state.concurrencyLevels = through([...new Set([...CONCURRENCY_PRESETS, ...state.concurrencyLevels])], Math.max(...state.concurrencyLevels));
+  renderHardware();
   renderModels();
   renderSizes();
+  renderConcurrency();
   applyLastConfig();
   updatePlan();
 }
@@ -265,11 +424,10 @@ function stat(key, value, unit) {
 function renderModels() {
   const env = state.env;
   const llms = env.models.filter((m) => m.type !== "embeddings");
-  if (!state.models.size) (env.default_models || []).forEach((id) => state.models.add(id));
   $("#model-list").innerHTML = llms.map((m) => {
     const on = state.models.has(m.id);
     const isDefault = (env.default_models || []).includes(m.id);
-    return `<label class="model" data-on="${on ? 1 : 0}">
+    return `<label class="model" data-on="${on ? 1 : 0}" title="Include ${esc(m.id)} in this benchmark">
       <input type="checkbox" value="${esc(m.id)}" ${on ? "checked" : ""}>
       <span class="name">${esc(m.id)}</span>
       <span class="meta">
@@ -296,26 +454,76 @@ function selectModels(which) {
   updatePlan();
 }
 
+function through(presets, maximum) {
+  return new Set(presets.filter((value) => value <= Number(maximum)));
+}
+
 function renderSizes() {
-  const presets = state.env.size_presets || [512, 5000, 10000, 20000, 40000, 80000];
-  if (!state.sizes.size) (state.env.defaults.sizes || []).forEach((s) => state.sizes.add(s));
-  $("#size-chips").innerHTML = presets.map((p) => `
-    <label class="chip" data-on="${state.sizes.has(p) ? 1 : 0}">
-      <input type="checkbox" value="${p}" ${state.sizes.has(p) ? "checked" : ""}>${fmtTokens(p)}</label>`).join("");
-  $$("#size-chips input").forEach((input) => input.addEventListener("change", () => {
-    const v = Number(input.value);
-    if (input.checked) state.sizes.add(v); else state.sizes.delete(v);
-    input.closest(".chip").dataset.on = input.checked ? "1" : "0";
-    updatePlan();
+  const presets = [...new Set([...(state.env.size_presets || [512, 5000, 10000, 20000, 40000, 80000]), 100000, 120000, 150000, 200000, 260000, ...state.sizes])].sort((a, b) => a - b);
+  renderRange("#size-chips", presets, state.sizes, (value) => {
+    state.sizes = through(presets, value);
+    renderSizes(); updatePlan();
+  }, (value) => fmtTokens(value), "prompt tokens");
+}
+
+function renderRange(selector, presets, selected, onSelect, format, unit) {
+  $(selector).innerHTML = presets.map((value) => `<label class="chip" data-on="${selected.has(value) ? 1 : 0}" title="Test every smaller value through ${format(value)} ${unit}"><input type="checkbox" value="${value}" aria-label="${format(value)} ${unit}" ${selected.has(value) ? "checked" : ""}>${format(value)}</label>`).join("");
+  $$(selector + " input").forEach((input) => input.addEventListener("change", () => {
+    const value = Number(input.value);
+    onSelect(value);
+    const replacement = $$(selector + " input").find((next) => Number(next.value) === value);
+    if (replacement) replacement.focus({preventScroll: true});
   }));
-  // shortcuts, not a second setting: each one just ticks the chips for you
-  $("#size-quick").innerHTML = presets.slice(1).map((p) =>
-    `<button class="btn-sm" data-upto="${p}">up to ${fmtTokens(p)}</button>`).join("");
-  $$("#size-quick button").forEach((btn) => btn.addEventListener("click", () => {
-    state.sizes = new Set(presets.filter((p) => p <= Number(btn.dataset.upto)));
-    renderSizes();
-    updatePlan();
-  }));
+}
+
+function hardwareMarkup(hw) {
+  hw = hw || {};
+  const cpu = hw.cpu || {}, system = hw.system || {}, os = hw.os || {};
+  const gpus = hw.gpus || [];
+  const board = hw.motherboard || {}, firmware = hw.firmware || {};
+  return `<p class="hint">${esc([os.name, os.release, os.architecture].filter(Boolean).join(" "))} - ${esc(cpu.name || "CPU unknown")} - ${esc([system.manufacturer, system.model].filter(Boolean).join(" "))}</p>
+    <p class="hint">${cpu.physical_cores != null ? `${esc(cpu.physical_cores)} physical cores / ` : ""}${esc(cpu.logical_cores ?? "unknown")} threads${system.memory_bytes ? ` - ${(system.memory_bytes / 1073741824).toFixed(1)} GiB RAM` : ""}</p>`
+    + gpus.map((g, i) => `<p class="hint"><b>GPU ${i + 1}:</b> ${esc(g.name || "Unknown")} ${g.memory_bytes ? `- ${(g.memory_bytes / 1073741824).toFixed(1)} GiB` : ""} ${g.driver ? `- driver ${esc(g.driver)}` : ""} ${g.sensor_index != null ? `- sensor ${esc(g.sensor_index)}` : ""}</p>`).join("")
+    + (board.model ? `<p class="hint"><b>Motherboard:</b> ${esc([board.manufacturer, board.model].filter(Boolean).join(" "))}</p>` : "")
+    + (firmware.version ? `<p class="hint"><b>Firmware:</b> ${esc([firmware.vendor, firmware.version].filter(Boolean).join(" "))}</p>` : "")
+    + (hw.storage || []).map((disk) => `<p class="hint"><b>Storage:</b> ${esc(disk.model || "Unknown")}${disk.capacity_bytes ? ` - ${(disk.capacity_bytes / 1000000000).toFixed(0)} GB` : ""} ${esc(disk.interface || "")}</p>`).join("");
+}
+function renderHardware() {
+  const gpus = (state.env.hardware || {}).gpus || [];
+  $("#hardware-inventory").innerHTML = hardwareMarkup(state.env.hardware);
+  const sensors = gpus.filter((g) => g.sensor_index != null);
+  $("#gpu-index").innerHTML = sensors.length ? sensors.map((g) => `<option value="${esc(g.sensor_index)}">${esc(g.sensor_index)}: ${esc(g.name)}</option>`).join("") : '<option value="0">0 (default sensor)</option>';
+}
+function renderConcurrency() {
+  const levels = [...new Set([...CONCURRENCY_PRESETS, ...state.concurrencyLevels])].sort((a, b) => a - b);
+  renderRange("#concurrency-chips", levels, state.concurrencyLevels, (value) => {
+    state.concurrencyLevels = through(levels, value);
+    renderConcurrency(); updatePlan();
+  }, String, "simultaneous queries");
+}
+function prepareCleanRun() {
+  state.models = new Set(state.env.models.filter((m) => m.type !== "embeddings").map((m) => m.id));
+  state.sizes = new Set((state.env.defaults || {}).sizes || [512, 5000, 10000, 20000, 40000, 80000]);
+  state.concurrencyLevels = new Set([1]);
+  const defaults = state.env.defaults || {};
+  $("#max-tokens").value = defaults.max_tokens ?? 256;
+  $("#repeats").value = defaults.repeats ?? 1;
+  $("#offload").value = defaults.gpu_offload || "max";
+  $("#context-policy").value = defaults.context_policy || "per_test";
+  $("#no-think").checked = defaults.disable_thinking !== false;
+  $("#no-think").closest(".chip").dataset.on = $("#no-think").checked ? "1" : "0";
+  const mtp = defaults.mtp_modes || ["off"];
+  const mode = mtp.length > 1 ? "both" : (mtp[0] || "off");
+  const radio = $(`#mtp-chips input[value="${mode}"]`);
+  if (radio) radio.checked = true;
+  $$("#mtp-chips .chip").forEach((chip) => { chip.dataset.on = chip.querySelector("input").checked ? "1" : "0"; });
+  state.metadataOverrides = {label: false, notes: false};
+  ["fallback", "stop-after-fail", "warmup"].forEach((id) => {
+    const key = {fallback: "fallback_on_failure", "stop-after-fail": "stop_model_after_failure", warmup: "warmup"}[id];
+    $("#" + id).checked = defaults[key] !== false;
+    $("#" + id).closest(".chip").dataset.on = $("#" + id).checked ? "1" : "0";
+  });
+  renderModels(); renderSizes(); renderConcurrency(); updatePlan();
 }
 
 function applyLastConfig() {
@@ -324,16 +532,22 @@ function applyLastConfig() {
   const last = state.env.last_config || state.env.defaults;
   if (!last) return;
   const set = (id, value) => { if (value !== undefined && value !== null && $(id)) $(id).value = value; };
+  set("#gpu-index", last.gpu_index);
+  set("#runtime-gpu-placement", last.runtime_gpu_placement);
   set("#max-tokens", last.max_tokens);
   set("#repeats", last.repeats);
   set("#offload", last.gpu_offload);
   set("#per-test-timeout", last.per_test_timeout_s);
   set("#load-timeout", last.load_timeout_s);
   set("#headroom", last.context_headroom);
-  set("#other-idle", last.other_idle_w);
-  set("#cpu-tdp", last.cpu_tdp_w);
-  set("#power-interval", last.power_interval_ms);
-  if (last.notes) $("#run-notes").value = last.notes;
+  set("#context-policy", last.context_policy || "per_test");
+  ["fallback", "stop-after-fail", "warmup"].forEach((id) => {
+    const key = {fallback: "fallback_on_failure", "stop-after-fail": "stop_model_after_failure", warmup: "warmup"}[id];
+    if (last[key] !== undefined) {
+      $("#" + id).checked = !!last[key];
+      $("#" + id).closest(".chip").dataset.on = last[key] ? "1" : "0";
+    }
+  });
   if (Array.isArray(last.mtp_modes)) {
     const want = last.mtp_modes.length > 1 ? "both" : (last.mtp_modes[0] || "off");
     const radio = $(`#mtp-chips input[value="${want}"]`);
@@ -381,9 +595,8 @@ function checkComparability() {
   }
   if (!diffs.length) { box.innerHTML = ""; return; }
   box.innerHTML = `<div class="banner warn"><div>
-    <b>These settings will not be comparable with “${esc(ref.label || ref.id)}”</b> —
-    ${diffs.join(", ")}. Decode speed depends on both, so the two runs cannot sit on the
-    same chart honestly. Prefill speed is unaffected.
+    <b>Different settings from “${esc(ref.label || ref.id)}”</b> —
+    ${diffs.join(", ")}. Match the settings for a more useful comparison.
     <div style="margin-top:9px"><button class="btn-sm" id="match-prior">Match existing runs</button></div>
   </div></div>`;
   $("#match-prior").addEventListener("click", () => {
@@ -397,14 +610,50 @@ function checkComparability() {
   });
 }
 
+function generatedMetadata(env, cfg) {
+  const hw = env.hardware || {}, host = env.host || {};
+  const memory = (value, unit) => Number.isFinite(value) && value > 0 ? `${Number(value.toFixed(1))} GB ${unit}` : "";
+  const cpu = (hw.cpu || {}).name || host.cpu || "";
+  const ram = memory((hw.system || {}).memory_bytes ? hw.system.memory_bytes / 1073741824 : host.ram_gb, "RAM");
+  const cards = (hw.gpus || []).length ? hw.gpus : (env.gpu && env.gpu.name ? [{name: env.gpu.name, memory_bytes: env.gpu.vram_total_mb * 1048576, memory_architecture: env.gpu.memory_architecture}] : []);
+  const gpuNames = cards.map((gpu) => [String(gpu.name || "Unknown GPU").replace(/^NVIDIA (?:GeForce\s+)?/, ""), memory(gpu.memory_bytes / 1073741824, gpu.memory_architecture === "unified" ? "unified" : "VRAM")].filter(Boolean).join(" "));
+  const label = [cfg.gpu_offload === "off" ? "CPU only" : gpuNames.join(" + "), ram, cpu].filter(Boolean).join(" / ") || "Local benchmark";
+  const allModels = (env.models || []).filter((model) => model.type !== "embeddings").map((model) => model.id);
+  const selected = cfg.models || [];
+  const models = selected.length && selected.length === allModels.length && allModels.every((id) => selected.includes(id))
+    ? `all ${selected.length} installed models` : selected.join(", ") || "none";
+  const placement = {max: "prefer GPU", auto: "automatic", off: "CPU only"}[cfg.gpu_offload] || `${Number(cfg.gpu_offload) * 100}% on GPU`;
+  const notes = [
+    `Models: ${models}`,
+    `Prompt tokens: ${[...cfg.sizes].sort((a, b) => a - b).map(fmtTokens).join(", ") || "none"}`,
+    `Simultaneous queries: ${cfg.concurrency_levels.join(", ") || "none"}`,
+    `Answer: ${cfg.max_tokens} tokens; repeats: ${cfg.repeats}`,
+    `Placement: ${placement}; CPU fallback: ${cfg.fallback_on_failure ? "on" : "off"}`,
+    `Reasoning: ${cfg.disable_thinking ? "off" : "on"}; speculative decoding: ${cfg.mtp_modes.join(" + ")}`,
+    `Warmup: ${cfg.warmup ? "on" : "off"}; skip larger sizes after failure: ${cfg.stop_model_after_failure ? "on" : "off"}`,
+    `Context allocation: ${cfg.context_policy === "fixed" ? "fixed largest context and query capacity" : "matched to each test"}`,
+  ];
+  if (cards.length > 1) notes.push(`Power sensor: ${cards.find((gpu) => gpu.sensor_index === cfg.gpu_index)?.name || cfg.gpu_index} (monitoring only)`);
+  if (cfg.runtime_gpu_placement) notes.push(`Runtime GPU setup: ${cfg.runtime_gpu_placement}`);
+  return {label, notes: notes.join("\n")};
+}
+
+function updateGeneratedMetadata() {
+  if (!state.env) return;
+  const generated = generatedMetadata(state.env, collectConfig());
+  if (!state.metadataOverrides.label) $("#run-label").value = generated.label;
+  if (!state.metadataOverrides.notes) $("#run-notes").value = generated.notes;
+}
+
 function updatePlan() {
+  updateGeneratedMetadata();
   const modes = mtpModes();
-  const tests = state.models.size * state.sizes.size * modes.length
-    * Number($("#repeats").value || 1);
-  const biggest = state.sizes.size ? Math.max(...state.sizes) : 0;
+  const base = state.models.size * state.sizes.size * modes.length * Number($("#repeats").value || 1);
+  const tests = base * state.concurrencyLevels.size;
+  const requests = base * [...state.concurrencyLevels].reduce((a, b) => a + b, 0);
   $("#plan-summary").textContent = tests
-    ? `${tests} test${tests === 1 ? "" : "s"} · ${state.models.size} model${state.models.size === 1 ? "" : "s"} × ${state.sizes.size} size${state.sizes.size === 1 ? "" : "s"}${modes.length > 1 ? " × MTP off+on" : (modes[0] === "on" ? " · MTP on" : "")} · largest prefill ${fmtTokens(biggest)}`
-    : "Select at least one model and one size.";
+    ? `${state.models.size} model${state.models.size === 1 ? "" : "s"} / ${tests} tests / ${requests} queries`
+    : "Choose at least one model and workload.";
   $("#start-btn").disabled = !tests;
   checkComparability();
 }
@@ -414,9 +663,13 @@ function collectConfig() {
   return {
     models: [...state.models],
     sizes: [...state.sizes],
+    concurrency_levels: [...state.concurrencyLevels].sort((a, b) => a - b),
+    gpu_index: Number($("#gpu-index").value),
+    runtime_gpu_placement: $("#runtime-gpu-placement").value.trim(),
     max_tokens: Number($("#max-tokens").value) || 256,
     repeats: Number($("#repeats").value) || 1,
     gpu_offload: $("#offload").value,
+    context_policy: $("#context-policy")?.value || "per_test",
     mtp_modes: mtpModes(),
     fallback_on_failure: $("#fallback").checked,
     stop_model_after_failure: $("#stop-after-fail").checked,
@@ -425,15 +678,16 @@ function collectConfig() {
     per_test_timeout_s: Number($("#per-test-timeout").value) || 1800,
     load_timeout_s: Number($("#load-timeout").value) || 900,
     context_headroom: Number($("#headroom").value) || 0,
-    other_idle_w: Number($("#other-idle").value) || 0,
-    cpu_tdp_w: Number($("#cpu-tdp").value) || 0,
-    power_interval_ms: Number($("#power-interval").value) || 150,
+    other_idle_w: state.env?.defaults?.other_idle_w ?? 60,
+    cpu_tdp_w: state.env?.defaults?.cpu_tdp_w ?? 140,
+    power_interval_ms: state.env?.defaults?.power_interval_ms ?? 150,
     label: $("#run-label").value.trim(),
     notes: $("#run-notes").value.trim(),
   };
 }
 
 async function startBench() {
+  updateGeneratedMetadata();
   $("#start-btn").disabled = true;
   try {
     const { run_id } = await api("/api/bench/start", {
@@ -458,6 +712,8 @@ async function cancelBench() {
 }
 
 function enterRunningUi() {
+  state.benchmarkRunning = true;
+  updateExtendAvailability();
   $("#live-card").classList.remove("hidden");
   $("#live-results").classList.remove("hidden");
   $("#cancel-btn").classList.remove("hidden");
@@ -467,37 +723,70 @@ function enterRunningUi() {
 }
 
 function leaveRunningUi() {
+  state.benchmarkRunning = false;
+  updateExtendAvailability();
   $("#cancel-btn").classList.add("hidden");
   updatePlan();
 }
 
 function startPolling() {
-  if (state.poller) clearInterval(state.poller);
+  if (state.poller) return;
   state.poller = setInterval(poll, 700);
   poll();
 }
 
-async function poll() {
-  let data;
+async function checkForActiveBenchmark() {
+  if (state.poller || state.pollBusy || document.visibilityState === "hidden") return;
   try {
-    data = await api("/api/events?cursor=" + state.cursor);
-  } catch (e) { return; }
-  state.cursor = data.cursor;
-  for (const ev of data.events) {
-    if (ev.kind === "log") appendLog(ev.message, ev.level);
-    if (ev.kind === "result") {
-      state.liveResults.push(ev.result);
-      renderLiveTable();
-    }
-    if (ev.kind === "done") {
-      clearInterval(state.poller); state.poller = null;
-      leaveRunningUi();
-      loadRuns().then(() => { if (ev.run_id) state.selected = ev.run_id; });
-    }
+    const status = await api("/api/status");
+    if (status.running) { enterRunningUi(); startPolling(); }
+  } catch (error) { /* The next check retries if the local server is unavailable. */ }
+}
+
+async function syncLiveBenchmark(status, force = false) {
+  const summary = status.run;
+  const id = status.run_id || (summary || {}).id;
+  if (!id || !summary) return;
+  const signature = `${id}:${summary.n_results}:${summary.status}`;
+  if (!force && signature === state.liveSignature) return;
+  const run = await api("/api/runs/" + encodeURIComponent(id));
+  // Include each newly discovered active run once; later refreshes respect manual selections.
+  if (status.running && id !== state.liveRunId) {
+    state.liveRunId = id;
+    state.compare.add(id);
+    state.selected = id;
+    state.selectionInitialized = true;
   }
-  renderLive(data.status);
-  if (!data.status.running && state.poller) {
-    clearInterval(state.poller); state.poller = null; leaveRunningUi();
+  state.runCache[id] = run;
+  state.liveResults = (run.results || []).slice();
+  $("#live-card").dataset.runId = id;
+  renderLiveTable();
+  await loadRuns();
+  // If the file was read just before an atomic save finished, retry on the next poll.
+  if ((run.results || []).length >= (summary.n_results || 0) && run.status === summary.status) {
+    state.liveSignature = signature;
+  }
+}
+
+async function poll() {
+  if (state.pollBusy) return;
+  state.pollBusy = true;
+  try {
+    const data = await api("/api/events?cursor=" + state.cursor);
+    state.cursor = data.cursor;
+    for (const event of data.events) {
+      if (event.kind === "log") appendLog(event.message, event.level);
+    }
+    const changed = data.events.some(event => event.kind === "result" || event.kind === "done");
+    await syncLiveBenchmark(data.status, changed);
+    renderLive(data.status);
+    if (!data.status.running && state.poller) {
+      clearInterval(state.poller); state.poller = null; leaveRunningUi();
+    }
+  } catch (error) {
+    // Do not stop polling after a transient fetch failure; the next tick retries.
+  } finally {
+    state.pollBusy = false;
   }
 }
 
@@ -544,22 +833,29 @@ function statusCell(r) {
   return `<span class="st st-${esc(r.status)}"${title}>${mark} ${esc(r.status === "failed" ? (r.fail_kind || "failed").replace(/_/g, " ") : r.status)}</span>`;
 }
 
+function estimatedMark(r, aggregate = false) { return (aggregate ? r.aggregate_completion_tokens_estimated : r.completion_tokens_estimated) ? "*" : ""; }
+function requestDetails(r) {
+  if (!Array.isArray(r.requests)) return "";
+  return `<details><summary>${esc(r.completed_requests ?? 0)}/${r.requests.length} completed</summary>${r.requests.map((q, i) => `<div>Request ${i + 1}: ${esc(q.status || "unknown")} - ${fmt(q.decode_tps, 1)}${estimatedMark(q)} tk/s - TTFT ${fmt(q.ttft_s, 2)} s ${q.message ? esc(q.message) : ""}</div>`).join("")}</details>`;
+}
+
 function renderLiveTable() {
   const rows = state.liveResults.map((r) => `<tr>
     <td>${esc(r.model)}</td>
     <td class="num">${fmtTokens(r.target_tokens)}</td>
     <td>${r.mtp ? '<span class="badge accent">MTP</span>' : '<span class="dim">off</span>'}</td>
     <td class="num">${fmtInt(r.prompt_tokens)}</td>
-    <td>${statusCell(r)}</td>
+    <td>${statusCell(r)} ${requestDetails(r)}</td>
+    <td class="num">${r.concurrency || 1}</td><td class="num">${fmt(r.aggregate_completion_tps, 1)}${r.aggregate_completion_tokens_estimated ? "*" : ""}</td>
     <td class="num">${fmt(r.prefill_tps, 0)}</td>
-    <td class="num">${fmt(r.decode_tps, 1)}</td>
+    <td class="num">${fmt(r.decode_tps, 1)}${estimatedMark(r)}</td>
     <td class="num">${fmt(r.ttft_s, 2)}</td>
     <td class="num">${fmt(r.power && r.power.prefill_gpu_w, 0)}</td>
     <td class="num">${fmt(r.power && r.power.j_per_1k_prefill, 1)}</td>
     <td class="num">${fmtInt(r.vram_peak_mb)}</td>
   </tr>`).join("");
-  $("#live-table").innerHTML = `<thead><tr>
-    <th>Model</th><th class="num">Target</th><th>MTP</th><th class="num">Actual tk</th><th>Status</th>
+  $("#live-table").innerHTML = `<caption>* Output tokens and derived throughput are estimated.</caption><thead><tr>
+    <th>Model</th><th class="num">Target</th><th>MTP</th><th class="num">Actual tk</th><th>Status / requests</th><th>Concurrency</th><th>Aggregate tk/s</th>
     <th class="num">Prefill tk/s</th><th class="num">Decode tk/s</th><th class="num">TTFT s</th>
     <th class="num">GPU W</th><th class="num">J/1k</th><th class="num">VRAM MB</th>
     </tr></thead><tbody>${rows}</tbody>`;
@@ -567,16 +863,19 @@ function renderLiveTable() {
 
 /* ---------------- results tab ---------------- */
 async function loadRuns() {
-  const { runs } = await api("/api/runs");
+  const {runs} = await api("/api/runs");
   state.runs = runs;
+  for (const summary of runs) {
+    const cached = state.runCache[summary.id];
+    if (cached && ((cached.results || []).length !== summary.n_results || cached.status !== summary.status)) delete state.runCache[summary.id];
+  }
+  state.compare = new Set([...state.compare].filter((id) => runs.some((run) => run.id === id)));
+  if ((!state.selectionInitialized || (state.selected && !runs.some((run) => run.id === state.selected))) && runs.length) state.compare.add(runs[0].id);
+  state.selectionInitialized = true;
+  if (!state.compare.has(state.selected)) state.selected = [...state.compare][0] || null;
   renderRunsList();
-  renderCompareRuns();
   checkComparability();
-  if ($("#panel-summary").classList.contains("active")) renderSummary();
-  if (state.selected) selectRun(state.selected);
-  else if (runs.length) selectRun(runs[0].id);
-  else $("#run-detail").innerHTML = emptyState("No runs yet",
-    "Configure a benchmark on the Run tab and press Start. Results are cached here, one entry per session.");
+  await renderResultsView();
   return runs;
 }
 
@@ -597,7 +896,7 @@ function renderRunsList() {
   $("#runs-list").innerHTML = Object.entries(groups).map(([gpu, runs]) => `
     <div class="run-group-label">${esc(gpu.replace(/^NVIDIA\s+/, ""))}</div>
     ${runs.map((run) => `
-      <button class="run" data-id="${esc(run.id)}" aria-current="${run.id === state.selected}">
+      <div class="run-item" style="--benchmark-color:${runColor(run.id)}"><input class="run-select" type="checkbox" data-run-select="${esc(run.id)}" aria-label="Include ${esc(run.label || run.id)}" title="Include this benchmark in all result views" ${state.compare.has(run.id) ? "checked" : ""}><button class="run" data-id="${esc(run.id)}" aria-current="${state.compare.has(run.id)}" style="--benchmark-color:${runColor(run.id)}" title="Open ${esc(run.label || run.id)}">
         <span class="swatch" style="background:${runColor(run.id)}"></span>
         <span style="flex:1;min-width:0">
           <span class="t">${esc(run.label || run.id)}</span>
@@ -606,139 +905,238 @@ function renderRunsList() {
             <span class="badge">${run.n_ok} ok</span>
             ${run.n_failed ? `<span class="badge">${run.n_failed} failed</span>` : ""}
             ${(run.mtp_modes || []).includes("on") ? '<span class="badge accent">MTP</span>' : ""}
-            ${run.status !== "completed" ? `<span class="badge">${esc(run.status)}</span>` : ""}
+            ${run.status === "running" ? '<span class="badge badge-live">Live</span>' : run.status !== "completed" ? `<span class="badge">${esc(run.status)}</span>` : ""}
           </span>
         </span>
-      </button>`).join("")}`).join("");
+      </button><button class="run-delete" data-delete="${esc(run.id)}" title="${run.status === "running" ? "This benchmark is still running" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""} aria-label="Delete ${esc(run.label || run.id)}"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 5h14M8 3h4m-7 2 1 12h8l1-12M8 8v6m4-6v6"/></svg><span>Delete</span></button></div>`).join("")}`).join("");
   $$("#runs-list .run").forEach((btn) => btn.addEventListener("click", () => selectRun(btn.dataset.id)));
+  $$("#runs-list [data-run-select]").forEach((input) => input.addEventListener("change", async () => {
+    if (input.checked) state.compare.add(input.dataset.runSelect); else state.compare.delete(input.dataset.runSelect);
+    if (!state.compare.has(state.selected)) state.selected = [...state.compare][0] || null;
+    renderRunsList(); await renderResultsView();
+  }));
+  $$("#runs-list [data-delete]").forEach((btn) => btn.addEventListener("click", () => deleteRun(state.runs.find((run) => run.id === btn.dataset.delete))));
+}
+
+async function deleteRun(run) {
+  if (!run || !confirm(`Delete benchmark "${run.label || run.id}" from this computer? A copy will remain in the local archive.`)) return;
+  try {
+    await api("/api/runs/" + encodeURIComponent(run.id), {method: "DELETE"});
+    delete state.runCache[run.id];
+    state.compare.delete(run.id);
+    if (state.selected === run.id) state.selected = null;
+    if (!state.compare.size) state.selectionInitialized = false;
+    await loadRuns();
+  } catch (error) {
+    alert("Could not delete benchmark: " + error.message);
+  }
 }
 
 async function selectRun(id) {
   state.selected = id;
-  $$("#runs-list .run").forEach((b) => b.setAttribute("aria-current", String(b.dataset.id === id)));
-  let run = state.runCache[id];
-  if (!run || run.status === "running") {
-    run = await api("/api/runs/" + encodeURIComponent(id));
-    state.runCache[id] = run;
-  }
-  renderRunDetail(run);
+  state.compare = new Set([id]);
+  renderRunsList();
+  await renderResultsView();
+}
+
+function sessionConfig(session) { return session.config || session.execution_config || {}; }
+function allocationKey(cfg) {
+  return JSON.stringify([cfg.context_policy || "per_test", cfg.context_planner_version || 0,
+    cfg.context_headroom ?? 512, cfg.context_safety_fraction ?? 0]);
+}
+function allocationConfigs(run) {
+  return (run.sessions || []).length ? run.sessions.map(sessionConfig) : [run.config || {}];
+}
+function sessionLabel(run, row) {
+  const sessions = run.sessions || [];
+  const index = sessions.findIndex(session => (session.id || session.session_id) === row.session_id);
+  if (index < 0) return row.session_id ? String(row.session_id) : "Legacy";
+  const session = sessions[index], cfg = sessionConfig(session);
+  return `Session ${index + 1}${session.started_at ? " (" + session.started_at + ")" : ""} / planner ${cfg.context_planner_version ?? "legacy"}`;
+}
+function sessionSettings(run) {
+  const sessions = run.sessions || [];
+  if (!sessions.length) return "";
+  return `<details class="adv"><summary>Sessions (${sessions.length})</summary><div>${sessions.map((session, index) => {
+    const cfg = sessionConfig(session);
+    const modelCount = cfg.model_modes ? Object.keys(cfg.model_modes).length : (cfg.models || []).length;
+    const modes = cfg.model_modes ? [...new Set(Object.values(cfg.model_modes).flat())] : (cfg.mtp_modes || []);
+    return `<p class="hint"><b>Session ${index + 1}</b>${session.started_at ? ` / ${esc(session.started_at)}` : ""} / ${modelCount} models / ${esc(modes.join(" + ") || "unknown technique")} / planner ${esc(cfg.context_planner_version ?? "legacy")} / ${esc(cfg.context_policy || "per_test")} / reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}%</p>`;
+  }).join("")}</div></details>`;
 }
 
 function renderRunDetail(run) {
-  if (!run) return;
-  const gpu = run.gpu || {};
-  const host = run.host || {};
-  const cfg = run.config || {};
-  const ok = (run.results || []).filter((r) => r.status === "ok");
-  const bestPrefill = ok.reduce((a, r) => (r.prefill_tps > (a ? a.prefill_tps : 0) ? r : a), null);
-  const bestDecode = ok.reduce((a, r) => (r.decode_tps > (a ? a.decode_tps : 0) ? r : a), null);
-  const maxCtx = ok.reduce((a, r) => Math.max(a, r.prompt_tokens || 0), 0);
-  const peakW = ok.reduce((a, r) => Math.max(a, (r.power && r.power.prefill_gpu_w_max) || 0), 0);
-
-  $("#run-detail").innerHTML = `
-    <div class="card" style="margin-bottom:16px">
-      <header>
-        <h3>${esc(run.label || run.id)}</h3><div class="spacer"></div>
-        <button class="btn-sm" id="rename-run">Rename</button>
-        <a class="btn-sm" style="text-decoration:none;padding:5px 10px;border:1px solid var(--border);border-radius:8px"
-           href="/api/export.csv?ids=${encodeURIComponent(run.id)}">CSV</a>
-        <button class="btn-sm btn-danger" id="delete-run">Delete</button>
-      </header>
-      <p class="hint">${esc(gpu.name || "no GPU")}${gpu.vram_total_mb ? ` · ${(gpu.vram_total_mb / 1024).toFixed(0)} GB` : ""}${gpu.driver ? ` · driver ${esc(gpu.driver)}` : ""}
-        · ${esc(host.cpu || "")} · ${host.ram_gb ? Math.round(host.ram_gb) + " GB RAM" : ""}
-        · ${esc((run.created_at || "").replace("T", " "))} · status ${esc(run.status)}
-        ${run.notes ? `<br><b>Notes:</b> ${esc(run.notes)}` : ""}
-        ${run.interrupted_note ? `<br><span class="st st-interrupted">⚠ interrupted</span> ${esc(run.interrupted_note)}` : ""}</p>
-      <div class="live-stats">
-        ${stat("Best prefill", bestPrefill ? fmt(bestPrefill.prefill_tps, 0) : "—", bestPrefill ? `tk/s @ ${fmtTokens(bestPrefill.target_tokens)}` : "tk/s")}
-        ${stat("Best decode", bestDecode ? fmt(bestDecode.decode_tps, 1) : "—", "tk/s")}
-        ${stat("Largest prefill that ran", maxCtx ? fmtTokens(Math.round(maxCtx / 1000) * 1000 || maxCtx) : "—", "tokens")}
-        ${stat("Peak GPU power", peakW ? Math.round(peakW) : "—", "W measured")}
-        ${stat("Idle GPU power", run.idle && run.idle.gpu_w ? fmt(run.idle.gpu_w, 1) : "—", "W baseline")}
-        ${stat("Tests", `${ok.length}/${(run.results || []).length}`, "succeeded")}
-      </div>
-      <p class="hint" style="margin:0">Watts via <b>${esc(run.power_source || "n/a")}</b>
-        ${(run.gpu || {}).memory_architecture === "unified" ? "· unified memory" : ""}
-        · offload policy <b>${esc(cfg.gpu_offload || "auto")}</b>
-        · MTP ${esc((cfg.mtp_modes || ["off"]).join(" + "))}
-        · reasoning ${cfg.disable_thinking === false ? "on" : "off"}
-        · output ${cfg.max_tokens} tokens · ${cfg.repeats}× repeats
-        · system power estimated with ${cfg.other_idle_w} W base + ${cfg.cpu_tdp_w} W CPU TDP × load</p>
-    </div>
-    <div class="card">
-      <header><h3>Measurements</h3></header>
-      <div class="table-wrap">${resultsTable(run)}</div>
-      ${failureNotes(run)}
-    </div>`;
-
-  $("#delete-run").addEventListener("click", async () => {
-    if (!confirm(`Delete run "${run.label || run.id}" permanently?`)) return;
-    await api("/api/runs/" + encodeURIComponent(run.id), { method: "DELETE" });
-    delete state.runCache[run.id];
-    state.compare.delete(run.id);
-    state.selected = null;
-    loadRuns();
-  });
+  if (!run) {
+    $("#run-detail").innerHTML = emptyState("Select a benchmark", "Click a name or tick benchmarks in the list on the left.");
+    return;
+  }
+  const active = [...state.compare].map(id => state.runCache[id]).filter(item => item && item.status === "running");
+  const selectedRuns = [...state.compare].map(id => state.runCache[id]).filter(Boolean);
+  const allocationKeys = new Set(selectedRuns.flatMap(allocationConfigs).map(allocationKey));
+  const allocationNotice = allocationKeys.size > 1 ? '<p class="hint">Different context allocation settings: these benchmarks reserve different amounts of memory, which can affect speed. Check benchmark settings before comparing.</p>' : "";
+  const liveNotice = active.length ? `<p class="live-result-notice" role="status"><span class="badge badge-live">Live</span> ${active.reduce((count, item) => count + (item.results || []).length, 0)} completed tests in the ongoing benchmark${active.length > 1 ? "s" : ""}. Results update as each test finishes.</p>` : "";
+  if (state.compare.size > 1) {
+    $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${state.compare.size} benchmarks selected</h3></header><p class="hint">Your selection and filters apply to Summary, Table and Compare.</p>${liveNotice}${allocationNotice}<details class="adv"><summary>Selected benchmarks</summary><ul>${[...state.compare].map((id) => `<li>${esc((state.runCache[id] || {}).label || id)}</li>`).join("")}</ul></details></div>`;
+    return;
+  }
+  const sessionAllocationNotice = new Set(allocationConfigs(run).map(allocationKey)).size > 1
+    ? '<p class="hint" role="status">Sessions in this benchmark used different context allocation settings. Memory use and speed may differ; see session settings below.</p>' : "";
+  const gpu = run.gpu || {}, host = run.host || {}, cfg = run.config || {};
+  const ok = (run.results || []).filter((row) => row.status === "ok");
+  const best = (key) => Math.max(0, ...ok.map((row) => row[key] || 0));
+  const levelRows = (run.results || []).filter(row => (row.concurrency || 1) === state.comparisonConcurrency);
+  const failureNotice = levelRows.length && !levelRows.some(row => row.status === "ok")
+    ? `<p class="hint" role="status">No successful tests at concurrency ${state.comparisonConcurrency}. Check All measurements for failure details.</p>` : "";
+  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${state.env?.capabilities?.extend ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" ? "disabled" : ""} title="${state.benchmarkRunning || run.status === "running" ? "Wait for the active benchmark to finish" : "Add or rerun tests in this benchmark"}">Add / rerun tests</button>` : ""}<button class="btn-sm" id="rename-run" title="Edit this benchmark's name and notes" ${run.status === "running" ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="Delete this benchmark from this computer" ${run.status === "running" ? "disabled" : ""}>Delete</button></header>${liveNotice}${failureNotice}${sessionAllocationNotice}<div class="result-stats">${stat("Best prefill", best("prefill_tps") ? fmt(best("prefill_tps"), 0) : "?", "tk/s")}${stat("Best output", best("decode_tps") ? fmt(best("decode_tps"), 1) : "?", "tk/s")}${stat("Successful tests", `${ok.length}/${(run.results || []).length}`, "")}</div><details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload || "auto")} / context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
+  $("#extend-run")?.addEventListener("click", () => openExtendDialog(run));
+  $("#delete-run").addEventListener("click", () => deleteRun(run));
   $("#rename-run").addEventListener("click", async () => {
-    const label = prompt("Run label", run.label || "");
+    const label = prompt("Benchmark name", run.label || "");
     if (label === null) return;
-    const notes = prompt("Notes", run.notes || "") || "";
-    await api(`/api/runs/${encodeURIComponent(run.id)}/meta`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ label, notes }),
-    });
+    const notes = prompt("Notes", run.notes || "");
+    if (notes === null) return;
+    await api(`/api/runs/${encodeURIComponent(run.id)}/meta`, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({label, notes})});
     delete state.runCache[run.id];
-    loadRuns();
+    await loadRuns();
   });
 }
 
-function resultsTable(run) {
-  const results = (run.results || []).slice()
-    .sort((a, b) => (a.model || "").localeCompare(b.model || "") || a.target_tokens - b.target_tokens
-      || (a.repeat || 0) - (b.repeat || 0));
-  if (!results.length) return '<p class="dim">No measurements.</p>';
-  const rows = results.map((r) => {
-    const p = r.power || {};
-    return `<tr>
-      <td>${esc(r.model)}${r.quantization ? ` <span class="badge">${esc(r.quantization)}</span>` : ""}</td>
-      <td class="num">${fmtTokens(r.target_tokens)}</td>
-      <td>${r.mtp ? '<span class="badge accent">MTP</span>' : '<span class="dim">off</span>'}</td>
-      <td class="num">${fmtInt(r.prompt_tokens)}</td>
-      <td>${statusCell(r)}</td>
-      <td class="num">${fmtInt(r.context_length)}</td>
-      <td>${esc(r.gpu_offload || "—")}</td>
-      <td class="num">${fmt(r.ttft_s, 2)}</td>
-      <td class="num">${fmt(r.prefill_tps, 0)}</td>
-      <td class="num">${fmt(r.decode_tps, 1)}</td>
-      <td class="num">${fmtInt(r.completion_tokens)}</td>
-      <td class="num">${fmt(p.prefill_gpu_w, 0)}</td>
-      <td class="num">${fmt(p.decode_gpu_w, 0)}</td>
-      <td class="num">${fmt(p.prefill_system_w_est, 0)}</td>
-      <td class="num">${fmt(p.j_per_1k_prefill, 1)}</td>
-      <td class="num">${fmt(p.j_per_token_decode, 2)}</td>
-      <td class="num">${fmtInt(r.vram_peak_mb)}</td>
-      <td class="num">${fmt(r.load_s, 1)}</td>
-    </tr>`;
-  }).join("");
-  return `<table><thead><tr>
-    <th>Model</th><th class="num">Target</th><th>MTP</th><th class="num">Actual tk</th><th>Status</th>
-    <th class="num">Load ctx</th><th>Offload</th>
-    <th class="num">TTFT s</th><th class="num">Prefill tk/s</th><th class="num">Decode tk/s</th>
-    <th class="num">Out tk</th>
-    <th class="num">GPU W pre</th><th class="num">GPU W dec</th><th class="num">Sys W est</th>
-    <th class="num">J/1k pre</th><th class="num">J/tok dec</th><th class="num">VRAM MB</th><th class="num">Load s</th>
-    </tr></thead><tbody>${rows}</tbody>
-    <tfoot><tr><td colspan="18">GPU watts measured via nvidia-smi; system watts estimated.
-      Prefill tk/s = prompt tokens ÷ time to first token. Decode excludes the first token.</td></tr></tfoot></table>`;
+function updateExtendAvailability() {
+  const button = $("#extend-run");
+  if (button) {
+    button.disabled = state.benchmarkRunning;
+    button.title = state.benchmarkRunning ? "Wait for the active benchmark to finish" : "Add or rerun tests in this benchmark";
+  }
+  const start = $("#extend-start");
+  if (start && state.benchmarkRunning) start.disabled = true;
 }
 
-function failureNotes(run) {
-  const failed = (run.results || []).filter((r) => r.status === "failed" && r.message);
-  if (!failed.length) return "";
-  return `<details class="adv" open><summary>Failures (${failed.length})</summary><div>
-    ${failed.map((r) => `<p class="hint"><b>${esc(r.model)} @ ${fmtTokens(r.target_tokens)}${r.mtp ? " +MTP" : ""}</b>
-      — ${esc((r.fail_kind || "").replace(/_/g, " "))}: ${esc(r.message)}</p>`).join("")}
-  </div></details>`;
+async function openExtendDialog(run) {
+  if (state.benchmarkRunning) return;
+  const dialog = $("#extend-dialog");
+  const pending = {};
+  state.extension = pending;
+  $("#extend-content").innerHTML = '<p class="hint">Loading installed models...</p>';
+  $("#extend-preview").textContent = "";
+  $("#extend-start").disabled = true;
+  $("#extend-start").textContent = "Add tests";
+  dialog.showModal();
+  try {
+    const plan = await api("/api/bench/extend-plan?run_id=" + encodeURIComponent(run.id));
+    if (!dialog.open || state.extension !== pending) return;
+    state.extension = {runId: run.id, sourceConfig: run.config || {}, models: (plan.models || []).filter(m => m.type !== "embeddings"),
+      modelModes: {}, sizes: new Set(plan.sizes || []), concurrency: new Set(plan.concurrency_levels || [1]), action: "add", revision: 0};
+    renderExtendForm();
+    previewExtension();
+  } catch (error) {
+    if (state.extension === pending) $("#extend-content").innerHTML = banner("err", "Could not load available tests", esc(error.message));
+  }
+}
+
+function extendBody(extension) {
+  return {run_id: extension.runId, model_modes: extension.modelModes,
+    sizes: [...extension.sizes].sort((a, b) => a - b),
+    concurrency_levels: [...extension.concurrency].sort((a, b) => a - b), retry_failed: extension.action === "retry" || extension.action === "rerun", rerun_existing: extension.action === "rerun"};
+}
+
+function renderExtendForm() {
+  const extension = state.extension;
+  const sizes = [...new Set([...(state.env.size_presets || []), ...extension.sizes])].sort((a,b) => a-b);
+  const levels = [...new Set([...CONCURRENCY_PRESETS, ...extension.concurrency])].sort((a,b) => a-b);
+  $("#extend-content").innerHTML = `<div class="field"><label>Models and techniques</label><p class="hint">Choose Standard and/or MTP separately for each model. MTP support depends on the model and runtime.</p><button type="button" class="btn-sm" id="extend-select-existing" title="Select installed benchmark models and their techniques">Select benchmark models</button><div class="extend-models">${extension.models.map((m, i) => `<div class="extend-model"><strong>${esc(m.id)}</strong><label title="Standard decoding without MTP"><input type="checkbox" data-model="${i}" data-mode="off" ${(extension.modelModes[m.id] || []).includes("off") ? "checked" : ""}> Standard</label><label title="Speculative decoding; model and runtime support is not guaranteed"><input type="checkbox" data-model="${i}" data-mode="on" ${(extension.modelModes[m.id] || []).includes("on") ? "checked" : ""}> MTP</label></div>`).join("") || '<p class="hint">No installed language models found.</p>'}</div></div><div class="field"><label>Prompt sizes</label><p class="hint">Select a maximum to include every smaller size.</p><div class="chips" id="extend-sizes"></div></div><div class="field"><label>Concurrent queries</label><p class="hint">Select a maximum to include every smaller level.</p><div class="chips" id="extend-concurrency"></div></div><fieldset class="extend-actions"><legend>Action</legend><label><input type="radio" name="extend-action" value="add" ${extension.action === "add" ? "checked" : ""}> Add missing tests</label><label><input type="radio" name="extend-action" value="retry" ${extension.action === "retry" ? "checked" : ""}> Retry failed tests <span class="hint">(includes missing and skipped)</span></label><label><input type="radio" name="extend-action" value="rerun" ${extension.action === "rerun" ? "checked" : ""}> Rerun selected tests <span class="hint">(includes successful, failed, skipped and missing)</span></label>${extension.action === "rerun" ? '<p class="banner warn">Selected measurements will be replaced; previous attempts are kept.</p>' : ""}</fieldset>`;
+  $("#extend-select-existing").addEventListener("click", () => {
+    const cfg = extension.sourceConfig;
+    const existing = new Set(cfg.models || Object.keys(cfg.model_modes || {}));
+    extension.modelModes = {};
+    extension.models.forEach(model => {
+      if (!existing.has(model.id)) return;
+      const modes = cfg.model_modes?.[model.id] || cfg.mtp_modes || ["off"];
+      extension.modelModes[model.id] = modes.filter(mode => mode === "off" || mode === "on");
+    });
+    renderExtendForm(); previewExtension();
+  });
+  $$("#extend-content input[data-model]").forEach(input => input.addEventListener("change", () => {
+    const id = extension.models[Number(input.dataset.model)].id;
+    const modes = new Set(extension.modelModes[id] || []);
+    if (input.checked) modes.add(input.dataset.mode); else modes.delete(input.dataset.mode);
+    if (modes.size) extension.modelModes[id] = [...modes]; else delete extension.modelModes[id];
+    previewExtension();
+  }));
+  renderRange("#extend-sizes", sizes, extension.sizes, value => { extension.sizes = through(sizes, value); renderExtendForm(); previewExtension(); }, fmtTokens, "prompt tokens");
+  renderRange("#extend-concurrency", levels, extension.concurrency, value => { extension.concurrency = through(levels, value); renderExtendForm(); previewExtension(); }, String, "simultaneous queries");
+  $$("#extend-content input[name=extend-action]").forEach(input => input.addEventListener("change", () => { extension.action = input.value; renderExtendForm(); previewExtension(); }));
+}
+
+async function previewExtension() {
+  const extension = state.extension;
+  const revision = ++extension.revision;
+  const start = $("#extend-start");
+  start.disabled = true;
+  start.textContent = extension.action === "rerun" ? "Rerun tests" : "Add tests";
+  if (!Object.values(extension.modelModes).some(modes => modes.length)) {
+    $("#extend-preview").innerHTML = '<p class="hint">Choose models and techniques to preview tests.</p>';
+    return;
+  }
+  $("#extend-preview").innerHTML = '<p class="hint">Updating preview...</p>';
+  try {
+    const preview = await api("/api/bench/extend-plan", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(extendBody(extension))});
+    if (state.extension !== extension || revision !== extension.revision) return;
+    $("#extend-preview").innerHTML = `<div class="extend-preview"><b>${esc(preview.new_tests)} new tests</b> / ${esc(preview.retry_tests)} retries / ${esc(preview.rerun_tests ?? 0)} successful tests to rerun / ${esc(preview.existing)} already present / ${esc(preview.total_tests)} tests to run${(preview.warnings || []).map(w => `<p class="hint">${esc(w)}</p>`).join("")}</div>`;
+    start.textContent = extension.action === "rerun" ? `Rerun ${preview.total_tests} tests` : `Run ${preview.total_tests} tests`;
+    start.disabled = state.benchmarkRunning || !(preview.total_tests > 0);
+  } catch (error) {
+    if (state.extension === extension && revision === extension.revision) $("#extend-preview").innerHTML = banner("err", "Could not preview tests", esc(error.message));
+  }
+}
+
+async function startExtension() {
+  if (!state.extension || state.benchmarkRunning) return;
+  $("#extend-start").disabled = true;
+  try {
+    const response = await api("/api/bench/extend", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(extendBody(state.extension))});
+    $("#extend-dialog").close(); state.extension = null;
+    state.cursor = 0; state.liveSignature = null; state.liveRunId = null;
+    $("#live-card").dataset.runId = response.run_id;
+    enterRunningUi(); startPolling();
+  } catch (error) {
+    const message = error.message;
+    await previewExtension();
+    $("#extend-preview").insertAdjacentHTML("afterbegin", banner("err", "Could not add tests", esc(message)));
+  }
+}
+
+function detailedResultsTable(run) {
+  const fields = [
+    ["Status", row => row.status], ["Repeat", row => (row.repeat || 0) + 1],
+    ["Actual prompt tokens", row => row.prompt_tokens], ["Query context", row => row.per_request_context_length || row.context_length],
+    ["Placement", row => row.gpu_offload], ["Time to first token (s)", row => row.ttft_s],
+    ["Prefill (tk/s)", row => row.prefill_tps], ["Output (tk/s)", row => row.decode_tps],
+    ["Group output (tk/s)", row => row.aggregate_completion_tps],
+    ["Output tokens", row => row.completion_tokens], ["Wall time (s)", row => row.wall_s],
+    ["GPU power (W)", row => (row.power || {}).prefill_gpu_w ?? (row.group_power || {}).gpu_w_avg],
+    ["GPU decode power (W)", row => (row.power || {}).decode_gpu_w],
+    ["Estimated system power (W)", row => (row.power || {}).prefill_system_w_est ?? (row.group_power || {}).system_w_est],
+    ["GPU prefill energy (J)", row => (row.power || {}).prefill_energy_j],
+    ["GPU decode energy (J)", row => (row.power || {}).decode_energy_j],
+    ["Group GPU energy (J)", row => (row.group_power || {}).gpu_energy_j],
+    ["Energy per 1k prompt tokens (J)", row => (row.power || {}).j_per_1k_prefill],
+    ["Energy per output token (J)", row => (row.power || {}).j_per_token_decode],
+    ["Load time (s)", row => row.load_s],
+    ["Quantization", row => row.quantization],
+    ["Speculative decoding", row => row.mtp ? "on" : "off"],
+    ["VRAM peak (MB)", row => row.vram_peak_mb], ["Failure", row => row.message],
+  ];
+  const rows = (run.results || []).flatMap(row => [...fields.map(([label, get]) => {
+    const value = get(row);
+    if (value == null || value === "") return "";
+    return `<tr class="colored-result-row" style="--table-color:${tableRowColor(run, row.model, modelUniverse())}"><td>${esc(row.model)}</td><td>${fmtTokens(row.target_tokens)}</td><td>${row.concurrency || 1}</td><td>${esc(sessionLabel(run, row))}</td><td>${esc(label)}</td><td class="measure-cell">${esc(typeof value === "number" ? n(value) : value)}${label.includes("tk/s") ? estimatedMark(row, label.startsWith("Group")) : ""}</td></tr>`;
+  }), ...(row.requests || []).flatMap((request, index) => [
+    ["Status", request.status], ["Prompt tokens", request.prompt_tokens],
+    ["Output tokens", request.completion_tokens], ["Time to first token (s)", request.ttft_s],
+    ["Output (tk/s)", request.decode_tps], ["Wall time (s)", request.wall_s], ["Failure", request.message],
+  ].filter(([, value]) => value != null).map(([label, value]) =>
+    `<tr class="colored-result-row" style="--table-color:${tableRowColor(run, row.model, modelUniverse())}"><td>${esc(row.model)}</td><td>${fmtTokens(row.target_tokens)}</td><td>${row.concurrency || 1}</td><td>${esc(sessionLabel(run, row))}</td><td>Request ${index + 1}: ${esc(label)}</td><td class="measure-cell">${esc(typeof value === "number" ? n(value) : value)}${label.startsWith("Output") ? estimatedMark(request) : ""}</td></tr>`))]).join("");
+  return `<table><thead><tr><th>Model</th><th>Prompt</th><th>Queries</th><th>Session / planner</th><th>Measurement</th><th>Value</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 /* ---------------- summary tab ----------------
@@ -755,129 +1153,116 @@ function failureNotes(run) {
  * toggling one series never restyles the survivors.
  */
 
-function metricsByUnit(unit) {
-  return Object.keys(METRICS).filter((k) => METRICS[k].unit === unit);
-}
-
-function dashForMetric(key) {
-  const peers = metricsByUnit(METRICS[key].unit);
-  return Charts.DASHES[peers.indexOf(key) % Charts.DASHES.length];
-}
-
 function markerForRun(runId) {
   const idx = runColorIndex(runId);
   return Charts.MARKERS[(idx === null ? 0 : idx) % Charts.MARKERS.length];
 }
 
 function allModelsOf(runs) {
-  return [...new Set(runs.flatMap((r) => (r.results || []).map((x) => x.model)))].sort();
+  return [...new Set(runs.flatMap(run => [
+    ...(run.results || []).map(row => row.model),
+    ...(run.status === "running" ? (run.config || {}).models || [] : []),
+  ]))].sort();
 }
 
+function modelUniverse(models = []) {
+  return [...new Set([...state.runs.flatMap(run => run.models || []), ...allModelsOf(Object.values(state.runCache)), ...models])].sort();
+}
 function modelColor(model, allModels) {
-  const idx = allModels.indexOf(model);
-  return idx < 0 || idx >= SERIES_SLOTS
-    ? resolveColor("var(--text-muted)")
-    : resolveColor(`var(--series-${idx + 1})`);
+  const index = modelUniverse(allModels).indexOf(model);
+  if (index < 0) return resolveColor("var(--text-muted)");
+  return index < SERIES_SLOTS ? resolveColor(`var(--series-${index + 1})`) : `hsl(${Math.round(index * 137.508) % 360} 65% 60%)`;
+}
+function shownModels(models) {
+  return state.visibleModels === null ? models : models.filter(model => state.visibleModels.has(model));
+}
+async function redrawModelSelection() {
+  const view = $(".result-view.active");
+  const left = window.scrollX, top = window.scrollY;
+  // Keep enough space for the current viewport when filtering removes chart panels.
+  if (view && !view.hidden) view.style.minHeight = `${view.getBoundingClientRect().height}px`;
+  await renderResultsView();
+  window.scrollTo({left, top, behavior: "instant"});
 }
 
-function renderSummaryControls(allModels) {
-  $("#summary-metrics").innerHTML = Object.entries(METRICS).map(([key, m]) => `
-    <label class="chip" data-on="${state.summaryMetrics.has(key) ? 1 : 0}">
-      <input type="checkbox" value="${key}" ${state.summaryMetrics.has(key) ? "checked" : ""}>
-      ${esc(m.label)} <span class="dim">${esc(m.unit)}</span></label>`).join("");
-  $$("#summary-metrics input").forEach((input) => input.addEventListener("change", () => {
-    if (input.checked) state.summaryMetrics.add(input.value);
-    else state.summaryMetrics.delete(input.value);
-    input.closest(".chip").dataset.on = input.checked ? "1" : "0";
-    renderSummary();
-  }));
-
-  $("#summary-runs").innerHTML = state.runs.map((run) => `
-    <label class="chip" data-on="${state.compare.has(run.id) ? 1 : 0}">
-      <input type="checkbox" value="${esc(run.id)}" ${state.compare.has(run.id) ? "checked" : ""}>
-      ${esc(run.label || run.id)}</label>`).join("")
-    || '<p class="dim">No runs cached yet.</p>';
-  $$("#summary-runs input").forEach((input) => input.addEventListener("change", () => {
-    if (input.checked) state.compare.add(input.value); else state.compare.delete(input.value);
-    input.closest(".chip").dataset.on = input.checked ? "1" : "0";
-    renderCompareRuns();
-    renderSummary();
-  }));
-
-  $("#summary-models").innerHTML = allModels.map((m) => `
-    <label class="chip" data-on="${state.summaryModels.has(m) ? 1 : 0}">
-      <input type="checkbox" value="${esc(m)}" ${state.summaryModels.has(m) ? "checked" : ""}>
-      <i style="width:10px;height:10px;border-radius:3px;display:inline-block;background:${modelColor(m, allModels)}"></i>
-      ${esc(m)}</label>`).join("") || '<p class="dim">No models in these runs.</p>';
-  $$("#summary-models input").forEach((input) => input.addEventListener("change", () => {
-    if (input.checked) state.summaryModels.add(input.value);
-    else state.summaryModels.delete(input.value);
-    input.closest(".chip").dataset.on = input.checked ? "1" : "0";
-    renderSummary();
-  }));
+function renderVisibleModels(models) {
+  const shown = shownModels(models);
+  $("#visible-model-count").textContent = `${shown.length} of ${models.length}`;
+  const container = $("#visible-models");
+  const signature = JSON.stringify(models);
+  if (container.dataset.models !== signature) {
+    container.dataset.models = signature;
+    container.innerHTML = models.map(model => `<label class="chip" title="Show or hide ${esc(model)}"><input type="checkbox" value="${esc(model)}"><span class="model-key" aria-hidden="true"></span>${esc(model)}</label>`).join("") || '<span class="dim">Select a benchmark to see its models.</span>';
+    $$("#visible-models input").forEach(input => input.addEventListener("change", async () => {
+      if (state.visibleModels === null) state.visibleModels = new Set(models);
+      if (input.checked) state.visibleModels.add(input.value); else state.visibleModels.delete(input.value);
+      await redrawModelSelection();
+    }));
+  }
+  const shapes = {circle: "&#9679;", square: "&#9632;", triangle: "&#9650;", diamond: "&#9670;"};
+  $$("#visible-models input").forEach(input => {
+    const selected = shown.includes(input.value);
+    input.checked = selected;
+    input.closest(".chip").dataset.on = selected ? "1" : "0";
+    const symbol = input.closest(".chip").querySelector(".model-key");
+    if (state.colorBy === "models") {
+      symbol.innerHTML = "";
+      symbol.style.background = modelColor(input.value, models);
+    } else {
+      symbol.innerHTML = shapes[chartAppearance({id: ""}, input.value, models, false).marker] || "&#9679;";
+      symbol.style.background = "transparent";
+    }
+  });
 }
-
-function encodingLegend(models, allModels, metricKeys, runs) {
-  const parts = [];
-  parts.push(`<div class="legend-group"><span class="legend-key">Model</span>
-    ${models.map((m) => `<span><i style="background:${modelColor(m, allModels)}"></i>${esc(m)}</span>`).join("")}
-  </div>`);
-  if (metricKeys.length > 1) {
-    parts.push(`<div class="legend-group"><span class="legend-key">Measure</span>
-      ${metricKeys.map((k) => `<span><svg width="26" height="10" aria-hidden="true">
-        <line x1="1" y1="5" x2="25" y2="5" stroke="currentColor" stroke-width="2"
-              stroke-dasharray="${dashForMetric(k) || ""}"/></svg>${esc(METRICS[k].label)}</span>`).join("")}
-    </div>`);
-  }
-  if (runs.length > 1) {
-    const glyph = { circle: "●", square: "■", triangle: "▲", diamond: "◆" };
-    parts.push(`<div class="legend-group"><span class="legend-key">Setup</span>
-      ${runs.map((r) => `<span><b style="font-size:13px">${glyph[markerForRun(r.id)] || "●"}</b>${esc(r.label || r.id)}</span>`).join("")}
-    </div>`);
-  }
-  return `<div class="legend-stack">${parts.join("")}</div>`;
+function chartAppearance(run, model, models, mtp) {
+  const byModel = state.colorBy === "models";
+  const modelIndex = modelUniverse(models).indexOf(model);
+  const shapeIndex = byModel ? runColorIndex(run.id) || 0 : Math.max(0, modelIndex);
+  return {
+    color: byModel ? modelColor(model, models) : resolveColor(runColor(run.id)),
+    marker: Charts.MARKERS[shapeIndex % Charts.MARKERS.length],
+    dash: mtp ? "2 2" : Charts.DASHES[shapeIndex % Charts.DASHES.length],
+  };
+}
+function encodingLegend(metricKeys, runs) {
+  const shapes = {circle: "&#9679;", square: "&#9632;", triangle: "&#9650;", diamond: "&#9670;"};
+  const benchmarkItems = runs.map(run => `<span>${state.colorBy === "benchmarks" ? `<i style="background:${runColor(run.id)}"></i>` : `<b>${shapes[markerForRun(run.id)] || "&#9679;"}</b>`}${esc(run.label || run.id)}</span>`).join("");
+  const measures = metricKeys.length > 1 ? `<div class="legend-group measure-legend"><span class="legend-key">Measures</span>${metricKeys.map(key => `<span><svg width="28" height="10" aria-hidden="true"><line x1="0" y1="5" x2="28" y2="5" stroke="currentColor" stroke-width="2" stroke-dasharray="${measureAppearance({}, key, metricKeys, false).dash || ""}"/></svg>${esc(METRICS[key].label)}</span>`).join("")}</div>` : "";
+  return `<div class="legend-stack">${runs.length > 1 || state.colorBy === "benchmarks" ? `<div class="legend-group"><span class="legend-key">Benchmarks</span>${benchmarkItems}</div>` : ""}${measures}</div>`;
 }
 
 async function renderSummary() {
+  const generation = state.resultsRender;
   const body = $("#summary-body");
   const ids = [...state.compare];
   if (!state.runs.length) {
-    $("#summary-runs").innerHTML = '<p class="dim">No runs cached yet.</p>';
     body.innerHTML = emptyState("Nothing to summarise yet",
       "Run a benchmark first. This tab then overlays every model, setup and measure you tick.");
     return;
   }
   await ensureRuns(ids);
+  if (generation !== state.resultsRender) return;
   const runs = ids.map((id) => state.runCache[id]).filter(Boolean);
   const allModels = allModelsOf(runs);
-  renderSummaryControls(allModels);
   $("#summary-export").href = "/api/export.csv?ids=" + ids.map(encodeURIComponent).join(",");
 
   if (!runs.length) {
-    body.innerHTML = emptyState("Pick at least one setup", "Tick a run above.");
+    body.innerHTML = emptyState("Select a benchmark", "Tick one or more benchmarks in the list on the left.");
     return;
   }
-  const models = allModels.filter((m) => !state.summaryModels.size || state.summaryModels.has(m));
-  const metricKeys = Object.keys(METRICS).filter((k) => state.summaryMetrics.has(k));
+  const models = shownModels(allModels);
+  const metricKeys = selectedMetricKeys();
   if (!metricKeys.length || !models.length) {
-    body.innerHTML = emptyState("Pick at least one measure",
-      "Tick Prefill speed and Decode speed to see them overlaid — they share a unit, so they land on one chart.");
+    body.innerHTML = !metricKeys.length ? emptyState("Choose measures to display", "Select one or more measure badges above.") : emptyState("Choose models to display", "Select one or more model badges above, or click All.");
     return;
   }
 
-  // one chart per unit: two scales on one axis would fabricate a relationship
-  const units = [];
-  for (const key of metricKeys) {
-    const unit = METRICS[key].unit;
-    const found = units.find((u) => u.unit === unit);
-    if (found) found.keys.push(key);
-    else units.push({ unit, keys: [key] });
-  }
+  const units = metricGroups(metricKeys);
 
   body.innerHTML = units.map((u, i) => `
     <div class="card" style="margin-bottom:16px">
       <header><h3>${esc(u.keys.map((k) => METRICS[k].label).join("  ·  "))}</h3>
-        <div class="spacer"></div><span class="dim" style="font-size:12px">${esc(u.unit)}</span>
+        <div class="spacer"></div><span class="dim" style="font-size:12px">${esc(u.unit)} / ${state.comparisonConcurrency} simultaneous queries</span>
       </header>
       <div id="summary-legend-${i}"></div>
       <div class="plot" id="summary-plot-${i}" style="margin-top:4px"></div>
@@ -885,7 +1270,7 @@ async function renderSummary() {
     </div>`).join("");
 
   units.forEach((u, i) => {
-    $(`#summary-legend-${i}`).innerHTML = encodingLegend(models, allModels, u.keys, runs);
+    $(`#summary-legend-${i}`).innerHTML = encodingLegend(u.keys, runs);
     const series = [];
     const sizes = new Set();
     for (const key of u.keys) {
@@ -902,9 +1287,7 @@ async function renderSummary() {
             series.push({
               id: `${run.id}|${model}|${key}|${mtp}`,
               name: bits.join("  ·  "),
-              color: modelColor(model, allModels),
-              dash: mtp ? "2 2" : dashForMetric(key),
-              marker: markerForRun(run.id),
+              ...measureAppearance(chartAppearance(run, model, allModels, mtp), key, u.keys, mtp),
               points: pts.map((p) => ({ ...p, unit: metric.unit })),
               failures: u.keys.indexOf(key) === 0 ? failuresFor(run, model, mtp) : [],
             });
@@ -919,7 +1302,7 @@ async function renderSummary() {
       yLabel: u.unit,
       yScale: "auto",
       xTicks: [...sizes].sort((a, b) => a - b),
-      height: Math.max(300, 220 + series.length * 6),
+      height: 360,
       ariaLabel: u.keys.map((k) => METRICS[k].label).join(", "),
       series,
     });
@@ -929,39 +1312,43 @@ async function renderSummary() {
       ? `${series.length} series. ` + (spread >= 40
         ? "A log scale is in use because these measures span " + Math.round(spread) +
           "× — on a linear axis the smaller one would sit flat against the baseline."
-        : "Linear scale.") +
+        : "Linear scale.") + " Estimated output throughput is identified in point details." +
         " ✕ on the baseline marks a size that failed; hover any point for the exact figure."
       : "No measurements for this combination.";
   });
 }
 
 /* ---------------- compare tab ---------------- */
-function renderMetricSeg() {
-  $("#metric-seg").innerHTML = Object.entries(METRICS).map(([key, m]) =>
-    `<button data-metric="${key}" aria-pressed="${key === state.metric}">${esc(m.label)}</button>`).join("");
-  $$("#metric-seg button").forEach((btn) => btn.addEventListener("click", () => {
-    state.metric = btn.dataset.metric;
-    $$("#metric-seg button").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
-    renderCompare();
-  }));
+function selectedMetricKeys() {
+  return Object.keys(METRICS).filter(key => state.metrics.has(key));
 }
-
-function renderCompareRuns() {
-  $("#compare-runs").innerHTML = state.runs.map((run) => `
-    <label class="chip" data-on="${state.compare.has(run.id) ? 1 : 0}">
-      <input type="checkbox" value="${esc(run.id)}" ${state.compare.has(run.id) ? "checked" : ""}>
-      <i style="width:10px;height:10px;border-radius:3px;background:${runColor(run.id)};display:inline-block"></i>
-      ${esc(run.label || run.id)}
-    </label>`).join("") || '<p class="dim">No runs cached yet.</p>';
-  $$("#compare-runs input").forEach((input) => input.addEventListener("change", async () => {
-    if (input.checked) state.compare.add(input.value); else state.compare.delete(input.value);
-    input.closest(".chip").dataset.on = input.checked ? "1" : "0";
-    await renderCompare();
-  }));
-  if (!state.compare.size && state.runs.length) {
-    state.runs.slice(0, 3).forEach((r) => state.compare.add(r.id));
-    renderCompareRuns();
+function metricGroups(keys = selectedMetricKeys()) {
+  const groups = [];
+  for (const key of keys) {
+    const unit = METRICS[key].unit;
+    // Energy per prompt workload and energy per output token have different denominators.
+    const identity = unit === "J" ? key : unit;
+    const group = groups.find(item => item.identity === identity);
+    if (group) group.keys.push(key); else groups.push({identity, unit, keys: [key]});
   }
+  return groups;
+}
+function measureAppearance(base, key, keys, mtp) {
+  if (keys.length < 2) return base;
+  const styles = [null, "7 4", "2 3", "10 3 2 3", "12 5"];
+  const dash = styles[keys.indexOf(key) % styles.length];
+  return {...base, dash: mtp ? (dash ? dash + " 2 2" : "2 2") : dash};
+}
+function renderMetricSeg() {
+  $("#result-metrics").innerHTML = Object.entries(METRICS).map(([key, metric]) => `<label class="chip" data-on="${state.metrics.has(key) ? 1 : 0}" title="${esc(metric.blurb)}"><input type="checkbox" value="${key}" ${state.metrics.has(key) ? "checked" : ""}>${esc(metric.label)}</label>`).join("");
+  $$("#result-metrics input").forEach(input => input.addEventListener("change", async () => {
+    const key = input.value;
+    if (input.checked) state.metrics.add(key); else state.metrics.delete(key);
+    renderMetricSeg();
+    await renderResultsView();
+    const replacement = $$("#result-metrics input").find(item => item.value === key);
+    if (replacement) replacement.focus({preventScroll: true});
+  }));
 }
 
 async function ensureRuns(ids) {
@@ -971,106 +1358,58 @@ async function ensureRuns(ids) {
 }
 
 async function renderCompare() {
+  const generation = state.resultsRender;
   const body = $("#compare-body");
   const ids = [...state.compare];
   if (!ids.length) {
-    body.innerHTML = emptyState("Pick at least one run",
-      "Each run is one card in one session. Benchmark the 1070 Ti, swap the card, run it again — then both appear here side by side.");
+    body.innerHTML = emptyState("Select a benchmark", "Tick one or more benchmarks in the list on the left.");
     return;
   }
   await ensureRuns(ids);
-  const runs = ids.map((id) => state.runCache[id]).filter(Boolean);
-  const metric = METRICS[state.metric];
-
-  const models = [...new Set(runs.flatMap((r) => (r.results || []).map((x) => x.model)))].sort();
-  const filter = $("#model-filter");
-  const keep = state.modelFilter;
-  filter.innerHTML = '<option value="">All models</option>' +
-    models.map((m) => `<option value="${esc(m)}">${esc(m)}</option>`).join("");
-  filter.value = models.includes(keep) ? keep : "";
-  state.modelFilter = filter.value;
-  const shown = state.modelFilter ? [state.modelFilter] : models;
-
+  if (generation !== state.resultsRender) return;
+  const runs = ids.map(id => state.runCache[id]).filter(Boolean);
+  const models = allModelsOf(runs), shown = shownModels(models), keys = selectedMetricKeys();
+  if (!shown.length || !keys.length) {
+    body.innerHTML = !keys.length ? emptyState("Choose measures to display", "Select one or more measure badges above.") : emptyState("Choose models to display", "Select one or more model badges above, or click All.");
+    return;
+  }
   const tracks = tracksFor(runs);
-  const legend = `<div class="legend">${tracks.map((t) => {
-    const gpuName = ((t.run.gpu || {}).name || "").replace(/^NVIDIA\s+/, "");
-    // only name the card when the run label does not already say it
-    const showGpu = gpuName && !(t.run.label || "").toLowerCase().includes(gpuName.toLowerCase());
-    return `<span><i style="background:${t.color}${t.mtp ? ";outline:1px dashed var(--text-muted);outline-offset:2px" : ""}"></i>${esc(t.name)}
-      ${showGpu ? `<span class="dim">· ${esc(gpuName)}</span>` : ""}</span>`;
-  }).join("")}</div>`;
-
-  // Energy and wattage are only comparable when they came from the same sensor:
-  // nvidia-smi reports board power for the card alone, powermetrics reports SoC
-  // rails. Speed metrics are measured identically everywhere.
-  const POWER_METRICS = ["j_per_1k_prefill", "j_per_token_decode", "prefill_gpu_w"];
-  const sources = [...new Set(runs.map((r) => r.power_source).filter(Boolean))];
-  const mixedPower = POWER_METRICS.includes(state.metric) && sources.length > 1;
-  const note = mixedPower
-    ? banner("warn", "Mixed power sources: " + sources.map(esc).join(" vs "),
-      "<code>nvidia-smi</code> measures the graphics card's board power alone; " +
-      "<code>powermetrics</code> measures the SoC's GPU and CPU rails. These are different " +
-      "boundaries, so treat the gap as indicative, not exact — the estimated system watts " +
-      "column is the fairer cross-platform figure. Speed metrics are unaffected.")
-    : "";
-
-  body.innerHTML = `
-    <div class="card" style="margin-bottom:16px">
-      <header><h3>${esc(metric.label)}</h3></header>
-      <p class="hint">${esc(metric.blurb)}
-        ${metric.better ? `Lower is better.`.replace("Lower", metric.better === "high" ? "Higher" : "Lower") : ""}</p>
-      ${note}
-      ${legend}
-      <div class="facets" id="facet-grid"></div>
-    </div>
-    <div class="card">
-      <header><h3>${esc(metric.label)} by model and prefill size</h3></header>
-      <div class="table-wrap" id="compare-table"></div>
-    </div>`;
-
+  const sources = [...new Set(runs.map(run => run.power_source).filter(Boolean))];
+  const mixedPower = keys.some(key => ["j_per_1k_prefill", "j_per_token_decode", "prefill_gpu_w"].includes(key)) && sources.length > 1;
+  const note = mixedPower ? banner("warn", "Different power sensors", "These readings have different measurement boundaries. Compare them with care.") : "";
+  if (state.compareView === "table") {
+    body.innerHTML = `<div class="card"><header><h3>Measurements</h3></header>${note}${compareTable(tracks, shown, keys)}</div>`;
+    return;
+  }
+  body.innerHTML = `<div class="card"><header><h3>${esc(keys.map(key => METRICS[key].label).join(" + "))}</h3></header>${note}<div class="facets" id="facet-grid"></div></div>`;
   const grid = $("#facet-grid");
-  for (const model of shown) {
-    const facet = document.createElement("div");
-    facet.className = "facet";
-    const sub = modelSubtitle(runs, model);
-    facet.innerHTML = `<h4>${esc(model)}</h4><div class="sub">${esc(sub)}</div><div class="plot"></div>`;
-    grid.appendChild(facet);
-    const plot = $(".plot", facet);
-    const sizes = [...new Set(tracks.flatMap((t) => (t.run.results || [])
-      .filter((x) => x.model === model && !!x.mtp === !!t.mtp)
-      .map((x) => x.target_tokens)))].sort((a, b) => a - b);
-
-    if (metric.kind === "line") {
-      Charts.line(plot, {
-        unit: metric.unit, xLabel: "prefill tokens", yLabel: metric.unit,
-        xTicks: sizes, height: 250,
-        ariaLabel: `${metric.label} for ${model}`,
-        series: tracks.map((t) => ({
-          id: t.key, name: t.name, color: t.color, dash: t.dash,
-          points: pointsFor(t.run, model, metric, t.mtp),
-          failures: failuresFor(t.run, model, t.mtp),
-        })),
-      });
-    } else {
-      Charts.bars(plot, {
-        unit: metric.unit, yLabel: metric.unit, xLabel: "prefill tokens", height: 250,
-        ariaLabel: `${metric.label} for ${model}`,
-        groups: sizes.map((size) => ({
-          label: fmtTokens(size),
-          bars: tracks.map((t) => {
-            const r = pick(t.run, model, size, t.mtp);
-            return {
-              id: t.key, name: t.name, color: t.color, dash: t.dash,
-              value: r && r.status === "ok" ? (metric.get(r) || 0) : 0,
-              note: r && r.status !== "ok" ? (r.fail_kind || r.status || "").replace(/_/g, " ") : null,
-            };
-          }),
-        })),
-      });
+  for (const group of metricGroups(keys)) {
+    for (const model of shown) {
+      const facet = document.createElement("div");
+      facet.className = "facet";
+      facet.innerHTML = `<h4>${esc(model)}</h4><div class="sub">${esc(group.keys.map(key => METRICS[key].label).join(" + "))} / ${esc(group.unit)}</div>${encodingLegend(group.keys, runs)}<div class="plot"></div>`;
+      grid.appendChild(facet);
+      const sizes = [...new Set(tracks.flatMap(track => (track.run.results || []).filter(row => row.model === model && !!row.mtp === !!track.mtp && (row.concurrency || 1) === state.comparisonConcurrency).map(row => row.target_tokens)))].sort((a, b) => a - b);
+      const series = group.keys.flatMap(key => tracks.map(track => ({
+        id: track.key + "|" + key, name: `${track.name} / ${METRICS[key].label}`,
+        ...measureAppearance(chartAppearance(track.run, model, models, track.mtp), key, group.keys, track.mtp),
+        points: pointsFor(track.run, model, METRICS[key], track.mtp),
+        failures: key === group.keys[0] ? failuresFor(track.run, model, track.mtp) : [],
+      })));
+      const plot = $(".plot", facet);
+      if (group.keys.length === 1 && METRICS[group.keys[0]].kind === "bars") {
+        const metric = METRICS[group.keys[0]];
+        Charts.bars(plot, {unit: group.unit, yLabel: group.unit, xLabel: "prefill tokens", height: 250,
+          groups: sizes.map(size => ({label: fmtTokens(size), bars: tracks.map(track => {
+            const row = pick(track.run, model, size, track.mtp, metric);
+            return {id: track.key, name: track.name, ...chartAppearance(track.run, model, models, track.mtp), value: row && row.status === "ok" ? metric.get(row) : null};
+          })})),
+        });
+      } else {
+        Charts.line(plot, {unit: group.unit, xLabel: "prefill tokens", yLabel: group.unit, xTicks: sizes, height: 250, yScale: "auto", ariaLabel: `${group.keys.map(key => METRICS[key].label).join(", ")} for ${model}`, series});
+      }
     }
   }
-  $("#compare-table").innerHTML = compareTable(tracks, shown, metric);
-  $("#export-csv").href = "/api/export.csv?ids=" + ids.map(encodeURIComponent).join(",");
 }
 
 function resolveColor(cssVar) {
@@ -1079,22 +1418,24 @@ function resolveColor(cssVar) {
   return getComputedStyle(document.documentElement).getPropertyValue(match[1]).trim() || "#888";
 }
 
-function pick(run, model, size, mtp) {
+function pick(run, model, size, mtp, metric) {
   const matches = (run.results || []).filter((r) => r.model === model
-    && r.target_tokens === size && !!r.mtp === !!mtp);
+    && r.target_tokens === size && !!r.mtp === !!mtp && (r.concurrency || 1) === state.comparisonConcurrency);
   const ok = matches.filter((r) => r.status === "ok");
   if (!ok.length) return matches[0] || null;
   // several repeats: report the median so one hiccup does not define the point
-  const sorted = ok.slice().sort((a, b) => (a.prefill_tps || 0) - (b.prefill_tps || 0));
+  const measured = metric ? ok.filter((r) => metric.get(r) != null) : ok;
+  if (!measured.length) return ok[0];
+  const sorted = measured.slice().sort((a, b) => metric ? metric.get(a) - metric.get(b) : (a.prefill_tps || 0) - (b.prefill_tps || 0));
   return sorted[Math.floor(sorted.length / 2)];
 }
 
 function pointsFor(run, model, metric, mtp) {
   const sizes = [...new Set((run.results || []).filter((r) => r.model === model
-    && !!r.mtp === !!mtp).map((r) => r.target_tokens))].sort((a, b) => a - b);
+    && !!r.mtp === !!mtp && (r.concurrency || 1) === state.comparisonConcurrency).map((r) => r.target_tokens))].sort((a, b) => a - b);
   const out = [];
   for (const size of sizes) {
-    const r = pick(run, model, size, mtp);
+    const r = pick(run, model, size, mtp, metric);
     if (!r || r.status !== "ok") continue;
     const value = metric.get(r);
     if (value === null || value === undefined) continue;
@@ -1102,6 +1443,7 @@ function pointsFor(run, model, metric, mtp) {
       r.prompt_tokens ? `${fmtInt(r.prompt_tokens)} actual tokens` : "",
       r.gpu_offload && r.gpu_offload !== "auto" ? `offload ${r.gpu_offload}` : "",
       r.vram_peak_mb ? `${fmtInt(r.vram_peak_mb)} MB VRAM` : "",
+      ((metric === METRICS.decode_tps && r.completion_tokens_estimated) || (metric === METRICS.aggregate_completion_tps && r.aggregate_completion_tokens_estimated)) ? "Output tokens and throughput estimated" : "",
     ].filter(Boolean).join(" · ");
     out.push({ x: size, y: value, note });
   }
@@ -1110,7 +1452,7 @@ function pointsFor(run, model, metric, mtp) {
 
 function failuresFor(run, model, mtp) {
   return (run.results || [])
-    .filter((r) => r.model === model && !!r.mtp === !!mtp
+    .filter((r) => r.model === model && !!r.mtp === !!mtp && (r.concurrency || 1) === state.comparisonConcurrency
       && (r.status === "failed" || r.status === "skipped")
       && r.fail_kind !== "mtp_unsupported")
     .map((r) => ({ x: r.target_tokens, reason: (r.fail_kind || r.status || "").replace(/_/g, " ") }));
@@ -1124,7 +1466,7 @@ function tracksFor(runs) {
   const tracks = [];
   for (const run of runs) {
     for (const mtp of modes) {
-      const rows = (run.results || []).filter((r) => !!r.mtp === !!mtp);
+      const rows = (run.results || []).filter((r) => !!r.mtp === !!mtp && (r.concurrency || 1) === state.comparisonConcurrency);
       const meaningful = rows.some((r) => r.status === "ok" || r.fail_kind !== "mtp_unsupported");
       if (!rows.length || !meaningful) continue;
       const bothShown = modes.length > 1;
@@ -1148,60 +1490,38 @@ function modelSubtitle(runs, model) {
   return "";
 }
 
-function compareTable(tracks, models, metric) {
-  const sizes = [...new Set(tracks.flatMap((t) => (t.run.results || [])
-    .filter((x) => !!x.mtp === !!t.mtp).map((x) => x.target_tokens)))].sort((a, b) => a - b);
-  const baseline = tracks[0];
-  const head = `<thead><tr><th>Model</th><th class="num">Prefill</th>
-    ${tracks.map((t) => `<th class="num">${esc(t.name)}</th>`).join("")}
-    ${tracks.length > 1 ? `<th class="num">best vs ${esc(baseline.name)}</th>` : ""}
-    </tr></thead>`;
+function metricEstimateMark(row, metric) {
+  if (metric === METRICS.aggregate_completion_tps) return estimatedMark(row, true);
+  return metric === METRICS.decode_tps || metric === METRICS.j_per_token_decode ? estimatedMark(row) : "";
+}
+
+function tableRowColor(run, model, models) {
+  return state.colorBy === "models" ? modelColor(model, models) : resolveColor(runColor(run.id));
+}
+
+function compareTable(tracks, models, keys = selectedMetricKeys()) {
   const rows = [];
   for (const model of models) {
+    const sizes = [...new Set(tracks.flatMap(track => (track.run.results || [])
+      .filter(row => row.model === model && !!row.mtp === !!track.mtp && (row.concurrency || 1) === state.comparisonConcurrency)
+      .map(row => row.target_tokens)))].sort((a, b) => a - b);
     for (const size of sizes) {
-      const cells = tracks.map((t) => {
-        const r = pick(t.run, model, size, t.mtp);
-        if (!r) return { html: '<td class="num dim">—</td>', value: null };
-        if (r.status !== "ok") {
-          return {
-            html: `<td class="num"><span class="st st-${esc(r.status)}" title="${esc(r.message || "")}">${STATUS_MARK[r.status] || "?"} ${esc((r.fail_kind || r.status).replace(/_/g, " "))}</span></td>`,
-            value: null,
-          };
-        }
-        const value = metric.get(r);
-        return {
-          html: `<td class="num">${value === null || value === undefined ? "—" : n(value)}</td>`,
-          value: value === null || value === undefined ? null : value,
-        };
-      });
-      if (cells.every((c) => c.value === null && !c.html.includes("st-"))) continue;
-      let delta = "";
-      if (tracks.length > 1) {
-        const base = cells[0].value;
-        // compare the baseline against the best of the others, so the column
-        // stays meaningful when a card fails at a size the baseline survived
-        const others = cells.slice(1).map((c) => c.value).filter((v) => v !== null && v !== undefined);
-        const best = others.length
-          ? (metric.better === "low" ? Math.min(...others) : Math.max(...others))
-          : null;
-        if (base && best) {
-          const ratio = metric.better === "low" ? base / best : best / base;
-          const pct = (ratio - 1) * 100;
-          delta = `<td class="num">${pct >= 0 ? "+" : ""}${pct.toFixed(0)}%</td>`;
-        } else {
-          delta = '<td class="num dim">—</td>';
-        }
+      for (const track of tracks) {
+        const representative = pick(track.run, model, size, track.mtp, METRICS[keys[0]]);
+        if (!representative) continue;
+        const color = tableRowColor(track.run, model, models);
+        const cells = keys.map(key => {
+          const metric = METRICS[key];
+          const row = pick(track.run, model, size, track.mtp, metric);
+          const value = row && row.status === "ok" ? metric.get(row) : null;
+          return `<td class="num measure-cell" data-measure="${key}">${value == null ? "?" : n(value) + metricEstimateMark(row, metric)}</td>`;
+        }).join("");
+        rows.push(`<tr class="colored-result-row" style="--table-color:${color}" data-model="${esc(model)}" data-benchmark="${esc(track.run.id)}"><td class="model-cell">${esc(model)}</td><td class="num">${fmtTokens(size)}</td><td class="benchmark-cell"><span class="table-benchmark-name" title="${esc(track.name)}">${esc(track.name)}</span></td>${cells}<td>${statusCell(representative)}</td></tr>`);
       }
-      rows.push(`<tr><td>${esc(model)}</td><td class="num">${fmtTokens(size)}</td>
-        ${cells.map((c) => c.html).join("")}${delta}</tr>`);
     }
   }
-  if (!rows.length) return '<p class="dim">No overlapping measurements.</p>';
-  return `<table>${head}<tbody>${rows.join("")}</tbody>
-    <tfoot><tr><td colspan="${2 + tracks.length + (tracks.length > 1 ? 1 : 0)}">
-      Values in ${esc(metric.unit)}.${metric.better ? ` ${metric.better === "high" ? "Higher" : "Lower"} is better.` : ""}
-      ${tracks.length > 1 ? `The last column compares the best other column against ${esc(baseline.name)}, oriented so positive always means better.` : ""}
-      Repeats are reduced to the median. Columns marked · MTP used MTP speculative decoding.</td></tr></tfoot></table>`;
+  if (!rows.length) return '<p class="dim">No measurements for the selected models and query count.</p>';
+  return `<table class="measurements-table"><thead><tr><th>Model</th><th>Prompt tokens</th><th>Benchmark</th>${keys.map(key => `<th class="num" data-measure="${key}">${esc(METRICS[key].label)} <small>(${esc(METRICS[key].unit)})</small></th>`).join("")}<th>Status</th></tr></thead><tbody>${rows.join("")}</tbody><tfoot><tr><td colspan="${4 + keys.length}">One row per model, prompt size and benchmark. Each measure reports its median successful repeat. * Estimated token counts. Cell colors follow the Color by selection.</td></tr></tfoot></table>`;
 }
 
 init();

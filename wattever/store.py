@@ -12,12 +12,17 @@ import platform
 import re
 import subprocess
 import time
+import uuid
+import hashlib
+import shutil
 
 from .platform_util import IS_MAC, IS_WINDOWS, platform_label, run as prun, sysctl
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUNS_DIR = os.path.join(ROOT, "results", "runs")
 CONFIG_PATH = os.path.join(ROOT, "results", "last-config.json")
+TRASH_DIR = os.path.join(ROOT, "results", ".trash")
+SCHEMA_VERSION = 2
 
 _host_cache = None
 
@@ -66,15 +71,20 @@ def host_info():
     os_name = "%s %s" % (platform.system(), platform.release())
     if IS_MAC:
         os_name = "macOS %s" % (sysctl("kern.osproductversion") or platform.mac_ver()[0] or "")
+    from .hardware import inventory
+    machine = inventory()
+    cpu_info = machine.get("cpu") or {}
+    system_info = machine.get("system") or {}
     _host_cache = {
-        "cpu": cpu.strip(),
+        "cpu": cpu_info.get("name") or cpu.strip(),
+        "cores_physical": cpu_info.get("physical_cores"),
         "cores_logical": os.cpu_count(),
-        "ram_gb": _ram_gb(),
+        "ram_gb": round(system_info["memory_bytes"] / (1024 ** 3), 1) if system_info.get("memory_bytes") else _ram_gb(),
         "os": os_name.strip(),
         "os_build": platform.version(),
         "python": platform.python_version(),
         "platform": platform_label(),
-        "machine_model": sysctl("hw.model") or "",
+        "machine_model": system_info.get("model") or sysctl("hw.model") or "",
     }
     return _host_cache
 
@@ -91,20 +101,66 @@ def ensure_dirs():
 
 
 def new_run_id(gpu_name):
-    return "%s_%s" % (time.strftime("%Y%m%d-%H%M%S"), _slug(gpu_name))
+    return "%s_%s_%s" % (time.strftime("%Y%m%d-%H%M%S", time.gmtime()),
+                          _slug(gpu_name), uuid.uuid4().hex[:10])
 
 
 def path_for(run_id):
-    return os.path.join(RUNS_DIR, "%s.json" % re.sub(r"[^A-Za-z0-9_.-]", "_", run_id))
+    if not isinstance(run_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,199}", run_id):
+        raise ValueError("Invalid benchmark ID.")
+    return os.path.join(RUNS_DIR, "%s.json" % run_id)
+
+
+def prepare_run(run):
+    """Attach versioned, public machine/protocol metadata to a new session."""
+    from . import __version__, corpus, hardware
+    machine = hardware.inventory()
+    run["schema_version"] = SCHEMA_VERSION
+    run["$schema"] = "../benchmark.schema.json"
+    run["application"] = {"name": "Wattever", "version": __version__,
+                          "protocol_version": "2"}
+    run["hardware"] = machine
+    # Retain the legacy GPU block without publishing a device's unique ID.
+    run["gpu"] = {k: v for k, v in (run.get("gpu") or {}).items() if k != "uuid"}
+    cfg = run.get("config") or {}
+    run["measurement_scope"] = {
+        "power_gpu_sensor_index": cfg.get("gpu_index", 0),
+        "power_boundary": "selected GPU only; not the sum of all connected GPUs",
+        "runtime_gpu_placement": cfg.get("runtime_gpu_placement") or "unknown; managed by LM Studio",
+        "runtime_gpu_placement_source": "user_reported" if cfg.get("runtime_gpu_placement") else "unknown",
+    }
+    run["corpus"]["sha256"] = hashlib.sha256(corpus.load_master().encode("utf-8")).hexdigest()
+    # A configuration grouping key, never a unique machine identifier.
+    cards = [{k: g.get(k) for k in ("name", "vendor", "memory_bytes")}
+             for g in machine.get("gpus", [])]
+    descriptor = {"cpu": machine.get("cpu"), "system": machine.get("system"),
+                  "gpus": sorted(cards, key=lambda g: json.dumps(g, sort_keys=True)),
+                  "os": machine.get("os")}
+    run["classification"] = {
+        "hardware_class": hashlib.sha256(json.dumps(descriptor, sort_keys=True).encode()).hexdigest()[:20],
+        "gpu_names": sorted(g.get("name", "") for g in machine.get("gpus", [])),
+        "platform": (run.get("host") or {}).get("platform"),
+    }
+    return run
 
 
 def save(run):
     ensure_dirs()
     tmp = path_for(run["id"]) + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
-        json.dump(run, fh, indent=1, ensure_ascii=False)
+        json.dump(run, fh, indent=1, ensure_ascii=False, allow_nan=False)
     os.replace(tmp, path_for(run["id"]))
     return run
+
+
+def backup(run_id):
+    """Keep the exact pre-extension file outside the shared benchmark library."""
+    source = path_for(run_id)
+    history_dir = os.path.join(os.path.dirname(RUNS_DIR), ".history")
+    os.makedirs(history_dir, exist_ok=True)
+    target = os.path.join(history_dir, "%s_%s.json" % (run_id, uuid.uuid4().hex))
+    shutil.copyfile(source, target)
+    return target
 
 
 def load(run_id):
@@ -113,7 +169,21 @@ def load(run_id):
         return None
     try:
         with open(path, "r", encoding="utf-8") as fh:
-            return json.load(fh)
+            run = json.load(fh)
+        if not isinstance(run, dict) or run.get("id") != run_id or not isinstance(run.get("results", []), list):
+            return None
+        if any(not isinstance(row, dict) for row in run.get("results", [])):
+            return None
+        if any(not isinstance(run.get(key, {}), dict) for key in ("gpu", "host", "config")):
+            return None
+        for row in run.get("results", []):
+            if row.get("model") is not None and not isinstance(row["model"], str):
+                return None
+            if row.get("target_tokens") is not None and type(row["target_tokens"]) is not int:
+                return None
+            if type(row.get("concurrency", 1)) is not int:
+                return None
+        return run
     except (OSError, ValueError):
         return None
 
@@ -124,7 +194,10 @@ def list_runs(full=False):
     for name in os.listdir(RUNS_DIR):
         if not name.endswith(".json"):
             continue
-        run = load(name[:-5])
+        try:
+            run = load(name[:-5])
+        except ValueError:
+            continue
         if not run:
             continue
         runs.append(run if full else summarise(run))
@@ -143,6 +216,10 @@ def summarise(run):
         "status": run.get("status"),
         "gpu": run.get("gpu") or {},
         "host": run.get("host") or {},
+        "hardware": run.get("hardware") or {},
+        "classification": run.get("classification") or {},
+        "schema_version": run.get("schema_version", 1),
+        "concurrency_levels": sorted({r.get("concurrency", 1) for r in results}),
         "models": sorted({r.get("model") for r in results if r.get("model")}),
         "sizes": sorted({r.get("target_tokens") for r in results
                          if r.get("target_tokens")}),
@@ -161,7 +238,8 @@ def summarise(run):
 def delete(run_id):
     path = path_for(run_id)
     if os.path.isfile(path):
-        os.remove(path)
+        os.makedirs(TRASH_DIR, exist_ok=True)
+        os.replace(path, os.path.join(TRASH_DIR, "%s_%s.json" % (run_id, uuid.uuid4().hex[:10])))
         return True
     return False
 
@@ -234,7 +312,27 @@ CSV_COLUMNS = [
     ("platform", lambda r, run: (run.get("host") or {}).get("platform") or "windows"),
     ("prefill_cpu_w", lambda r, _: (r.get("power") or {}).get("prefill_cpu_w")),
     ("decode_cpu_w", lambda r, _: (r.get("power") or {}).get("decode_cpu_w")),
+    ("concurrency", lambda r, _: r.get("concurrency", 1)),
+    ("aggregate_completion_tps", lambda r, _: r.get("aggregate_completion_tps")),
+    ("aggregate_completion_tokens", lambda r, _: r.get("aggregate_completion_tokens")),
+    ("completed_requests", lambda r, _: r.get("completed_requests")),
+    ("wall_s", lambda r, _: r.get("wall_s")),
+    ("completion_tokens_estimated", lambda r, _: r.get("completion_tokens_estimated")),
+    ("aggregate_completion_tokens_estimated", lambda r, _: r.get("aggregate_completion_tokens_estimated")),
+    ("hardware_class", lambda r, run: (run.get("classification") or {}).get("hardware_class")),
+    ("runtime_gpu_placement", lambda r, run: (run.get("measurement_scope") or {}).get("runtime_gpu_placement")),
+    ("session_id", lambda r, _: r.get("session_id")),
+    ("context_planner_version", lambda r, run: _session_config(r, run).get("context_planner_version", "legacy")),
+    ("context_policy", lambda r, run: _session_config(r, run).get("context_policy", "per_test")),
+    ("context_safety_fraction", lambda r, run: _session_config(r, run).get("context_safety_fraction", 0)),
+    ("per_request_context_length", lambda r, _: r.get("per_request_context_length")),
+    ("requested_total_context", lambda r, _: r.get("requested_total_context", r.get("requested_context"))),
 ]
+
+
+def _session_config(row, run):
+    return next((session.get("config", {}) for session in run.get("sessions", [])
+                 if session.get("id") == row.get("session_id")), run.get("config") or {})
 
 
 def to_csv(runs):
