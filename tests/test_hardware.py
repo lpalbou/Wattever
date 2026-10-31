@@ -106,7 +106,7 @@ class InventoryTests(unittest.TestCase):
             self.assertEqual(hardware.inventory()['gpus'][0]['sensor_index'], 2)
 
     def test_linux_cpu_delta_and_unknown_estimate(self):
-        with patch.object(power, 'IS_WINDOWS', False), patch.object(power, 'IS_LINUX', True), patch.object(power, 'linux_cpu_times', side_effect=[(100, 200), (120, 300)]):
+        with patch.object(power, 'IS_WINDOWS', False), patch.object(power, 'IS_MAC', False), patch.object(power, 'IS_LINUX', True), patch.object(power, 'linux_cpu_times', side_effect=[(100, 200), (120, 300)]):
             meter = power._CpuMeter()
             self.assertIsNone(meter.sample())
             self.assertAlmostEqual(meter.sample(), 0.8)
