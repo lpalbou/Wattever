@@ -10,6 +10,11 @@ from wattever import runner, store
 
 
 class ExtensionTests(unittest.TestCase):
+    def setUp(self):
+        probe = patch('wattever.bandwidth.measure', return_value={"protocol":"test"})
+        probe.start()
+        self.addCleanup(probe.stop)
+
     def source(self, legacy=False):
         cfg = dict(runner.DEFAULT_CONFIG, models=['old'], sizes=[512, 10000], concurrency_levels=[1, 2])
         if legacy:
@@ -46,6 +51,10 @@ class ExtensionTests(unittest.TestCase):
 
     def test_rerun_replaces_only_selected_successes_and_archives_measurement(self):
         source = self.source()
+        source['config']['models'].append('unselected-model')
+        untouched = dict(model='unselected-model', target_tokens=512, repeat=0,
+                         concurrency=1, status='ok', prefill_tps=999, session_id='initial')
+        source['results'].append(untouched)
         original = copy.deepcopy(source)
         selection = dict(self.selection(),model_modes={'old':['off']},sizes=[512],concurrency_levels=[1])
         cfg = runner.extension_config(source,selection)
@@ -67,8 +76,9 @@ class ExtensionTests(unittest.TestCase):
             backup = stack.enter_context(patch.object(store,'backup'))
             self.assertEqual(r._start(cfg,resume_source=source,extend_in_place=True,rerun_existing=True),'original')
             self.assertEqual(source,original)
-            self.assertEqual(len(r.run['results']),2)
-            self.assertTrue(all(row['concurrency']==2 for row in r.run['results']))
+            self.assertEqual(len(r.run['results']),3)
+            self.assertEqual([row for row in r.run['results'] if row['model']=='unselected-model'], [untouched])
+            self.assertTrue(all(row['concurrency']==2 for row in r.run['results'] if row['model']=='old'))
             self.assertEqual(r.run['previous_attempts'][0]['prefill_tps'],100)
             self.assertEqual(r.run['previous_attempts'][0]['archive_reason'],'rerun')
             self.assertEqual(r.live['done'],0)
@@ -81,6 +91,95 @@ class ExtensionTests(unittest.TestCase):
                         {'sizes': ['10']}, {'concurrency_levels': [101]}):
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 runner.extension_config(self.source(), dict(self.selection(), **changes))
+
+    def test_append_repeat_plans_only_new_slots_and_merges_repeat_count(self):
+        source = self.source()
+        cfg = runner.extension_config(source, dict(self.selection(), model_modes={'old':['off']}, repeats=2))
+        plan = runner.extension_plan(source, cfg)
+        self.assertEqual((plan['existing'], plan['new_tests']), (3, 5))
+        self.assertEqual(runner.merged_config(source['config'], cfg)['repeats'], 2)
+        self.assertEqual(source['config']['repeats'], 1)
+        source['results'][0].pop('repeat')
+        self.assertNotIn(('old',False,1,512,1), runner.completed_cases(source,cfg))
+        for repeats in (0, True, 1.5, 101, '2'):
+            with self.subTest(repeats=repeats), self.assertRaises(ValueError):
+                runner.extension_config(source, dict(self.selection(), repeats=repeats))
+
+    def test_individual_repair_does_not_select_other_repeats_or_contexts(self):
+        source = self.source()
+        selection = dict(self.selection(), model_modes={'old':['off']}, repeats=2,
+                         selected_cases=[['old',False,1,512,0]])
+        cfg = runner.extension_config(source, selection)
+        self.assertEqual(runner.planned_cases(cfg), {('old',False,1,512,0)})
+        self.assertEqual(runner.extension_plan(source,cfg,rerun_existing=True)['total_tests'], 1)
+        self.assertNotIn('selected_cases',runner.merged_config(source['config'],cfg))
+        for cases in ([], [['old',False,1,512,2]], [['other',False,1,512,0]], [['old',0,1,512,0]]):
+            with self.subTest(cases=cases), self.assertRaises(ValueError):
+                runner.extension_config(source, dict(selection,selected_cases=cases))
+
+    def test_new_run_cannot_bypass_repair_selection_validation(self):
+        with patch.object(store,'save') as save:
+            with self.assertRaisesRegex(ValueError,'existing benchmark'):
+                runner.BenchRunner().start({'models':['old'],'selected_cases':'invalid'})
+            save.assert_not_called()
+
+    def test_repair_can_extend_timeout_without_changing_saved_settings(self):
+        source=self.source()
+        cfg=runner.extension_config(source,dict(self.selection(),per_test_timeout_s=3600))
+        self.assertEqual(cfg['per_test_timeout_s'],3600)
+        self.assertEqual(source['config']['per_test_timeout_s'],1800)
+        self.assertEqual(runner.merged_config(source['config'],cfg)['per_test_timeout_s'],1800)
+        for timeout in (0,True,1.5,7201,'3600'):
+            with self.subTest(timeout=timeout),self.assertRaises(ValueError):
+                runner.extension_config(source,dict(self.selection(),per_test_timeout_s=timeout))
+
+    def test_practical_limits_are_explicit_session_options(self):
+        source=self.source()
+        cfg=runner.extension_config(source,dict(self.selection(),fallback_on_failure=False,skip_after_timeout=True))
+        self.assertFalse(cfg['fallback_on_failure'])
+        self.assertTrue(cfg['skip_after_timeout'])
+        self.assertTrue(source['config']['fallback_on_failure'])
+        for field in ('fallback_on_failure','skip_after_timeout'):
+            with self.subTest(field=field),self.assertRaises(ValueError):
+                runner.extension_config(source,dict(self.selection(),**{field:'yes'}))
+
+    def test_transient_timeout_does_not_skip_repeat_or_larger_context(self):
+        self._check_transient_failure(runner.FAIL_TIMEOUT)
+
+    def test_transient_stream_error_reloads_before_the_next_repeat(self):
+        self._check_transient_failure(runner.FAIL_ERROR)
+
+    def test_practical_timeout_policy_skips_repeats_and_larger_tests(self):
+        self._check_transient_failure(runner.FAIL_TIMEOUT, practical=True)
+
+    def _check_transient_failure(self, failure_kind, practical=False):
+        source = self.source()
+        cfg = runner.extension_config(source, dict(self.selection(),model_modes={'old':['off']},
+                        sizes=[512,10000],concurrency_levels=[1],repeats=2))
+        cfg['warmup'] = False
+        cfg['skip_after_timeout'] = practical
+        if practical:
+            cfg['stop_model_after_failure'] = False
+        bench = runner.BenchRunner()
+        bench.cli = MagicMock()
+        bench._model_max_context = MagicMock(return_value=100000)
+        bench._load_with_fallback = MagicMock(return_value=(True,{},'max'))
+        calls=[]
+        def measure(run,cfg,model,size,rep,*args):
+            calls.append((size,rep))
+            return dict(model=model,target_tokens=size,repeat=rep,concurrency=1,mtp=False,
+                        status='failed' if len(calls)==1 else 'ok',fail_kind=failure_kind if len(calls)==1 else None)
+        bench._one_test=measure
+        run=dict(source,results=[],sessions=[],active_session_id='repair')
+        sampler=MagicMock(source='mock');sampler.measure_idle.return_value={}
+        with patch.object(runner.power,'PowerSampler',return_value=sampler),patch.object(store,'save'):
+            bench._run(run,cfg)
+        self.assertEqual(calls,[(512,0)] if practical else [(512,0),(512,1),(10000,0),(10000,1)])
+        self.assertEqual(bench._load_with_fallback.call_count,1 if practical else 3)
+        if practical:
+            self.assertEqual([row['status'] for row in run['results']],['failed','skipped','skipped','skipped'])
+        if failure_kind == runner.FAIL_ERROR:
+            bench.cli.unload_confirmed.assert_called_once_with('old')
 
     def test_same_file_extension_backs_up_and_preserves_success_and_provenance(self):
         source = self.source(legacy=True)
@@ -179,6 +278,16 @@ class ExtensionTests(unittest.TestCase):
                 r.extend(self.selection())
             save.assert_not_called()
             backup.assert_not_called()
+
+    def test_extension_refuses_changed_quantization_before_loading(self):
+        source=self.source()
+        source['results'][0]['quantization']='Q4_0'
+        bench=runner.BenchRunner()
+        with patch.object(store,'load',return_value=source),patch.object(runner.lmstudio,'list_models',
+                return_value=[{'id':'old','type':'llm','quantization':'Q8_0'}]),patch.object(bench,'_start') as start:
+            with self.assertRaisesRegex(ValueError,'Quantization differs'):
+                bench.extend(dict(self.selection(),model_modes={'old':['off']}))
+            start.assert_not_called()
 
     def test_session_completion_retains_incomplete_original_work(self):
         source = self.source()

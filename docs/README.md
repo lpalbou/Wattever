@@ -2,8 +2,9 @@
 
 - [Browser mode](browser.md): hosted setup, privacy, storage and measurement limits.
 - [Sharing results](sharing-results.md): shared catalog, contributions and completing a benchmark later.
-- [Getting started](getting-started.md): requirements and first benchmark.
-- [Measurements and sessions](measurements.md): metrics, hardware, context planning, retries and comparisons.
+- [Getting started](getting-started.md): managed LM Studio or generic endpoint setup, authentication, manual model IDs and first benchmark.
+- [Measurements and sessions](measurements.md): client/provider metrics, cache provenance, hardware, compute claims, power boundaries and comparisons.
+- [Capability evaluation](capabilities.md): visual score/coverage dashboard, question-by-repeat explorer, compatible paired comparisons, offline pinned suites and audit imports.
 - [Architecture](architecture.md): components and data flow.
 - [API](api.md): local HTTP interface and side effects.
 - [FAQ](faq.md): common interpretation questions.

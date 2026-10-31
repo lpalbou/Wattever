@@ -12,6 +12,7 @@ from http.server import ThreadingHTTPServer
 
 from wattever import __version__, hardware, server, store
 from wattever.validation import validate_run
+from wattever.privacy import public_projection
 
 
 class StorageTests(unittest.TestCase):
@@ -111,9 +112,12 @@ class StorageTests(unittest.TestCase):
             try:
                 base = "http://127.0.0.1:%d/api/runs/sample" % httpd.server_port
                 with urllib.request.urlopen("http://127.0.0.1:%d/api/version" % httpd.server_port) as response:
-                    self.assertEqual(json.load(response), {"application": "Wattever", "version": __version__})
+                    information = json.load(response)
+                    self.assertEqual(information["application"], "Wattever")
+                    self.assertEqual(information["version"], __version__)
+                    self.assertEqual(information["build_id"], server.BUILD_ID)
                 with urllib.request.urlopen(base + "/download") as response:
-                    self.assertEqual(json.load(response), self.run)
+                    self.assertEqual(json.load(response), public_projection(self.run))
                     self.assertIn('filename="sample.json"', response.headers["Content-Disposition"])
                 with self.assertRaises(urllib.error.HTTPError) as rejected:
                     urllib.request.urlopen(urllib.request.Request(base, method="DELETE"))

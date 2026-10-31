@@ -1,23 +1,25 @@
 ---
 name: wattever
-description: Operate Wattever local LM Studio benchmarks and interpret GPU throughput and power results. Use when inspecting sessions, planning workloads, or using its local HTTP API.
+description: Operate Wattever throughput and rule-scored capability benchmarks against streaming LLM endpoints. Use for managed LM Studio or generic endpoint runs, pinned GSM8K/ARC task evaluation, public model identities, live telemetry, comparisons, audit imports and shareable JSON through the local HTTP API.
 license: MIT
-compatibility: Python 3.9+, LM Studio, local Wattever server; Windows, Linux, or macOS.
+compatibility: Python 3.9+ and local Wattever server; streaming Chat Completions endpoint or managed LM Studio; Windows, Linux, or macOS.
 metadata:
-  package-version: "2.4.1"
+  package-version: "unreleased"
 ---
 
 # Wattever
 
 ## Purpose and limits
 
-Use Wattever to measure LM Studio prefill, decode and optional GPU power across models, prompt lengths and simultaneous queries. GPU sensor selection does not control inference placement; configure placement in LM Studio. GPU and system estimates are not wall-meter readings. Compare matching settings, model builds, corpus and protocol; inspect session provenance for mixed planner versions. The hosted browser mode uses a separate client-timed protocol and is not directly comparable to the helper.
+Use Wattever to benchmark managed LM Studio or generic OpenAI-compatible streaming Chat Completions across models, prompt lengths and simultaneous queries. Optional `/models` discovery can be replaced by manual served IDs. Other OpenAI API surfaces are not benchmarked. Configure generic endpoint placement, context/KV cache, quantization, reasoning and MTP in its inference engine. GPU sensor selection does not control placement. GPU and system estimates are not wall-meter readings. Compare matching settings, builds, corpus, timing sources and protocol. Hosted browser mode uses a separate client-timed protocol.
+
+Optional `endpoint_reasoning_effort` requests the standard API field (`none`, `minimal`, `low`, `medium`, `high`, `xhigh`). Throughput API default null omits it; UI and capability API default to `none`. Provider support varies and effective behavior remains unverified. Short budgets can end during hidden reasoning before a visible answer. Never infer token counts from empty stream chunks.
 
 ## Install and verify
 
-Extract the v2.4.1 release source archive or clone `https://github.com/lpalbou/Wattever.git`; install Python 3.9+ and LM Studio, download models and run `lms bootstrap`. Launch `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux, or run `python -m wattever.server` from the repository. Keep the server open. Starting can reuse an existing instance and replace an idle older instance; do not restart it while a benchmark is active.
+Clone `https://github.com/lpalbou/Wattever.git` for the unreleased helper endpoint surface and install Python 3.9+. Start an inference engine and load its model. For managed LM Studio only, download models and run `lms bootstrap`. Launch `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux, or run `python -m wattever.server` from the repository. Keep the server open. Starting can reuse an existing instance and replace an idle older instance; do not restart it during an active benchmark. The v2.4.1 archive predates generic helper support.
 
-Check the printed URL with this read-only probe. Replace the URL with the printed address; the server may select a different port. Compare the printed version with `metadata.package-version`; the installed version's documentation wins when they differ.
+Check the printed URL with this read-only probe. Replace the URL with the printed address; the server may select a different port. Require a build ID plus endpoint/capability feature flags for this unreleased surface. The installed surface's documentation wins when it differs from the skill. Restart the complete helper and reload the page after code updates; an identified idle build can be replaced by the launcher, while active speed/capability work is preserved. Do not stop the inference engine merely to refresh Wattever.
 
 ```python
 import json
@@ -28,9 +30,15 @@ base = "http://127.0.0.1:8713"  # Replace with the printed local URL.
 try:
     with urllib.request.urlopen(base + "/api/version", timeout=3) as response:
         data = json.load(response)
-    if not isinstance(data, dict) or data.get("application") != "Wattever" or not data.get("version"):
+    if not isinstance(data, dict) or data.get("application") != "Wattever" or not data.get("version") or not data.get("build_id"):
         raise ValueError("Not a Wattever version response")
-    print("Wattever", data["version"])
+    print("Wattever", data["version"], "build", data["build_id"])
+    with urllib.request.urlopen(base + "/api/env", timeout=15) as response:
+        environment = json.load(response)
+    if "openai" not in environment.get("capabilities", {}).get("providers", []):
+        raise ValueError("This helper does not expose the generic endpoint provider")
+    if not environment.get("capabilities", {}).get("capability_benchmarks"):
+        raise ValueError("This helper does not expose capability evaluation")
 except (urllib.error.URLError, OSError, ValueError) as exc:
     print("Wattever unavailable or invalid response:", exc)
     raise SystemExit(1)
@@ -39,8 +47,8 @@ except (urllib.error.URLError, OSError, ValueError) as exc:
 ## Mental model
 
 - One benchmark file contains cases (model, Standard/MTP mode, prompt size, concurrency, repeat) and execution sessions. Live results appear as cases finish.
-- Defaults: one query, one repeat, 256 output tokens, per-test context, 512 headroom and 5% prompt margin. Shared KV capacity scales with concurrency. Fixed context uses the largest allocation per model and mode.
-- MTP is off by default and requires a supported bundled head. Warmup is on; placement prefers GPU with fallback. Load and test timeouts default to 900 and 1800 seconds.
+- Defaults: one query, one repeat and 256 output tokens. Managed LM Studio uses per-test context, 512 headroom and 5% prompt margin; shared KV capacity scales with concurrency. Fixed context uses the largest allocation per model/mode.
+- Managed MTP is off by default and needs a supported bundled head. Warmup is on; managed placement prefers GPU with fallback. Load and test timeouts default to 900 and 1800 seconds. Generic technique states remain unknown; the engine controls them and no fallback reload occurs.
 - Errors return JSON `error` with HTTP 400 for invalid inputs or conflicts, 404 for missing runs, 409 for active-run edits or deletion, and 500 for unexpected failures. Handle connection and JSON errors too.
 
 ## Capability map
@@ -48,39 +56,93 @@ except (urllib.error.URLError, OSError, ValueError) as exc:
 - Hosted browser mode: open `https://lpalbou.github.io/Wattever/`, connect explicitly to an OpenAI-compatible endpoint, and use browser storage and JSON import/export. It requires CORS and may require browser local-network permission. No helper install is needed. The optional key is memory-only; do not put it in conversation or result files.
 - The hosted Results catalog is read-only and needs no provider connection. Hiding a shared entry is browser-local. To contribute, submit its JSON in a GitHub pull request; the hosted site does not write to GitHub.
 - Read version, environment, models, status, events and runs via GET endpoints in the API reference. `GET /api/bench/extend-plan?run_id=<id>` returns extension options.
-- Start, cancel, resume, preview and extend through `/api/bench/*`; these execute inference or change state except planning. Add missing, retry failed/skipped, or rerun selected cases.
+- Start/cancel through `/api/bench/*`. Managed LM Studio additionally supports resume and same-file extension: add missing, retry failed/skipped or rerun selected cases. Generic runs require reconnection and a new run.
 - Edit metadata, delete to local trash, export JSON/CSV, start or unload LM Studio, and stop Wattever through the local API. Results and snapshots are written under `results/`.
 - There is no control of LM Studio placement through the GPU sensor index and no combined measurement of all GPUs. Hardware discovery and power availability are best effort.
-- Browser mode has manual hardware descriptions and no power telemetry, model load/unload, MTP or reasoning control, resume or same-file extension. Provider settings govern model execution and context. Closing the page stops its run; download in-memory results if storage fails.
+- Helper benchmarks automatically embed storage-to-RAM and pinned RAM-to-VRAM transfer probes. `POST /api/hardware/bandwidth` runs them independently; optional `gpu_index` and private `storage_probe_directory` choose the GPU sensor and an existing test folder. Add `run_id` for a backed-up later annotation on matching hardware/GPU/driver; its timestamp does not establish historical conditions. Browser-only mode cannot run native probes.
+- `POST /api/bench/link` with `run_ids` and a public `label` groups stopped runs on matching hardware/GPU/driver; generic endpoints require explicit local inference attribution. Put the root run first and include all desired members. Results can open the whole group for comparison/export while retaining per-run engine identities and settings.
+- Browser mode has manual hardware descriptions and no power telemetry, model load/unload, MTP allocation, resume or same-file extension. It can request standard reasoning effort but cannot verify effective behavior. Provider settings govern execution/context. Closing the page stops its run; download in-memory results if storage fails.
+- Capability API `/api/capabilities/*`: list suites/runs/status/events, start/cancel sequential rule-scored tests, import/re-score audit files, export public JSON. Helper tests use separate `results/capabilities/` storage. Hosted mode supports their shared library/export/comparison but cannot launch tests or validate capability imports. Only one speed/capability run executes at a time.
 
 ## Workflow
 
-1. Inspect `/api/version`, `/api/status`, `/api/env` and `/api/models` before acting. An empty model list means check the LM Studio server and downloaded models.
+1. Inspect `/api/version`, `/api/status` and `/api/env`. Choose managed LM Studio or a generic endpoint. For generic discovery, POST connection fields to `/api/endpoint/check`; discovery failure permits manual served IDs. Do not mistake the helper's default LM Studio `/api/models` list for generic discovery.
 2. Choose the requested models, sizes, concurrency and placement. Starting a run can take a long time, load and unload models and write files. Never interrupt an active run for inspection.
 3. Use the Run page or `POST /api/bench/start` with the chosen configuration. Poll `/api/events?cursor=0`, then pass back the returned cursor, or read `/api/status`. Read the saved run by ID after completion and report failures and missing power honestly.
-4. For a continuation, use **Add / rerun tests** in Results or obtain extension options and submit a plan with `run_id`, `model_modes` (IDs mapped to arrays of `off`/`on`), `sizes`, `concurrency_levels`, and optional boolean `retry_failed` or `rerun_existing`. Review plan counts before `POST /api/bench/extend` with the same selection. Default adds missing cases; retries include failed and skipped; rerun includes successes. Each replaced case moves to `previous_attempts` and is not averaged with the replacement. An exact snapshot is kept in `results/.history/`.
+4. For managed LM Studio continuation only, use **Add / rerun tests** or obtain extension options and submit a plan with `run_id`, `model_modes` (IDs mapped to arrays of `off`/`on`), `sizes`, `concurrency_levels`, and optional boolean `retry_failed` or `rerun_existing`. Review plan counts before `POST /api/bench/extend`. Replaced cases move to `previous_attempts`; an exact snapshot is kept in `results/.history/`. Generic endpoints start new runs.
 5. Compare only compatible results. Extension and resume check hardware, GPU/driver, corpus and LM Studio version. Review a result before sharing it.
+
+## Task accuracy workflow
+
+Capability generation controls are separate from speed tests. Default to a 32,768-token total thinking-and-answer budget and no wall-clock deadline (`timeout_s: 0`); Stop still cancels. Observe loaded-context/provider limits and truncation before interpreting quality. A completed but empty final answer is a task/output-limit failure, not a transport error. Preserve historical audits; never invent lost finish reasons or silently retry failed items with a larger budget under the same evaluation identity.
+
+Connect in Run first; endpoint display name and opaque route ID are supplied automatically. Do not ask the user to invent an ID or label. Use `canonical_model_id` when a served alias is ambiguous. Record known quantization, engine/version, model revision, actual context/KV and reported MTP/reasoning. Public `model_configuration` distinguishes requested/reported/effective/unknown states, and `configuration_id` checks consistency, not weight authenticity or proof of execution.
+
+List `GET /api/capabilities/suites` and check its running `runner.completion_policy`, defaults and limits. An absent or unsupported policy requires relaunching the helper before starting evaluations or validating imports; browser refresh alone does not reload Python. Then POST a configuration such as this to `/api/capabilities/start` only when authorized to run inference:
+
+```json
+{"provider":"openai","endpoint_base_url":"http://127.0.0.1:8000/v1","model":"<served-model-id>","suite_id":"gsm8k-test-chat-v1","sample_size":50,"repeats":1,"seed":0,"temperature":0,"top_p":1,"endpoint_reasoning_effort":"none","max_tokens":32768,"timeout_s":0,"endpoint_inference_local":false}
+```
+
+Use `wattever-core-v1` for 24 original functional tasks, `gsm8k-test-chat-v1` for 1,319 test math questions, or `arc-challenge-test-chat-v1` for 1,172 test science questions. This is AI2 school-science multiple choice, distinct from ARC-AGI grids. Report the exact subset size and first-repeat interval; do not treat a small high-scoring subset as a full-suite result or a general intelligence score. Dataset files/counts are checksum pinned and loaded offline; GSM8K is MIT, ARC/its chat adaptation is CC BY-SA 4.0. `sample_size: 0` selects the full suite; smaller seeded subsets retain exact IDs/digests. Full suites can take substantial time/provider usage. The default requested generation budget is 32,768 tokens shared by reasoning and final output; inspect server context limits and compare identical declared budgets. `token_limit_field` can explicitly select `max_completion_tokens` if required by the endpoint.
+
+Poll `/api/capabilities/status` or `/api/capabilities/events?cursor=0`; fetch `/api/capabilities/runs/<id>` when done. Each item gets a fresh sequential chat; no model lifecycle or MTP control is performed for either provider. Seed determines item selection; API seed is omitted unless `send_seed: true`, which requests seed+repeat with determinism unverified. Top-p defaults omitted; null temperature/top-p omit their fields. Local telemetry requires an explicit true assertion for all capability providers. Timeout/cancel stops subsequent tasks and blocks other work while a request worker remains active; inspect the endpoint rather than assuming cancellation succeeded.
+
+Grade visible answers only with deterministic exact/typed-JSON/numeric-final/choice rules. No generated code or model judge runs. Length truncation is incorrect; transport errors and cancellation are unscored. Successful completions without a final answer are failed task answers; terminal length means an output-limit failure. Report correct/scored with planned/attempted/errors/truncations; `penalized_accuracy` is correct/planned. Wilson 95% intervals use distinct first-repeat items, not pooled repeats. Correlated public tasks are not representative intelligence samples; repeated responses are dependent. These zero-shot chat adaptations are not official few-shot or likelihood leaderboard protocols.
+
+Use the visual dashboard to review strict rule pass rate, correct/planned, evaluation coverage and issues together. Category bars, outcome-ring segments and repeat points filter the question explorer. Combine category/outcome/repeat/text filters; the question-by-repeat matrix paginates 12 questions per page. Select a cell to read the prompt, expected output, actual visible answer and rule explanation. Copy or navigate matching attempts; raw grading/usage/timing stay under **Grading evidence & request metadata**. Inspect an exact-text failure before reporting a reasoning failure: `The answer is 528.` contains the expected number but fails a task requiring only `528`. Errors and unrecorded attempts are not wrong answers, and an error followed by a pass does not demonstrate answer variance.
+
+Compare matching `evaluation_key` values and declared suite/scoring/subset/sampling/budget settings, then review configuration and coverage. The paired percentage-point change is compared result minus baseline, over matching item-ID/repeat pairs scored in both runs. Exclude errors and ungraded records from paired wins/losses; unmatched repeats stay outside that denominator. Different protocols can be viewed descriptively but must not receive a fair paired-delta claim. Use recorded first-repeat intervals only; the dashboard changes no scoring rules or independence assumptions.
+
+For a live API dashboard, fetch `/api/capabilities/runs/<id>` once to obtain the suite manifest and existing results, then apply `/api/capabilities/events?cursor=<cursor>` result events by item ID and repeat. Retain the returned cursor; fetch the final saved run after completion. Preserve the user's selected result, question filters and focused input while applying updates. Aggregate-only historical files have no reconstructed item audit.
+
+Export `/api/capabilities/runs/<id>/download` or `/export.json?ids=<id>`. Import POST `/api/capabilities/import` accepts one run or `{"capability_runs":[...]}`; it re-scores full audit answers and checks identities/suite/protocol/subsets. Redacted answers cannot be imported as independently scored audits. Review prompts, expected answers, sources and generated text before sharing. Fingerprints do not authenticate the operator or actual model.
+
+Live telemetry describes whole-client load plus one GPU, including competitors. CPU/RAM sampling continues without GPU sensors; missing CPU temperatures are normal. Saved history is a 3,600-point recent ring, about nine minutes at 150 ms, with explicit dropped counts. Whole-run observed means/peaks/coverage remain preserved. Early/late clock/temperature drift is an observation, not proof of throttling or sustained model speed. Charts separate metrics with different units.
 
 ## Rules and sharp edges
 
-Do not start, cancel, unload models, delete runs, or shut down a server without authorization for that action. A benchmark is resource intensive and modifies LM Studio state. The selected sensor measures one GPU only. Missing power remains unavailable. Model execution may use other GPUs or CPU; record the actual setup. Failed and skipped cases are results, not zero performance. An extended legacy benchmark can contain different planner versions; inspect each session.
+For generic helper use, send this JSON to `/api/endpoint/check` to discover without inference; then add `models`, `sizes`, `concurrency_levels`, `max_tokens` and `repeats` and POST to `/api/bench/start` when authorized to benchmark:
 
-The helper applies a deadline based on prior comparable prefill and a decode inactivity limit. It verifies model unload and request worker exit before continuing; if recovery cannot be verified it stops. Browser timeouts abort requests and stop the run but cannot verify provider-side cancellation or unload; check the provider before restarting.
+```json
+{"provider":"openai","endpoint_base_url":"http://127.0.0.1:8000/v1","endpoint_inference_local":false}
+```
+
+A root URL gets `/v1`; an explicit API base path stays unchanged. Never supply an individual route, embedded credentials, query or fragment. Optional `endpoint_api_key_env` is only an environment-variable name; have the user set its secret outside conversation before starting the helper. Missing variables fail validation. `endpoint_inference_local` defaults false even for loopback; set true only with evidence/authorization that inference executes on the client. Only then is client power attributed to inference.
+
+Connect and direct starts resolve endpoint display name/opaque ID automatically. Recognized official cloud hosts and explicit service metadata provide evidence; bounded local/private health/props/version GETs never use ports or model aliases to guess software. Unknown software uses Local/Private/Remote endpoint. Naming provenance is `detected`, `inferred`, `operator_override` or `unknown`; route location does not prove inference location. Optional `endpoint_name_override` changes one public display name; legacy explicit `endpoint_id`/`endpoint_label` remain accepted, and historical `user_reported` fingerprints remain supported. Never require users to populate two naming fields.
+
+Canonical known public API routes use stable public provider IDs for aggregation. Other routes, including custom cloud paths, map operational base URLs to random IDs in the ignored private helper registry `results/.endpoint-routes.json` or browser local storage. URLs are not hashed into public IDs or fingerprints. Do not export/share that registry; clearing it/storage can regenerate its IDs. Provider branding does not verify backend software/weights. Optional names must not include connection URLs, addresses or credentials.
+
+Public outputs omit endpoint URLs, key variable names and keys. Review free-text labels/notes/model names/sources before sharing. Hardware inventory describes the client and carries additive `metadata_schema_version: 1` within compatible benchmark schema 2. Optional `reproducibility` records user-reported engine/version, model revision, quantization, actual context/KV settings and draft count; it does not configure the engine. Optional `performance_claims` require source, arithmetic precision, execution path, sparsity and peak/measured/estimate kind. Use TOPS for INT4/INT8 and TFLOP/s for floating precision. Never infer compute precision from weight quantization or invent a peak from a GPU name.
+
+Client `prefill_tps` is prompt tokens/TTFT including overhead and unobserved reasoning, not isolated engine compute. Keep `reported_timings` separate. Inspect `timing_scope` and `decode_token_count`: unstreamed reported reasoning is excluded from decode, and ambiguous hidden reasoning can leave decode unavailable. Missing `cached_prompt_tokens` means unknown cache usage. Generic missing token usage means unavailable throughput; chunks are not tokens. PCIe encoding ceilings are theoretical one-direction limits, not measured DMA or memory bandwidth; link snapshots can downshift at idle.
+
+Do not start, cancel, unload models, delete runs, or shut down a server without authorization for that action. A benchmark is resource intensive; managed operation modifies LM Studio state and remote inference may incur provider charges. The selected sensor measures one GPU only. Missing power remains unavailable. Model execution may use other GPUs or CPU; record the actual setup. Failed and skipped cases are results, not zero performance. An extended legacy benchmark can contain different planner versions; inspect each session.
+
+Managed helper recovery verifies model unload and request worker exit before continuing. Generic helper and browser timeouts stop the run and cannot verify provider-side cancellation or unload; check the engine before restarting.
 
 ## When things fail
 
-- No models: start LM Studio and confirm downloads and `LMS_BASE_URL`.
+- No models: for managed LM Studio check downloads and `LMS_BASE_URL`; for generic endpoints check API base/authentication or enter served IDs manually.
 - CLI missing: run `lms bootstrap` and relaunch.
 - Power unavailable: check `nvidia-smi`; on macOS optional `powermetrics` requires authorization. Speed can still be measured.
-- Context/load failure: reduce size or concurrency, or choose a smaller model. Retry after changing conditions.
+- Context/load failure: reduce size/concurrency or adjust the external engine's allocation. Missing generic throughput requires streamed server usage, not chunk counting.
 - Extension compatibility error: start a separate benchmark when hardware, driver, corpus or LM Studio version differs or cannot be verified.
 
 ## Go deeper
 
-- [Getting started](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/docs/getting-started.md): setup and first run.
-- [Browser mode](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/docs/browser.md): hosted setup and limitations.
+- [Getting started](https://raw.githubusercontent.com/lpalbou/Wattever/main/docs/getting-started.md): setup and first run.
+- [Browser mode](https://raw.githubusercontent.com/lpalbou/Wattever/main/docs/browser.md): hosted setup and limitations.
 - [Sharing results](https://raw.githubusercontent.com/lpalbou/Wattever/main/docs/sharing-results.md): contributions and continuing helper benchmarks.
-- [Measurements](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/docs/measurements.md): metric boundaries and session semantics.
-- [API](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/docs/api.md): routes and side effects.
-- [Troubleshooting](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/docs/troubleshooting.md): symptoms and remedies.
-- [Full documentation](https://raw.githubusercontent.com/lpalbou/Wattever/v2.4.1/llms-full.txt): complete context.
+- [Measurements](https://raw.githubusercontent.com/lpalbou/Wattever/main/docs/measurements.md): metric boundaries and session semantics.
+- [Capability evaluation](https://raw.githubusercontent.com/lpalbou/Wattever/main/docs/capabilities.md): datasets, grading, public identity, uncertainty and audit files.
+- [API](https://raw.githubusercontent.com/lpalbou/Wattever/main/docs/api.md): routes and side effects.
+- [Troubleshooting](https://raw.githubusercontent.com/lpalbou/Wattever/main/docs/troubleshooting.md): symptoms and remedies.
+- [Full documentation](https://raw.githubusercontent.com/lpalbou/Wattever/main/llms-full.txt): complete context.
+
+## Repair and extend managed benchmarks
+
+Preview with `POST /api/bench/extend-plan` before executing `POST /api/bench/extend`. Include `run_id`, `model_modes`, `sizes`, `concurrency_levels` and the desired total `repeats` (at least the saved count, at most 100). Add missing slots by default; use `retry_failed: true` to retry failed/skipped cases while retaining successful ones. For one exact replacement, pass `selected_cases: [[model_id, false, concurrency, target_tokens, zero_based_repeat]]` and `rerun_existing: true`. Optional `per_test_timeout_s` (1..7200) changes only the new execution session's budget. Selection stays session-local; backups and previous attempts preserve history. These calls require authorization to run inference.
+
+Set `fallback_on_failure: false` to keep the requested placement after load failures. Opt-in `skip_after_timeout: true` skips remaining repeats and larger contexts after a timeout; describe that as a practical budget boundary, not a proven OOM. Managed requests honor the configured timeout. Timeouts and transient request errors do not imply a capacity limit or suppress later repeats. Quantization format and method are separate: retain `quantization_method` and its provenance alongside `quantization`; never infer QAT/PTQ from bit width. Catalog backfills describe current labels and do not verify historical weights.

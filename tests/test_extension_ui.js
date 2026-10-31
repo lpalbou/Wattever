@@ -27,6 +27,15 @@ vm.runInContext(`
   const fresh=extensionModelProgress(extension,models[2]);
   if(fresh.ok!==0 || fresh.unfinished!==2) throw Error('New models start without measured cases');
   if(!extensionProgressMarkup(extension,models[1]).includes('Not installed')) throw Error('Unavailable benchmark models remain visible');
+  const append={sourceConfig:{models:['m'],repeats:1,mtp_modes:['off']},repeats:2,modelModes:{m:['off']},sizes:new Set([512]),concurrency:new Set([1]),source:{results:[{model:'m',target_tokens:512,concurrency:1,repeat:0,status:'ok'}]}};
+  if(extensionModelProgress(append,{id:'m'}).unfinished!==1 || extendBody(append).repeats!==2) throw Error('Increasing repeats appends one slot');
+  append.timeout=3600;
+  if(extendBody(append).per_test_timeout_s!==3600) throw Error('Repair timeout is recorded in the new session payload');
+  append.selectedCases=[['m',false,1,512,0]];append.action='rerun';
+  if(extensionModelProgress(append,{id:'m'}).total!==1 || extensionModelProgress(append,{id:'m'}).ok!==1) throw Error('Individual repair progress stays scoped');
+  if(extendBody(append).selected_cases[0][4]!==0 || !extendBody(append).rerun_existing) throw Error('Individual repair payload');
+  if(!quantizationLabel({model:'google/gemma-4-12b-qat',quantization:'Q4_0'}).endsWith('QAT')) throw Error('Historical QAT label');
+  if(!modelSubtitle([{results:[{model:'m',quantization:'Q4_0'}]},{results:[{model:'m',quantization:'Q8_0'}]}],'m').includes('Q8_0')) throw Error('Comparison retains all formats');
   const legacyCfg={models:['m'],repeats:1,mtp_modes:[true,'on']};
   const legacySelection=originalModelSelection(legacyCfg,models);
   if(legacySelection.m.join()!=='on') throw Error('Legacy technique aliases normalize before deduplication');

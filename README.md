@@ -1,6 +1,6 @@
 # Wattever
 
-Wattever measures local LLM prefill and decode throughput and GPU power with LM Studio. It records successes and failures across prompt sizes, models and simultaneous query counts, and compares sessions in a browser UI. Use the hosted browser mode with an OpenAI-compatible endpoint, or the full local helper with Python 3.9+ and LM Studio. Wattever uses the Python standard library and local JavaScript without a package installation or CDN.
+Wattever benchmarks LLM endpoints across prompt sizes, models and simultaneous query counts, and compares successes and failures in a browser UI. Connect the local Python helper or hosted browser to an OpenAI-compatible streaming Chat Completions endpoint, including Strata, llama.cpp and LM Studio. The helper also offers managed LM Studio model loading and optional local GPU power measurements. Wattever uses Python 3.9+, the Python standard library and local JavaScript without a package installation or CDN.
 
 ## Browser quick start
 
@@ -8,16 +8,24 @@ Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/), start an O
 
 ## Full local helper quick start
 
-1. Install LM Studio, download the models you want to test, and run `lms bootstrap` once so the `lms` command is available.
-2. Get the [v2.4.1 source archive](https://github.com/lpalbou/Wattever/releases/tag/v2.4.1) or clone the repository. The source archive includes historical tracked results.
+1. Start your inference engine and load a model. For managed LM Studio operation, install LM Studio, download models and run `lms bootstrap` once. Other endpoints do not need LM Studio.
+2. Clone the repository for the endpoint helper features described here. The [v2.4.1 source archive](https://github.com/lpalbou/Wattever/releases/tag/v2.4.1) documents that historical release and predates these helper features.
 3. On Windows run `Wattever.bat`; on macOS run `Wattever.command`; on Linux run `sh Wattever.sh`. Alternatively run `python -m wattever.server` from the repository.
-4. Open the displayed local URL, select models and workloads on **Run**, and start. Leave the server running until the benchmark finishes. Results appear as cases complete.
+4. Open the displayed local URL. On **Run**, choose **OpenAI-compatible endpoint**, enter your API base URL and use **Connect / discover models**. Wattever identifies the endpoint where evidence is available and supplies its display name automatically; no manual label or ID is required. Enter a model ID manually if discovery is unavailable. Choose workloads and start. Leave the server running until the benchmark finishes.
 
-See [Getting started](docs/getting-started.md) for setup and [Measurements and sessions](docs/measurements.md) for interpretation and extending a benchmark. GPU monitoring selects a sensor only: configure actual model placement in LM Studio and record GPU setup notes. Power is measured for the selected GPU, not every GPU.
+See [Getting started](docs/getting-started.md) for both provider modes and [Measurements and sessions](docs/measurements.md) for interpretation. The inference engine controls model quantization, context, KV cache and speculative decoding. GPU monitoring selects a sensor only. Generic endpoint power measurements require an explicit assertion that inference runs on the benchmark computer; remote inference power remains unavailable.
 
-**Results** provides Summary, Table and Compare views with common benchmark, model, measure and concurrency filters. Tables can be copied as tab-separated text. In helper mode, use **Add / rerun tests** to extend a benchmark or replace selected cases. One JSON file stores each benchmark; download it from Results or share it as described in [results guidance](results/README.md). Review its contents before publication.
+**Results** provides Summary, Table and Compare views with common benchmark, model, measure and concurrency filters. Tables can be copied as tab-separated text. Managed LM Studio runs support **Add / rerun tests**; generic endpoints use new runs. One JSON file stores each benchmark. Optional reproducibility settings and sourced compute claims accompany detected hardware without being presented as detected measurements. Review JSON before publication; see [results guidance](results/README.md).
 
 The hosted Results view also includes a shared catalog that you can browse without connecting a model provider. See [sharing results](docs/sharing-results.md) to contribute your benchmark or add missing tests later.
+
+## Capability tests and live telemetry
+
+The helper's **Capabilities** tab runs original Core tasks, the pinned 1,319-question GSM8K test split, or the 1,172-question ARC-Challenge test split. Choose a deterministic subset or the full suite and compare auditable rule-scored answers. These are zero-shot chat adaptations, not official leaderboard scores or intelligence rankings. Requested reasoning, reported MTP/quantization and unknown effective settings remain distinct in public model/endpoint configuration fingerprints. See [capability evaluation](docs/capabilities.md) for scoring, dataset licenses and uncertainty.
+
+Its visual dashboard combines strict pass rate, correct/planned and coverage tiles with category bars, an outcome ring and repeat comparisons. Select a chart to filter the paginated question-by-repeat matrix, then open a cell to inspect the question, expected output, model response and rule explanation. Matching evaluation protocols support paired comparisons that exclude unscored requests. A format mismatch or request error is shown distinctly from a passed answer; inspect the evidence before drawing conclusions about reasoning.
+
+Local runs can display CPU/GPU utilization, RAM/VRAM usage, available temperatures, GPU clocks and power. Saved telemetry includes a bounded recent history and whole-run observed means/peaks/coverage; early/late changes are observations, not a throttling diagnosis. Results charts separate selected metrics into individual graphs. The hosted site can browse/export/compare shared capability results; launching tests and validating capability imports require the helper.
 
 ## Documentation
 
@@ -25,6 +33,6 @@ The hosted Results view also includes a shared catalog that you can browse witho
 
 ## For AI agents
 
-Register and use the [Wattever agent skill](https://github.com/lpalbou/Wattever/tree/v2.4.1/skills/wattever) to operate the local API safely. Copy `skills/wattever/` from the version you use into your agent's skills directory.
+Register and use the [Wattever agent skill](skills/wattever/SKILL.md) to operate the local API. Copy `skills/wattever/` from the version you use into your agent's skills directory.
 
 Wattever is [MIT licensed](LICENSE).

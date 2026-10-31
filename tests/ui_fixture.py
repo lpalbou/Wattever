@@ -1,12 +1,13 @@
 import sys, tempfile, threading
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from wattever import server, store, runner
+from wattever import server, store, runner, capabilities
 from http.server import ThreadingHTTPServer
 session = tempfile.TemporaryDirectory()
 store.RUNS_DIR = session.name + '/runs'
 store.TRASH_DIR = session.name + '/trash'
 store.CONFIG_PATH = session.name + '/config.json'
+capabilities.RUNS_DIR = session.name + '/capabilities'
 run = {'id':'smoke', 'label':'NVIDIA GeForce RTX 5060 Ti', 'created_at':'2026-10-26T12:00:00+00:00', 'status':'completed', 'gpu':{'name':'NVIDIA GeForce RTX 5060 Ti','vram_total_mb':16384, 'power_readable':True}, 'host':{'cpu':'Smoke CPU','ram_gb':32}, 'config':dict(runner.DEFAULT_CONFIG, models=['model-a']), 'results':[{'model':'model-a','target_tokens':512,'status':'ok','concurrency':1,'prefill_tps':100,'decode_tps':50}, {'model':'model-a','target_tokens':512,'status':'ok','concurrency':2,'aggregate_completion_tps':75,'completed_requests':2,'requests':[{'status':'ok','decode_tps':40,'prompt_tokens':512},{'status':'ok','decode_tps':35,'prompt_tokens':512}]}]}
 run['results'].extend([
     {'model':'model-b','target_tokens':512,'status':'ok','concurrency':1,'prefill_tps':150,'decode_tps':60},
@@ -15,6 +16,13 @@ run['results'].extend([
 for row in run['results']:
     if row.get('concurrency', 1) == 1:
         row['ttft_s'] = 0.5
+run['telemetry'] = {
+    'summary': {'observations': 4, 'metrics': {
+        'gpu_util': {'mean': 60, 'max': 80, 'last': 80, 'early_60s_mean': 50, 'late_60s_mean': 70, 'late_minus_early': 20, 'coverage_fraction': .95},
+        'temp_c': {'mean': 60, 'max': 65, 'last': 65, 'early_60s_mean': 58, 'late_60s_mean': 62, 'late_minus_early': 4, 'coverage_fraction': .95}}},
+    'history': {'retention': {'retained_points': 4, 'total_observations': 4}, 'points': [
+        {'elapsed_s': i, 'gpu_util': 40 + 10*i, 'cpu_util_percent': 20+i, 'system_memory_percent': 40+i,
+         'vram_percent': 70+i, 'temp_c': 58+i, 'cpu_temp_c': 50+i} for i in range(4)]}}
 store.save(run)
 import copy
 comparison = copy.deepcopy(run)
@@ -55,6 +63,9 @@ class FakeBench:
         self.events.append(dict(payload, kind=kind, seq=len(self.events)))
 
 server.BENCH = FakeBench()
+# Every benchmark in this fixture is simulated. Keep the isolated UI test
+# independent of jobs running in a real helper on the same workstation.
+server._other_helper_running = lambda current_port: False
 
 class Handler(server.Handler):
     def do_GET(self):
@@ -62,6 +73,9 @@ class Handler(server.Handler):
             return self._json(server.BENCH.last_extension)
         return super().do_GET()
     def do_POST(self):
+        if self.path == '/api/endpoint/check':
+            self._body()
+            return self._json({'ok': True, 'models': [{'id': 'external/model', 'type': 'llm', 'quantization': 'IQ3_S', 'quantization_source': 'endpoint_reported', 'max_context_length': 32768}]})
         if self.path == '/test/start':
             live = copy.deepcopy(run)
             live.update(id='live', label='Ongoing benchmark', created_at='2026-11-01T12:00:00+00:00', status='running', results=[])

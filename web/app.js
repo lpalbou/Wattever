@@ -29,6 +29,8 @@ const state = {
   idleWatcher: null,
   benchmarkRunning: false,
   extension: null,
+  detectedEndpoint: null,
+  detectedEndpointProvider: null,
 };
 
 const CONCURRENCY_PRESETS = [...Array.from({length: 10}, (_, i) => i + 1), 15, 20, 30, 40, 50, 75, 100];
@@ -58,6 +60,97 @@ function fmtDuration(seconds) {
 }
 
 function browserMode() { return typeof window !== "undefined" && window.WATTEVER_STATIC === true; }
+function genericHelper() { return !browserMode() && $("#helper-provider")?.value === "openai"; }
+function providerManaged() { return browserMode() || genericHelper(); }
+function runProviderManaged(run) { return run.measurement_mode === "browser" || run.config?.provider === "openai"; }
+function helperEndpointConfig() {
+  const provider=browserMode()?"openai":$("#helper-provider")?.value || "lmstudio";
+  const override=$(browserMode() ? "#browser-name-override" : "#helper-name-override")?.value.trim() || "";
+  const identity=state.detectedEndpointProvider && state.detectedEndpointProvider!==provider?null:state.detectedEndpoint;
+  const publicIdentity={endpoint_id:identity?.id || "",endpoint_label:override || identity?.label || "",
+    endpoint_identity:identity || undefined,endpoint_name_override:override};
+  if (browserMode()) return {provider:"openai",...publicIdentity};
+  if(provider==="lmstudio")return {provider,...publicIdentity,endpoint_inference_local:!!$("#helper-local")?.checked};
+  return {provider,
+    endpoint_base_url: $("#helper-url")?.value.trim() || "",
+    endpoint_api_key_env: $("#helper-key-env")?.value.trim() || "",
+    ...publicIdentity,
+    endpoint_inference_local: !!$("#helper-local")?.checked};
+}
+function rememberEndpoint(payload,provider) {
+  state.detectedEndpointProvider=provider;
+  const identity=payload?.endpoint_identity || payload?.provider?.identity || payload?.lms?.endpoint_identity;
+  state.detectedEndpoint=identity && typeof identity === "object" ? identity : provider === "lmstudio" ? {id:"lmstudio",label:"LM Studio",source:"declared_provider"} : null;
+  return state.detectedEndpoint;
+}
+function helperConnectionSignature() {
+  const config = helperEndpointConfig();
+  return JSON.stringify({provider:config.provider,base:config.endpoint_base_url,keyEnv:config.endpoint_api_key_env,
+    model:$("#helper-model")?.value.trim() || "",local:config.endpoint_inference_local});
+}
+function addComputeClaim() {
+  const node = document.createElement("div"); node.className = "row compute-claim";
+  node.innerHTML = '<div class="field"><label>Precision<select data-claim="precision"><option>FP4</option><option>INT4</option><option>FP8</option><option>INT8</option><option>FP16</option><option>BF16</option><option>FP32</option></select></label></div><div class="field"><label>Throughput<input data-claim="value" type="number" min="0" step="any"></label></div><div class="field"><label>Evidence<select data-claim="kind"><option value="advertised_peak">Advertised peak</option><option value="measured">Measured separately</option><option value="estimate">Estimate</option></select></label></div><div class="field"><label>Sparsity<select data-claim="sparsity"><option value="unknown">Unknown</option><option value="dense">Dense</option><option value="sparse">Sparse</option></select></label></div><div class="field"><label>Execution path<input data-claim="execution_path" maxlength="120" placeholder="Tensor cores / CUDA cores"></label></div><div class="field"><label>Public source / method<input data-claim="source" maxlength="300"></label></div><button type="button" class="btn-sm">Remove</button>';
+  node.querySelector("button").addEventListener("click", () => node.remove());
+  $("#compute-claims").appendChild(node);
+}
+function publicRunMetadata() {
+  const reproducibility = {};
+  for (const [field, id] of Object.entries({engine:"meta-engine", engine_version:"meta-engine-version", quantization:"meta-quant", model_revision:"meta-revision", context_tokens:"meta-context", kv_cache_dtype:"meta-kv", mtp_draft_tokens:"meta-mtp"})) {
+    const value = $("#" + id)?.value.trim();
+    if (value) reproducibility[field] = ["context_tokens", "mtp_draft_tokens"].includes(field) ? Number(value) : value;
+  }
+  const performance_claims = $$(".compute-claim").filter(node => node.querySelector('[data-claim="value"]').value !== "").map(node => {
+    const claim = Object.fromEntries(Array.from(node.querySelectorAll("[data-claim]")).map(input => [input.dataset.claim, input.value.trim()]));
+    claim.value = Number(claim.value); claim.unit = claim.precision.startsWith("INT") ? "TOPS" : "TFLOP/s";
+    return claim;
+  });
+  return {reproducibility, performance_claims};
+}
+function updateProviderControls() {
+  const managed = providerManaged();
+  ["#offload", "#mtp-chips", "#load-timeout", "#headroom", "#context-policy", "#fallback", "#skip-after-timeout", "#no-think"].forEach(selector => {
+      const node = $(selector); if (node) (node.closest(".field") || node.closest("label") || node).hidden = selector === "#no-think" || managed;
+  });
+  if (!browserMode()) {
+    const generic = genericHelper();
+    ["#helper-url", "#helper-key-env", "#helper-model", "#helper-local"].forEach(selector => { const node = $(selector); if (node) (node.closest(".field") || node.closest("label") || node).hidden = !generic; });
+    if ($("#helper-name-override")) $("#helper-name-override").disabled = false;
+    if ($("#helper-local-note")) $("#helper-local-note").hidden = !generic;
+  }
+}
+async function connectHelperEndpoint() {
+  const status = $("#helper-status"), button = $("#helper-connect");
+  status.dataset.state = "connecting";
+  state.detectedEndpoint = null; state.providerNeedsConnection = true;
+  button.disabled = true; status.textContent = "Connecting…";
+  try {
+    const config = helperEndpointConfig();
+    if (config.provider === "openai" && !config.endpoint_base_url) throw new Error("Enter your endpoint URL.");
+    const env = await api("/api/env");
+    if (config.provider === "openai") {
+      let models = [], discoveryError = null;
+      try { const found = await api("/api/endpoint/check", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(config)}); rememberEndpoint(found,config.provider); models = Array.isArray(found) ? found : found.models || found.data || []; if (found.error) discoveryError = new Error(found.error); }
+      catch (error) { discoveryError = error; }
+      const manual = $("#helper-model").value.trim();
+      if (manual && !models.length) models.push({id: manual, type: "llm", state: "manual model ID; discovery unavailable"});
+      if (!models.length) throw discoveryError || new Error("No model IDs found. Enter the served model ID.");
+      env.models = models; env.default_models = models.map(m => m.id);
+      env.lms = {server: true, cli: false};
+      env.capabilities = {...env.capabilities, context_planning: false, extend: false};
+      env.last_config = {...env.defaults, ...config, models: env.default_models};
+    } else {
+      rememberEndpoint(env,"lmstudio");
+      env.last_config = {...env.defaults, provider: "lmstudio", models: env.default_models || []};
+    }
+    state.env = env; renderEnv(); updateProviderControls();
+    state.providerNeedsConnection = false;
+    state.endpointSignature = helperConnectionSignature(); updatePlan();
+    status.textContent = "Ready · " + (helperEndpointConfig().endpoint_label || "OpenAI-compatible endpoint") + " · " + env.models.length + " model(s)";
+    status.dataset.state = "ready";
+  } catch (error) { status.textContent = "Connection failed: " + error.message; status.dataset.state = "error"; }
+  finally { button.disabled = false; }
+}
 
 function updateBrowserStorageWarning(data) {
   if (!browserMode() || !data || typeof data !== "object") return;
@@ -93,7 +186,7 @@ const METRICS = {
   prefill_tps: {
     label: "Prefill speed", kind: "line", unit: "tk/s", better: "high",
     get: (r) => r.prefill_tps,
-    blurb: "Prompt tokens ingested per second. The number that decides whether an agent loop feels usable, because the context is re-read on every step.",
+    blurb: "Prompt tokens divided by client time to first token. Includes queueing and transport; prompt caching can raise this figure. This is not an engine-only prefill measurement.",
   },
   decode_tps: {
     label: "Decode speed", kind: "line", unit: "tk/s", better: "high",
@@ -103,7 +196,7 @@ const METRICS = {
   ttft_s: {
     label: "Time to first token", kind: "line", unit: "s", better: "low",
     get: (r) => r.ttft_s,
-    blurb: "Wall-clock wait before anything appears: tokenisation plus the whole prefill.",
+    blurb: "Client wait until the first output token, including transport, queueing and prompt processing.",
   },
   j_per_1k_prefill: {
     label: "Energy / 1k prefill", kind: "bars", unit: "J", better: "low",
@@ -123,7 +216,7 @@ const METRICS = {
   vram_peak_mb: {
     label: "VRAM peak", kind: "line", unit: "MB", better: null,
     get: (r) => r.vram_peak_mb,
-    blurb: "Peak device memory in use. A flat ceiling means the runtime started spilling to system RAM.",
+    blurb: "Peak selected-device memory sampled during the test. This alone does not establish whether the runtime offloaded work to RAM.",
   },
 };
 
@@ -176,12 +269,15 @@ async function connectBrowser() {
   const button = $("#browser-connect-button"), status = $("#browser-connect-status");
   button.disabled = true; status.textContent = "Connecting...";
   try {
+    if (!$("#browser-endpoint").value.trim()) throw new Error("Enter your endpoint URL.");
     window.WatteverBrowser.configure({endpoint: $("#browser-endpoint").value.trim(), apiKey: $("#browser-key").value,
+      endpoint_name_override: $("#browser-name-override")?.value.trim() || undefined,
       hardware: {gpu: $("#browser-gpu").value.trim(), cpu: $("#browser-cpu").value.trim(), ram_gb: Number($("#browser-ram").value) || null, vram_gb: Number($("#browser-vram").value) || null}});
-    await window.WatteverBrowser.connect();
+    state.detectedEndpoint = null;
+    const found = await window.WatteverBrowser.connect();
     $("#browser-key").value = "";
-    state.env = await api("/api/env"); renderEnv();
-    status.textContent = "Connected. Select models and start a benchmark.";
+    state.env = await api("/api/env"); rememberEndpoint(found,"openai"); if(!state.detectedEndpoint) rememberEndpoint(state.env,"openai"); renderEnv();
+    status.textContent = "Ready · " + (helperEndpointConfig().endpoint_label || "OpenAI-compatible endpoint");
   } catch (error) { status.textContent = "Connection failed: " + error.message + ". Check the endpoint, CORS and local network permission."; }
   finally { button.disabled = false; }
 }
@@ -222,18 +318,29 @@ async function importBrowserRun(event) {
 }
 
 async function init() {
+  if (!browserMode() && $("#helper-endpoint")) {
+    $("#helper-endpoint").hidden = false;
+    $("#helper-provider").addEventListener("change", () => { state.providerNeedsConnection = true; state.detectedEndpoint=null; state.detectedEndpointProvider=null; updateProviderControls(); updatePlan(); });
+    $("#helper-connect").addEventListener("click", connectHelperEndpoint);
+    ["#helper-url", "#helper-key-env", "#helper-name-override", "#helper-local", "#helper-model"].forEach(selector => $(selector)?.addEventListener("input", updatePlan));
+    updateProviderControls();
+  }
+  $("#add-compute-claim")?.addEventListener("click", addComputeClaim);
   if (browserMode()) {
     $("#browser-connect").hidden = false;
     $("#browser-import").hidden = false;
     $("#browser-connect-button").addEventListener("click", connectBrowser);
     $("#browser-import-file").addEventListener("change", importBrowserRun);
     document.addEventListener("click", browserDownload);
-    ["#offload", "#mtp-chips", "#load-timeout", "#headroom", "#gpu-index", "#runtime-gpu-placement", "#fallback", "#warmup", "#no-think"].forEach(selector => {
+    ["#offload", "#mtp-chips", "#load-timeout", "#headroom", "#gpu-index", "#runtime-gpu-placement", "#fallback", "#skip-after-timeout", "#warmup", "#no-think"].forEach(selector => {
       const node = $(selector); if (node) (node.closest(".field") || node.closest("label" ) || node).hidden = true;
     });
   }
   $("#extend-close").addEventListener("click", () => $("#extend-dialog").close());
-  $("#extend-dialog").addEventListener("close", () => { state.extension = null; });
+  $("#extend-dialog").addEventListener("close", () => {
+    // A queued close event can arrive after the dialog has already reopened.
+    if (!$("#extend-dialog").open) state.extension = null;
+  });
   $("#extend-start").addEventListener("click", startExtension);
   decorateHelp();
   Tables.init();
@@ -281,8 +388,8 @@ async function init() {
   });
   $$("[data-select]").forEach((btn) => btn.addEventListener("click", () => selectModels(btn.dataset.select)));
   ["#max-tokens", "#repeats", "#no-think", "#offload", "#gpu-index",
-    "#runtime-gpu-placement", "#fallback", "#stop-after-fail", "#warmup",
-    "#per-test-timeout", "#load-timeout", "#headroom", "#context-policy"].forEach((sel) => {
+    "#runtime-gpu-placement", "#fallback", "#stop-after-fail", "#skip-after-timeout", "#warmup",
+    "#per-test-timeout", "#load-timeout", "#headroom", "#context-policy", "#helper-reasoning"].forEach((sel) => {
     const node = $(sel);
     if (node) {
       node.addEventListener("change", updatePlan);
@@ -300,6 +407,10 @@ async function init() {
   });
   $("#show-all-models").addEventListener("click", () => { state.visibleModels = null; redrawResultsWithoutScrolling(); });
   $("#hide-all-models").addEventListener("click", () => { state.visibleModels = new Set(); redrawResultsWithoutScrolling(); });
+  $("#rerun-model").addEventListener("click", () => {
+    const target = selectedModelRerun();
+    if (target?.ready) openExtendDialog(target.run, target.model);
+  });
   $$("[data-color-by]").forEach(button => button.addEventListener("click", () => {
     state.colorBy = button.dataset.colorBy;
     $$("[data-color-by]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
@@ -327,7 +438,7 @@ async function init() {
   await loadRuns();
   const hash = location.hash.slice(1);
   if (!hash && browserMode()) showPanel("results", false);
-  if (["summary", "run", "results", "compare"].includes(hash)) {
+  if (["summary", "run", "results", "compare", "capabilities"].includes(hash)) {
     showPanel(hash, false);
   }
   const status = await api("/api/status");
@@ -362,6 +473,7 @@ function showPanel(name, pushHash = true) {
     checkForActiveBenchmark();
   }
   Charts.hideTip();
+  if (name === "capabilities") { window.scrollTo(0,0); window.WatteverCapabilities?.activate(); }
 }
 
 function showResultsView(view) {
@@ -387,7 +499,7 @@ async function renderResultsView() {
   const shown = shownModels(models);
   $("#summary-export").href = "/api/export.csv?ids=" + ids.map(encodeURIComponent).join(",");
   $("#summary-export").hidden = !runs.length;
-  const detailSignature = JSON.stringify([state.selected, state.comparisonConcurrency, runs.map(run => [run.id, run.status, run.label, run.notes, (run.results || []).length])]);
+  const detailSignature = JSON.stringify([state.selected, state.comparisonConcurrency, resultsConnectionKey(), !!state.env?.capabilities?.extend, runs.map(run => [run.id, run.status, run.label, run.notes, (run.results || []).length])]);
   if (detailSignature !== state.detailSignature) {
     const selection = JSON.stringify([...state.compare]);
     const keepDetailsOpen = state.detailSelection === selection && $("#run-detail details")?.open;
@@ -414,6 +526,11 @@ function renderAllMeasurements() {
   target.parentElement.hidden = !runs.length;
   target.innerHTML = target.parentElement.open
     ? runs.map(run => `<h4>${esc(run.label || run.id)}</h4>${detailedResultsTable({...run, results: (run.results || []).filter(row => state.visibleModels === null || state.visibleModels.has(row.model))})}`).join("") : "";
+  target.querySelectorAll("button[data-repair-case]").forEach(button => button.addEventListener("click", () => {
+    const run = state.runCache[button.dataset.runId];
+    const selectedCase = JSON.parse(button.dataset.repairCase);
+    if (run) openExtendDialog(run, selectedCase[0], selectedCase);
+  }));
 }
 
 function banner(kind, title, body) {
@@ -433,7 +550,7 @@ function renderEnv() {
     ? gpu.name.replace(/^NVIDIA\s+/, "") : "no NVIDIA GPU";
   const lmsPill = $("#pill-lms");
   lmsPill.querySelector(".dot").className = "dot " + (env.lms.server ? "on" : "off");
-  lmsPill.querySelector("span:last-child").textContent = env.lms.server ? (browserMode() ? "Endpoint connected" : "LM Studio ready") : (browserMode() ? "Not connected" : "LM Studio off");
+  lmsPill.querySelector("span:last-child").textContent = env.lms.server ? (providerManaged() ? "Endpoint connected" : "LM Studio ready") : (providerManaged() ? "Not connected" : "LM Studio off");
 
   const unified = gpu.memory_architecture === "unified";
   const src = (env.power || {}).source;
@@ -456,7 +573,7 @@ function renderEnv() {
     .filter(Boolean).join("  ·  ");
 
   const banners = [];
-  if (browserMode()) {
+  if (providerManaged()) {
     // Browser connections are made explicitly and do not control LM Studio.
   } else if (!env.lms.cli) {
     banners.push(banner("err", "The lms CLI was not found",
@@ -480,7 +597,7 @@ function renderEnv() {
       "Speed will be measured; watts and joules will be blank."));
   }
   if (!browserMode() && !env.models.length) {
-    banners.push(banner("err", "LM Studio has no models indexed", "Download at least one model first."));
+    banners.push(banner("err", genericHelper() ? "No served model selected" : "LM Studio has no models indexed", genericHelper() ? "Connect to an endpoint or enter its model ID." : "Download at least one model first."));
   }
   $("#env-banners").innerHTML = banners.join("");
 
@@ -508,6 +625,7 @@ function renderModels() {
   const env = state.env;
   const llms = env.models.filter((m) => m.type !== "embeddings");
   $("#model-list").innerHTML = llms.map((m) => {
+    m=typeof window!=='undefined'&&window.WatteverModelMetadata?window.WatteverModelMetadata.normalize(m):m;
     const on = state.models.has(m.id);
     const isDefault = (env.default_models || []).includes(m.id);
     return `<label class="model" data-on="${on ? 1 : 0}" title="Include ${esc(m.id)} in this benchmark">
@@ -515,9 +633,9 @@ function renderModels() {
       <span class="name">${esc(m.id)}</span>
       <span class="meta">
         ${isDefault ? '<span class="badge accent">default</span>' : ""}
-        ${m.quantization ? `<span class="badge">${esc(m.quantization)}</span>` : ""}
+        <span class="badge" title="${m.quantization_source==='model_identifier'?'Quantization label inferred from the model ID; weights are not independently verified':'Quantization reported by the endpoint, when available'}">${esc(quantizationLabel(m))}</span>
         ${m.arch ? `<span class="badge">${esc(m.arch)}</span>` : ""}
-        <span class="badge">ctx ${fmtTokens(m.max_context_length || 0)}</span>
+        <span class="badge">${m.max_context_length?'ctx '+fmtTokens(m.max_context_length):'Context unknown'}</span>
       </span></label>`;
   }).join("") || '<p class="dim">No language models indexed.</p>';
   $$("#model-list input").forEach((input) => input.addEventListener("change", () => {
@@ -563,17 +681,106 @@ function hardwareMarkup(hw) {
   hw = hw || {};
   const cpu = hw.cpu || {}, system = hw.system || {}, os = hw.os || {};
   const gpus = hw.gpus || [];
-  const board = hw.motherboard || {}, firmware = hw.firmware || {};
+  const board = hw.motherboard || {}, firmware = hw.firmware || {}, memory = hw.memory || {};
+  const pcie = g => {
+    const link = g.pcie || {};
+    if (!link.generation_current && !link.generation_max_reported) return "";
+    return `<p class="hint">PCIe snapshot: Gen ${esc(link.generation_current ?? "?")} x${esc(link.width_current ?? "?")}; reported maximum Gen ${esc(link.generation_max_reported ?? "?")} x${esc(link.width_max_reported ?? "?")}${link.link_encoding_ceiling_bytes_per_second ? `; encoding ceiling ${(link.link_encoding_ceiling_bytes_per_second / 1e9).toFixed(2)} GB/s one way` : ""}. May reflect an idle downshift; transfer measurements are listed separately.</p>`;
+  };
   return `<p class="hint">${esc([os.name, os.release, os.architecture].filter(Boolean).join(" "))} - ${esc(cpu.name || "CPU unknown")} - ${esc([system.manufacturer, system.model].filter(Boolean).join(" "))}</p>
     <p class="hint">${cpu.physical_cores != null ? `${esc(cpu.physical_cores)} physical cores / ` : ""}${esc(cpu.logical_cores ?? "unknown")} threads${system.memory_bytes ? ` - ${(system.memory_bytes / 1073741824).toFixed(1)} GiB RAM` : ""}</p>`
-    + gpus.map((g, i) => `<p class="hint"><b>GPU ${i + 1}:</b> ${esc(g.name || "Unknown")} ${g.memory_bytes ? `- ${(g.memory_bytes / 1073741824).toFixed(1)} GiB` : ""} ${g.driver ? `- driver ${esc(g.driver)}` : ""} ${g.sensor_index != null ? `- sensor ${esc(g.sensor_index)}` : ""}</p>`).join("")
+    + (cpu.socket_count ? `<p class="hint">CPU sockets: ${esc(cpu.socket_count)}${cpu.max_clock_mhz_reported ? `; reported maximum clock ${esc(cpu.max_clock_mhz_reported)} MHz` : ""}.</p>` : "")
+    + (memory.module_count ? `<p class="hint">RAM: ${esc(memory.module_count)} modules${memory.configured_clock_mhz_reported?.length ? `; firmware clock reports ${memory.configured_clock_mhz_reported.map(esc).join(", ")} MHz` : ""}. Channel count ${esc(memory.channel_count ?? "unknown")}; memory bandwidth not measured.</p>` : "")
+    + gpus.map((g, i) => `<p class="hint"><b>GPU ${i + 1}:</b> ${esc(g.name || "Unknown")} ${g.memory_bytes ? `- ${(g.memory_bytes / 1073741824).toFixed(1)} GiB` : ""} ${g.driver ? `- driver ${esc(g.driver)}` : ""} ${g.sensor_index != null ? `- sensor ${esc(g.sensor_index)}` : ""}</p>${pcie(g)}`).join("")
     + (board.model ? `<p class="hint"><b>Motherboard:</b> ${esc([board.manufacturer, board.model].filter(Boolean).join(" "))}</p>` : "")
     + (firmware.version ? `<p class="hint"><b>Firmware:</b> ${esc([firmware.vendor, firmware.version].filter(Boolean).join(" "))}</p>` : "")
-    + (hw.storage || []).map((disk) => `<p class="hint"><b>Storage:</b> ${esc(disk.model || "Unknown")}${disk.capacity_bytes ? ` - ${(disk.capacity_bytes / 1000000000).toFixed(0)} GB` : ""} ${esc(disk.interface || "")}</p>`).join("");
+    + (hw.storage || []).map((disk) => `<p class="hint"><b>Storage:</b> ${esc(disk.model || "Unknown")}${disk.capacity_bytes ? ` - ${(disk.capacity_bytes / 1000000000).toFixed(0)} GB` : ""} ${esc(disk.interface || "")}</p>`).join("")
+    + transferBandwidthMarkup(hw.transfer_bandwidth);
+}
+
+function transferBandwidthMarkup(profile) {
+  if (!profile) return '<p class="hint">Storage → RAM and RAM → VRAM bandwidth: not measured.</p>';
+  const rows = [["storage_to_ram", "Storage → RAM"], ["ram_to_vram", "RAM → VRAM"]].map(([key, label]) => {
+    const value = profile[key] || {};
+    const speed = value.status === "ok" && Number.isFinite(value.bytes_per_second) && value.bytes_per_second > 0
+      ? `${(value.bytes_per_second / 1e9).toFixed(2)} GB/s (${(value.bytes_per_second / 1e6).toFixed(0)} MB/s)` : `Unavailable: ${esc(value.reason || "not supported")}`;
+    return `<p class="hint"><b>${label}:</b> ${speed}${value.host_memory ? `; ${esc(value.host_memory)} host memory` : ""}${value.volume ? `; volume ${esc(value.volume)}` : ""}</p><p class="hint">${esc(value.note || "")}</p>`;
+  }).join("");
+  return `<details class="adv"><summary>Measured transfer bandwidth</summary>${rows}<p class="hint">${esc(profile.captured_at || "Unknown measurement time")}; ${esc(profile.provenance || "measured on benchmark client")}. ${profile.provenance === "measured_later_on_matching_hardware" ? "Measured after this benchmark on matching hardware; original inference conditions were not verified." : ""}</p><p class="hint">Median of ${esc(profile.storage_to_ram?.samples?.length ?? 0)} storage samples and ${esc(profile.ram_to_vram?.samples?.length ?? 0)} GPU samples. Separate transfer microbenchmarks; workload caching and overlap can change application throughput.</p></details>`;
+}
+
+const TELEMETRY_METRICS = {
+  cpu_util_percent:["CPU load","%",1],gpu_util:["GPU load","%",1],system_memory_percent:["RAM used","%",1],vram_percent:["VRAM used","%",1],
+  system_memory_used_bytes:["RAM used","GiB",1073741824],vram_mb:["VRAM used","GiB",1024],cpu_temp_c:["CPU temperature","°C",1],temp_c:["GPU temperature","°C",1],
+  gpu_w:["GPU power","W",1],cpu_w:["CPU power","W",1],system_w_est:["Estimated system power","W",1],clock_mhz:["GPU clock","MHz",1],
+};
+function telemetryMarkup(run) {
+  const telemetry=run.telemetry || {}, summary=telemetry.summary || {}, metrics=summary.metrics || {};
+  const keys=Object.keys(TELEMETRY_METRICS).filter(key=>metrics[key] && typeof metrics[key] === "object");
+  if(!keys.length) return "";
+  const format=(value,divisor=1)=>Number.isFinite(value) ? fmt(value/divisor,1) : "—";
+  const history=telemetry.history || {}, retention=history.retention || {};
+  return `<details class="adv telemetry-report"><summary>Run telemetry · ${esc(summary.observations ?? 0)} observations</summary><div><p class="hint">Benchmark client and selected GPU. Sample means and observed peaks; unrelated applications are included.</p><div class="table-wrap"><table><thead><tr><th>Metric</th><th>Mean</th><th>Peak</th><th>Final</th><th>Early 60 s</th><th>Late 60 s</th><th>Late − early</th><th>Coverage</th></tr></thead><tbody>${keys.map(key=>{
+    const metric=metrics[key], [label,unit,divisor]=TELEMETRY_METRICS[key];
+    return `<tr><td>${esc(label)} <small>${esc(unit)}</small></td>${[metric.mean,metric.max,metric.last,metric.early_60s_mean,metric.late_60s_mean,metric.late_minus_early].map(value=>`<td>${format(value,divisor)}</td>`).join("")}<td>${Number.isFinite(metric.coverage_fraction)?format(metric.coverage_fraction*100)+"%":"—"}</td></tr>`;
+  }).join("")}</tbody></table></div><p class="hint">Early/late windows can overlap. Drift describes observations, not proof of throttling. Coverage excludes long sampling gaps.</p>${Array.isArray(history.points) && history.points.length ? `<p class="hint">History retains ${esc(retention.retained_points ?? history.points.length)} of ${esc(retention.total_observations ?? history.points.length)} observations (recent ring). Summary includes earlier observations. Plots reduce points for display.</p><div class="telemetry-history" data-telemetry-plot="usage"></div><div class="telemetry-history" data-telemetry-plot="temperature"></div>`:""}</div></details>`;
+}
+function bindTelemetry(container,run) {
+  const raw=run.telemetry?.history?.points;
+  if(!Array.isArray(raw) || !raw.length || !container?.querySelectorAll) return;
+  container.querySelectorAll(".telemetry-report").forEach(report=>{
+    const draw=()=>{
+      const stride=Math.max(1,Math.ceil(raw.length/300)), points=raw.filter((_,index)=>index%stride===0 || index===raw.length-1);
+      for(const [kind,keys,unit,title] of [["usage",["cpu_util_percent","gpu_util","system_memory_percent","vram_percent"],"%","CPU / GPU load and memory use"],["temperature",["cpu_temp_c","temp_c"],"°C","Observed temperatures"]]) {
+        const target=report.querySelector(`[data-telemetry-plot="${kind}"]`); if(!target) continue;
+        const series=keys.map((key,index)=>({id:key,name:TELEMETRY_METRICS[key][0],color:resolveColor(`var(--series-${index+1})`),points:points.filter(point=>Number.isFinite(point.elapsed_s) && Number.isFinite(point[key])).map(point=>({x:point.elapsed_s,y:point[key]}))})).filter(item=>item.points.length);
+        target.hidden = !series.length;
+        if(series.length) Charts.line(target,{unit,xLabel:"Elapsed seconds",yLabel:unit,height:240,xScale:"linear",yScale:"linear",ariaLabel:title,series});
+      }
+    };
+    draw();
+    report.addEventListener("toggle",()=>{if(report.open)draw();});
+  });
+}
+function modelConfigurationsMarkup(run) {
+  const observed=(run.results || []).map(row=>row.model_configuration).filter(Boolean);
+  const initial=Array.isArray(run.model_configurations) ? run.model_configurations : [];
+  const configurations=[...new Map((observed.length ? observed : initial).filter(item=>item && typeof item === "object").map(item=>[item.configuration_id,item])).values()];
+  if(!configurations.length) return "";
+  return `<div class="table-wrap"><table><thead><tr><th>Model / configuration</th><th>Quantization</th><th>Reasoning</th><th>MTP</th></tr></thead><tbody>${configurations.map(item=>`<tr><td>${esc(item.model?.value || "unknown")}<small>${esc(item.request_model?.value || "")} · ${esc((item.configuration_id || "").slice(0,12))}</small></td><td>${esc(quantizationLabel({model:item.model?.value,model_configuration:item}))}<small>${esc(item.quantization?.source || "unknown")}</small></td><td>Requested: ${esc(item.reasoning?.requested || "unknown")}<small>Effective: ${esc(item.reasoning?.effective || "unknown")}<br>Reported: ${esc(item.reasoning?.user_reported || "unknown")}</small></td><td>Requested: ${esc(item.mtp?.requested || "unknown")}<small>Effective: ${esc(item.mtp?.effective || "unknown")}<br>Reported: ${esc(item.mtp?.user_reported || "unknown")}</small></td></tr>`).join("")}</tbody></table></div>`;
+}
+function scientificMetadata(run) {
+  const reported = run.reproducibility?.settings || run.config?.reproducibility || {};
+  const claims = run.performance_claims || run.config?.performance_claims || [];
+  const provider = run.provider || {};
+  const scope = run.measurement_scope || {};
+  return (provider.kind ? `<p class="hint"><b>Provider:</b> ${esc(provider.label || provider.kind)}; ${esc(provider.model_management || "unknown")} model management.</p>` : "")
+    + modelConfigurationsMarkup(run)
+    + telemetryMarkup(run)
+    + (scope.hardware_attribution ? `<p class="hint"><b>Inference hardware attribution:</b> ${esc(scope.hardware_attribution)}</p>` : "")
+    + (Object.keys(reported).length ? `<p class="hint"><b>Operator-reported settings (unverified):</b> ${Object.entries(reported).map(([k,v]) => `${esc(k)}: ${esc(v)}`).join("; ")}</p>` : "")
+    + (claims.length ? `<p class="hint">Compute figures below were supplied by the operator; Wattever did not verify them. Quantization bit width does not establish arithmetic precision.</p><div class="table-wrap"><table><thead><tr><th>Precision</th><th>Value</th><th>Kind</th><th>Sparsity</th><th>Execution path</th><th>Source / method</th></tr></thead><tbody>${claims.map(c => `<tr><td>${esc(c.precision)}</td><td>${esc(c.value)} ${esc(c.unit)}</td><td>${esc(c.kind)}</td><td>${esc(c.sparsity)}</td><td>${esc(c.execution_path)}</td><td>${esc(c.source)}</td></tr>`).join("")}</tbody></table></div>` : "")
+    + (run.measurement_client ? `<details><summary>Benchmark client inventory (inference hardware unknown)</summary>${hardwareMarkup(run.measurement_client.hardware)}</details>` : "");
 }
 function renderHardware() {
   const gpus = (state.env.hardware || {}).gpus || [];
   $("#hardware-inventory").innerHTML = (state.env.hardware?.source === "manual" ? '<p class="hint">Hardware details entered manually; not detected or measured.</p>' : "") + hardwareMarkup(state.env.hardware);
+  if (!browserMode()) {
+    $("#hardware-inventory").insertAdjacentHTML("beforeend", '<button class="btn-sm" id="measure-transfers">Measure transfer bandwidth</button><span class="hint" id="transfer-status"> Included automatically before each benchmark.</span>');
+    $("#measure-transfers").addEventListener("click", async (event) => {
+      event.target.disabled = true;
+      $("#transfer-status").textContent = " Measuring storage and GPU transfers…";
+      try {
+        const result = await api("/api/hardware/bandwidth", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({gpu_index: Number($("#gpu-index").value) || 0, storage_probe_directory: $("#storage-probe-directory")?.value.trim() || null})});
+        state.env.hardware.transfer_bandwidth = result.transfer_bandwidth;
+        renderHardware();
+      } catch (error) {
+        $("#transfer-status").textContent = " " + error.message;
+        event.target.disabled = false;
+      }
+    });
+  }
+  if ($("#storage-probe-field")) $("#storage-probe-field").hidden = browserMode();
   const sensors = gpus.filter((g) => g.sensor_index != null);
   $("#gpu-index").innerHTML = sensors.length ? sensors.map((g) => `<option value="${esc(g.sensor_index)}">${esc(g.sensor_index)}: ${esc(g.name)}</option>`).join("") : '<option value="0">0 (default sensor)</option>';
 }
@@ -606,6 +813,10 @@ function prepareCleanRun() {
     $("#" + id).checked = defaults[key] !== false;
     $("#" + id).closest(".chip").dataset.on = $("#" + id).checked ? "1" : "0";
   });
+  if ($("#skip-after-timeout")) {
+    $("#skip-after-timeout").checked = defaults.skip_after_timeout === true;
+    $("#skip-after-timeout").closest(".chip").dataset.on = defaults.skip_after_timeout === true ? "1" : "0";
+  }
   renderModels(); renderSizes(); renderConcurrency(); updatePlan();
 }
 
@@ -614,6 +825,10 @@ function applyLastConfig() {
   // power constants differ a lot between a desktop PC and a Mac)
   const last = state.env.last_config || state.env.defaults;
   if (!last) return;
+  if (!browserMode() && last.provider && $("#helper-provider")) {
+    $("#helper-provider").value = last.provider;
+    updateProviderControls();
+  }
   const set = (id, value) => { if (value !== undefined && value !== null && $(id)) $(id).value = value; };
   set("#gpu-index", last.gpu_index);
   set("#runtime-gpu-placement", last.runtime_gpu_placement);
@@ -624,6 +839,10 @@ function applyLastConfig() {
   set("#load-timeout", last.load_timeout_s);
   set("#headroom", last.context_headroom);
   set("#context-policy", last.context_policy || "per_test");
+  if ($("#skip-after-timeout")) {
+    $("#skip-after-timeout").checked = last.skip_after_timeout === true;
+    $("#skip-after-timeout").closest(".chip").dataset.on = last.skip_after_timeout === true ? "1" : "0";
+  }
   ["fallback", "stop-after-fail", "warmup"].forEach((id) => {
     const key = {fallback: "fallback_on_failure", "stop-after-fail": "stop_model_after_failure", warmup: "warmup"}[id];
     if (last[key] !== undefined) {
@@ -658,7 +877,7 @@ function mtpModes() {
  * remembers whatever was used last. Say so before the benchmark runs, not
  * after, and offer to put it back in one click. */
 function checkComparability() {
-  if (browserMode()) { $("#comparability").innerHTML = ""; return; }
+  if (providerManaged()) { if ($("#comparability")) $("#comparability").innerHTML = ""; return; }
   const box = $("#comparability");
   if (!box) return;
   const prior = state.runs.filter((r) => r.n_ok > 0 && r.max_tokens);
@@ -701,7 +920,7 @@ function generatedMetadata(env, cfg) {
   const ram = memory((hw.system || {}).memory_bytes ? hw.system.memory_bytes / 1073741824 : host.ram_gb, "RAM");
   const cards = (hw.gpus || []).length ? hw.gpus : (env.gpu && env.gpu.name ? [{name: env.gpu.name, memory_bytes: env.gpu.vram_total_mb * 1048576, memory_architecture: env.gpu.memory_architecture}] : []);
   const gpuNames = cards.map((gpu) => [String(gpu.name || "Unknown GPU").replace(/^NVIDIA (?:GeForce\s+)?/, ""), memory(gpu.memory_bytes / 1073741824, gpu.memory_architecture === "unified" ? "unified" : "VRAM")].filter(Boolean).join(" "));
-  const label = [cfg.gpu_offload === "off" ? "CPU only" : gpuNames.join(" + "), ram, cpu].filter(Boolean).join(" / ") || "Local benchmark";
+  const label = cfg.provider === "openai" && !cfg.endpoint_inference_local ? (cfg.endpoint_label || "Endpoint benchmark") : [cfg.gpu_offload === "off" ? "CPU only" : gpuNames.join(" + "), ram, cpu].filter(Boolean).join(" / ") || "Local benchmark";
   const allModels = (env.models || []).filter((model) => model.type !== "embeddings").map((model) => model.id);
   const selected = cfg.models || [];
   const models = selected.length && selected.length === allModels.length && allModels.every((id) => selected.includes(id))
@@ -733,20 +952,31 @@ function updateGeneratedMetadata() {
 
 function updatePlan() {
   updateGeneratedMetadata();
-  const modes = mtpModes();
+  const modes = providerManaged() ? ["off"] : mtpModes();
   const base = state.models.size * state.sizes.size * modes.length * Number($("#repeats").value || 1);
   const tests = base * state.concurrencyLevels.size;
   const requests = base * [...state.concurrencyLevels].reduce((a, b) => a + b, 0);
   $("#plan-summary").textContent = tests
     ? `${state.models.size} model${state.models.size === 1 ? "" : "s"} / ${tests} tests / ${requests} queries`
     : "Choose at least one model and workload.";
-  $("#start-btn").disabled = !tests;
+  const reconnect = !!state.providerNeedsConnection || (genericHelper() && state.endpointSignature !== helperConnectionSignature());
+  $("#start-btn").disabled = !tests || reconnect;
+  if (reconnect && $("#helper-status")) { $("#helper-status").textContent = "Connect to apply changes."; $("#helper-status").dataset.state = "pending"; }
   checkComparability();
 }
 
 /* ---------------- run control ---------------- */
 function collectConfig() {
   return {
+    ...helperEndpointConfig(),
+    storage_probe_directory: browserMode() ? null : $("#storage-probe-directory")?.value.trim() || null,
+    ...publicRunMetadata(),
+    canonical_model_id: $("#meta-canonical-model")?.value.trim() || "",
+    reported_mtp: $("#meta-reported-mtp")?.value || "unknown",
+    reported_reasoning: $("#meta-reported-reasoning")?.value.trim() || "unknown",
+    endpoint_reasoning_effort: $("#helper-reasoning")?.value || null,
+    token_limit_field: $("#token-limit-field")?.value || "max_tokens",
+    temperature: $("#job-temperature")?.value === "" ? null : Number($("#job-temperature")?.value ?? "0"),
     models: [...state.models],
     sizes: [...state.sizes],
     concurrency_levels: [...state.concurrencyLevels].sort((a, b) => a - b),
@@ -754,13 +984,14 @@ function collectConfig() {
     runtime_gpu_placement: $("#runtime-gpu-placement").value.trim(),
     max_tokens: Number($("#max-tokens").value) || 256,
     repeats: Number($("#repeats").value) || 1,
-    gpu_offload: browserMode() ? "provider_managed" : $("#offload").value,
-    context_policy: browserMode() ? "provider_managed" : ($("#context-policy")?.value || "per_test"),
-    mtp_modes: mtpModes(),
-    fallback_on_failure: browserMode() ? false : $("#fallback").checked,
+    gpu_offload: providerManaged() ? "provider_managed" : $("#offload").value,
+    context_policy: providerManaged() ? "provider_managed" : ($("#context-policy")?.value || "per_test"),
+    mtp_modes: providerManaged() ? ["off"] : mtpModes(),
+    fallback_on_failure: providerManaged() ? false : $("#fallback").checked,
     stop_model_after_failure: $("#stop-after-fail").checked,
+    skip_after_timeout: providerManaged() ? false : !!$("#skip-after-timeout")?.checked,
     warmup: browserMode() ? false : $("#warmup").checked,
-    disable_thinking: browserMode() ? null : $("#no-think").checked,
+    disable_thinking: providerManaged() ? null : ($("#helper-reasoning") ? $("#helper-reasoning").value === "none" : $("#no-think").checked),
     per_test_timeout_s: Number($("#per-test-timeout").value) || 1800,
     load_timeout_s: Number($("#load-timeout").value) || 900,
     context_headroom: Number($("#headroom").value) || 0,
@@ -901,6 +1132,8 @@ function renderLive(status) {
   deadline.textContent = hasDeadline ? `Current test deadline: ${fmtDuration(live.timeout_elapsed_s ?? 0)} elapsed / ${fmtDuration(live.timeout_budget_s)} budget${live.timeout_reason ? " (" + live.timeout_reason + ")" : ""}. Adaptive timing is capped by the configured timeout; it is not a memory limit.` : "";
 
   const t = live.telemetry || {};
+  const present = value => Number.isFinite(value);
+  const percent = value => present(value) ? fmt(value, 0) : "—";
   if (t.gpu_w !== null && t.gpu_w !== undefined) {
     $("#pill-power").hidden = false;
     $("#pill-power").innerHTML = `<span class="num">${Math.round(t.gpu_w)}</span> W GPU`;
@@ -909,11 +1142,15 @@ function renderLive(status) {
     stat("GPU power", t.gpu_w !== null && t.gpu_w !== undefined ? Math.round(t.gpu_w) : "—", "W measured"),
     stat("System", t.system_w_est ? Math.round(t.system_w_est) : "—", "W estimated"),
     stat("GPU load", t.gpu_util !== null && t.gpu_util !== undefined ? Math.round(t.gpu_util) : "—", "%"),
-    stat("VRAM", t.vram_mb ? (t.vram_mb / 1024).toFixed(1) : "—", "GB in use"),
-    stat("CPU load", t.cpu_util !== null && t.cpu_util !== undefined ? Math.round(t.cpu_util * 100) : "—", "%"),
+    stat("VRAM", percent(t.vram_percent), "% used"),
+    stat("VRAM used", present(t.vram_mb) ? (t.vram_mb / 1024).toFixed(1) : "—", "GiB"),
+    stat("RAM", percent(t.system_memory_percent), "% used"),
+    stat("RAM used", present(t.system_memory_used_bytes) ? (t.system_memory_used_bytes / 1073741824).toFixed(1) : "—", "GiB"),
+    stat("CPU load", percent(t.cpu_util_percent ?? (present(t.cpu_util) ? t.cpu_util * 100 : null)), "%"),
     stat("TTFT", live.ttft_s ? fmt(live.ttft_s, 2) : "—", "s this test"),
     stat("Decoding", live.decode_tps_live ? fmt(live.decode_tps_live, 1) : "—", "tk/s live"),
-    stat("Temp", t.temp_c ? Math.round(t.temp_c) : "—", "°C"),
+    stat("GPU temp", present(t.temp_c) ? Math.round(t.temp_c) : "—", "°C"),
+    stat("CPU temp", present(t.cpu_temp_c) ? Math.round(t.cpu_temp_c) : "—", "°C"),
   ].join("");
 }
 
@@ -934,7 +1171,7 @@ function renderLiveTable() {
   const rows = state.liveResults.map((r) => `<tr>
     <td>${esc(r.model)}</td>
     <td class="num">${fmtTokens(r.target_tokens)}</td>
-    <td>${browserMode() ? '<span class="dim">provider controlled</span>' : r.mtp ? '<span class="badge accent">MTP</span>' : '<span class="dim">off</span>'}</td>
+    <td>${providerManaged() ? '<span class="dim">provider controlled</span>' : r.mtp ? '<span class="badge accent">MTP</span>' : '<span class="dim">off</span>'}</td>
     <td class="num">${fmtInt(r.prompt_tokens)}</td>
     <td>${statusCell(r)} ${requestDetails(r)}</td>
     <td class="num">${r.concurrency || 1}</td><td class="num">${fmt(r.aggregate_completion_tps, 1)}${r.aggregate_completion_tokens_estimated ? "*" : ""}</td>
@@ -1053,7 +1290,7 @@ function sessionSettings(run) {
     const cfg = sessionConfig(session);
     const modelCount = cfg.model_modes ? Object.keys(cfg.model_modes).length : (cfg.models || []).length;
     const modes = cfg.model_modes ? [...new Set(Object.values(cfg.model_modes).flat())] : (cfg.mtp_modes || []);
-    return `<p class="hint"><b>Session ${index + 1}</b>${session.started_at ? ` / ${esc(session.started_at)}` : ""} / ${modelCount} models / ${esc(modes.join(" + ") || "unknown technique")} / planner ${esc(cfg.context_planner_version ?? "legacy")} / ${esc(cfg.context_policy || "per_test")} / reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}%</p>`;
+    return `<p class="hint"><b>Session ${index + 1}</b>${session.started_at ? ` / ${esc(session.started_at)}` : ""} / ${modelCount} models / ${esc(cfg.provider === "openai" ? "provider controlled technique" : modes.join(" + ") || "unknown technique")} / planner ${esc(cfg.context_planner_version ?? "legacy")} / ${esc(cfg.context_policy || "per_test")} / reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}%</p>`;
   }).join("")}</div></details>`;
 }
 
@@ -1102,14 +1339,27 @@ function renderRunDetail(run) {
   const incompleteNotice = benchmarkIncompleteNotice(run);
   const sourceNotice = run.community ? `<p class="hint">Data source: <a target="_blank" rel="noopener noreferrer" href="https://github.com/lpalbou/Wattever/blob/main/results/runs/${encodeURIComponent(run.id)}.json">GitHub</a></p>` : "";
   const gpu = run.gpu || {}, host = run.host || {}, cfg = run.config || {};
+  const testAction = resultsTestAction(run);
   const ok = (run.results || []).filter((row) => row.status === "ok");
   const best = (key) => Math.max(0, ...ok.map((row) => row[key] || 0));
   const levelRows = (run.results || []).filter(row => (row.concurrency || 1) === state.comparisonConcurrency);
   const failureNotice = levelRows.length && !levelRows.some(row => row.status === "ok")
     ? `<p class="hint" role="status">No successful tests at concurrency ${state.comparisonConcurrency}. Check All measurements for failure details.</p>` : "";
-  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${state.env?.capabilities?.extend ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" ? "disabled" : ""} title="${state.benchmarkRunning || run.status === "running" ? "Wait for the active benchmark to finish" : "Add or rerun tests in this benchmark"}">Add / rerun tests</button>` : ""}<button class="btn-sm" id="rename-run" title="${run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : "Edit this benchmark name and notes"}" ${run.status === "running" || run.community ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="${run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""}>${run.community ? "Hide" : "Delete"}</button></header>${liveNotice}${sourceNotice}${measurementNotice}${failureNotice}${sessionAllocationNotice}${incompleteNotice}<div class="result-stats">${stat("Best prefill", best("prefill_tps") ? fmt(best("prefill_tps"), 0) : "?", "tk/s")}${stat("Best output", best("decode_tps") ? fmt(best("decode_tps"), 1) : "?", "tk/s")}${stat("Successful tests", `${ok.length}/${(run.results || []).length}`, "")}</div><details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
+  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${testAction ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" || !testAction.ready ? "disabled" : ""} title="${esc(testAction.title)}">${esc(testAction.label)}</button>` : ""}<button class="btn-sm" id="rename-run" title="${run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : "Edit this benchmark name and notes"}" ${run.status === "running" || run.community ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="${run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""}>${run.community ? "Hide" : "Delete"}</button></header>${liveNotice}${sourceNotice}${measurementNotice}${failureNotice}${sessionAllocationNotice}${incompleteNotice}<div class="result-stats">${stat("Best prefill", best("prefill_tps") ? fmt(best("prefill_tps"), 0) : "?", "tk/s")}${stat("Best output", best("decode_tps") ? fmt(best("decode_tps"), 1) : "?", "tk/s")}${stat("Successful tests", `${ok.length}/${(run.results || []).length}`, "")}</div><details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}${scientificMetadata(run)}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
   $("#extend-run")?.addEventListener("click", () => openExtendDialog(run));
+  bindTelemetry($("#run-detail"),run);
   $("#delete-run").addEventListener("click", () => deleteRun(run));
+  if (run.comparison_group?.run_ids?.length > 1) {
+    const ids = run.comparison_group.run_ids.filter(id => state.runs.some(item => item.id === id));
+    if (ids.length > 1) {
+      $("#run-detail .selection-heading header").insertAdjacentHTML("beforeend", `<button class="btn-sm" id="compare-machine">Open ${esc(run.comparison_group.label || "machine benchmark")} (${ids.length} runs)</button>`);
+      $("#compare-machine").addEventListener("click", async () => {
+        state.compare = new Set(ids);
+        renderRunsList();
+        await renderResultsView();
+      });
+    }
+  }
   $("#rename-run").addEventListener("click", async () => {
     const label = prompt("Benchmark name", run.label || "");
     if (label === null) return;
@@ -1121,38 +1371,128 @@ function renderRunDetail(run) {
   });
 }
 
+function resultsConnectionKey() {
+  return browserMode() ? JSON.stringify(["browser", state.detectedEndpoint?.id, !!state.env?.lms?.server]) : JSON.stringify([helperConnectionSignature(), resultsConnectionReady()]);
+}
+function resultsConnectionReady() {
+  return !state.providerNeedsConnection && (!genericHelper() || state.endpointSignature === helperConnectionSignature()) && (!browserMode() || !!state.env?.lms?.server);
+}
+function resultsTestAction(run) {
+  const newBenchmark = providerManaged() || runProviderManaged(run);
+  if (!newBenchmark && !state.env?.capabilities?.extend) return null;
+  const ready = resultsConnectionReady();
+  return {newBenchmark, ready, label: newBenchmark ? "New benchmark on connected endpoint" : "Add / rerun tests",
+    title: !ready ? "Connect the endpoint in Run first" : newBenchmark ? "Fetch models from the current connection and review a new benchmark; saved results stay unchanged" : "Add or rerun tests in this benchmark"};
+}
 function updateExtendAvailability() {
+  updateModelRerunAvailability();
   const button = $("#extend-run");
   if (button) {
-    button.disabled = state.benchmarkRunning;
-    button.title = state.benchmarkRunning ? "Wait for the active benchmark to finish" : "Add or rerun tests in this benchmark";
+    const run = state.runCache[state.selected] || {}, action = resultsTestAction(run);
+    button.disabled = state.benchmarkRunning || !action?.ready;
+    button.title = state.benchmarkRunning ? "Wait for the active benchmark to finish" : action?.title || "Reconnect before selecting tests";
+    if (action) button.textContent = action.label;
   }
   const start = $("#extend-start");
   if (start && state.benchmarkRunning) start.disabled = true;
 }
 
-async function openExtendDialog(run) {
+async function resultsConnectedCatalog(connection) {
+  let found;
+  if (browserMode()) found = await window.WatteverBrowser.connect();
+  else if (connection.provider === "openai") found = await api("/api/endpoint/check", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(connection)});
+  else found = await api("/api/models");
+  let models = (Array.isArray(found) ? found : found.models || found.data || []).filter(model => model && typeof model.id === "string" && model.id && model.type !== "embeddings");
+  let warning = found.error || "";
+  if (!models.length && !browserMode() && connection.provider === "openai") {
+    const manual = $("#helper-model")?.value.trim();
+    if (manual) { models = [{id:manual, type:"llm", state:"manual model ID; discovery unavailable"}]; warning = "Model discovery is unavailable. This is the manually configured model ID, not a verified served-model listing."; }
+  }
+  if (!models.length && warning) throw new Error(warning);
+  const unique = new Map();
+  for (const model of models) if (!unique.has(model.id)) unique.set(model.id, typeof window !== "undefined" && window.WatteverModelMetadata ? window.WatteverModelMetadata.normalize(model) : {...model});
+  return {models:[...unique.values()], warning, label:found.endpoint_identity?.label || found.provider?.label || connection.endpoint_label || "Connected endpoint"};
+}
+function renderResultsCatalog() {
+  const extension = state.extension;
+  $("#extend-content").innerHTML = `<p class="hint">Models from <b>${esc(extension.catalogLabel)}</b>. Choose models, then review the workload in Run. This creates a new benchmark; the selected historical result stays unchanged.</p>${extension.warning ? banner("warn", "Model discovery", esc(extension.warning)) : ""}<div class="extend-models">${extension.models.map((model,index) => `<label class="model" title="Use ${esc(model.id)} in a new benchmark"><input type="checkbox" data-catalog-model="${index}" ${extension.selectedModels.has(model.id)?"checked":""}><span class="name">${esc(model.id)}</span><span class="meta"><span class="badge" title="${model.quantization_source === "model_identifier" ? "Quantization inferred from the model ID" : "Quantization reported by the endpoint, when available"}">${esc(quantizationLabel(model))}</span><span class="badge">${model.max_context_length ? "ctx " + fmtTokens(model.max_context_length) : "Context unknown"}</span>${model.loaded_context_length ? `<span class="badge">loaded ctx ${esc(fmtTokens(model.loaded_context_length))}</span>` : ""}</span></label>`).join("") || '<p class="hint">No served language models were discovered on the current connection.</p>'}</div><p class="hint">Model loading, context, placement and MTP remain controlled by the selected provider.</p>`;
+  $("#extend-preview").textContent = "Review a new benchmark; no inference starts from this dialog.";
+  $("#extend-start").textContent = "Review new benchmark";
+  $("#extend-start").disabled = !extension.selectedModels.size;
+  $$("#extend-content input[data-catalog-model]").forEach(input => input.addEventListener("change", () => {
+    const id = extension.models[Number(input.dataset.catalogModel)].id;
+    if (input.checked) extension.selectedModels.add(id); else extension.selectedModels.delete(id);
+    $("#extend-start").disabled = !extension.selectedModels.size || state.benchmarkRunning;
+  }));
+}
+
+function selectedModelRerun() {
+  if (state.compare.size !== 1) return null;
+  const run = state.runCache[[...state.compare][0]];
+  if (!run) return null;
+  const action = resultsTestAction(run), models = shownModels(allModelsOf([run]));
+  if (!action || action.newBenchmark || models.length !== 1) return null;
+  return {run, model: models[0], ready: action.ready && !state.benchmarkRunning && run.status !== "running"};
+}
+
+function updateModelRerunAvailability() {
+  const button = $("#rerun-model");
+  if (!button) return;
+  button.hidden = browserMode() || providerManaged() || !state.env?.capabilities?.extend;
+  const target = selectedModelRerun();
+  button.disabled = !target?.ready;
+  button.title = state.benchmarkRunning || target?.run.status === "running"
+    ? "Wait for the active benchmark to finish"
+    : target ? `Review a rerun of ${target.model} using the saved workload settings`
+    : "Select one benchmark and one model to rerun";
+}
+
+async function openExtendDialog(run, modelId = null, selectedCase = null) {
   if (state.benchmarkRunning) return;
   const dialog = $("#extend-dialog");
+  const action = resultsTestAction(run), connectionKey = resultsConnectionKey();
   const pending = {};
   state.extension = pending;
-  $("#extend-content").innerHTML = '<p class="hint">Loading installed models...</p>';
+  $("#extend-content").innerHTML = '<p class="hint">Fetching models from the current connection...</p>';
+  $("#extend-title").textContent = action?.newBenchmark ? "New benchmark on connected endpoint" : modelId ? "Rerun selected model" : "Add or rerun tests";
   $("#extend-preview").textContent = "";
   $("#extend-start").disabled = true;
   $("#extend-start").textContent = "Add tests";
   dialog.showModal();
   try {
+    if (!action?.ready) throw new Error("Connect the endpoint in Run before selecting new tests.");
+    if (action.newBenchmark) {
+      const connection = helperEndpointConfig(), catalog = await resultsConnectedCatalog(connection);
+      if (!dialog.open || state.extension !== pending) return;
+      if (resultsConnectionKey() !== connectionKey || !resultsConnectionReady()) throw new Error("The endpoint connection changed. Close this dialog and select tests again.");
+      const selectedModels = new Set(catalog.models.filter(model => state.models.has(model.id)).map(model => model.id));
+      if (!selectedModels.size && catalog.models.length === 1) selectedModels.add(catalog.models[0].id);
+      state.extension = {mode:"new", connectionKey, models:catalog.models, selectedModels, catalogLabel:catalog.label, warning:catalog.warning};
+      renderResultsCatalog();
+      return;
+    }
     const [plan, source] = await Promise.all([
       api("/api/bench/extend-plan?run_id=" + encodeURIComponent(run.id)),
       api("/api/runs/" + encodeURIComponent(run.id)),
     ]);
     if (!dialog.open || state.extension !== pending) return;
+    if (resultsConnectionKey() !== connectionKey || providerManaged()) throw new Error("The endpoint connection changed. Close this dialog and select tests again.");
     const cfg = source.config || {}, installed = (plan.models || []).filter(m => m.type !== "embeddings");
     const existing = cfg.models || [];
     const models = [...existing.map(id => installed.find(model => model.id === id) || {id, unavailable: true}),
       ...installed.filter(model => !existing.includes(model.id))];
-    state.extension = {runId: run.id, source, sourceConfig: cfg, models,
-      modelModes: originalModelSelection(cfg, models), sizes: new Set(plan.sizes || []), concurrency: new Set(plan.concurrency_levels || [1]), action: "add", revision: 0};
+    if (modelId && (!existing.includes(modelId) || !models.some(model => model.id === modelId && !model.unavailable))) {
+      throw new Error("The selected model is no longer installed. Install it before rerunning its tests.");
+    }
+    state.extension = {runId: run.id, source, sourceConfig: cfg, models, connectionKey,
+      initialSizes: plan.sizes || cfg.sizes || [], initialConcurrency: plan.concurrency_levels || cfg.concurrency_levels || [1],
+      repeats: Number(cfg.repeats) || 1, selectedCases: selectedCase ? [selectedCase] : null,
+      timeout: Number(source.execution_config?.per_test_timeout_s ?? cfg.per_test_timeout_s) || 1800,
+      allowFallback: source.execution_config?.fallback_on_failure ?? cfg.fallback_on_failure ?? true,
+      skipTimeouts: source.execution_config?.skip_after_timeout ?? cfg.skip_after_timeout ?? false,
+      modelModes: modelId ? {[modelId]: benchmarkTechniques(cfg, modelId)} : originalModelSelection(cfg, models),
+      sizes: new Set(selectedCase ? [selectedCase[3]] : plan.sizes || []), concurrency: new Set(selectedCase ? [selectedCase[2]] : plan.concurrency_levels || [1]), action: modelId ? "rerun" : "add", revision: 0};
+    if (selectedCase) state.extension.modelModes = {[selectedCase[0]]: [selectedCase[1] ? "on" : "off"]};
     renderExtendForm();
     previewExtension();
   } catch (error) {
@@ -1175,20 +1515,22 @@ function extensionModelProgress(extension, model) {
   const modes = [...new Set([...(original ? benchmarkTechniques(cfg, model.id) : []),
     ...(extension.modelModes[model.id] || [])])];
   if (!modes.length) modes.push("off");
-  const repeats = Math.max(1, Number(cfg.repeats) || 1), cases = new Map();
+  const repeats = Math.max(1, Number(extension.repeats ?? cfg.repeats) || 1), cases = new Map();
   const rank = {ok: 4, failed: 3, skipped: 2, cancelled: 1};
+  const selectedKeys = extension.selectedCases ? new Set(extension.selectedCases.map(item => JSON.stringify(item))) : null;
   for (const row of extension.source.results || []) {
     if (row.model !== model.id || !extension.sizes.has(row.target_tokens) || !extension.concurrency.has(row.concurrency || 1)) continue;
     const mode = row.mtp ? "on" : "off";
     if (!modes.includes(mode)) continue;
-    for (const repeat of row.repeat == null ? Array.from({length: repeats}, (_, i) => i) : [row.repeat]) {
+    for (const repeat of row.repeat == null ? Array.from({length: Math.min(repeats, Number(row.legacy_repeat_count ?? cfg.repeats) || 1)}, (_, i) => i) : [row.repeat]) {
       if (!Number.isInteger(repeat) || repeat < 0 || repeat >= repeats) continue;
+      if (selectedKeys && !selectedKeys.has(JSON.stringify([row.model, !!row.mtp, row.concurrency || 1, row.target_tokens, repeat]))) continue;
       const key = [mode, row.target_tokens, row.concurrency || 1, repeat].join(":");
       if ((rank[row.status] || 0) > (rank[cases.get(key)] || 0)) cases.set(key, row.status);
     }
   }
   const counts = {ok: 0, failed: 0, skipped: 0, unfinished: 0,
-    total: modes.length * extension.sizes.size * extension.concurrency.size * repeats};
+    total: selectedKeys ? extension.selectedCases.filter(item => item[0] === model.id).length : modes.length * extension.sizes.size * extension.concurrency.size * repeats};
   for (const status of cases.values()) if (status in counts) counts[status]++;
   counts.unfinished = counts.total - counts.ok - counts.failed - counts.skipped;
   return counts;
@@ -1207,6 +1549,11 @@ function extensionProgressMarkup(extension, model) {
 
 function extendBody(extension) {
   return {run_id: extension.runId, model_modes: extension.modelModes,
+    ...(extension.repeats == null ? {} : {repeats: extension.repeats}),
+    ...(extension.timeout == null ? {} : {per_test_timeout_s: extension.timeout}),
+    ...(extension.allowFallback == null ? {} : {fallback_on_failure: extension.allowFallback}),
+    ...(extension.skipTimeouts == null ? {} : {skip_after_timeout: extension.skipTimeouts}),
+    ...(extension.selectedCases ? {selected_cases: extension.selectedCases} : {}),
     sizes: [...extension.sizes].sort((a, b) => a - b),
     concurrency_levels: [...extension.concurrency].sort((a, b) => a - b), retry_failed: extension.action === "retry" || extension.action === "rerun", rerun_existing: extension.action === "rerun"};
 }
@@ -1215,7 +1562,44 @@ function renderExtendForm() {
   const extension = state.extension;
   const sizes = [...new Set([...(state.env.size_presets || []), ...extension.sizes])].sort((a,b) => a-b);
   const levels = [...new Set([...CONCURRENCY_PRESETS, ...extension.concurrency])].sort((a,b) => a-b);
-  $("#extend-content").innerHTML = `<div class="field"><label>Models and techniques</label><p class="hint">Your benchmark models are selected. Add missing tests keeps saved results and continues unfinished work. New models are unchecked.</p><p class="extend-continuity" role="status">Successful tests will not run again unless you choose Rerun selected tests.</p><div class="btn-row"><button type="button" class="btn-sm" id="extend-select-existing" title="Restore the benchmark models and techniques; saved measurements remain untouched">Restore benchmark selection</button><button type="button" class="btn-sm" id="extend-clear-selection" title="Clear which models will run; saved results are retained">Clear selection</button></div><p class="hint extend-progress-caption">Progress below covers saved techniques and selected additions at the prompt sizes and query counts shown below. Unchecking a model keeps its results.</p><div class="extend-models">${extension.models.map((m, i) => `<div class="extend-model" data-progress-model="${i}"><div class="extend-model-info"><strong>${esc(m.id)}</strong>${extensionProgressMarkup(extension, m)}</div><label title="Standard decoding without MTP"><input type="checkbox" data-model="${i}" data-mode="off" ${(extension.modelModes[m.id] || []).includes("off") ? "checked" : ""} ${m.unavailable ? "disabled" : ""}> Standard</label><label title="Speculative decoding; model and runtime support is not guaranteed"><input type="checkbox" data-model="${i}" data-mode="on" ${(extension.modelModes[m.id] || []).includes("on") ? "checked" : ""} ${m.unavailable ? "disabled" : ""}> MTP</label></div>`).join("") || '<p class="hint">No installed language models found.</p>'}</div></div><div class="field"><label>Prompt sizes</label><p class="hint">Select a maximum to include every smaller size.</p><div class="chips" id="extend-sizes"></div></div><div class="field"><label>Concurrent queries</label><p class="hint">Select a maximum to include every smaller level.</p><div class="chips" id="extend-concurrency"></div></div><fieldset class="extend-actions"><legend>Action</legend><label><input type="radio" name="extend-action" value="add" ${extension.action === "add" ? "checked" : ""}> Add missing tests</label><label><input type="radio" name="extend-action" value="retry" ${extension.action === "retry" ? "checked" : ""}> Retry failed tests <span class="hint">(includes missing and skipped)</span></label><label><input type="radio" name="extend-action" value="rerun" ${extension.action === "rerun" ? "checked" : ""}> Rerun selected tests <span class="hint">(includes successful, failed, skipped and missing)</span></label>${extension.action === "rerun" ? '<p class="banner warn">Selected measurements will be replaced; previous attempts are kept.</p>' : ""}</fieldset>`;
+  $("#extend-content").innerHTML = `<div class="field"><label>Models and techniques</label><p class="hint">Choose the models and techniques to run. Add missing tests continues unfinished work. Rerun selected tests also repeats successful measurements.</p><p class="extend-continuity" role="status">Successful tests will not run again unless you choose Rerun selected tests.</p><div class="btn-row"><button type="button" class="btn-sm" id="extend-select-existing" title="Restore the benchmark models and techniques; saved measurements remain untouched">Restore benchmark selection</button><button type="button" class="btn-sm" id="extend-clear-selection" title="Clear which models will run; saved results are retained">Clear selection</button></div><p class="hint extend-progress-caption">Progress below covers saved techniques and selected additions at the prompt sizes and query counts shown below. Unchecking a model keeps its results.</p><div class="extend-models">${extension.models.map((m, i) => `<div class="extend-model" data-progress-model="${i}"><div class="extend-model-info"><strong>${esc(m.id)}</strong><small>${esc(quantizationLabel(m))}</small>${extensionProgressMarkup(extension, m)}</div><label title="Standard decoding without MTP"><input type="checkbox" data-model="${i}" data-mode="off" ${(extension.modelModes[m.id] || []).includes("off") ? "checked" : ""} ${m.unavailable ? "disabled" : ""}> Standard</label><label title="Speculative decoding; model and runtime support is not guaranteed"><input type="checkbox" data-model="${i}" data-mode="on" ${(extension.modelModes[m.id] || []).includes("on") ? "checked" : ""} ${m.unavailable ? "disabled" : ""}> MTP</label></div>`).join("") || '<p class="hint">No installed language models found.</p>'}</div></div><div class="field"><label>Prompt sizes</label><p class="hint">Select a maximum to include every smaller size.</p><div class="chips" id="extend-sizes"></div></div><div class="field"><label>Concurrent queries</label><p class="hint">Select a maximum to include every smaller level.</p><div class="chips" id="extend-concurrency"></div></div><fieldset class="extend-actions"><legend>Action</legend><label><input type="radio" name="extend-action" value="add" ${extension.action === "add" ? "checked" : ""}> Add missing tests</label><label><input type="radio" name="extend-action" value="retry" ${extension.action === "retry" ? "checked" : ""}> Retry failed tests <span class="hint">(includes missing and skipped)</span></label><label><input type="radio" name="extend-action" value="rerun" ${extension.action === "rerun" ? "checked" : ""}> Rerun selected tests <span class="hint">(includes successful, failed, skipped and missing)</span></label>${extension.action === "rerun" ? '<p class="banner warn">Selected measurements will be replaced; previous attempts are kept.</p>' : ""}</fieldset>`;
+  $("#extend-content").insertAdjacentHTML("afterbegin", `<div class="field"><label for="extend-repeats">Total repeats per test</label><input id="extend-repeats" type="number" min="${Number(extension.sourceConfig.repeats) || 1}" max="100" value="${extension.repeats ?? extension.sourceConfig.repeats ?? 1}" ${extension.selectedCases ? "disabled" : ""}><p class="hint">Increase this to append repeats while keeping existing measurements. Repairing or rerunning a test keeps its previous attempt in history.</p>${extension.selectedCases ? `<p class="banner">Repairing one test only: ${esc(extension.selectedCases[0][0])}, ${fmtTokens(extension.selectedCases[0][3])} prompt tokens, ${extension.selectedCases[0][2]} queries, repeat ${extension.selectedCases[0][4]+1}.</p>` : ""}</div>`);
+  const installedIds = new Set(extension.models.filter(model => !model.unavailable).map(model => model.id));
+  $("#extend-content").insertAdjacentHTML("afterbegin", `<div class="field"><label for="extend-timeout">Timeout per test (seconds)</label><input id="extend-timeout" type="number" min="1" max="7200" value="${extension.timeout ?? 1800}"><p class="hint">Applies to these new attempts. Saved measurements keep their settings. Longer contexts can take much longer when GPU memory spills into RAM.</p></div>`);
+  $("#extend-timeout").addEventListener("change", () => {
+    extension.timeout = Number($("#extend-timeout").value);
+    previewExtension();
+  });
+  $("#extend-content").insertAdjacentHTML("afterbegin", `<details class="adv"><summary>Failure policy</summary><label><input id="extend-fallback" type="checkbox" ${extension.allowFallback ? "checked" : ""}> Allow CPU placement fallback after a model load failure</label><label><input id="extend-skip-timeouts" type="checkbox" ${extension.skipTimeouts ? "checked" : ""}> Skip remaining repeats and larger contexts after a timeout</label><p class="hint">A timeout marks a practical time limit, not proof of a hardware allocation failure. Skipped tests are identified separately.</p></details>`);
+  $("#extend-fallback").addEventListener("change", () => { extension.allowFallback = $("#extend-fallback").checked; previewExtension(); });
+  $("#extend-skip-timeouts").addEventListener("change", () => { extension.skipTimeouts = $("#extend-skip-timeouts").checked; previewExtension(); });
+  const repairCases = [...new Map((extension.source.results || []).filter(row => installedIds.has(row.model)).map(row => {
+    const key = JSON.stringify([row.model, !!row.mtp, row.concurrency || 1, row.target_tokens, row.repeat || 0]);
+    return [key, {key, row}];
+  })).values()];
+  const selectedKey = extension.selectedCases ? JSON.stringify(extension.selectedCases[0]) : "";
+  $("#extend-content").insertAdjacentHTML("afterbegin", `<div class="field"><label for="extend-case">Tests to update</label><select id="extend-case"><option value="">Selected models, sizes and repeats</option>${repairCases.map(({key,row}) => `<option value="${esc(key)}" ${key === selectedKey ? "selected" : ""}>${esc(row.model)} · ${fmtTokens(row.target_tokens)} · ${row.concurrency || 1} queries · repeat ${(row.repeat || 0)+1} · ${row.mtp ? "MTP" : "Standard"} · ${esc(row.status)}</option>`).join("")}</select><p class="hint">Choose a saved test to repair just that repeat, or update a whole selection below.</p></div>`);
+  $("#extend-case").addEventListener("change", () => {
+    const value = $("#extend-case").value;
+    extension.selectedCases = value ? [JSON.parse(value)] : null;
+    const item = extension.selectedCases?.[0];
+    extension.modelModes = item ? {[item[0]]:[item[1] ? "on" : "off"]} : originalModelSelection(extension.sourceConfig, extension.models);
+    extension.sizes = new Set(item ? [item[3]] : extension.initialSizes);
+    extension.concurrency = new Set(item ? [item[2]] : extension.initialConcurrency);
+    extension.repeats = Number(extension.sourceConfig.repeats) || 1;
+    extension.action = item ? "rerun" : "add";
+    renderExtendForm(); previewExtension();
+  });
+  $("#extend-repeats").addEventListener("change", () => {
+    const value = Number($("#extend-repeats").value);
+    extension.repeats = value;
+    renderExtendForm(); previewExtension();
+  });
+  if (extension.selectedCases) {
+    $$("#extend-content input[data-model], #extend-content input[name=extend-action]").forEach(input => input.disabled = true);
+    $("#extend-select-existing").disabled = true;
+    $("#extend-clear-selection").disabled = true;
+  }
   $("#extend-select-existing").addEventListener("click", () => {
     extension.modelModes = originalModelSelection(extension.sourceConfig, extension.models);
     renderExtendForm(); previewExtension();
@@ -1232,11 +1616,18 @@ function renderExtendForm() {
   }));
   renderRange("#extend-sizes", sizes, extension.sizes, value => { extension.sizes = through(sizes, value); renderExtendForm(); previewExtension(); }, fmtTokens, "prompt tokens");
   renderRange("#extend-concurrency", levels, extension.concurrency, value => { extension.concurrency = through(levels, value); renderExtendForm(); previewExtension(); }, String, "simultaneous queries");
+  if (extension.selectedCases) $$("#extend-sizes input, #extend-concurrency input").forEach(input => input.disabled = true);
   $$("#extend-content input[name=extend-action]").forEach(input => input.addEventListener("change", () => { extension.action = input.value; renderExtendForm(); previewExtension(); }));
 }
 
 async function previewExtension() {
   const extension = state.extension;
+  if (!extension || extension.mode === "new") return;
+  if (providerManaged() || extension.connectionKey !== resultsConnectionKey()) {
+    $("#extend-start").disabled = true;
+    $("#extend-preview").innerHTML = banner("err", "Endpoint changed", "Close this dialog and select tests from the current connection again.");
+    return;
+  }
   const revision = ++extension.revision;
   const start = $("#extend-start");
   start.disabled = true;
@@ -1259,7 +1650,26 @@ async function previewExtension() {
 
 async function startExtension() {
   if (!state.extension || state.benchmarkRunning) return;
+  const extension = state.extension;
   $("#extend-start").disabled = true;
+  if (!resultsConnectionReady() || extension.connectionKey !== resultsConnectionKey()) {
+    $("#extend-preview").innerHTML = banner("err", "Endpoint changed", "Reconnect in Run and select tests again. No benchmark was started.");
+    return;
+  }
+  if (extension.mode === "new") {
+    const selected = extension.models.filter(model => extension.selectedModels.has(model.id));
+    if (!selected.length) return;
+    state.env.models = extension.models.map(model => ({...model}));
+    state.models = new Set(selected.map(model => model.id));
+    renderModels(); updatePlan();
+    $("#extend-dialog").close(); state.extension = null;
+    showPanel("run");
+    return;
+  }
+  if (providerManaged() || runProviderManaged(extension.source)) {
+    $("#extend-preview").innerHTML = banner("err", "New benchmark required", "Select models from the currently connected endpoint to create a new benchmark.");
+    return;
+  }
   try {
     const response = await api("/api/bench/extend", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(extendBody(state.extension))});
     $("#extend-dialog").close(); state.extension = null;
@@ -1274,9 +1684,14 @@ async function startExtension() {
 }
 
 function detailedResultsTable(run) {
+  const repairable = !run.community && run.status !== "running" && !state.benchmarkRunning
+    && !browserMode() && !runProviderManaged(run) && state.env?.capabilities?.extend;
   const fields = [
     ["Status", row => row.status], ["Repeat", row => (row.repeat || 0) + 1],
     ["Actual prompt tokens", row => row.prompt_tokens], ["Query context", row => row.per_request_context_length || row.context_length],
+    ["Cached prompt tokens (unknown if absent)", row => row.cached_prompt_tokens],
+    ["Token count source", row => row.metric_sources?.completion_tokens],
+    ["Provider-reported timings", row => row.reported_timings && Object.keys(row.reported_timings).length ? JSON.stringify(row.reported_timings) : null],
     ["Placement", row => row.gpu_offload], ["Time to first token (s)", row => row.ttft_s],
     ["Prefill (tk/s)", row => row.prefill_tps], ["Output (tk/s)", row => row.decode_tps],
     ["Group output (tk/s)", row => row.aggregate_completion_tps],
@@ -1290,14 +1705,21 @@ function detailedResultsTable(run) {
     ["Energy per 1k prompt tokens (J)", row => (row.power || {}).j_per_1k_prefill],
     ["Energy per output token (J)", row => (row.power || {}).j_per_token_decode],
     ["Load time (s)", row => row.load_s],
-    ["Quantization", row => row.quantization],
-    ["Speculative decoding", row => run.measurement_mode === "browser" ? "provider controlled" : row.mtp ? "on" : "off"],
+    ["Timeout budget (s)", row => row.timeout_budget_s],
+    ["Timeout rule", row => row.timeout_reason],
+    ["Timeout trigger", row => row.timeout_trigger],
+    ["Quantization", row => quantizationLabel(row)],
+    ["Quantization format source", row => row.quantization_source],
+    ["Quantization method source", row => row.quantization_method_source],
+    ["Speculative decoding", row => run.measurement_mode === "browser" || run.config?.provider === "openai" ? "provider controlled" : row.mtp ? "on" : "off"],
     ["VRAM peak (MB)", row => row.vram_peak_mb], ["Failure", row => row.message || row.fail_kind],
   ];
   const rows = (run.results || []).flatMap(row => [...fields.map(([label, get]) => {
     const value = get(row);
     if (value == null || value === "") return "";
-    return `<tr class="colored-result-row" style="--table-color:${tableRowColor(run, row.model, modelUniverse())}"><td>${esc(row.model)}</td><td>${fmtTokens(row.target_tokens)}</td><td>${row.concurrency || 1}</td><td>${esc(sessionLabel(run, row))}</td><td>${esc(label)}</td><td class="measure-cell">${esc(typeof value === "number" ? n(value) : value)}${label.includes("tk/s") ? estimatedMark(row, label.startsWith("Group")) : ""}</td></tr>`;
+    const repair = label === "Status" && repairable
+      ? `<button class="btn-sm" data-run-id="${esc(run.id)}" data-repair-case="${esc(JSON.stringify([row.model, !!row.mtp, row.concurrency || 1, row.target_tokens, row.repeat || 0]))}" title="Rerun only this test; its previous attempt is retained">Repair repeat ${(row.repeat || 0)+1}</button>` : "";
+    return `<tr class="colored-result-row" style="--table-color:${tableRowColor(run, row.model, modelUniverse())}"><td>${esc(row.model)}</td><td>${fmtTokens(row.target_tokens)}</td><td>${row.concurrency || 1}</td><td>${esc(sessionLabel(run, row))}</td><td>${esc(label)}</td><td class="measure-cell">${esc(typeof value === "number" ? n(value) : value)}${label.includes("tk/s") ? estimatedMark(row, label.startsWith("Group")) : ""}${repair}</td></tr>`;
   }), ...(row.requests || []).flatMap((request, index) => [
     ["Status", request.status], ["Prompt tokens", request.prompt_tokens],
     ["Output tokens", request.completion_tokens], ["Time to first token (s)", request.ttft_s],
@@ -1354,6 +1776,7 @@ async function redrawResultsWithoutScrolling() {
 }
 
 function renderVisibleModels(models) {
+  updateModelRerunAvailability();
   const shown = shownModels(models);
   $("#visible-model-count").textContent = `${shown.length} of ${models.length}`;
   const container = $("#visible-models");
@@ -1445,7 +1868,7 @@ async function renderSummary() {
       const metric = METRICS[key];
       for (const run of runs) {
         for (const mtp of (state.mtpFilter === "all" ? [false, true] : [state.mtpFilter === "on"])) {
-          if (run.measurement_mode === "browser" && (state.mtpFilter !== "all" || mtp)) continue;
+          if (runProviderManaged(run) && (state.mtpFilter !== "all" || mtp)) continue;
           for (const model of models) {
             const pts = pointsFor(run, model, metric, mtp);
             if (!pts.length) continue;
@@ -1492,15 +1915,7 @@ function selectedMetricKeys() {
   return Object.keys(METRICS).filter(key => state.metrics.has(key));
 }
 function metricGroups(keys = selectedMetricKeys()) {
-  const groups = [];
-  for (const key of keys) {
-    const unit = METRICS[key].unit;
-    // Energy per prompt workload and energy per output token have different denominators.
-    const identity = unit === "J" ? key : unit;
-    const group = groups.find(item => item.identity === identity);
-    if (group) group.keys.push(key); else groups.push({identity, unit, keys: [key]});
-  }
-  return groups;
+  return keys.map(key => ({identity:key, unit:METRICS[key].unit, keys:[key]}));
 }
 function measureAppearance(base, key, keys, mtp) {
   if (keys.length < 2) return base;
@@ -1562,7 +1977,7 @@ async function renderCompare() {
     for (const model of shown) {
       const facet = document.createElement("div");
       facet.className = "facet";
-      facet.innerHTML = `<h4>${esc(model)}</h4><div class="sub">${esc(group.keys.map(key => METRICS[key].label).join(" + "))} / ${esc(group.unit)}</div>${encodingLegend(group.keys, runs)}<div class="plot"></div>`;
+      facet.innerHTML = `<h4>${esc(model)}</h4><div class="sub">${esc(modelSubtitle(runs, model))}</div><div class="sub">${esc(group.keys.map(key => METRICS[key].label).join(" + "))} / ${esc(group.unit)}</div>${encodingLegend(group.keys, runs)}<div class="plot"></div>`;
       grid.appendChild(facet);
       const sizes = [...new Set(tracks.flatMap(track => (track.run.results || []).filter(row => row.model === model && !!row.mtp === !!track.mtp && (row.concurrency || 1) === state.comparisonConcurrency).map(row => row.target_tokens)))].sort((a, b) => a - b);
       const series = group.keys.flatMap(key => tracks.map(track => ({
@@ -1641,11 +2056,11 @@ function tracksFor(runs) {
   const tracks = [];
   for (const run of runs) {
     for (const mtp of modes) {
-      if (run.measurement_mode === "browser" && (state.mtpFilter !== "all" || mtp)) continue;
+      if (runProviderManaged(run) && (state.mtpFilter !== "all" || mtp)) continue;
       const rows = (run.results || []).filter((r) => !!r.mtp === !!mtp && (r.concurrency || 1) === state.comparisonConcurrency);
       const meaningful = rows.some((r) => r.status === "ok" || r.fail_kind !== "mtp_unsupported");
       if (!rows.length || !meaningful) continue;
-      const bothShown = modes.length > 1;
+      const bothShown = modes.length > 1 && !runProviderManaged(run);
       tracks.push({
         run, mtp,
         key: run.id + (mtp ? "::mtp" : ""),
@@ -1658,12 +2073,21 @@ function tracksFor(runs) {
   return tracks;
 }
 
+function quantizationLabel(model) {
+  const identity = model.model_configuration?.quantization || {};
+  const raw = {...model, id: model.id || model.model,
+    quantization: model.quantization || identity.value,
+    quantization_method: model.quantization_method || identity.method};
+  const normalized = globalThis.WatteverModelMetadata?.normalize(raw) || raw;
+  const method = normalized.quantization_method || String(raw.id || "").match(/(?:^|[-_./@])(QAT|QAD|UD)(?=$|[-_./@])/i)?.[1]?.toUpperCase();
+  return [normalized.quantization && normalized.quantization !== "unknown" ? normalized.quantization : "Quant unknown", method].filter(Boolean).join(" · ");
+}
+
 function modelSubtitle(runs, model) {
-  for (const run of runs) {
-    const hit = (run.results || []).find((r) => r.model === model && r.quantization);
-    if (hit) return [hit.quantization, hit.params, hit.architecture].filter(Boolean).join(" · ");
-  }
-  return "";
+  return [...new Set(runs.map(run => {
+    const hit = (run.results || []).find(row => row.model === model && row.quantization);
+    return hit ? quantizationLabel(hit) : "Quant unknown";
+  }))].join(" / ");
 }
 
 function metricEstimateMark(row, metric) {
@@ -1692,7 +2116,7 @@ function compareTable(tracks, models, keys = selectedMetricKeys()) {
           const value = row && row.status === "ok" ? metric.get(row) : null;
           return `<td class="num measure-cell" data-measure="${key}">${value == null ? "?" : n(value) + metricEstimateMark(row, metric)}</td>`;
         }).join("");
-        rows.push(`<tr class="colored-result-row" style="--table-color:${color}" data-model="${esc(model)}" data-benchmark="${esc(track.run.id)}"><td class="model-cell">${esc(model)}</td><td class="num">${fmtTokens(size)}</td><td class="benchmark-cell"><span class="table-benchmark-name" title="${esc(track.name)}">${esc(track.name)}</span></td>${cells}<td>${statusCell(representative)}</td></tr>`);
+        rows.push(`<tr class="colored-result-row" style="--table-color:${color}" data-model="${esc(model)}" data-benchmark="${esc(track.run.id)}"><td class="model-cell">${esc(model)}<small>${esc(quantizationLabel(representative))}</small></td><td class="num">${fmtTokens(size)}</td><td class="benchmark-cell"><span class="table-benchmark-name" title="${esc(track.name)}">${esc(track.name)}</span></td>${cells}<td>${statusCell(representative)}</td></tr>`);
       }
     }
   }
@@ -1700,4 +2124,11 @@ function compareTable(tracks, models, keys = selectedMetricKeys()) {
   return `<table class="measurements-table"><thead><tr><th>Model</th><th>Prompt tokens</th><th>Benchmark</th>${keys.map(key => `<th class="num" data-measure="${key}">${esc(METRICS[key].label)} <small>(${esc(METRICS[key].unit)})</small></th>`).join("")}<th>Status</th></tr></thead><tbody>${rows.join("")}</tbody><tfoot><tr><td colspan="${4 + keys.length}">One row per model, prompt size and benchmark. Each measure reports its median successful repeat. * Estimated token counts. Cell colors follow the Color by selection.</td></tr></tfoot></table>`;
 }
 
+if (typeof window !== "undefined") window.WatteverUI = {
+  api, connection:helperEndpointConfig, metadata:publicRunMetadata, config:collectConfig, browserMode, showPanel,
+  telemetryMarkup,bindTelemetry,
+  models:()=>state.env?.models || [],
+  selectedModels:()=>[...state.models],
+  ready:()=>!state.providerNeedsConnection && (!genericHelper() || state.endpointSignature === helperConnectionSignature()),
+};
 init();

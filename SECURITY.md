@@ -1,5 +1,15 @@
 # Security
 
-Wattever serves a local interface that can start benchmarks, load or unload models, and change local results. Keep it bound to loopback and use it only on a trusted machine. Review result files before sharing them.
+The local helper rejects cross-origin state changes and non-loopback Host names. POST requests with a body require `Content-Type: application/json`; authenticated discovery uses `POST /api/endpoint/check`, not query parameters on GET. This prevents an unrelated webpage from asking the helper to forward named environment credentials. Command-line API clients without an Origin header remain supported.
+
+Wattever serves a local interface that can start benchmarks, load or unload managed LM Studio models, and change local results. Keep it bound to loopback and use it only on a trusted machine. Generic endpoints receive your benchmark prompts and can incur provider charges; use a provider you trust.
+
+The helper reads optional endpoint credentials from a named environment variable. Enter the variable name in Wattever, not a literal key. Endpoint URLs, credential variable names and credentials are excluded from public results and exports. They are not a substitute for reviewing free text: labels, notes, model names, reproducibility fields and compute sources are public annotations. Do not put secrets or private server locations in them. Browser-mode keys remain in memory; see [browser privacy](docs/browser.md).
+
+Hardware discovery uses read-only, allow-listed OS/driver fields without elevation. It excludes serial numbers, GPU UUIDs, hostnames, network addresses and user paths. Inventory describes the benchmark client; it does not authenticate a remote inference server or verify its hardware. Local-inference attribution is an explicit user assertion. Review exported JSON before sharing, including older imported results that may contain legacy identifiers.
+
+Capability audit files preserve exact public suite prompts, expected answers and source citations so their dataset digests and grading can be checked. Review those materials and generated answers before publication. Privacy-redacted responses cannot be imported as full independently scored audits. Public model/endpoint IDs must not contain connection locations or secrets. Content fingerprints establish consistency, not authentication or evidence that particular weights were served; see [capability evaluation](docs/capabilities.md).
+
+Canonical known public API routes use stable public provider IDs. Other automatic identities use random public route IDs with private URL mappings in ignored `results/.endpoint-routes.json` or browser local storage. Do not publish those mappings. Connection URLs are not hashed into public IDs or result fingerprints. Service detection and route-origin labels are evidence about the connection, not verification of remote inference hardware or backend weights. Optional display names remain public annotations and need review.
 
 Report suspected vulnerabilities privately to the repository maintainers through GitHub's private vulnerability reporting if available. Do not publish sensitive details before maintainers can respond. See [API](docs/api.md) for state-changing endpoints.

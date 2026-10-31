@@ -4,11 +4,13 @@ GPU indices identify sensors only and do not determine where a model runs.
 Values unavailable on a host are returned as None or empty lists.
 """
 import json
+import math
 import glob
 import os
 import platform
 import re
 import subprocess
+from datetime import datetime, timezone
 
 from . import platform_util as pu
 
@@ -32,10 +34,127 @@ def _entries(value):
     return value if isinstance(value, list) else [value] if isinstance(value, dict) else []
 
 
+def _positive(value):
+    number = _number(value)
+    return number if not isinstance(value, bool) and number is not None and number > 0 else None
+
+
+def _memory_inventory():
+    """Physical DIMMs where readable without elevation; DIMM count is not channels.
+
+    CIM clock fields retain their reported MHz units; do not silently reinterpret
+    these values as independently measured clocks, transfer rates or bandwidth.
+    """
+    modules, source = [], None
+    if pu.IS_WINDOWS:
+        script = ("$ErrorActionPreference='Stop'; @(Get-CimInstance Win32_PhysicalMemory | "
+                  "Select-Object Capacity,Speed,ConfiguredClockSpeed,SMBIOSMemoryType,DataWidth,TotalWidth) "
+                  "| ConvertTo-Json -Compress")
+        data = _json_command(['powershell', '-NoProfile', '-NonInteractive', '-Command', script], timeout=10)
+        source = 'Win32_PhysicalMemory'
+        for raw in _entries(data):
+            if not any(k in raw for k in ('Capacity', 'Speed', 'ConfiguredClockSpeed', 'SMBIOSMemoryType', 'DataWidth', 'TotalWidth')):
+                continue
+            modules.append({'capacity_bytes': _positive(raw.get('Capacity')),
+                            'speed_mhz_reported': _positive(raw.get('Speed')),
+                            'configured_clock_mhz_reported': _positive(raw.get('ConfiguredClockSpeed')),
+                            'smbios_memory_type': _positive(raw.get('SMBIOSMemoryType')),
+                            'data_width_bits': _positive(raw.get('DataWidth')),
+                            'total_width_bits': _positive(raw.get('TotalWidth'))})
+    elif pu.IS_LINUX:
+        source = 'linux_edac_sysfs'
+        for path in sorted(glob.glob('/sys/devices/system/edac/mc/mc*/dimm*')):
+            try:
+                with open(os.path.join(path, 'size'), encoding='utf-8') as f:
+                    capacity = _positive(f.read().strip())
+                with open(os.path.join(path, 'dimm_mem_type'), encoding='utf-8') as f:
+                    kind = f.read().strip()
+                if capacity:
+                    modules.append({'capacity_bytes': capacity * 1024 ** 2, 'type_reported': kind})
+            except OSError:
+                continue
+    elif pu.IS_MAC:
+        # Unified-memory topology is not inferred from marketing chip names.
+        source = 'sysctl'
+    capacities = [m['capacity_bytes'] for m in modules if m.get('capacity_bytes')]
+    installed = sum(capacities) if capacities and len(capacities) == len(modules) else None
+    if pu.IS_MAC:
+        installed = _positive(pu.sysctl('hw.memsize'))
+    return {'modules': modules, 'module_count': len(modules) if modules else None,
+            'installed_capacity_bytes': installed,
+            'configured_clock_mhz_reported': sorted(set(m['configured_clock_mhz_reported'] for m in modules
+                                                       if m.get('configured_clock_mhz_reported'))),
+            'channel_count': None, 'measured_bandwidth_gb_s': None,
+            'source': source,
+            'note': 'Module count does not establish active memory channels. Clocks are firmware/OS reports; bandwidth has not been benchmarked.'}
+
+
+def _pcie(gen, width, max_gen=None, max_width=None, source=None):
+    gen, width, max_gen, max_width = map(_positive, (gen, width, max_gen, max_width))
+    # Gen 6 FLIT/FEC encoding differs. Leave unknown rather than extend this rule.
+    rates = {1: (2.5, .8), 2: (5., .8), 3: (8., 128 / 130),
+             4: (16., 128 / 130), 5: (32., 128 / 130)}
+    ceiling = None
+    if gen in rates and width:
+        transfers, efficiency = rates[gen]
+        ceiling = transfers * 1e9 * efficiency * width / 8
+    return {'generation_current': gen, 'width_current': width,
+            'generation_max_reported': max_gen, 'width_max_reported': max_width,
+            'link_encoding_ceiling_bytes_per_second': ceiling,
+            'bandwidth_kind': 'derived_one_direction_encoding_ceiling',
+            'measured_host_to_device_bytes_per_second': None,
+            'source': source,
+            'note': 'Snapshot may show an idle downshift. Reported maxima can reflect platform limits. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth.'}
+
+
+def _nvidia_pcie(index):
+    if type(index) is not int or index < 0:
+        return _pcie(None, None)
+    try:
+        result = pu.run(['nvidia-smi', '--id=%d' % index,
+                         '--query-gpu=pcie.link.gen.current,pcie.link.width.current,pcie.link.gen.max,pcie.link.width.max',
+                         '--format=csv,noheader,nounits'], timeout=5)
+        rows = result.stdout.strip().splitlines()
+        fields = [v.strip() for v in rows[0].split(',')] if result.returncode == 0 and rows else []
+        if len(fields) == 4:
+            return _pcie(*fields, source='nvidia-smi')
+    except (OSError, ValueError, subprocess.SubprocessError):
+        pass
+    return _pcie(None, None)
+
+
+def _linux_pcie(pci):
+    if not pci or not re.fullmatch(r'[0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\.[0-7]', pci):
+        return _pcie(None, None)
+    def read(name):
+        try:
+            with open('/sys/bus/pci/devices/' + pci + '/' + name, encoding='utf-8') as f:
+                return f.read().strip()
+        except OSError:
+            return None
+    def generation(value):
+        match = re.match(r'([0-9.]+)\s*GT/s', value or '')
+        return {2.5: 1, 5.: 2, 8.: 3, 16.: 4, 32.: 5, 64.: 6}.get(float(match.group(1))) if match else None
+    return _pcie(generation(read('current_link_speed')), read('current_link_width'),
+                 generation(read('max_link_speed')), read('max_link_width'), source='linux_pci_sysfs')
+
+
+def _capabilities(details=None):
+    details = details or {}
+    capability = details.get('compute_cap')
+    power_limit = details.get('power_limit_w')
+    if type(power_limit) not in (int, float) or not math.isfinite(power_limit) or power_limit <= 0:
+        power_limit = None
+    return {'compute_capability_reported': capability if isinstance(capability, str) and re.fullmatch(r'\d+\.\d+', capability) else None,
+            'power_limit_w_reported': power_limit,
+            'compute_peaks': [], 'measured_memory_bandwidth_gb_s': None,
+            'note': 'No FLOPS/TOPS or device-memory bandwidth measurement was performed. Model quantization bit width is not hardware arithmetic precision; peak compute also depends on operation, clock and sparsity.'}
+
+
 def _windows():
     # Select only public, non-identifying fields at the source.
     script = ("$ErrorActionPreference='Stop'; "
-              "@{cpu=@(Get-CimInstance Win32_Processor | Select-Object Name,NumberOfCores,NumberOfLogicalProcessors); "
+              "@{cpu=@(Get-CimInstance Win32_Processor | Select-Object Name,NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed,Architecture); "
               "gpus=@(Get-CimInstance Win32_VideoController | Select-Object Name,AdapterRAM,DriverVersion); "
               "system=(Get-CimInstance Win32_ComputerSystem | Select-Object Manufacturer,Model,TotalPhysicalMemory)} | ConvertTo-Json -Depth 4 -Compress")
     data = _json_command(['powershell', '-NoProfile', '-NonInteractive', '-Command', script]) or {}
@@ -48,7 +167,10 @@ def _windows():
         vals = [_number(c.get(key)) for c in cpus]
         return sum(v for v in vals if v is not None) if any(v is not None for v in vals) else None
     return {'name': cpus[0].get('Name') if cpus else None,
-            'physical_cores': total('NumberOfCores'), 'logical_cores': total('NumberOfLogicalProcessors')}, {
+            'physical_cores': total('NumberOfCores'), 'logical_cores': total('NumberOfLogicalProcessors'),
+            'socket_count': len(cpus) or None, 'architecture': platform.machine(),
+            'max_clock_mhz_reported': _positive(cpus[0].get('MaxClockSpeed')) if cpus else None,
+            'source': 'Win32_Processor'}, {
             'manufacturer': system.get('Manufacturer'), 'model': system.get('Model'),
             'memory_bytes': _number(system.get('TotalPhysicalMemory'))}, gpu
 
@@ -104,7 +226,10 @@ def _linux():
             except OSError:
                 continue
     return {'name': (cpus[0].get('model name') or cpus[0].get('Processor')) if cpus else None,
-            'physical_cores': len(pairs) or None, 'logical_cores': os.cpu_count()}, {
+            'physical_cores': len(pairs) or None, 'logical_cores': os.cpu_count(),
+            'socket_count': len({c['physical id'] for c in cpus if c.get('physical id') is not None}) or None,
+            'architecture': platform.machine(), 'max_clock_mhz_reported': None,
+            'source': 'proc_cpuinfo'}, {
             'manufacturer': dmi('sys_vendor'), 'model': dmi('product_name'), 'memory_bytes': memory}, gpus
 
 
@@ -118,7 +243,9 @@ def _mac():
                          'memory_bytes': None, 'driver': None})
     return {'name': pu.sysctl('machdep.cpu.brand_string'),
             'physical_cores': _number(pu.sysctl('hw.physicalcpu')),
-            'logical_cores': _number(pu.sysctl('hw.logicalcpu'))}, {
+            'logical_cores': _number(pu.sysctl('hw.logicalcpu')),
+            'architecture': platform.machine(), 'socket_count': None,
+            'max_clock_mhz_reported': None, 'source': 'sysctl'}, {
             'manufacturer': 'Apple', 'model': pu.sysctl('hw.model'),
             'memory_bytes': _number(pu.sysctl('hw.memsize'))}, gpus
 
@@ -195,6 +322,8 @@ def inventory():
             # nvidia-smi may use an eight-digit PCI domain.
             return re.sub(r'^0+(?=[0-9a-fA-F]{4}:)', '', value.lower())
         pci = bus(gpu.pop('_pci', None))
+        gpu['pcie'] = _linux_pcie(pci) if pu.IS_LINUX and not pu.IS_WINDOWS else _pcie(None, None)
+        gpu['capabilities'] = _capabilities()
         match = next((s for s in sensors if pci and bus(s.get('pci_bus_id')) == pci), None)
         if match is None and not pci:
             match = next((s for s in sensors if s.get('name') == gpu['name']), None)
@@ -207,6 +336,10 @@ def inventory():
                 details = power.gpu_info(match.get('index'))
                 gpu['driver'] = details.get('driver') or gpu['driver']
                 gpu['memory_architecture'] = details.get('memory_architecture')
+                nvidia_link = _nvidia_pcie(match.get('index'))
+                if nvidia_link['generation_current'] is not None or nvidia_link['width_current'] is not None:
+                    gpu['pcie'] = nvidia_link
+                gpu['capabilities'] = _capabilities(details)
             else:
                 gpu['memory_architecture'] = power.gpu_info(match.get('index')).get('memory_architecture')
             if match.get('vram_total_mb') is not None:
@@ -216,8 +349,16 @@ def inventory():
         details = power.gpu_info(sensor.get('index'))
         gpus.append({'name': sensor.get('name'), 'vendor': details.get('vendor'),
                      'memory_bytes': int(sensor['vram_total_mb'] * 1024 * 1024) if sensor.get('vram_total_mb') is not None else None,
-                     'driver': details.get('driver'), 'memory_architecture': details.get('memory_architecture'), 'sensor_index': sensor.get('index')})
+                     'driver': details.get('driver'), 'memory_architecture': details.get('memory_architecture'), 'sensor_index': sensor.get('index'),
+                     'pcie': _pcie(None, None) if pu.IS_MAC else _nvidia_pcie(sensor.get('index')),
+                     'capabilities': _capabilities(details)})
     board, firmware, storage = _equipment()
-    return {'motherboard': board, 'firmware': firmware, 'storage': storage,
+    return {'metadata_schema_version': 1,
+            'collection': {'scope': 'benchmark_client', 'inference_server_hardware_verified': False,
+                           'captured_at': datetime.now(timezone.utc).isoformat(),
+                           'python_version': platform.python_version(),
+                           'policy': 'Read-only allow-listed OS/driver probes without elevation; no unique device IDs, host names, network addresses or user paths.'},
+            'memory': _memory_inventory(),
+            'motherboard': board, 'firmware': firmware, 'storage': storage,
             'os': {'name': platform.system(), 'release': platform.release(),
                    'architecture': platform.machine()}, 'cpu': cpu, 'system': system, 'gpus': gpus}

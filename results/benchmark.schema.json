@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Wattever benchmark session v2",
-  "description": "One file describes one machine benchmark, extended through recorded execution sessions. Unknown hardware values are null. Legacy unversioned sessions remain supported by the application.",
+  "description": "One file records a benchmark and execution sessions. Hardware attribution distinguishes inference host from benchmark client. Unknown values remain null; reported claims are not verified measurements.",
   "type": "object",
   "required": [
     "schema_version",
@@ -19,7 +19,11 @@
     "results"
   ],
   "properties": {
-    "measurement_mode": {"enum": ["helper"]},
+    "measurement_mode": {
+      "enum": [
+        "helper"
+      ]
+    },
     "schema_version": {
       "const": 2
     },
@@ -57,6 +61,7 @@
         "gpus"
       ],
       "properties": {
+        "transfer_bandwidth": {"$ref": "#/$defs/transferBandwidth"},
         "os": {
           "type": "object",
           "required": [
@@ -118,6 +123,25 @@
               "interface"
             ]
           }
+        },
+        "metadata_schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "collection": {
+          "type": "object",
+          "properties": {
+            "scope": {
+              "type": "string"
+            },
+            "inference_server_hardware_verified": {
+              "type": "boolean"
+            }
+          }
+        },
+        "memory": {
+          "type": "object",
+          "description": "Allowlisted DIMM reports; module count does not establish channels. Bandwidth is null unless measured."
         }
       }
     },
@@ -161,6 +185,68 @@
             "minimum": 1,
             "maximum": 100
           }
+        },
+        "provider": {
+          "enum": [
+            "lmstudio",
+            "openai"
+          ]
+        },
+        "endpoint_label": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "endpoint_inference_local": {
+          "type": "boolean"
+        },
+        "reproducibility": {
+          "$ref": "#/$defs/reproducibility"
+        },
+        "performance_claims": {
+          "$ref": "#/$defs/performanceClaims"
+        },
+        "endpoint_reasoning_effort": {
+          "enum": [
+            null,
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ]
+        },
+        "endpoint_id": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "canonical_model_id": {
+          "type": "string",
+          "maxLength": 250
+        },
+        "reported_mtp": {
+          "enum": [
+            "on",
+            "off",
+            "unknown"
+          ]
+        },
+        "reported_reasoning": {
+          "type": "string"
+        },
+        "token_limit_field": {
+          "enum": [
+            "max_tokens",
+            "max_completion_tokens"
+          ]
+        },
+        "temperature": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 2
         }
       }
     },
@@ -231,9 +317,111 @@
     "remaining_tests": {
       "type": "integer",
       "minimum": 0
+    },
+    "provider": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "lmstudio",
+            "openai"
+          ]
+        },
+        "label": {
+          "type": "string"
+        },
+        "model_management": {
+          "enum": [
+            "lms_cli",
+            "external"
+          ]
+        },
+        "context_control": {
+          "type": "boolean"
+        },
+        "mtp_control": {
+          "type": "boolean"
+        }
+      }
+    },
+    "measurement_client": {
+      "type": "object",
+      "description": "Inventory of the load-generating client. It is not evidence of remote inference hardware."
+    },
+    "reproducibility": {
+      "type": "object",
+      "required": [
+        "source",
+        "settings"
+      ],
+      "properties": {
+        "source": {
+          "const": "user_reported"
+        },
+        "settings": {
+          "$ref": "#/$defs/reproducibility"
+        }
+      }
+    },
+    "performance_claims": {
+      "$ref": "#/$defs/performanceClaims"
+    },
+    "model_configurations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "fingerprint_version",
+          "configuration_id",
+          "model",
+          "quantization",
+          "reasoning",
+          "mtp",
+          "endpoint"
+        ]
+      }
+    },
+    "telemetry": {
+      "type": "object",
+      "description": "Local client observations; recent ring history and whole-run coverage-aware summary."
     }
   },
   "$defs": {
+    "transferBandwidth": {
+      "type": "object",
+      "required": ["schema_version", "protocol", "captured_at", "scope", "unit", "storage_to_ram", "ram_to_vram"],
+      "properties": {
+        "schema_version": {"const": 1},
+        "protocol": {"const": "wattever-transfer-v1"},
+        "captured_at": {"type": "string", "format": "date-time"},
+        "scope": {"const": "benchmark_client"},
+        "unit": {"const": "bytes_per_second"},
+        "storage_to_ram": {"$ref": "#/$defs/transferMeasurement"},
+        "ram_to_vram": {"$ref": "#/$defs/transferMeasurement"},
+        "provenance": {"enum": ["measured_before_session", "measured_later_on_matching_hardware"]}
+      }
+    },
+    "transferMeasurement": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {"status": {"enum": ["ok", "unavailable"]}},
+      "allOf": [
+        {"if": {"properties": {"status": {"const": "ok"}}},
+         "then": {"required": ["bytes_per_second", "statistic", "method", "samples"],
+          "properties": {
+            "bytes_per_second": {"type": "number", "exclusiveMinimum": 0},
+            "statistic": {"const": "median"},
+            "method": {"type": "string", "minLength": 1},
+            "samples": {"type": "array", "minItems": 1, "maxItems": 100,
+              "items": {"type": "object", "required": ["bytes", "elapsed_s"],
+                "properties": {"bytes": {"type": "integer", "minimum": 1},
+                               "elapsed_s": {"type": "number", "exclusiveMinimum": 0}}}}
+          }}},
+        {"if": {"properties": {"status": {"const": "unavailable"}}},
+         "then": {"required": ["reason"], "not": {"required": ["bytes_per_second"]},
+                  "properties": {"reason": {"type": "string", "minLength": 1}}}}
+      ]
+    },
     "result": {
       "type": "object",
       "required": [
@@ -281,7 +469,189 @@
         },
         "group_power": {
           "type": "object"
+        },
+        "cached_prompt_tokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "metric_sources": {
+          "type": "object"
+        },
+        "reported_timings": {
+          "type": "object",
+          "description": "Provider-reported timing fields, kept separate from client metrics."
+        },
+        "timing_scope": {
+          "type": "object"
+        },
+        "decode_token_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "quantization": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 80
+        },
+        "quantization_source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 80
+        },
+        "quantization_method": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 80
+        },
+        "quantization_method_source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 80
         }
+      }
+    },
+    "reproducibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "engine": {
+          "type": "string",
+          "maxLength": 250
+        },
+        "engine_version": {
+          "type": "string",
+          "maxLength": 250
+        },
+        "model_revision": {
+          "type": "string",
+          "maxLength": 250
+        },
+        "quantization": {
+          "type": "string",
+          "maxLength": 250
+        },
+        "kv_cache_dtype": {
+          "type": "string",
+          "maxLength": 250
+        },
+        "context_tokens": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000000
+        },
+        "mtp_draft_tokens": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000000
+        }
+      }
+    },
+    "performanceClaims": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "required": [
+          "precision",
+          "value",
+          "unit",
+          "kind",
+          "sparsity",
+          "source",
+          "execution_path"
+        ],
+        "properties": {
+          "precision": {
+            "enum": [
+              "FP4",
+              "INT4",
+              "FP8",
+              "INT8",
+              "FP16",
+              "BF16",
+              "FP32"
+            ]
+          },
+          "value": {
+            "type": "number",
+            "minimum": 0
+          },
+          "unit": {
+            "enum": [
+              "TOPS",
+              "TFLOP/s"
+            ]
+          },
+          "kind": {
+            "enum": [
+              "advertised_peak",
+              "measured",
+              "estimate"
+            ]
+          },
+          "sparsity": {
+            "enum": [
+              "dense",
+              "sparse",
+              "unknown"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "execution_path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "provenance": {
+            "const": "user_reported"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "precision": {
+                  "enum": [
+                    "INT4",
+                    "INT8"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "unit": {
+                  "const": "TOPS"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "unit": {
+                  "const": "TFLOP/s"
+                }
+              }
+            }
+          }
+        ]
       }
     }
   }

@@ -15,7 +15,7 @@ import uuid
 import threading
 import time
 
-from . import corpus, lmstudio, power, store
+from . import corpus, endpoints, lmstudio, power, store
 from .platform_util import IS_MAC
 
 FAIL_LOAD = "load_failed"
@@ -31,6 +31,10 @@ class RecoveryError(RuntimeError):
     """The provider could not be brought to a verified quiescent state."""
 
 DEFAULT_CONFIG = {
+    "provider": "lmstudio",
+    "endpoint_label": "",
+    "endpoint_inference_local": False,
+    "endpoint_reasoning_effort": None,
     "models": [],
     "concurrency_levels": [1],
     "sizes": [512, 5000, 10000, 20000, 40000],
@@ -45,6 +49,7 @@ DEFAULT_CONFIG = {
     "gpu_offload": "max",
     "fallback_on_failure": True,
     "stop_model_after_failure": True,
+    "skip_after_timeout": False,
     "context_headroom": 512,
     # Token counts are estimated before inference. Reserve proportional space
     # too, rather than turning a small tokenizer error into a false capacity limit.
@@ -95,24 +100,8 @@ def context_budget(size, cfg, concurrency, model_max=None):
 
 
 def request_deadline(run, cfg, model, size, concurrency):
-    """Conservative deadline derived from prior same-model successful prefill."""
-    cap = float(cfg["per_test_timeout_s"])
-    candidates = [r for r in run.get("results", []) if r.get("status") == "ok"
-                  and r.get("model") == model and r.get("concurrency", 1) == concurrency
-                  and isinstance(r.get("prefill_tps"), (int, float))
-                  and r["prefill_tps"] > 0 and r.get("target_tokens", 0) <= size]
-    if not candidates and concurrency > 1:
-        candidates = [r for r in run.get("results", []) if r.get("status") == "ok"
-                      and r.get("model") == model and r.get("concurrency", 1) == 1
-                      and isinstance(r.get("prefill_tps"), (int, float))
-                      and r["prefill_tps"] > 0 and r.get("target_tokens", 0) <= size]
-    if not candidates:
-        return cap, "configured timeout; no comparable prefill"
-    prior = max(candidates, key=lambda r: r.get("target_tokens", 0))
-    expected = size / prior["prefill_tps"] * (concurrency if prior.get("concurrency", 1) == 1 else 1)
-    # Extra allowance for memory pressure and decode. Never exceed the user cap.
-    budget = min(cap, max(120.0, expected * 6.0 + 120.0))
-    return budget, "six times prior prefill estimate plus 120 seconds, capped by configured timeout"
+    """Honor the requested budget: long-context prefill need not scale linearly."""
+    return float(cfg["per_test_timeout_s"]), "configured per-test timeout"
 
 
 def completed_cases(run, cfg):
@@ -125,13 +114,14 @@ def completed_cases(run, cfg):
                 or row.get("concurrency", 1) not in cfg.get("concurrency_levels", [1])
                 or bool(row.get("mtp")) not in _mtp_modes(cfg, row.get("model"))):
             continue
-        repeats = [row["repeat"]] if "repeat" in row else range(int(cfg["repeats"]))
+        legacy_repeats = row.get("legacy_repeat_count", (run.get("config") or {}).get("repeats", cfg["repeats"]))
+        repeats = [row["repeat"]] if "repeat" in row else range(min(int(cfg["repeats"]), int(legacy_repeats)))
         for repeat in repeats:
             if not isinstance(repeat, int) or not 0 <= repeat < int(cfg["repeats"]):
                 continue
             cases.add((row.get("model"), bool(row.get("mtp")), row.get("concurrency", 1),
                        row.get("target_tokens"), repeat))
-    return cases
+    return cases & planned_cases(cfg)
 
 
 def _mtp_modes(cfg, model=None):
@@ -147,14 +137,17 @@ def _mtp_modes(cfg, model=None):
 
 
 def planned_cases(cfg):
-    return {(model, mtp, concurrency, size, rep)
+    cases = {(model, mtp, concurrency, size, rep)
             for model in cfg["models"] for mtp in _mtp_modes(cfg, model)
             for concurrency in cfg["concurrency_levels"] for size in cfg["sizes"]
             for rep in range(int(cfg["repeats"]))}
+    if cfg.get("selected_cases") is not None:
+        cases &= {tuple(case) for case in cfg["selected_cases"]}
+    return cases
 
 
 def extension_config(source, selection):
-    """A deliberately narrow edit: add workloads without changing measurement settings."""
+    """Add or repair workloads, recording a selected timeout in the new session."""
     modes = selection.get("model_modes")
     if not isinstance(modes, dict) or not modes:
         raise ValueError("Choose at least one model and its Standard or MTP mode.")
@@ -163,6 +156,20 @@ def extension_config(source, selection):
                 or not values or any(mode not in ("off", "on") for mode in values)):
             raise ValueError("Each model needs Standard (off), MTP (on), or both.")
     cfg = dict(DEFAULT_CONFIG, **(source.get("config") or {}))
+    cfg.pop("selected_cases", None)
+    repeats = selection.get("repeats", cfg["repeats"])
+    if type(repeats) is not int or not int(cfg["repeats"]) <= repeats <= 100:
+        raise ValueError("Total repeats must be between the saved repeat count and 100.")
+    cfg["repeats"] = repeats
+    timeout = selection.get("per_test_timeout_s", cfg["per_test_timeout_s"])
+    if type(timeout) is not int or not 1 <= timeout <= 7200:
+        raise ValueError("Per-test timeout must be an integer between 1 and 7,200 seconds.")
+    cfg["per_test_timeout_s"] = timeout
+    for key in ("fallback_on_failure", "skip_after_timeout"):
+        value = selection.get(key, cfg.get(key, False))
+        if type(value) is not bool:
+            raise ValueError("%s must be true or false." % key)
+        cfg[key] = value
     cfg.update(models=list(modes), model_modes=copy.deepcopy(modes),
                context_planner_version=DEFAULT_CONFIG["context_planner_version"])
     # Legacy runs inherit the corrected planner, not an accidental zero margin.
@@ -177,6 +184,16 @@ def extension_config(source, selection):
         raise ValueError("Prompt sizes must be between 1 and 1,000,000 tokens.")
     if any(level < 1 or level > 100 for level in cfg["concurrency_levels"]):
         raise ValueError("Simultaneous query counts must be between 1 and 100.")
+    if "selected_cases" in selection:
+        selected = selection["selected_cases"]
+        allowed = planned_cases(cfg)
+        if (not isinstance(selected, list) or not selected or len(selected) > 100000
+                or any(not isinstance(case, list) or len(case) != 5
+                       or not isinstance(case[0], str) or type(case[1]) is not bool
+                       or any(type(v) is not int for v in case[2:])
+                       or tuple(case) not in allowed for case in selected)):
+            raise ValueError("Select valid individual tests within the chosen workload.")
+        cfg["selected_cases"] = selected
     return cfg
 
 
@@ -197,6 +214,8 @@ def extension_plan(source, cfg, retry_failed=False, rerun_existing=False):
 def merged_config(source_cfg, added_cfg):
     """Describe the full benchmark while execution_config records the current selection."""
     merged = copy.deepcopy(source_cfg)
+    merged.pop("selected_cases", None)
+    merged["repeats"] = max(int(source_cfg["repeats"]), int(added_cfg["repeats"]))
     merged["models"] = list(dict.fromkeys(source_cfg["models"] + added_cfg["models"]))
     for key in ("sizes", "concurrency_levels"):
         merged[key] = sorted(set(source_cfg.get(key, [1]) + added_cfg[key]))
@@ -291,12 +310,16 @@ class BenchRunner:
             source = store.load(run_id)
             if not source:
                 raise ValueError("No such benchmark.")
+            if (source.get("config") or {}).get("provider") == "openai":
+                raise ValueError("Reconnect the external endpoint and start a new run. Connection details are not stored.")
             return self._start(source.get("execution_config") or source.get("config"), resume_source=source)
 
     def extension_options(self, run_id):
         source = store.load(run_id)
         if not source:
             raise ValueError("No such benchmark.")
+        if (source.get("config") or {}).get("provider") == "openai":
+            raise ValueError("Reconnect the external endpoint and start a new run. Connection details are not stored.")
         return {"models": [m for m in lmstudio.list_models() if m.get("type") != "embeddings"],
                 "sizes": source["config"]["sizes"],
                 "concurrency_levels": source["config"].get("concurrency_levels", [1])}
@@ -325,10 +348,21 @@ class BenchRunner:
                 if type(selection.get(key, False)) is not bool:
                     raise ValueError("%s must be true or false." % key)
             cfg = extension_config(source, selection)
-            installed = {m["id"] for m in lmstudio.list_models() if m.get("type") != "embeddings"}
+            if cfg.get("provider") == "openai":
+                raise ValueError("Reconnect the external endpoint and start a new run. Connection details are not stored.")
+            catalog = [m for m in lmstudio.list_models() if m.get("type") != "embeddings"]
+            self._model_catalog = {m["id"]: m for m in catalog}
+            installed = set(self._model_catalog)
             missing = set(cfg["models"]) - installed
             if missing:
                 raise ValueError("Models are not installed: " + ", ".join(sorted(missing)))
+            for row in source.get("results", []):
+                current = self._model_catalog.get(row.get("model"))
+                if not current or row.get("model") not in cfg["models"]:
+                    continue
+                for key in ("quantization", "quantization_method"):
+                    if row.get(key) and current.get(key) and row[key] != current[key]:
+                        raise ValueError("Quantization differs for %s. Start a new benchmark to keep configurations separate." % row["model"])
             return self._start(cfg, resume_source=source, extend_in_place=True,
                                retry_failed=selection.get("retry_failed", False),
                                rerun_existing=selection.get("rerun_existing", False))
@@ -338,11 +372,29 @@ class BenchRunner:
         if self.running:
             raise RuntimeError("A benchmark is already running.")
         cfg = dict(DEFAULT_CONFIG)
-        cfg.update(config or {})
+        allowed = set(DEFAULT_CONFIG) | {"endpoint_base_url", "endpoint_api_key_env", "endpoint_id", "canonical_model_id", "model_modes",
+                                        "runtime_gpu_placement", "reproducibility", "performance_claims",
+                                        "reported_mtp", "reported_reasoning", "model_source", "temperature", "token_limit_field",
+                                        "endpoint_identity", "endpoint_name_override", "selected_cases", "storage_probe_directory"}
+        cfg.update({k: v for k, v in (config or {}).items() if k in allowed})
+        if "selected_cases" in cfg and resume_source is None:
+            raise ValueError("Individual test selection requires an existing benchmark. Use Add / rerun tests.")
+        endpoints.validate(cfg)
+        endpoints.resolve_identity(cfg)
+        self._runtime_config = cfg
+        self._model_catalog = {}
+        self._endpoint_model_catalog = {}
+        if cfg.get("provider") == "openai":
+            if not isinstance(self.cli, endpoints.ExternalControl): self._managed_cli = self.cli
+            self.cli = endpoints.ExternalControl()
+        elif isinstance(self.cli, endpoints.ExternalControl):
+            self.cli = getattr(self, "_managed_cli", None) or lmstudio.LmsCli()
         cfg["context_planner_version"] = DEFAULT_CONFIG["context_planner_version"]
         if not cfg["models"]:
             raise ValueError("Select at least one model.")
         cfg["models"] = list(dict.fromkeys(cfg["models"]))
+        if cfg.get("canonical_model_id") and len(cfg["models"]) != 1:
+            raise ValueError("A canonical model ID applies to one selected model. Clear it for a multi-model run.")
         sizes = sorted({int(s) for s in cfg["sizes"] if int(s) > 0})
         if not sizes:
             raise ValueError("Select at least one prefill size.")
@@ -377,23 +429,31 @@ class BenchRunner:
         if not math.isfinite(fraction) or not 0 <= fraction <= 0.5:
             raise ValueError("Context safety fraction must be between 0 and 0.5.")
         cfg["context_safety_fraction"] = fraction
-        if cfg["context_policy"] not in ("per_test", "fixed"):
-            raise ValueError("Context policy must be per_test or fixed.")
+        if cfg["context_policy"] not in ("per_test", "fixed", "provider_managed"):
+            raise ValueError("Context policy must be per_test, fixed or provider_managed.")
         gpu = power.gpu_info(cfg["gpu_index"])
+        default_label = (cfg.get("endpoint_label") or "External endpoint") if cfg.get("provider") == "openai" and not cfg.get("endpoint_inference_local") else gpu.get("name") or "Unknown GPU"
         run = {
             "id": store.new_run_id(gpu.get("name") or "cpu"),
             "created_at": _now_iso(),
-            "label": cfg["label"] or (gpu.get("name") or "Unknown GPU"),
+            "label": cfg["label"] or default_label,
             "notes": cfg["notes"],
             "gpu": gpu,
             "host": store.host_info(),
             "lms_version": self.cli.version(),
-            "config": cfg,
+            "config": endpoints.public_config(cfg),
             "status": "running",
             "results": [],
             "corpus": corpus.master_stats(),
         }
         store.prepare_run(run)
+        endpoints.describe_run(run, cfg)
+        from .identity import build_model_configuration
+        run["model_configurations"] = [build_model_configuration(cfg, model=model, require_endpoint=False)
+                                       for model in cfg["models"]]
+        run["reproducibility"] = {"source": "user_reported", "settings": endpoints.public_config(cfg.get("reproducibility") or {})}
+        from .privacy import public_projection
+        run["performance_claims"] = public_projection({"performance_claims": cfg.get("performance_claims") or []})["performance_claims"]
         current_application = copy.deepcopy(run["application"])
         if resume_source:
             prior_execution = resume_source.get("execution_config") or resume_source.get("config") or {}
@@ -423,6 +483,8 @@ class BenchRunner:
             }]
             for row in run["results"]:
                 row.setdefault("session_id", "initial")
+                if "repeat" not in row:
+                    row.setdefault("legacy_repeat_count", int(resume_source["config"].get("repeats", 1)))
             retry_cases = set()
             if rerun_existing:
                 retry_cases = completed_cases(run, cfg)
@@ -432,17 +494,17 @@ class BenchRunner:
             kept = []
             for row in run["results"]:
                 selected_retry = bool(completed_cases({"results": [row]}, cfg) & retry_cases)
-                selected_cancelled = (row.get("status") == "cancelled" and row.get("model") in cfg["models"]
-                                      and bool(row.get("mtp")) in _mtp_modes(cfg, row.get("model"))
-                                      and row.get("concurrency", 1) in levels and row.get("target_tokens") in sizes)
+                selected_cancelled = (row.get("status") == "cancelled" and
+                                      (row.get("model"), bool(row.get("mtp")), row.get("concurrency", 1),
+                                       row.get("target_tokens"), row.get("repeat", 0)) in planned_cases(cfg))
                 if (selected_retry and (rerun_existing or row.get("status") != "ok")) or selected_cancelled:
                     run.setdefault("previous_attempts", []).append(dict(row, archived_at=current_created,
                         archive_reason="rerun" if rerun_existing else "cancelled" if selected_cancelled else "retry"))
                 else:
                     kept.append(row)
             run["results"] = kept
-            run["execution_config"] = cfg
-            run["config"] = merged_config(resume_source["config"], cfg)
+            run["execution_config"] = endpoints.public_config(cfg)
+            run["config"] = endpoints.public_config(merged_config(resume_source["config"], cfg))
             run["status"] = "running"
             run["updated_at"] = current_created
             run.pop("finished_at", None)
@@ -469,12 +531,12 @@ class BenchRunner:
         run["active_session_id"] = session_id
         run.setdefault("sessions", []).append({
             "id": session_id, "started_at": _now_iso(), "status": "running",
-            "config": copy.deepcopy(cfg), "application": current_application,
+            "config": endpoints.public_config(cfg), "application": current_application,
             "lms_version": run.get("lms_version"), "retry_failed": retry_failed,
             "rerun_existing": rerun_existing,
         })
         store.save(run)
-        store.save_config(cfg)
+        store.save_config(endpoints.public_config(cfg))
 
         with self.lock:
             self.events = []
@@ -496,7 +558,8 @@ class BenchRunner:
 
     # -- the actual work ---------------------------------------------------
     def _run(self, run, cfg):
-        sampler = power.PowerSampler(interval_ms=cfg["power_interval_ms"],
+        sampler_class = endpoints.UnavailableSampler if cfg.get("provider") == "openai" and not cfg.get("endpoint_inference_local") else power.PowerSampler
+        sampler = sampler_class(interval_ms=cfg["power_interval_ms"],
                                      gpu_index=cfg["gpu_index"],
                                      other_idle_w=cfg["other_idle_w"],
                                      cpu_tdp_w=cfg["cpu_tdp_w"])
@@ -504,6 +567,12 @@ class BenchRunner:
         sampler.start()
         try:
             self.log("Run %s started on %s" % (run["id"], run["gpu"].get("name", "unknown GPU")))
+            if cfg.get("provider") == "openai":
+                try:
+                    self._endpoint_model_catalog = {m["id"]: m for m in endpoints.list_models(cfg)}
+                except ValueError as exc:
+                    self._endpoint_model_catalog = {}
+                    self.log(str(exc), level="warn")
             if not self.cli.server_running():
                 self.log("LM Studio API not responding - starting it")
                 if not self.cli.start_server():
@@ -512,6 +581,17 @@ class BenchRunner:
             self.live["phase"] = "idle baseline"
             self.emit("phase", phase="idle baseline")
             self.cli.unload_all()
+            self.live["phase"] = "measuring transfer bandwidth"
+            self.emit("phase", phase=self.live["phase"])
+            from . import bandwidth
+            profile = bandwidth.measure(cfg["gpu_index"], directory=cfg.get("storage_probe_directory") or None)
+            bandwidth.attach(run, profile)
+            for name in ("storage_to_ram", "ram_to_vram"):
+                value = profile.get(name, {})
+                self.log("%s: %s" % (name.replace("_", " "),
+                    "%.2f GB/s" % (value["bytes_per_second"] / 1e9) if value.get("status") == "ok"
+                    else value.get("reason", "unavailable")))
+            self.live["phase"] = "idle baseline"
             idle = sampler.measure_idle(2.5)
             run["idle"] = {
                 "gpu_w": idle.get("gpu_w_avg"),
@@ -520,6 +600,7 @@ class BenchRunner:
                 "cpu_w": idle.get("cpu_w_avg"),
                 "vram_mb": idle.get("vram_mb_max"),
                 "source": sampler.source,
+                "baseline_kind": "externally managed model remains loaded; no verified idle baseline" if cfg.get("provider") == "openai" else "models unloaded",
             }
             run["power_source"] = sampler.source
             for session in run.get("sessions", []):
@@ -537,6 +618,7 @@ class BenchRunner:
             store.save(run)
 
             checkpoints = completed_cases(run, cfg)
+            scheduled = planned_cases(cfg)
             done = len(checkpoints)
             self.live["done"] = done
             reps = int(cfg["repeats"])
@@ -561,7 +643,9 @@ class BenchRunner:
                         for size in cfg["sizes"]:
                             if self.cancel_event.is_set():
                                 break
-                            pending = [rep for rep in range(reps) if (model, mtp, concurrency, size, rep) not in checkpoints]
+                            pending = [rep for rep in range(reps)
+                                       if (model, mtp, concurrency, size, rep) in scheduled
+                                       and (model, mtp, concurrency, size, rep) not in checkpoints]
                             for previous in run["results"]:
                                 if (previous.get("model") == model and bool(previous.get("mtp")) == mtp
                                         and previous.get("concurrency", 1) == concurrency
@@ -570,15 +654,21 @@ class BenchRunner:
                                     cpt = previous["chars_per_token_after"]
                             if not pending:
                                 # A prior capacity failure still governs unmeasured larger sizes.
-                                if any(row.get("model") == model and bool(row.get("mtp")) == mtp
+                                prior_failure = next((row.get("fail_kind") for row in run["results"]
+                                       if row.get("model") == model and bool(row.get("mtp")) == mtp
                                        and row.get("concurrency", 1) == concurrency and row.get("target_tokens") == size
                                        and (row.get("session_id") == run.get("active_session_id")
                                             or row.get("manually_interrupted"))
-                                       and row.get("status") == "failed" for row in run["results"]):
-                                    mode_failed = True
+                                       and row.get("status") == "failed"
+                                       and (row.get("fail_kind") in (FAIL_LOAD, FAIL_CONTEXT, FAIL_UNSUPPORTED)
+                                            or cfg.get("skip_after_timeout") and row.get("fail_kind") == FAIL_TIMEOUT)
+                                       ), None)
+                                if prior_failure:
+                                    mode_failed = prior_failure
                                 continue
                             tag = {"model": model, "target_tokens": size, "mtp": mtp, "concurrency": concurrency}
-                            if mode_failed and cfg["stop_model_after_failure"]:
+                            if mode_failed and (cfg["stop_model_after_failure"] or
+                                                cfg.get("skip_after_timeout") and mode_failed == FAIL_TIMEOUT):
                                 for rep in pending:
                                     done += 1
                                     self._record(run, dict(tag, repeat=rep, status="skipped", fail_kind=FAIL_SKIPPED,
@@ -605,7 +695,7 @@ class BenchRunner:
                             if self.cancel_event.is_set():
                                 break
                             if not ok:
-                                mode_failed = True
+                                mode_failed = FAIL_LOAD
                                 unsupported = bool(detail.get("mtp_unsupported"))
                                 for rep in pending:
                                     done += 1
@@ -621,6 +711,18 @@ class BenchRunner:
                             for rep in pending:
                                 if self.cancel_event.is_set():
                                     break
+                                if loaded is None:
+                                    ok, detail, offload = self._load_with_fallback(model, needed, cfg, mtp, parallel)
+                                    if not ok:
+                                        done += 1
+                                        self._record(run, dict(tag, repeat=rep, status="failed", fail_kind=FAIL_LOAD,
+                                                              message=detail.get("error", "reload failed")), done)
+                                        continue
+                                    loaded = {"key": load_key, "ok": ok, "detail": detail, "offload": offload}
+                                    reused = False
+                                    vram_loaded = (sampler.now() or {}).get("vram_mb")
+                                    if cfg["warmup"]:
+                                        self._warmup(model, cfg)
                                 done += 1
                                 result = self._one_test(run, cfg, model, size, rep, reps, detail, offload,
                                                         needed, vram_loaded, cpt, mtp, concurrency)
@@ -636,8 +738,15 @@ class BenchRunner:
                                     break
                                 if result.get("fail_kind") == FAIL_TIMEOUT:
                                     loaded = None  # timeout recovery unloaded the model
-                                if result.get("status") != "ok":
-                                    mode_failed = True
+                                elif result.get("status") == "failed" and result.get("fail_kind") == FAIL_ERROR:
+                                    # A broken stream can indicate a failed engine. Do not reuse
+                                    # its load or let a provider silently reload default settings.
+                                    if not self.cli.unload_confirmed(model):
+                                        raise RecoveryError("Could not verify model unload after a request error.")
+                                    loaded = None
+                                if result.get("status") != "ok" and (result.get("fail_kind") in (FAIL_LOAD, FAIL_CONTEXT, FAIL_UNSUPPORTED)
+                                        or cfg.get("skip_after_timeout") and result.get("fail_kind") == FAIL_TIMEOUT):
+                                    mode_failed = result.get("fail_kind")
                                     for later in pending:
                                         if later <= rep:
                                             continue
@@ -672,10 +781,19 @@ class BenchRunner:
             except Exception:                        # noqa: BLE001
                 pass
             sampler.stop()
+            if hasattr(sampler, "history") and hasattr(sampler, "summary"):
+                history, summary = sampler.history(), sampler.summary()
+                if isinstance(history, dict) and isinstance(summary, dict):
+                    run["telemetry"] = {"history": history, "summary": summary}
+                    store.save(run)
 
     def _model_max_context(self, model):
+        if getattr(self, "_runtime_config", {}).get("provider") == "openai":
+            return None
         try:
-            for m in lmstudio.list_models():
+            catalog = lmstudio.list_models()
+            self._model_catalog = {m["id"]: m for m in catalog}
+            for m in catalog:
                 if m.get("id") == model:
                     return m.get("max_context_length")
         except Exception:                            # noqa: BLE001
@@ -688,6 +806,9 @@ class BenchRunner:
         Recording *which* placement worked is half the point: "ran, but only with
         half the layers on the CPU" is a different answer from "ran on the GPU".
         """
+        if cfg.get("provider") == "openai":
+            return True, {"identifier": model, "context_length": None, "load_s": None,
+                          "externally_managed": True}, "externally_managed"
         attempts = [cfg["gpu_offload"]]
         if cfg["fallback_on_failure"]:
             attempts += [a for a in FALLBACK_LADDER if a != cfg["gpu_offload"]]
@@ -719,18 +840,21 @@ class BenchRunner:
         self.live["phase"] = "warmup"
         self.emit("phase", phase="warmup", model=model)
         try:
-            lmstudio.measure_completion(
-                model, "Reply with the single word: ready.", 8,
+            self._measure_completion(
+                cfg, model, "Reply with the single word: ready.", 8,
                 timeout=min(300, cfg["per_test_timeout_s"]),
                 cancel=self.cancel_event,
                 disable_thinking=cfg["disable_thinking"])
-        except Exception:                            # noqa: BLE001 - warmup is best effort
-            pass
+        except Exception as exc:                     # noqa: BLE001 - warmup is best effort
+            if cfg.get("provider") == "openai" and _classify(str(exc)) == FAIL_TIMEOUT:
+                raise RecoveryError("External warmup timed out; check the inference server before starting again.") from None
 
     def _recover_requests(self, model, threads, responses):
         """Do not start another case until both model and HTTP workers stopped."""
         for response in responses:
             threading.Thread(target=response.close, daemon=True).start()
+        if isinstance(self.cli, endpoints.ExternalControl):
+            raise RecoveryError("External endpoint request timed out. Server-side cancellation cannot be verified; benchmark stopped. Check the inference server before starting again.")
         if not self.cli.unload_confirmed(model):
             raise RecoveryError("Could not confirm model unload after timeout; stop and recover LM Studio manually.")
         deadline = time.perf_counter() + 10
@@ -761,6 +885,9 @@ class BenchRunner:
             "context_length": load_detail.get("context_length") or needed,
             "gpu_offload": offload,
             "quantization": load_detail.get("quantization"),
+            "quantization_source": load_detail.get("quantization_source"),
+            "quantization_method": load_detail.get("quantization_method"),
+            "quantization_method_source": load_detail.get("quantization_method_source") if load_detail.get("quantization_method") else None,
             "architecture": load_detail.get("architecture"),
             "params": load_detail.get("params"),
             "load_s": load_detail.get("load_s"),
@@ -799,8 +926,8 @@ class BenchRunner:
             result = {}
             def worker():
                 try:
-                    result["value"] = lmstudio.measure_completion(
-                        model, prompt, cfg["max_tokens"], timeout=budget,
+                    result["value"] = self._measure_completion(
+                        cfg, model, prompt, cfg["max_tokens"], timeout=budget,
                         on_first_token=on_first, on_progress=on_progress,
                         cancel=self.cancel_event, disable_thinking=cfg["disable_thinking"],
                         on_response=keep_response)
@@ -809,13 +936,15 @@ class BenchRunner:
             thread = threading.Thread(target=worker, daemon=True)
             thread.start()
             started = time.perf_counter()
-            stall = min(120.0, budget)
+            # A long concurrent prefill can pause another stream's decode.
+            # Do not introduce a hidden deadline shorter than the whole case.
+            stall = budget
             while (thread.is_alive() and not self.cancel_event.is_set() and
                    time.perf_counter() - started < budget and
                    (progress["last"] is None or time.perf_counter() - progress["last"] < stall)):
                 thread.join(timeout=0.1)
             if thread.is_alive():
-                deadline_reason = "decode inactivity" if progress["last"] is not None and time.perf_counter() - progress["last"] >= stall else "adaptive deadline"
+                deadline_reason = "decode inactivity" if progress["last"] is not None and time.perf_counter() - progress["last"] >= stall else "configured deadline"
                 with self._responses_lock:
                     responses = list(self._responses)
                 try:
@@ -871,7 +1000,7 @@ class BenchRunner:
         cpt_new = corpus.refine_chars_per_token(len(prompt), m["prompt_tokens"], cpt)
 
         prompt_tokens = m["prompt_tokens"] or 0
-        completion_tokens = m["completion_tokens"] or 0
+        completion_tokens = m.get("decode_token_count", m["completion_tokens"]) or 0
         prefill_j = prefill.get("gpu_energy_j")
         decode_j = decode.get("gpu_energy_j")
         prefill_sys_j = prefill.get("system_energy_j_est")
@@ -883,8 +1012,13 @@ class BenchRunner:
             "prompt_tokens": m["prompt_tokens"],
             "completion_tokens": m["completion_tokens"],
             "completion_tokens_estimated": m.get("completion_tokens_estimated", False),
+            "cached_prompt_tokens": m.get("cached_prompt_tokens"),
+            "metric_sources": m.get("metric_sources"),
+            "reported_timings": m.get("reported_timings"),
+            "timing_scope": m.get("timing_scope"),
+            "decode_token_count": m.get("decode_token_count"),
             "reasoning_tokens": m["reasoning_tokens"],
-            "target_error_pct": (100.0 * (prompt_tokens - size) / size) if size else None,
+            "target_error_pct": (100.0 * (prompt_tokens - size) / size) if size and m["prompt_tokens"] is not None else None,
             "ttft_s": m["ttft_s"],
             "decode_s": m["decode_s"],
             "wall_s": m["wall_s"],
@@ -936,6 +1070,7 @@ class BenchRunner:
                                             decode.get("temp_c_max"))) else None,
                 "clock_mhz_avg": decode.get("clock_mhz_avg"),
                 "samples": (prefill.get("samples", 0) or 0) + (decode.get("samples", 0) or 0),
+                "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown",
             },
         })
         self.log("%s  prefill %s tk/s  decode %s tk/s  %s"
@@ -976,8 +1111,8 @@ class BenchRunner:
             try:
                 if cancel.is_set():
                     raise lmstudio.Cancelled()
-                m = lmstudio.measure_completion(
-                    model, prompts[index][0], cfg["max_tokens"], timeout=budget or cfg["per_test_timeout_s"],
+                m = self._measure_completion(
+                    cfg, model, prompts[index][0], cfg["max_tokens"], timeout=budget or cfg["per_test_timeout_s"],
                     cancel=cancel, disable_thinking=cfg["disable_thinking"],
                     on_first_token=lambda _: progress.__setitem__(index, time.perf_counter()),
                     on_progress=lambda *_: progress.__setitem__(index, time.perf_counter()),
@@ -987,8 +1122,9 @@ class BenchRunner:
             except Exception as exc:
                 message = str(exc)
                 results[index] = {"nonce": prompts[index][1], "status": "cancelled" if self.cancel_event.is_set() else "failed",
-                                  "fail_kind": "cancelled" if self.cancel_event.is_set() else _classify(message),
-                                  "message": message[:800]}
+                                  "fail_kind": "cancelled" if self.cancel_event.is_set() else FAIL_TIMEOUT if group_cancel.is_set() else _classify(message),
+                                  "message": "Cancelled by the user." if self.cancel_event.is_set() else
+                                             "Request stopped during group deadline recovery." if group_cancel.is_set() else message[:800]}
         threads = [threading.Thread(target=worker, args=(i,), daemon=True)
                    for i in range(concurrency)]
         for thread in threads:
@@ -999,7 +1135,7 @@ class BenchRunner:
         stalled = False
         while any(t.is_alive() for t in threads):
             stalled = any(t.is_alive() and progress[i] is not None and
-                          time.perf_counter() - progress[i] >= min(120.0, float(budget or cfg["per_test_timeout_s"]))
+                          time.perf_counter() - progress[i] >= float(budget or cfg["per_test_timeout_s"])
                           for i, t in enumerate(threads))
             if self.cancel_event.is_set() or time.perf_counter() >= deadline or stalled:
                 group_cancel.set()
@@ -1028,13 +1164,14 @@ class BenchRunner:
             "message": "Cancelled by the user." if self.cancel_event.is_set() else "Group timed out."}
             for i, r in enumerate(results)]
         successes = [r for r in snapshot if r["status"] == "ok"]
+        counts_available = bool(successes) and all(r.get("completion_tokens") is not None for r in successes)
         window = self.sampler.window(start, end)
         wall = end - start
         base.update({"status": "cancelled" if self.cancel_event.is_set() else
                      ("ok" if len(successes) == concurrency else "failed"),
                      "requests": snapshot, "completed_requests": len(successes),
-                     "wall_s": wall, "aggregate_completion_tokens": sum(r.get("completion_tokens") or 0 for r in successes),
-                     "aggregate_completion_tps": (sum(r.get("completion_tokens") or 0 for r in successes) / wall) if wall else None,
+                     "wall_s": wall, "aggregate_completion_tokens": sum(r.get("completion_tokens") or 0 for r in successes) if counts_available else None,
+                     "aggregate_completion_tps": (sum(r.get("completion_tokens") or 0 for r in successes) / wall) if wall and counts_available else None,
                      "aggregate_completion_tokens_estimated": any(r.get("completion_tokens_estimated") for r in successes),
                      "vram_after_load_mb": vram_loaded,
                      "group_power": window})
@@ -1045,11 +1182,49 @@ class BenchRunner:
             base.update({"fail_kind": FAIL_TIMEOUT if timed_out else failure.get("fail_kind", FAIL_ERROR),
                          "message": failure.get("message", "One or more requests failed.")})
             if timed_out:
-                base.update(timeout_trigger="decode inactivity" if stalled else "adaptive deadline",
-                            timeout_elapsed_s=wall)
+                base.update(timeout_trigger="decode inactivity" if stalled else "configured deadline",
+                            timeout_elapsed_s=wall,
+                            message="Group exceeded %s; managed model unload and request-worker exit were checked." %
+                                    ("decode inactivity limit" if stalled else "configured per-test timeout"))
         return base
 
     def _record(self, run, result, done):
+        # A scheduling case can have different managed MTP/placement from the
+        # overall form. Preserve the effective per-case configuration key.
+        from .identity import build_model_configuration
+        from .model_metadata import quantization_metadata
+        cfg = getattr(self, "_runtime_config", run.get("config", {}))
+        catalog = (getattr(self, "_endpoint_model_catalog", {}) if cfg.get("provider") == "openai"
+                   else getattr(self, "_model_catalog", {})).get(result.get("model"), {})
+        metadata = dict(catalog)
+        metadata.update({k: v for k, v in result.items() if v is not None and k in
+                         ("quantization", "quantization_source", "quantization_method", "quantization_method_source")})
+        metadata["id"] = result.get("model")
+        result.update(quantization_metadata(metadata))
+        case_cfg = dict(cfg)
+        if cfg.get("provider") != "openai" and type(result.get("mtp")) is bool:
+            case_cfg["requested_mtp"] = "on" if result["mtp"] else "off"
+        effective = {"quantization": result.get("quantization"),
+                     "quantization_source": result.get("quantization_source"),
+                     "quantization_method": result.get("quantization_method"),
+                     "quantization_method_source": result.get("quantization_method_source"),
+                     "mtp": result.get("mtp_verified"),
+                     "reasoning_disabled": result.get("reasoning_disabled") if cfg.get("provider") != "openai" else None}
+        result["model_configuration"] = build_model_configuration(case_cfg, model=result.get("model"),
+                                                                    effective=effective, require_endpoint=False)
+        result["configuration_id"] = result["model_configuration"]["configuration_id"]
+        configurations = {row["configuration_id"]: row["model_configuration"] for row in run["results"]
+                          if row.get("model_configuration") and row.get("configuration_id")}
+        configurations[result["configuration_id"]] = result["model_configuration"]
+        run["model_configurations"] = list(configurations.values())
+        if self.sampler and hasattr(self.sampler, "summary"):
+            summary = self.sampler.summary()
+            if isinstance(summary, dict): run["telemetry"] = {"summary": summary}
+        if (run.get("config") or {}).get("provider") == "openai":
+            result.update(mtp=None, mtp_source="unknown; externally managed", context_length=None,
+                          context_control="external", reasoning_disabled=None,
+                          reasoning_control="effective setting unknown; explicit standard effort request only" if run["config"].get("endpoint_reasoning_effort") is not None else "unknown; no reasoning control parameter sent",
+                          load_parallel_capacity=None, context_budget_source="client planning estimate; not a verified server allocation")
         if run.get("active_session_id"):
             result["session_id"] = run["active_session_id"]
         run["results"].append(result)
@@ -1057,6 +1232,23 @@ class BenchRunner:
         self.live["done"] = done
         self.emit("result", result=result, done=done,
                   total=self.live.get("total"), run_id=run["id"])
+
+    def _measure_completion(self, cfg, *args, **kwargs):
+        if "temperature" in cfg: kwargs["temperature"] = cfg["temperature"]
+        if "token_limit_field" in cfg: kwargs["token_limit_field"] = cfg["token_limit_field"]
+        if cfg.get("endpoint_reasoning_effort") is not None:
+            kwargs["reasoning_effort"] = cfg["endpoint_reasoning_effort"]
+        if cfg.get("provider") != "openai":
+            return lmstudio.measure_completion(*args, **kwargs)
+        kwargs.update(base=cfg["endpoint_base_url"], api_base=True,
+                      api_key=endpoints.api_key(cfg), provider_name="external endpoint",
+                      disable_thinking=False, reasoning_effort=cfg.get("endpoint_reasoning_effort"))
+        try:
+            return lmstudio.measure_completion(*args, **kwargs)
+        except lmstudio.Cancelled:
+            raise
+        except Exception as exc:
+            raise RuntimeError(endpoints.sanitize_error(exc, cfg)) from None
 
     def _finish_session(self, run):
         for session in run.get("sessions", []):

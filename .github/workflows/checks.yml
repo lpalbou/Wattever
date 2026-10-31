@@ -23,6 +23,14 @@ jobs:
       - run: node --check web/tables.js
       - run: node --check web/browser.js
       - run: node tests/test_ui.js
+      - run: node tests/test_model_metadata.js
+      - run: node tests/test_transfer_ui.js
+      - run: node tests/test_endpoint_ui.js
+      - run: node tests/test_browser_endpoint_identity.js
+      - run: node tests/test_results_endpoint_catalog.js
+      - run: node tests/test_capability_metrics.js
+      - run: node tests/test_capabilities_ui.js
+      - run: node tests/test_capability_live_ui.js
       - run: node tests/test_extension_ui.js
       - run: node tests/test_metric_selection.js
       - run: node tests/test_tables.js

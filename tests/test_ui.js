@@ -6,6 +6,7 @@ const elements = {
   '#max-tokens': {value: '256'}, '#repeats': {value: '2'}, '#offload': {value: 'max'},
   '#gpu-index': {value: '2'}, '#runtime-gpu-placement': {value: 'GPU 1'},
   '#fallback': {checked: true}, '#stop-after-fail': {checked: true}, '#warmup': {checked: true},
+  '#skip-after-timeout': {checked: true},
   '#no-think': {checked: true}, '#per-test-timeout': {value: '1800'}, '#load-timeout': {value: '900'},
   '#headroom': {value: '512'}, '#other-idle': {value: '60'}, '#cpu-tdp': {value: '140'},
   '#power-interval': {value: '150'}, '#run-label': {value: 'run'}, '#run-notes': {value: 'notes'},
@@ -30,12 +31,20 @@ vm.runInContext(`
 
   state.metrics = new Set(['prefill_tps', 'decode_tps', 'ttft_s']);
   const groups = metricGroups();
-  if (groups.length !== 2 || groups.find(group => group.unit === 'tk/s').keys.length !== 2) throw Error('multi-measure unit grouping');
+  if (groups.length !== 3 || groups.some(group => group.keys.length !== 1)) throw Error('one chart per selected metric');
   if (measureAppearance({}, 'prefill_tps', ['prefill_tps','decode_tps'], false).dash === measureAppearance({}, 'decode_tps', ['prefill_tps','decode_tps'], false).dash) throw Error('measure styles');
   if (metricGroups(['j_per_1k_prefill', 'j_per_token_decode']).length !== 2) throw Error('energy normalization grouping');
+  const telemetry=telemetryMarkup({telemetry:{summary:{observations:100,metrics:{gpu_util:{mean:50,max:100,last:60,early_60s_mean:40,late_60s_mean:60,late_minus_early:20,coverage_fraction:.9}}},history:{points:[{elapsed_s:0,gpu_util:50}],retention:{retained_points:1,total_observations:100}}}});
+  if(!telemetry.includes('Late − early')||!telemetry.includes('90.0%')||!telemetry.includes('recent ring')||!telemetry.includes('not proof of throttling')) throw Error('telemetry summary provenance');
+  const telemetryPlots=[]; const oldLine=Charts.line; Charts.line=(target,options)=>telemetryPlots.push(options); const oldResolve=resolveColor; resolveColor=value=>value;
+  const report={dataset:{},querySelector:()=>({}),addEventListener:()=>{}};
+  bindTelemetry({dataset:{},querySelectorAll:()=>[report]},{telemetry:{history:{points:[{elapsed_s:0,gpu_util:50,temp_c:60},{elapsed_s:1,gpu_util:60,temp_c:65}]}}});
+  if(telemetryPlots.length!==2 || telemetryPlots.some(plot=>plot.xScale!=='linear')) throw Error('telemetry uses linear elapsed-time plots');
+  Charts.line=oldLine; resolveColor=oldResolve;
   state.metrics = new Set(['prefill_tps']);
   state.comparisonConcurrency = 10;
   const cfg = collectConfig();
+  if (!cfg.skip_after_timeout) throw Error('Practical timeout skipping is configurable before a benchmark starts');
   if (cfg.other_idle_w !== 10 || cfg.cpu_tdp_w !== 25 || cfg.power_interval_ms !== 200) throw Error('automatic power defaults');
   const extension = extendBody({runId:'r', modelModes:{m:['off'], q:['on']}, sizes:new Set([5000,512]), concurrency:new Set([10,1]), action:'rerun'});
   if (extension.run_id !== 'r' || extension.model_modes.q[0] !== 'on' || extension.sizes.join(',') !== '512,5000' || extension.concurrency_levels.join(',') !== '1,10' || !extension.retry_failed || !extension.rerun_existing) throw Error('extension config');

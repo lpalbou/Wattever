@@ -1,5 +1,10 @@
 # Benchmark sessions
 
+This guide describes throughput files in `results/runs/`. Rule-scored capability
+files are a separate result family under `results/capabilities/`; see
+[capability evaluation](../docs/capabilities.md) for their schema, datasets,
+grading, public identities and independent audit import.
+
 One benchmark is one JSON file in `runs/`. A session contains every model,
 prompt size, concurrency level, repeat and failure measured for one machine
 configuration. Changing cards or runtime GPU placement means starting a new
@@ -7,14 +12,16 @@ session. Historical unversioned files remain readable without rewriting them.
 
 ## Run and contribute
 
-1. Launch Wattever and click **Reset for all models** to select every downloaded
-   language model and restore the standard measurement settings.
+1. Launch Wattever, select a provider and connect. Generic endpoints support
+   discovery or manual served model IDs. Managed LM Studio also supports **Reset
+   for all models** to select downloaded models and restore standard settings.
 2. Give the session a useful label, such as `RTX 5060 Ti - stock`. Choose prompt
    sizes and concurrent request counts. Default concurrency is one; click **10**
    to select all levels from one through ten. Prompt-length badges work the same way. Review the total request count.
-3. With multiple cards, configure placement in LM Studio and describe it in the
+3. With multiple cards, configure placement in the inference engine and describe it in the
    **Runtime GPU placement** field. The sensor selector controls power readings
-   only. It does not change where LM Studio executes the model.
+   only. It does not change where the engine executes the model. For generic
+   endpoints, explicitly assert local inference before attributing client power.
 4. Run the benchmark. Failures and partial sessions remain useful data.
 5. Download **JSON** in Results, or take the matching file from `results/runs/`.
    Review it for details you do not want to publish.
@@ -26,17 +33,26 @@ session. Historical unversioned files remain readable without rewriting them.
 
 New files use `schema_version: 2`. See [benchmark.schema.json](benchmark.schema.json).
 Fields are additive; the existing `gpu`, `host`, `config` and `results` fields remain.
+Additive inventory/run metadata uses `metadata_schema_version: 1`; old files
+without it remain readable. Unknown data is not inferred from a model or GPU name.
 
 | Field | Meaning |
 | --- | --- |
 | `application` | Tool version and measurement protocol version |
 | `hardware.os` | OS name, release and architecture |
 | `hardware.cpu` | CPU name, physical and logical core counts |
+| `hardware.memory` | RAM module capacity, reported clocks and provenance where available; channel count/bandwidth stay unknown unless available |
 | `hardware.system` | Manufacturer/model and physical RAM in bytes |
 | `hardware.gpus` | Separate entries for every discoverable adapter; name, vendor, memory in bytes, driver and optional sensor index |
 | `hardware.motherboard`, `hardware.firmware`, `hardware.storage` | Best-effort board model, firmware vendor/version and physical disk models/capacity/interface |
 | `classification` | Hardware configuration grouping hash, GPU names and platform; not a unique machine identity |
 | `measurement_scope` | Which GPU sensor supplies power and user-reported runtime placement |
+| `provider` | Public provider label, managed/external model lifecycle and control boundaries |
+| `measurement_client` | Client inventory kept separate when remote inference hardware is unverified |
+| `reproducibility` | User-reported engine/version, model revision, quantization, actual context/KV and MTP draft settings |
+| `performance_claims` | Sourced, user-reported compute claims with precision, execution path, sparsity and peak/measured/estimate classification |
+| `model_configuration`, `configuration_id` | Public model/endpoint settings with requested/reported/verified/unknown provenance and a content-consistency fingerprint |
+| `telemetry.history`, `telemetry.summary` | Bounded recent time series plus whole-run observed means/peaks/coverage and descriptive drift |
 | `corpus.sha256` | Corpus fingerprint for comparing the exact workload |
 | `config` | Selected models, prompt targets, concurrency levels and measurement settings |
 | `results` | Measurements, failures, skips and cancellation records |
@@ -46,6 +62,16 @@ effort; an empty adapter list does not prove that the machine has no GPU.
 New files omit GPU UUIDs, serial numbers, usernames and hostnames. User-entered
 notes and runtime/model names are included; review them before sharing. Historical
 files may still contain a GPU UUID; it may be removed without changing measurements.
+Public outputs exclude endpoint URL, credential environment-variable name and
+credentials. Review all free text, including labels, reproduction fields and
+compute sources. Hardware describes the benchmark client, not verified remote
+inference hardware. PCIe encoding ceilings are theoretical, not measured DMA or
+device-memory bandwidth, and idle snapshots may downshift. Floating compute
+claims use TFLOP/s; integer precision uses TOPS. See [measurement definitions](../docs/measurements.md).
+Public endpoint IDs/labels identify routes without connection URLs. Configuration
+hashes do not authenticate actual served weights. Recent telemetry can drop old
+points while whole-run aggregates retain observations; drift alone does not prove
+thermal throttling. Missing temperature or utilization is unavailable, not zero.
 
 ## Concurrent measurements
 
@@ -53,13 +79,20 @@ Each result row includes `concurrency`; missing means one in historical files.
 Single-request prefill/decode retain their original definitions. Groups above
 one contain `requests`, including per-request status, TTFT and decode speed.
 Each concurrent request has its own leading nonce to invalidate prefix caching.
-`lms load --parallel` sets the runtime's prediction capacity for that level.
+In managed LM Studio, `lms load --parallel` sets prediction capacity for that
+level. Generic endpoint concurrency and context capacity are engine controlled.
 
 `aggregate_completion_tps` is successful requests' total output tokens divided
 by group wall time, including prefill and queueing. It is not the sum of individual
-decode speeds. A group is successful only when every request succeeds. If usage
-counts are unavailable, stream chunks supply an estimate and the result says so.
-The UI marks estimated token counts and derived throughput with `*`.
+decode speeds. A group is successful only when every request succeeds. Generic
+endpoint throughput stays unavailable if server token usage is missing. Legacy
+managed results can include explicitly marked stream-chunk estimates; the UI
+marks estimated counts and derived throughput with `*`. Client prompt tokens/TTFT
+is a prefill proxy including overhead, distinct from optional `reported_timings`.
+Missing `cached_prompt_tokens` means unknown cache usage, not zero.
+`timing_scope` distinguishes streamed content/reasoning from hidden reasoning and
+`decode_token_count` records the scoped decode numerator. Reported unstreamed
+reasoning is excluded; ambiguous hidden work can leave decode unavailable.
 
 `group_power` covers the group interval. Concurrent phases overlap, so they do
 not get invented prefill/decode energy splits. Power is for the selected GPU
@@ -79,6 +112,9 @@ Deleting a tracked result produces a local Git deletion. This does not remove
 the upstream copy; include only your new session file in a result contribution.
 
 ## Add, continue or rerun tests
+
+These operations require managed LM Studio. Generic endpoint experiments require
+reconnection and a new run; their public JSON does not persist connection details.
 
 In Results, select a benchmark and choose **Add / rerun tests**. Select models and
 their Standard/MTP techniques, prompt sizes and query counts. Choose an action:

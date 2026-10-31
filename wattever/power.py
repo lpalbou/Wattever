@@ -18,12 +18,17 @@ Whatever is not measured is *estimated* and labelled as such, never silently
 mixed in.
 """
 import ctypes
+import datetime
+import math
 import re
 import subprocess
 import threading
 import time
+from collections import deque
+from pathlib import Path
+from itertools import islice
 
-from .platform_util import IS_LINUX, IS_MAC, IS_WINDOWS, linux_cpu_times, popen, run, sysctl
+from .platform_util import IS_LINUX, IS_MAC, IS_WINDOWS, linux_cpu_times, mac_cpu_times, popen, run, sysctl, system_memory
 
 SMI_FIELDS = ["power.draw", "utilization.gpu", "memory.used", "clocks.sm", "temperature.gpu"]
 
@@ -41,7 +46,8 @@ def _f(tok):
     if not tok or tok.startswith("["):
         return None
     try:
-        return float(tok)
+        value = float(tok)
+        return value if math.isfinite(value) else None
     except ValueError:
         return None
 
@@ -222,17 +228,12 @@ def list_gpus():
 class _CpuMeter:
     """Whole-machine CPU utilisation, no third-party deps.
 
-    Windows: GetSystemTimes. macOS: load average over core count, which is a
-    coarser signal but only ever feeds the *estimated* figure -- when
-    powermetrics is available the CPU rail is measured and this is not used.
+    Windows: GetSystemTimes. Linux: /proc/stat. macOS: host CPU ticks. This is
+    host-wide utilization, not utilization attributable to model inference.
     """
 
     def __init__(self):
         self._prev = None
-        self._ncpu = None
-        if IS_MAC:
-            raw = sysctl("hw.logicalcpu")
-            self._ncpu = int(raw) if raw and raw.isdigit() else None
 
     @staticmethod
     def _times():
@@ -245,9 +246,9 @@ class _CpuMeter:
         return idle.value, kern.value + user.value
 
     def sample(self):
-        if IS_WINDOWS or IS_LINUX:
+        if IS_WINDOWS or IS_LINUX or IS_MAC:
             try:
-                cur = self._times() if IS_WINDOWS else linux_cpu_times()
+                cur = self._times() if IS_WINDOWS else mac_cpu_times() if IS_MAC else linux_cpu_times()
             except (AttributeError, OSError):
                 return None
             if cur is None:
@@ -259,22 +260,46 @@ class _CpuMeter:
             if d_tot <= 0:
                 return None
             return max(0.0, min(1.0, 1.0 - d_idle / d_tot))
-        if IS_MAC and self._ncpu:
-            try:
-                import os as _os
-                load = _os.getloadavg()[0]
-            except (OSError, AttributeError, IndexError):
-                return None
-            return max(0.0, min(1.0, load / float(self._ncpu)))
         return None
+
+
+class _CpuTemperature:
+    """Read an actual Linux CPU package sensor when exposed, without elevation."""
+    def __init__(self):
+        self.path = None
+        self.source = None
+        if not IS_LINUX:
+            return
+        try:
+            for folder in islice(Path('/sys/class/hwmon').glob('hwmon*'), 32):
+                name = (folder / 'name').read_text(encoding='ascii').strip()
+                if name not in ('coretemp', 'k10temp', 'zenpower'):
+                    continue
+                for label in islice(folder.glob('temp*_label'), 32):
+                    description = label.read_text(encoding='ascii').strip()
+                    if description.startswith('Package id') or description in ('Tctl', 'Tdie'):
+                        self.path = label.with_name(label.name.replace('_label', '_input'))
+                        self.source = 'linux_hwmon:%s:%s' % (name, description)
+                        return
+        except OSError:
+            pass
+
+    def sample(self):
+        if self.path is None:
+            return None
+        try:
+            value = float(self.path.read_text(encoding='ascii').strip()) / 1000.0
+            return value if math.isfinite(value) and -30 <= value <= 150 else None
+        except (OSError, ValueError):
+            return None
 
 
 class PowerSampler:
     """Background sampler. Any time window can be queried after the fact.
 
-    One long-lived child process streams readings rather than re-spawning a tool
-    per sample, so sampling costs almost nothing and does not pollute the CPU
-    figure that also feeds the system estimate.
+    One long-lived child process streams GPU readings. A separate bounded host
+    sampler uses OS APIs for CPU/RAM, including when GPU sensors are unavailable.
+    Monitoring itself has some overhead and is part of the observed host load.
     """
 
     def __init__(self, interval_ms=150, gpu_index=0, other_idle_w=60.0, cpu_tdp_w=140.0):
@@ -282,20 +307,37 @@ class PowerSampler:
         self.gpu_index = gpu_index
         self.other_idle_w = float(other_idle_w)
         self.cpu_tdp_w = float(cpu_tdp_w)
-        self.samples = []
+        self.samples = deque(maxlen=72000)
         self.source = SRC_NONE
         self._proc = None
         self._thread = None
+        self._backend_thread = None
         self._stop = threading.Event()
         self._lock = threading.Lock()
         self.error = None
+        self._started_perf = time.perf_counter()
+        self._started_utc = datetime.datetime.now(datetime.timezone.utc)
+        self._ended_perf = None
+        self._vram_total_mb = None
+        self._sensor_row = None
+        self._history = deque(maxlen=3600)
+        self._system_samples = deque(maxlen=72000)
+        self._statistics = {}
+        self._observations = 0
+        self._previous_point = None
+        self._first_point = None
+        self._latest_point = None
 
     # -- lifecycle ---------------------------------------------------------
     def start(self):
         if self._thread:
             return
         self._stop.clear()
+        self._started_perf = time.perf_counter()
+        self._started_utc = datetime.datetime.now(datetime.timezone.utc)
+        self._ended_perf = None
         info = gpu_info(self.gpu_index)
+        self._vram_total_mb = info.get('vram_total_mb')
         if info.get("power_source") == SRC_POWERMETRICS:
             target = self._loop_powermetrics
             self.source = SRC_POWERMETRICS
@@ -306,17 +348,85 @@ class PowerSampler:
             # macOS without usable powermetrics: no wattage, speed still measured
             self.error = info.get("power_note") or "power measurement unavailable"
             self.source = SRC_NONE
-            return
-        self._thread = threading.Thread(target=target, daemon=True)
+            target = None
+        if target is not None:
+            self._backend_thread = threading.Thread(target=target, daemon=True)
+            self._backend_thread.start()
+        self._thread = threading.Thread(target=self._loop_monitor, daemon=True)
         self._thread.start()
 
-    def _append(self, row):
+    def _loop_monitor(self):
+        cpu, temperature = _CpuMeter(), _CpuTemperature()
+        cpu.sample()
+        while not self._stop.is_set():
+            now = time.perf_counter()
+            with self._lock:
+                sensor = self._sensor_row
+            fresh = sensor is not None and now - sensor[T] <= max(2.0, self.interval_ms / 1000.0 * 4)
+            values = sensor[1:] if fresh else (None,) * 7
+            row = (now,) + tuple(values[:5]) + (cpu.sample(), values[6])
+            memory = system_memory() or {}
+            self._append(row, memory, temperature.sample(), temperature.source)
+            self._stop.wait(self.interval_ms / 1000.0)
+
+    def _record_sensor(self, row):
+        with self._lock:
+            self._sensor_row = row
+
+    def _point(self, row, memory=None, cpu_temp=None, cpu_temp_source=None):
+        memory = memory or {}
+        elapsed = max(0.0, row[T] - self._started_perf)
+        vram_pct = 100.0 * row[MEM_MB] / self._vram_total_mb if row[MEM_MB] is not None and self._vram_total_mb else None
+        return {'elapsed_s': elapsed,
+                'timestamp': (self._started_utc + datetime.timedelta(seconds=elapsed)).isoformat(),
+                'gpu_w': row[GPU_W], 'gpu_util': row[GPU_UTIL], 'vram_mb': row[MEM_MB],
+                'vram_total_mb': self._vram_total_mb, 'vram_percent': vram_pct,
+                'clock_mhz': row[CLOCK], 'temp_c': row[TEMP], 'cpu_util': row[CPU_UTIL],
+                'cpu_util_percent': row[CPU_UTIL] * 100.0 if row[CPU_UTIL] is not None else None,
+                'cpu_w': row[CPU_W], 'cpu_temp_c': cpu_temp, 'cpu_temp_source': cpu_temp_source,
+                'system_memory_used_bytes': memory.get('used_bytes'),
+                'system_memory_total_bytes': memory.get('total_bytes'),
+                'system_memory_percent': memory.get('percent'),
+                'system_memory_source': memory.get('source'),
+                'system_w_est': self._system_w(row[GPU_W], row[CPU_UTIL], row[CPU_W]),
+                'source': self.source, 'scope': 'benchmark_client_selected_gpu'}
+
+    def _append(self, row, memory=None, cpu_temp=None, cpu_temp_source=None):
+        point = self._point(row, memory, cpu_temp, cpu_temp_source)
+        fields = ('gpu_w', 'gpu_util', 'vram_mb', 'vram_percent', 'clock_mhz', 'temp_c',
+                  'cpu_util_percent', 'cpu_w', 'cpu_temp_c', 'system_memory_used_bytes',
+                  'system_memory_percent', 'system_w_est')
         with self._lock:
             self.samples.append(row)
+            # Tests/older callers can supply a list instead of the bounded deque.
+            if isinstance(self.samples, list) and len(self.samples) > 72000:
+                del self.samples[:-72000]
+            self._observations += 1
+            self._history.append(point)
+            self._system_samples.append((row[T], point['system_memory_used_bytes'], point['system_memory_total_bytes'],
+                                         point['system_memory_percent'], point['vram_percent'], point['cpu_temp_c']))
+            if self._first_point is None:
+                self._first_point = point
+            previous = self._previous_point
+            for field in fields:
+                value = point[field]
+                if value is None or not math.isfinite(value):
+                    continue
+                stats = self._statistics.setdefault(field, {'count': 0, 'sum': 0.0, 'min': value, 'max': value,
+                    'first': value, 'last': value, 'integral': 0.0, 'coverage_s': 0.0, 'early_sum': 0.0, 'early_count': 0})
+                stats['count'] += 1
+                stats['sum'] += value
+                stats['min'], stats['max'], stats['last'] = min(stats['min'], value), max(stats['max'], value), value
+                if point['elapsed_s'] <= 60:
+                    stats['early_sum'] += value
+                    stats['early_count'] += 1
+                dt = point['elapsed_s'] - previous['elapsed_s'] if previous else 0
+                if previous and previous.get(field) is not None and 0 < dt <= max(1.0, self.interval_ms / 1000.0 * 4):
+                    stats['integral'] += (previous[field] + value) * 0.5 * dt
+                    stats['coverage_s'] += dt
+            self._previous_point = self._latest_point = point
 
     def _loop_nvidia(self):
-        cpu = _CpuMeter()
-        cpu.sample()
         args = ["nvidia-smi", "--id=%d" % self.gpu_index,
                 "--query-gpu=" + ",".join(SMI_FIELDS),
                 "--format=csv,noheader,nounits", "-lms=%d" % self.interval_ms]
@@ -327,6 +437,9 @@ class PowerSampler:
             self.error = "nvidia-smi unavailable: %s" % exc
             self.source = SRC_NONE
             return
+        if self._stop.is_set():
+            self._proc.terminate()
+            return
         try:
             for line in self._proc.stdout:
                 if self._stop.is_set():
@@ -334,8 +447,8 @@ class PowerSampler:
                 parts = [x.strip() for x in line.split(",")]
                 if len(parts) < 5:
                     continue
-                self._append((time.perf_counter(), _f(parts[0]), _f(parts[1]), _f(parts[2]),
-                              _f(parts[3]), _f(parts[4]), cpu.sample(), None))
+                self._record_sensor((time.perf_counter(), _f(parts[0]), _f(parts[1]), _f(parts[2]),
+                                     _f(parts[3]), _f(parts[4]), None, None))
         except (OSError, ValueError):
             pass
 
@@ -354,6 +467,9 @@ class PowerSampler:
         except (OSError, ValueError, subprocess.SubprocessError) as exc:
             self.error = "powermetrics unavailable: %s" % exc
             self.source = SRC_NONE
+            return
+        if self._stop.is_set():
+            self._proc.terminate()
             return
         block = []
 
@@ -384,8 +500,8 @@ class PowerSampler:
                 cpu_w = max(0.0, combined_mw / 1000.0 - gpu_w)
             if gpu_w is None and cpu_w is None:
                 return
-            self._append((time.perf_counter(), gpu_w, grab("gpu_residency"), None,
-                          grab("gpu_freq"), None, None, cpu_w))
+            self._record_sensor((time.perf_counter(), gpu_w, grab("gpu_residency"), None,
+                                 grab("gpu_freq"), None, None, cpu_w))
 
         try:
             for line in self._proc.stdout:
@@ -406,10 +522,22 @@ class PowerSampler:
         if self._proc:
             try:
                 self._proc.terminate()
+                self._proc.wait(timeout=1.0)
+            except subprocess.TimeoutExpired:
+                self._proc.kill()
+                try:
+                    self._proc.wait(timeout=1.0)
+                except subprocess.TimeoutExpired:
+                    pass
             except OSError:
                 pass
+        for worker in (self._thread, self._backend_thread):
+            if worker and worker is not threading.current_thread():
+                worker.join(timeout=1.0)
+        self._ended_perf = time.perf_counter()
         self._proc = None
         self._thread = None
+        self._backend_thread = None
 
     def now(self):
         """Most recent reading, for the live UI gauge."""
@@ -417,10 +545,54 @@ class PowerSampler:
             if not self.samples:
                 return None
             row = self.samples[-1]
-        return {"gpu_w": row[GPU_W], "gpu_util": row[GPU_UTIL], "vram_mb": row[MEM_MB],
-                "clock_mhz": row[CLOCK], "temp_c": row[TEMP], "cpu_util": row[CPU_UTIL],
-                "cpu_w": row[CPU_W], "source": self.source,
-                "system_w_est": self._system_w(row[GPU_W], row[CPU_UTIL], row[CPU_W])}
+            point = dict(self._latest_point or self._point(row))
+        point['sample_age_s'] = max(0.0, time.perf_counter() - row[T])
+        return point
+
+    def history(self):
+        """Bounded, timestamped client telemetry. Ring retention is explicit."""
+        with self._lock:
+            points = [dict(point) for point in self._history]
+            observations = self._observations
+        return {'schema_version': 1, 'available': bool(points), 'scope': 'benchmark_client_selected_gpu',
+                'started_at': self._started_utc.isoformat(), 'sampling_interval_ms': self.interval_ms,
+                'gpu_sensor_index': self.gpu_index, 'source': self.source,
+                'retention': {'policy': 'most_recent_ring', 'capacity_points': 3600,
+                              'total_observations': observations, 'retained_points': len(points),
+                              'dropped_points': max(0, observations - len(points)),
+                              'retained_start_elapsed_s': points[0]['elapsed_s'] if points else None,
+                              'retained_end_elapsed_s': points[-1]['elapsed_s'] if points else None,
+                              'phase_raw_capacity_points': 72000},
+                'note': 'Whole-client CPU/RAM and selected GPU; not inference-process isolation. GPU values hold the last driver snapshot only while fresh. CPU temperature is absent without a supported actual sensor. Means/peaks in summary preserve all observations despite ring eviction.',
+                'points': points}
+
+    def summary(self):
+        """Whole-run observation statistics; drift alone does not diagnose throttling."""
+        end = self._ended_perf if self._ended_perf is not None else time.perf_counter()
+        duration = max(0.0, end - self._started_perf)
+        with self._lock:
+            stats = {key: dict(value) for key, value in self._statistics.items()}
+            points = list(self._history)
+            first = dict(self._first_point) if self._first_point else None
+            last = dict(self._latest_point) if self._latest_point else None
+            observations = self._observations
+        metrics = {}
+        for key, value in stats.items():
+            late = [point[key] for point in points if point.get(key) is not None and last and point['elapsed_s'] >= last['elapsed_s'] - 60]
+            early_mean = value['early_sum'] / value['early_count'] if value['early_count'] else None
+            late_mean = sum(late) / len(late) if late else None
+            span = value['coverage_s']
+            metrics[key] = {'mean': value['sum'] / value['count'], 'min': value['min'], 'max': value['max'],
+                            'count': value['count'], 'first': value['first'], 'last': value['last'],
+                            'time_weighted_mean': value['integral'] / span if span else None,
+                            'coverage_s': span, 'coverage_fraction': min(1.0, span / duration) if duration else None,
+                            'early_60s_mean': early_mean, 'late_60s_mean': late_mean,
+                            'late_minus_early': late_mean - early_mean if early_mean is not None and late_mean is not None else None}
+        return {'schema_version': 1, 'available': bool(observations), 'scope': 'benchmark_client_selected_gpu',
+                'duration_s': duration, 'observations': observations, 'source': self.source,
+                'start': first, 'end': last, 'metrics': metrics,
+                'drift_note': 'Early/late windows can overlap on runs shorter than 120 seconds. Differences describe observed workloads/environment; they do not establish thermal throttling, sustained model speed or hardware capability.',
+                'coverage_note': 'Time-weighted coverage excludes gaps longer than four sampling intervals or one second, whichever is larger. Peaks are maxima of observed samples, not guaranteed physical peaks. Ring eviction does not change all-run aggregates.'}
 
     def _system_w(self, gpu_w, cpu_util, cpu_w=None):
         """Estimated whole-machine draw.
@@ -438,6 +610,29 @@ class PowerSampler:
 
     # -- analysis ----------------------------------------------------------
     def window(self, t0, t1):
+        result = self._power_window(t0, t1)
+        with self._lock:
+            details = [row for row in self._system_samples if t0 <= row[0] <= t1]
+            truncated = bool(self.samples and self._observations > len(self.samples) and self.samples[0][T] > t0)
+        def values(index):
+            return [row[index] for row in details if row[index] is not None]
+        def average(index):
+            collected = values(index)
+            return sum(collected) / len(collected) if collected else None
+        def peak(index):
+            collected = values(index)
+            return max(collected) if collected else None
+        result.update(system_memory_used_bytes_max=peak(1), system_memory_total_bytes=peak(2),
+                      system_memory_percent_avg=average(3), system_memory_percent_max=peak(3),
+                      vram_percent_avg=average(4), vram_percent_max=peak(4),
+                      cpu_temp_c_max=peak(5), telemetry_samples=len(details),
+                      raw_retention_truncated=truncated)
+        if truncated:
+            result['low_confidence'] = True
+            result['retention_note'] = 'Requested phase begins before retained raw samples; phase statistics are incomplete and energy extrapolation is uncertain.'
+        return result
+
+    def _power_window(self, t0, t1):
         """Average power / integrated energy over [t0, t1].
 
         Trapezoidal integration over the samples inside the window. Short
@@ -500,6 +695,8 @@ class PowerSampler:
             "source": self.source,
             "duration_s": dur,
             "gpu_w_avg": (gpu_j / gpu_span) if gpu_j is not None else None,
+            "gpu_sampled_coverage_s": gpu_span,
+            "gpu_sampled_coverage_fraction": min(1.0, gpu_span / dur),
             "gpu_w_max": max(watts) if watts else None,
             # scale the sampled span up to the full window so energy is not
             # under-reported when samples do not land on the exact edges

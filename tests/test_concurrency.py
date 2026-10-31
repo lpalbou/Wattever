@@ -53,6 +53,7 @@ class ConcurrencyTests(unittest.TestCase):
         with patch.object(runner.lmstudio, "measure_completion", side_effect=runner.lmstudio.Cancelled):
             result = self.runner._concurrent_test({"nonce": "abc"}, self.cfg, "m", "Benchmark request abc\n", 2, None)
         self.assertEqual(result["status"], "cancelled")
+        self.assertEqual(result["message"], "Cancelled by the user.")
 
 
 class StreamingIntegrationTests(unittest.TestCase):

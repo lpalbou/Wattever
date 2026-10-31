@@ -134,7 +134,8 @@ def prepare_run(run):
     # A configuration grouping key, never a unique machine identifier.
     cards = [{k: g.get(k) for k in ("name", "vendor", "memory_bytes")}
              for g in machine.get("gpus", [])]
-    descriptor = {"cpu": machine.get("cpu"), "system": machine.get("system"),
+    stable_cpu = {key: (machine.get("cpu") or {}).get(key) for key in ("name", "physical_cores", "logical_cores")}
+    descriptor = {"cpu": stable_cpu, "system": machine.get("system"),
                   "gpus": sorted(cards, key=lambda g: json.dumps(g, sort_keys=True)),
                   "os": machine.get("os")}
     run["classification"] = {
@@ -240,6 +241,7 @@ def summarise(run):
         "host": run.get("host") or {},
         "hardware": run.get("hardware") or {},
         "classification": run.get("classification") or {},
+        "comparison_group": run.get("comparison_group"),
         "schema_version": run.get("schema_version", 1),
         "concurrency_levels": sorted({r.get("concurrency", 1) for r in results}),
         "models": sorted({r.get("model") for r in results if r.get("model")}),
@@ -255,6 +257,39 @@ def summarise(run):
         "n_failed": len(results) - len(ok),
         "idle": run.get("idle") or {},
     }
+
+
+def link_runs(run_ids, label="Machine benchmark"):
+    """Group engine-specific runs without changing their settings or measurements."""
+    if not isinstance(run_ids, list) or not 2 <= len(run_ids) <= 100 or any(
+            not isinstance(i, str) for i in run_ids) or len(set(run_ids)) != len(run_ids):
+        raise ValueError("Provide 2..100 distinct benchmark IDs.")
+    if not isinstance(label, str) or not label.strip() or len(label) > 160:
+        raise ValueError("Comparison label must contain 1..160 characters.")
+    runs = [load(i) for i in run_ids]
+    if any(r is None for r in runs):
+        raise ValueError("A selected benchmark does not exist.")
+    first = runs[0]
+    hardware_class = (first.get("classification") or {}).get("hardware_class")
+    if not hardware_class or hardware_class == "remote-unverified":
+        raise ValueError("Verified matching client hardware is required for a machine comparison.")
+    for run in runs:
+        if run.get("status") == "running":
+            raise ValueError("Wait for selected benchmarks to stop before linking them.")
+        if (run.get("classification") or {}).get("hardware_class") != hardware_class or any(
+                (run.get("gpu") or {}).get(k) != (first.get("gpu") or {}).get(k)
+                for k in ("name", "vram_total_mb", "driver")):
+            raise ValueError("Selected benchmarks have different hardware or GPU drivers.")
+        if run.get("config", {}).get("provider") == "openai" and not run["config"].get("endpoint_inference_local"):
+            raise ValueError("Confirm local inference hardware before linking an endpoint benchmark.")
+    group = {"id": (first.get("comparison_group") or {}).get("id") or "machine-" + uuid.uuid4().hex[:16],
+             "label": label.strip(), "root_run_id": first["id"], "run_ids": list(run_ids)}
+    for run in runs:
+        backup(run["id"])
+    for run in runs:
+        run["comparison_group"] = group
+        save(run)
+    return group
 
 
 def delete(run_id):
@@ -303,8 +338,11 @@ CSV_COLUMNS = [
     ("created_at", lambda r, run: run.get("created_at")),
     ("model", lambda r, _: r.get("model")),
     ("quantization", lambda r, _: r.get("quantization")),
-    ("mtp", lambda r, _: "on" if r.get("mtp") else "off"),
-    ("reasoning", lambda r, _: "off" if r.get("reasoning_disabled") else "on"),
+    ("quantization_method", lambda r, _: r.get("quantization_method")),
+    ("quantization_source", lambda r, _: r.get("quantization_source")),
+    ("quantization_method_source", lambda r, _: r.get("quantization_method_source")),
+    ("mtp", lambda r, _: "unknown" if r.get("mtp") is None else "on" if r.get("mtp") else "off"),
+    ("reasoning", lambda r, _: "unknown" if r.get("reasoning_disabled") is None else "off" if r.get("reasoning_disabled") else "on"),
     ("target_tokens", lambda r, _: r.get("target_tokens")),
     ("prompt_tokens", lambda r, _: r.get("prompt_tokens")),
     ("status", lambda r, _: r.get("status")),
@@ -350,7 +388,16 @@ CSV_COLUMNS = [
     ("context_safety_fraction", lambda r, run: _session_config(r, run).get("context_safety_fraction", 0)),
     ("per_request_context_length", lambda r, _: r.get("per_request_context_length")),
     ("requested_total_context", lambda r, _: r.get("requested_total_context", r.get("requested_context"))),
+    ("storage_to_ram_bytes_per_second", lambda r, run: _transfer_profile(r, run).get("storage_to_ram", {}).get("bytes_per_second")),
+    ("ram_to_vram_bytes_per_second", lambda r, run: _transfer_profile(r, run).get("ram_to_vram", {}).get("bytes_per_second")),
+    ("transfer_bandwidth_captured_at", lambda r, run: _transfer_profile(r, run).get("captured_at")),
+    ("transfer_bandwidth_provenance", lambda r, run: _transfer_profile(r, run).get("provenance")),
 ]
+
+
+def _transfer_profile(row, run):
+    session = next((s for s in run.get("sessions", []) if s.get("id") == row.get("session_id")), {})
+    return session.get("transfer_bandwidth") or (run.get("hardware") or {}).get("transfer_bandwidth") or {}
 
 
 def _session_config(row, run):

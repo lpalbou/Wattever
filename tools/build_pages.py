@@ -12,44 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from wattever import __version__
 from wattever.validation import validate_run
-
-
-LOCAL_DETAIL = re.compile(r"(?:\b[A-Za-z]:[\\/]|/(?:Users|home)/|file://|\bWinError\s*\d+)", re.I)
-DIAGNOSTIC_KEYS = {"error", "message", "log", "traceback", "exception", "stderr", "stdout"}
-
-
-def public_projection(value):
-    """Remove diagnostic text and local paths while retaining measurements."""
-    if isinstance(value, list):
-        return [public_projection(item) for item in value]
-    if isinstance(value, dict):
-        result = {}
-        redacted = False
-        storage_access = False
-        for key, item in value.items():
-            if LOCAL_DETAIL.search(key):
-                redacted = True
-                continue
-            if key.lower() in DIAGNOSTIC_KEYS:
-                redacted = True
-                if re.search(r"\bWinError\s*5\b", str(item), re.I):
-                    storage_access = True
-                continue
-            if isinstance(item, str) and LOCAL_DETAIL.search(item):
-                result[key] = "[local detail redacted]"
-                redacted = True
-                if re.search(r"\bWinError\s*5\b", item, re.I):
-                    storage_access = True
-            else:
-                result[key] = public_projection(item)
-        if redacted:
-            result["diagnostic_redacted"] = True
-        if storage_access:
-            result["diagnostic_category"] = "storage_access"
-        return result
-    if isinstance(value, str) and LOCAL_DETAIL.search(value):
-        return "[local detail redacted]"
-    return value
+from wattever.privacy import public_projection
 
 
 def build_catalog(output, root=ROOT):
@@ -110,7 +73,36 @@ def build(output_dir):
     (output / ".nojekyll").write_text("", encoding="utf-8")
     shutil.copyfile(ROOT / "corpora" / "agentic-ai-oct2026.full.md", output / "corpus.md")
     build_catalog(output)
+    build_capability_catalog(output)
     return output
+
+
+def build_capability_catalog(output, root=ROOT):
+    """Only publish committed, independently re-scored capability contributions."""
+    from wattever import capabilities, datasets
+    datasets.register_bundled_suites()
+    root = Path(root)
+    names = subprocess.check_output(["git", "ls-tree", "-r", "--name-only", "HEAD", "--", "results/capabilities/"],
+                                    cwd=root, encoding="utf-8").splitlines()
+    folder = Path(output) / "capabilities"
+    folder.mkdir(parents=True, exist_ok=True)
+    entries = []
+    for name in names:
+        if not re.fullmatch(r"results/capabilities/[A-Za-z0-9][A-Za-z0-9_.-]{0,199}\.json", name): continue
+        original = json.loads(subprocess.check_output(["git", "show", "HEAD:" + name], cwd=root).decode("utf-8"))
+        validated = capabilities.validate_import(original)
+        if original["id"] != Path(name).stem: raise ValueError("Capability filename does not match run ID.")
+        exported = capabilities.export_run(validated)
+        capabilities.validate_import(exported)
+        raw = (json.dumps(exported, ensure_ascii=False, allow_nan=False, indent=1) + "\n").encode("utf-8")
+        (folder / (original["id"] + ".json")).write_bytes(raw)
+        summary = {key: exported.get(key) for key in ("id", "label", "created_at", "status", "configuration_id", "model_configuration", "evaluation_key", "suite_id", "suite_version", "suite_digest", "summary")}
+        entries.append({"id":original["id"], "file":original["id"] + ".json",
+                        "sha256":hashlib.sha256(raw).hexdigest(), "summary":summary})
+    entries.sort(key=lambda entry: entry["summary"].get("created_at", ""), reverse=True)
+    (folder / "index.json").write_text(json.dumps({"version":1, "runs":entries,
+                                                    "suites":capabilities.list_suites()}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return entries
 
 
 def main():

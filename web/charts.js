@@ -2,7 +2,7 @@
  *
  * Dependency-free on purpose: a benchmark box is often offline, so no CDN
  * charting library. Two forms only:
- *   line  -> a measure against context length (ordered, log-spaced x)
+ *   line  -> ordered measurements (log-spaced x by default, optional linear x)
  *   bars  -> a measure per size, grouped by setup
  *
  * Conventions enforced here rather than left to callers: zero-based linear y
@@ -164,9 +164,10 @@ const Charts = (() => {
 
     const xMin = Math.min(...xs), xMax = Math.max(...xs);
     const lg = (v) => Math.log10(Math.max(v, 1));
+      const transform = opts.xScale === "linear" ? (v) => v : lg;
     const sx = (v) => {
       if (xMax === xMin) return m.left + (width - m.left - m.right) / 2;
-      const f = (lg(v) - lg(xMin)) / (lg(xMax) - lg(xMin));
+        const f = (transform(v) - transform(xMin)) / (transform(xMax) - transform(xMin));
       return m.left + f * (width - m.left - m.right);
     };
 

@@ -4,10 +4,10 @@ from unittest.mock import Mock
 from wattever import runner
 
 class WatchdogTests(unittest.TestCase):
-    def test_budget_scales_with_context_and_caps(self):
+    def test_long_context_always_receives_configured_budget(self):
         run={'results':[{'model':'m','status':'ok','concurrency':1,'target_tokens':20000,'prefill_tps':500}]}
         cfg={'per_test_timeout_s':1800}
-        self.assertEqual(runner.request_deadline(run,cfg,'m',40000,1)[0],600)
+        self.assertEqual(runner.request_deadline(run,cfg,'m',40000,1)[0],1800)
         self.assertEqual(runner.request_deadline(run,cfg,'m',40000,4)[0],1800)
         self.assertEqual(runner.request_deadline({},cfg,'m',40000,1)[0],1800)
 

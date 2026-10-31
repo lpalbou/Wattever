@@ -1,6 +1,6 @@
 # Wattever
 
-> Local LM Studio throughput and power benchmarking with a browser UI and JSON results.
+> LLM endpoint throughput and deterministic task-accuracy benchmarking with optional local telemetry, public model configuration identities and shareable audit JSON. The Python helper supports managed LM Studio or externally managed streaming Chat Completions. Hosted browser timing uses a separate protocol; its capability catalog is read-only.
 
 ## Core docs
 
@@ -8,10 +8,11 @@
 - [Documentation index](docs/README.md): full guide map.
 - [Browser mode](docs/browser.md): hosted connection, measurement and storage limits.
 - [Sharing results](docs/sharing-results.md): shared catalog, contributions and continuing helper sessions.
-- [Getting started](docs/getting-started.md): setup and first run.
-- [Measurements](docs/measurements.md): metrics, context planning and sessions.
+- [Getting started](docs/getting-started.md): provider choice, automatic endpoint identity, connection, manual model IDs and first run.
+- [Measurements](docs/measurements.md): client/provider timings, cache provenance, power boundaries, hardware and compute claims.
+- [Capability evaluation](docs/capabilities.md): visual score/coverage dashboard, question-by-repeat evidence explorer, pinned Core/GSM8K/ARC suites and paired-comparison limits.
 - [Architecture](docs/architecture.md): components and boundaries.
-- [API](docs/api.md): local routes and side effects.
+- [API](docs/api.md): automatic naming/opaque route identity, private registry boundaries, environment-based authentication, local routes and managed-only extensions.
 - [FAQ](docs/faq.md): common questions and limits.
 - [Troubleshooting](docs/troubleshooting.md): diagnosis and fixes.
 
@@ -40,7 +41,7 @@ Canonical source: [README.md](README.md)
 
 # Wattever
 
-Wattever measures local LLM prefill and decode throughput and GPU power with LM Studio. It records successes and failures across prompt sizes, models and simultaneous query counts, and compares sessions in a browser UI. Use the hosted browser mode with an OpenAI-compatible endpoint, or the full local helper with Python 3.9+ and LM Studio. Wattever uses the Python standard library and local JavaScript without a package installation or CDN.
+Wattever benchmarks LLM endpoints across prompt sizes, models and simultaneous query counts, and compares successes and failures in a browser UI. Connect the local Python helper or hosted browser to an OpenAI-compatible streaming Chat Completions endpoint, including Strata, llama.cpp and LM Studio. The helper also offers managed LM Studio model loading and optional local GPU power measurements. Wattever uses Python 3.9+, the Python standard library and local JavaScript without a package installation or CDN.
 
 ## Browser quick start
 
@@ -48,16 +49,24 @@ Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/), start an O
 
 ## Full local helper quick start
 
-1. Install LM Studio, download the models you want to test, and run `lms bootstrap` once so the `lms` command is available.
-2. Get the [v2.4.1 source archive](https://github.com/lpalbou/Wattever/releases/tag/v2.4.1) or clone the repository. The source archive includes historical tracked results.
+1. Start your inference engine and load a model. For managed LM Studio operation, install LM Studio, download models and run `lms bootstrap` once. Other endpoints do not need LM Studio.
+2. Clone the repository for the endpoint helper features described here. The [v2.4.1 source archive](https://github.com/lpalbou/Wattever/releases/tag/v2.4.1) documents that historical release and predates these helper features.
 3. On Windows run `Wattever.bat`; on macOS run `Wattever.command`; on Linux run `sh Wattever.sh`. Alternatively run `python -m wattever.server` from the repository.
-4. Open the displayed local URL, select models and workloads on **Run**, and start. Leave the server running until the benchmark finishes. Results appear as cases complete.
+4. Open the displayed local URL. On **Run**, choose **OpenAI-compatible endpoint**, enter your API base URL and use **Connect / discover models**. Wattever identifies the endpoint where evidence is available and supplies its display name automatically; no manual label or ID is required. Enter a model ID manually if discovery is unavailable. Choose workloads and start. Leave the server running until the benchmark finishes.
 
-See [Getting started](docs/getting-started.md) for setup and [Measurements and sessions](docs/measurements.md) for interpretation and extending a benchmark. GPU monitoring selects a sensor only: configure actual model placement in LM Studio and record GPU setup notes. Power is measured for the selected GPU, not every GPU.
+See [Getting started](docs/getting-started.md) for both provider modes and [Measurements and sessions](docs/measurements.md) for interpretation. The inference engine controls model quantization, context, KV cache and speculative decoding. GPU monitoring selects a sensor only. Generic endpoint power measurements require an explicit assertion that inference runs on the benchmark computer; remote inference power remains unavailable.
 
-**Results** provides Summary, Table and Compare views with common benchmark, model, measure and concurrency filters. Tables can be copied as tab-separated text. In helper mode, use **Add / rerun tests** to extend a benchmark or replace selected cases. One JSON file stores each benchmark; download it from Results or share it as described in [results guidance](results/README.md). Review its contents before publication.
+**Results** provides Summary, Table and Compare views with common benchmark, model, measure and concurrency filters. Tables can be copied as tab-separated text. Managed LM Studio runs support **Add / rerun tests**; generic endpoints use new runs. One JSON file stores each benchmark. Optional reproducibility settings and sourced compute claims accompany detected hardware without being presented as detected measurements. Review JSON before publication; see [results guidance](results/README.md).
 
 The hosted Results view also includes a shared catalog that you can browse without connecting a model provider. See [sharing results](docs/sharing-results.md) to contribute your benchmark or add missing tests later.
+
+## Capability tests and live telemetry
+
+The helper's **Capabilities** tab runs original Core tasks, the pinned 1,319-question GSM8K test split, or the 1,172-question ARC-Challenge test split. Choose a deterministic subset or the full suite and compare auditable rule-scored answers. These are zero-shot chat adaptations, not official leaderboard scores or intelligence rankings. Requested reasoning, reported MTP/quantization and unknown effective settings remain distinct in public model/endpoint configuration fingerprints. See [capability evaluation](docs/capabilities.md) for scoring, dataset licenses and uncertainty.
+
+Its visual dashboard combines strict pass rate, correct/planned and coverage tiles with category bars, an outcome ring and repeat comparisons. Select a chart to filter the paginated question-by-repeat matrix, then open a cell to inspect the question, expected output, model response and rule explanation. Matching evaluation protocols support paired comparisons that exclude unscored requests. A format mismatch or request error is shown distinctly from a passed answer; inspect the evidence before drawing conclusions about reasoning.
+
+Local runs can display CPU/GPU utilization, RAM/VRAM usage, available temperatures, GPU clocks and power. Saved telemetry includes a bounded recent history and whole-run observed means/peaks/coverage; early/late changes are observations, not a throttling diagnosis. Results charts separate selected metrics into individual graphs. The hosted site can browse/export/compare shared capability results; launching tests and validating capability imports require the helper.
 
 ## Documentation
 
@@ -65,7 +74,7 @@ The hosted Results view also includes a shared catalog that you can browse witho
 
 ## For AI agents
 
-Register and use the [Wattever agent skill](https://github.com/lpalbou/Wattever/tree/v2.4.1/skills/wattever) to operate the local API safely. Copy `skills/wattever/` from the version you use into your agent's skills directory.
+Register and use the [Wattever agent skill](skills/wattever/SKILL.md) to operate the local API. Copy `skills/wattever/` from the version you use into your agent's skills directory.
 
 Wattever is [MIT licensed](LICENSE).
 
@@ -79,8 +88,9 @@ Canonical source: [docs/README.md](docs/README.md)
 
 - [Browser mode](docs/browser.md): hosted setup, privacy, storage and measurement limits.
 - [Sharing results](docs/sharing-results.md): shared catalog, contributions and completing a benchmark later.
-- [Getting started](docs/getting-started.md): requirements and first benchmark.
-- [Measurements and sessions](docs/measurements.md): metrics, hardware, context planning, retries and comparisons.
+- [Getting started](docs/getting-started.md): managed LM Studio or generic endpoint setup, authentication, manual model IDs and first benchmark.
+- [Measurements and sessions](docs/measurements.md): client/provider metrics, cache provenance, hardware, compute claims, power boundaries and comparisons.
+- [Capability evaluation](docs/capabilities.md): visual score/coverage dashboard, question-by-repeat explorer, compatible paired comparisons, offline pinned suites and audit imports.
 - [Architecture](docs/architecture.md): components and data flow.
 - [API](docs/api.md): local HTTP interface and side effects.
 - [FAQ](docs/faq.md): common interpretation questions.
@@ -99,13 +109,26 @@ Canonical source: [docs/getting-started.md](docs/getting-started.md)
 
 For hosted use without installing Wattever, see [Browser mode](docs/browser.md). The instructions below cover the full local helper.
 
-Install Python 3.9 or newer and [LM Studio](https://lmstudio.ai/), download the models you want to measure, and run `lms bootstrap` to make the LM Studio CLI available. Wattever does not need Python packages or a JavaScript build. The LM Studio API defaults to `http://localhost:1234`; set `LMS_BASE_URL` before starting Wattever if needed.
+Install Python 3.9 or newer. Wattever does not need Python packages or a JavaScript build. Choose a provider mode:
 
-Download and extract the [release source archive](https://github.com/lpalbou/Wattever/releases/tag/v2.4.1), or clone the repository. Start `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux. You can also run `python -m wattever.server` in the repository. The server listens on loopback and prints its URL; keep its window open. `GPU_BENCH_PORT` sets the starting port (default 8713); `GPU_BENCH_NO_BROWSER=1` suppresses automatic browser opening.
+- **OpenAI-compatible endpoint:** start an inference engine such as Strata, llama.cpp or LM Studio and load your model there. Wattever needs streaming Chat Completions; model discovery is optional. Other OpenAI API surfaces are not required or implemented by this integration.
+- **LM Studio (managed):** install [LM Studio](https://lmstudio.ai/), download models and run `lms bootstrap`. Wattever can load/unload models and schedule context and MTP settings through its CLI. The API defaults to `http://localhost:1234`; `LMS_BASE_URL` changes that managed connection.
 
-On **Run**, select installed models, prompt sizes, query counts and settings. Choose a GPU sensor and, for multiple GPUs, describe the LM Studio placement in GPU setup notes. Start the benchmark and view live results. Model loads and inference can take substantial time and change LM Studio's loaded models. The macOS launcher offers optional administrator authorization for `powermetrics`; speed measurements still work without it.
+Clone the repository for the generic endpoint helper features. The [v2.4.1 archive](https://github.com/lpalbou/Wattever/releases/tag/v2.4.1) remains available with that release's feature set. Start `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux. You can also run `python -m wattever.server` in the repository. The server listens on loopback and prints its URL; keep its window open. `GPU_BENCH_PORT` sets the starting port (default 8713); `GPU_BENCH_NO_BROWSER=1` suppresses automatic browser opening.
+
+On **Run**, choose your provider. For a generic endpoint, enter your engine's API base URL, such as `http://127.0.0.1:8000/v1` (a root URL also works), and optionally the name of an API-key environment variable. Set the variable before starting the helper; enter its name, never its secret value, in Wattever. Click **Connect / discover models**. Wattever supplies a display name and an opaque route identity automatically; no label or ID is required. If the provider does not expose `/models`, supply its exact served model ID manually. The Python helper connects directly, so browser CORS permission is only needed in hosted browser mode.
+
+Endpoint names come from recognized public cloud hosts or explicit service metadata when available. Local/private metadata probes are bounded, read-only requests; Wattever does not identify software from a port number or model name. If the software cannot be established, it uses an honest **Local endpoint**, **Private endpoint** or **Remote endpoint** fallback. An optional advanced **Display name** override is the only naming field you need to edit. Detected route location does not establish where inference runs; the local-inference confirmation remains a separate assertion.
+
+Select models, prompt sizes, query counts and repeats. Configure quantization, context allocation, KV cache, placement and MTP in the external engine. **Requested reasoning** defaults to **None** in the UI and sends `reasoning_effort`; choose **Provider default** to omit it. Unsupported values fail visibly, and accepted requests do not verify effective behavior. Reproducibility fields and reported MTP/reasoning record operator knowledge; they do not change the engine. A canonical model ID can identify a checkpoint behind a served alias. Each generic endpoint experiment starts a new run; load/unload, resume and same-file extension are available only for managed LM Studio.
+
+Hardware discovery describes the benchmark client. Leave **I confirm inference runs on this computer** unchecked for remote or uncertain deployments. Checking it explicitly attributes local sensors to inference; it does not verify the server's hardware. The GPU selector chooses a power sensor, not execution placement. Record placement and other relevant settings, and close competing workloads for comparisons. The macOS launcher offers optional authorization for `powermetrics`; throughput measurements work without it.
 
 Use **Results** to select and compare benchmark files, download JSON, or copy tables. See [measurements](docs/measurements.md) before comparing and [troubleshooting](docs/troubleshooting.md) if setup fails. Return to [overview](README.md); see [API](docs/api.md) for integration.
+
+Use **Capabilities** for task accuracy after connecting in **Run**. Select a model, suite and question count, review the answer budget and timeout, then start. Full suites can be lengthy; subsets record their exact seeded selection. Capability tests and validated imports require the helper. The hosted site supports their shared result library/export/comparison. See [capability evaluation](docs/capabilities.md).
+
+After updating Python or UI files, restart the helper and reload its page to use the complete build. The launcher identifies builds with `/api/version` `build_id`, reuses the same build, and can replace an identified idle older build even when the release version is unchanged. Active speed or capability runs are preserved. Use the printed helper URL; its port is separate from your model server's port, and restarting Wattever does not require stopping the inference engine.
 
 ---
 
@@ -119,11 +142,13 @@ Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/) to run a qu
 
 The provider must permit cross-origin requests. LM Studio has an Enable CORS switch in its [server settings](https://lmstudio.ai/docs/developer/core/server/settings). Browsers may also require local-network permission, and HTTPS-to-localhost behavior depends on the browser and its security settings; see [Microsoft Edge local network access](https://learn.microsoft.com/en-us/deployedge/ms-edge-local-network-access). Wattever connects directly from the browser: it has no hosted proxy and does not use helper credentials. If the endpoint needs an API key, enter it in the page; the key stays in memory and the input clears after connecting. It is not saved in result files or browser storage.
 
+Endpoint names and route IDs are automatic. Recognized official cloud hosts or explicit service metadata can identify the service; otherwise a Local/Private/Remote endpoint fallback is used. No manual label or ID is required, and an advanced **Display name** override is optional. Canonical known public API routes use stable public provider IDs; other routes, including custom cloud paths, use a private URL-to-random-ID mapping in browser local storage. That mapping is excluded from exports; clearing storage can regenerate its IDs. Detection describes the route/provider, not verified inference hardware or backend weights.
+
 Chrome versions with separate network permissions may call localhost access **Apps on device** or **Loopback network**. Allow the permission for the Wattever site when you connect. The permission is distinct from access to other devices on your LAN; see [Chrome local network guidance](https://github.com/GoogleChrome/modern-web-guidance/blob/main/skills/modern-web-guidance/guides/security/local-network-access.md).
 
-GPU, CPU, RAM and VRAM fields are optional user-supplied descriptions, not hardware discovery. Browser mode cannot measure GPU power or VRAM use, load or unload models, choose model placement, allocate context, control MTP or reasoning, resume a session, or add and rerun cases in the same file. The provider manages those settings; configure it separately. Use the [full local helper](docs/getting-started.md) when those controls and telemetry are needed.
+GPU, CPU, RAM and VRAM fields are optional user-supplied descriptions, not hardware discovery. Browser mode cannot measure GPU power or VRAM use, load/unload models, choose placement, allocate context, control MTP, resume a session or extend the same file. It can request standard reasoning effort, temperature and the supported token-limit field; the engine's effective behavior remains unverified. Unsupported request values fail visibly. Configure model execution in the provider. Use the [local helper](docs/getting-started.md) for detected client hardware and optional local telemetry; its managed LM Studio provider additionally supports lifecycle/context controls and same-file extension.
 
-Browser results record `measurement_mode: browser`, `browser_schema_version: 1` and protocol `browser-1`, with the bundled corpus identity and a SHA-256 hash when available. Timing occurs in the client; it includes network and browser overhead and is not directly comparable to helper protocol measurements. Prompt throughput is unavailable when the provider does not report exact prompt usage. Output token counts and throughput are marked estimated when completion usage is unavailable. A failed request is recorded as a failure, not zero throughput.
+New browser results record `measurement_mode: browser`, `browser_schema_version: 2` and protocol `browser-2`, with bundled corpus identity and a SHA-256 hash when available. Timing includes network/browser overhead and is not directly comparable to helper protocols. Exact provider usage is required for token throughput; missing counts remain unavailable, with no character/chunk token estimate. Reasoning usage and observed output boundaries are recorded: reported unstreamed reasoning is excluded from decode, ambiguous hidden reasoning or a single output event leaves decode unavailable. Prompt tokens/client TTFT remains a proxy including possible hidden work, not isolated engine compute. Public model configuration fingerprints distinguish requested/reported/unknown settings without storing connection URLs. Historical `browser-1` files remain readable and may include estimated throughput; compare their protocol/provenance separately.
 
 Results are stored in browser storage and can be downloaded or imported as JSON. Storage can be cleared or unavailable; if a storage warning appears, download the in-memory results before closing the page. Closing or reloading the page stops the browser benchmark, and a previously running result is shown as interrupted. On timeout the browser aborts its requests and stops the run, but cannot verify that the provider stopped inference or unload its model. Check the provider before starting another workload. Helper benchmarks instead continue in the local server when the page closes; see [measurements and sessions](docs/measurements.md).
 
@@ -134,6 +159,8 @@ Results also shows a read-only shared catalog without requiring an endpoint conn
 The hosted site opens the shared Results library by default. Browsing it reads only the same-origin GitHub Pages catalog and benchmark JSON; it does not query desktop helper APIs or local files. Shared records identify their GitHub source. The published JSON omits host-local diagnostic text and paths while preserving measurements, failure classifications, hardware descriptions, settings and session provenance. It is a public projection of the repository record.
 
 If the browser data client fails to load, the hosted site reports that failure rather than falling back to desktop APIs. Model-server access belongs to the optional Run workflow and starts only after an explicit Connect action.
+
+The **Capabilities** library reads same-origin shared capability files, verifies their catalog SHA-256 and supports export/comparison. Dataset/score validation occurs during publication with the helper's deterministic re-scoring and fingerprint checks. The hosted page cannot launch capability tests or import unvalidated capability files; use the helper for those actions. Throughput JSON import remains available in browser Results. See [capability evaluation](docs/capabilities.md).
 
 ---
 
@@ -148,7 +175,7 @@ The hosted Results view includes a shared catalog built from benchmark JSON file
 ## Contribute a benchmark
 
 1. Run a benchmark using the [full helper](docs/getting-started.md) or [browser mode](docs/browser.md). Partial sessions and failures are useful contributions too.
-2. In Results, download the benchmark's **JSON**. Review the hardware information, notes and model names before sharing. Browser results identify their separate client-timed protocol; helper results include the sensor and session settings.
+2. In Results, download the benchmark's **JSON**. Review hardware information and all free text, including notes, model names, labels, reproduction fields and compute sources. Public outputs exclude endpoint URLs, credentials and credential environment-variable names; that filtering cannot decide whether your annotations are confidential. Browser results identify their separate client-timed protocol; helper results include sensor/session settings.
 3. Sign in to GitHub and open [upload files to results/runs](https://github.com/lpalbou/Wattever/upload/main/results/runs). Upload the single JSON file, named after its `id` with a `.json` extension. If you do not have write access, follow GitHub's fork prompt and propose the change from your fork.
 4. Open the proposed pull request. The repository's validation checks run on the contribution. Once merged and the site deployment completes, the shared catalog updates automatically.
 
@@ -156,11 +183,27 @@ For a command-line contribution, fork and clone the repository, create a branch,
 
 ## Add missing tests later
 
-A benchmark does not need every planned case before you contribute it. To complete or extend a helper benchmark later, download its JSON and put it in the local helper's `results/runs/` directory using its `id` as the filename. In Results select it and choose **Add / rerun tests**. Existing models are preselected; select the models, sizes and query counts you want, review the preview, and choose **Add missing tests**. Existing terminal cases are preserved. Select **Retry failed tests** explicitly if you also want to retry failures and skipped cases.
+Same-file continuation applies to managed LM Studio runs. Generic endpoint and browser experiments require a new run; connection details are not stored in public result files.
+
+A benchmark does not need every planned case before you contribute it. To complete or extend a managed LM Studio benchmark later, download its JSON and put it in the local helper's `results/runs/` directory using its `id` as the filename. In Results select it and choose **Add / rerun tests**. Existing models are preselected; select the models, sizes and query counts you want, review the preview, and choose **Add missing tests**. Existing terminal cases are preserved. Increase **Total repeats per test** to append repeats. To replace one specific measurement, choose its entry in **Tests to update**; previous attempts remain in history. Select **Retry failed tests** explicitly if you also want to retry failures and skipped cases.
 
 The helper checks hardware, selected GPU and driver, corpus and LM Studio version for compatibility. Start a separate benchmark when those differ or cannot be verified. The same file records the added session and the helper saves a backup before modifying it. To update a contribution, submit the updated file with the same ID in a pull request; the saved cases travel with it. Do not manually edit measurements or replace failures with zeroes.
 
 Browser mode can import and display JSON but cannot continue an existing benchmark. Its provider controls model execution and context. See [measurements and sessions](docs/measurements.md) for retry, replacement and comparison rules.
+
+## Reproducibility metadata
+
+Hardware inventory describes the benchmark client. For remote inference, the result retains client inventory separately and does not claim it describes the server. Include public engine/version, model revision, quantization, actual context/KV settings, MTP draft count and runtime placement when known. Optional reproduction fields are marked `user_reported`; they do not configure the engine.
+
+Only add compute claims with a source, arithmetic precision, execution path, dense/sparse distinction and peak/measured/estimate classification. INT precision uses TOPS; floating precision uses TFLOP/s. A claim is not a Wattever measurement. PCIe encoding ceilings are not measured DMA bandwidth, and idle link state can differ from loaded state. Compare client timings, provider timings and cache usage using their separate provenance; unknown cache usage is not zero. See [measurement definitions](docs/measurements.md).
+
+## Capability results
+
+Use **Capabilities → Export JSON** for one or more capability runs. These use `benchmark_kind: capability`, their own schema 1 and `results/capabilities/<id>.json`; keep throughput files in `results/runs/`. A `capability_runs` bundle is convenient for helper import/export; contribute individual run files under their IDs. The hosted catalog supports browsing/export/comparison; tests and validated imports require the helper. The hosted site does not write to GitHub.
+
+Review generated visible answers, prompts, expected answers and source citations, as well as labels/notes and reported settings. Public audit material preserves exact content for dataset/protocol fingerprints and independent rescoring. Privacy-redacted responses are marked and cannot be re-imported as full, independently scored audit answers. Keep a reviewed original if needed.
+
+Import re-scores answers and checks configuration/suite/protocol/subset fingerprints. These establish consistency, not authentication or proof that a model ran. Compare matching evaluation keys with scored/error/truncation counts and requested/reported/unknown effective settings. Automatically resolved opaque IDs and display names identify routes without sharing or hashing connection URLs. Keep the private helper/browser URL-to-ID registry out of contributions. See [capability evaluation](docs/capabilities.md).
 
 ---
 
@@ -168,27 +211,164 @@ Browser mode can import and display JSON but cannot continue an existing benchma
 
 Canonical source: [docs/measurements.md](docs/measurements.md)
 
-# Measurements and sessions
+﻿# Measurements and sessions
 
-The details below describe the full local helper. Browser mode has a separate `browser-1` protocol and client-side timings; its measurements are not directly comparable with helper measurements. See [Browser mode](docs/browser.md).
+The local helper supports managed LM Studio and generic OpenAI-compatible endpoints. Hosted browser mode uses a separate `browser-2` protocol; historical `browser-1` files remain readable. Browser/helper timings and historical estimates are not directly interchangeable. See [Browser mode](docs/browser.md).
 
-A case combines a model, Standard or MTP mode, prompt size, simultaneous query count and repeat. The runner records successful, failed and skipped cases; inability to load or fit a workload is useful capacity information. MTP requires a model with a supported bundled MTP head. Reasoning is disabled by default; settings and runtime versions accompany results.
+## Throughput and timing
 
-Prefill throughput is prompt tokens divided by time to first token (TTFT), including overhead before the first token. Decode throughput is (completion tokens minus the first token) divided by the time from the first token to completion. Output token counts may be estimated when exact usage is unavailable. Group throughput for concurrent requests includes prefill and queueing and is distinct from per-request decode speed. Compare matching model builds, settings, corpus and protocol, and interpret differences in runtime placement and memory conditions.
+A case combines a model, technique, prompt size, simultaneous query count and repeat. Successful, failed and skipped cases are recorded; inability to load or fit a workload is useful capacity information. Managed LM Studio can schedule Standard/MTP modes when a supported bundled MTP head exists, and disables reasoning by default. Generic endpoint technique, reasoning, context allocation, KV cache and quantization are controlled by the inference engine. Their effective state is unknown unless documented separately by the operator; a scheduler technique label does not prove the server's MTP state.
 
-The default per-test context allocation reserves prompt tokens, output budget, 512 tokens of headroom and a 5% prompt safety margin, subject to the model's per-request maximum. The shared KV allocation is the per-request capacity multiplied by simultaneous queries. Workloads are grouped by model. The default per-test policy reloads for each context and concurrency allocation; the optional fixed policy uses the largest planned allocation for a model and MTP mode, reducing reloads while changing memory conditions. More concurrency consumes more memory; large contexts can fail to fit.
+`prefill_tps` is prompt tokens divided by client-observed time to first output (TTFT). It includes queueing, network, tokenization and any unobserved reasoning before streamed content arrives. It is not an isolated engine prefill compute measurement. Decode throughput uses output tokens attributable to the observed stream interval, excluding its first-token estimate, divided by that client interval through stream completion. A stream chunk can contain multiple tokens. Generic endpoint throughput remains unavailable when server usage counts are missing; it is not estimated by counting chunks. Legacy managed results may carry explicitly marked chunk-based estimates. Inspect `metric_sources` and estimated-token flags.
 
-NVIDIA telemetry uses `nvidia-smi` for the selected card's board power. macOS may use `powermetrics` for GPU and CPU rails with permission. These measure different boundaries; whole-system power is estimated, not a meter reading, and includes only the selected GPU sensor. GPU sensor selection does not direct LM Studio placement. Record placement separately. Missing sensor data remains unavailable. Hardware inventory is best effort and lists discoverable GPUs, CPU, memory and other equipment without serial numbers or unique IDs.
+`timing_scope` records whether first output is content or reasoning, the output kinds observed, empty deltas before output, reasoning-token provenance and the decode token scope. `decode_token_count` records the numerator actually used. Reported hidden reasoning tokens are excluded from decode when they were not streamed. When empty pre-output deltas suggest hidden reasoning and its token count is unknown, decode throughput remains unavailable. Even without that signal, an endpoint that does not report reasoning may leave hidden work unverified. Compare equivalent timing boundaries rather than assuming completion usage always measures visible text. Decode energy per token uses the same scoped numerator.
 
-Each new benchmark has one JSON file in `results/runs/`. **Add / rerun tests** on an existing benchmark can select models and their Standard/MTP modes, prompt sizes and query counts. Choose an action and review the case counts in the preview: the default adds missing cases; retry failed also retries skipped cases; rerun selected tests replaces selected cases including successful ones. A replaced attempt is archived in `previous_attempts`, not averaged or included in a median with its replacement. Before changing the file, an exact snapshot is kept under `results/.history/`. Each execution records its own session settings and provenance. Resume creates a new run for unfinished work. Extension and resume require compatible hardware, selected GPU and driver, corpus and LM Studio version; when compatibility cannot be verified, start a new benchmark.
+A response with only one observable output event has no observed interval between output events; decode speed remains unavailable rather than timing the trailing usage message. Optional `endpoint_reasoning_effort` records a requested standard API control; it does not certify that the engine obeyed it.
 
-The helper's request deadline uses successful same-model prefill throughput when available: six times projected prefill time plus 120 seconds, capped by the configured test timeout. Without a comparable result it uses the configured timeout. After the first token, 120 seconds without output progress also triggers recovery (or the configured timeout if shorter). These are time limits, not detection of a physical freeze or GPU-memory threshold. A timeout is recorded; the helper verifies model unload and request workers exit before continuing. If verification fails, the run stops for manual recovery. With the default skip setting, larger cases for that model and concurrency are skipped after failure.
+Provider-reported engine counters, when supplied, are stored separately in `reported_timings`; do not combine them with client timings. `cached_prompt_tokens` records provider usage detail when available. Missing cache usage means unknown, not zero. A unique leading nonce reduces ordinary prefix reuse but does not prove that all provider caching, routing or warm state has been controlled. Record cache policy and compare equivalent conditions.
 
-Prompt presets are 512, 5k, 10k, 20k, 40k, 80k, 100k, 120k, 150k, 200k and 260k tokens; concurrency presets are 1 through 10, 15, 20, 30, 40, 50, 75 and 100 simultaneous queries. Compare cases at matching dimensions.
+Group throughput for concurrent requests includes prefill and queueing and differs from per-request decode speed. `aggregate_completion_tps` divides successful requests' total output tokens by group wall time; it is not the sum of decode speeds. Concurrent requests have overlapping phases, so group power does not get an invented prefill/decode energy split. Compare matching model builds, settings, corpus, measurement source and protocol.
 
-Older schemas and planner settings remain readable. Extending a legacy benchmark can produce sessions with different context planning; compare session settings rather than treating them as identical. See [API](docs/api.md), [FAQ](docs/faq.md), and [results guidance](results/README.md).
+## Context and workload
 
-The Add / rerun tests dialog preselects installed benchmark models and their saved techniques. New models are unchecked; unavailable benchmark models remain visible. Per-model successful, failed, skipped and unfinished counts cover saved techniques and selected additions at the displayed prompt sizes and query counts. Changing or clearing this selection leaves recorded measurements intact. The preview shows which cases the chosen action will execute.
+For managed LM Studio, the default per-test allocation reserves prompt tokens, output budget, 512 tokens of headroom and a 5% prompt safety margin, subject to the model's per-request maximum. Shared KV allocation multiplies per-request capacity by concurrency. The per-test policy reloads for each context/concurrency allocation; the optional fixed policy uses the largest planned allocation per model and MTP mode, reducing reloads while changing memory conditions. Generic endpoint context estimates describe client workload planning only; configure the real context/KV allocation in the engine. More concurrency consumes more memory; large contexts can fail to fit.
+
+Prompt presets are 512, 5k, 10k, 20k, 40k, 80k, 100k, 120k, 150k, 200k and 260k tokens; concurrency presets are 1 through 10, 15, 20, 30, 40, 50, 75 and 100. Compare cases at matching dimensions, output budget and repeat count. Close competing workloads and record relevant clock/power settings and runtime placement.
+
+## Hardware, power and provenance
+
+NVIDIA telemetry uses `nvidia-smi` for the selected card's board power. macOS may use `powermetrics` for GPU and CPU rails with permission. These have different boundaries. Whole-system power is estimated, not a meter reading, and includes only the selected GPU sensor. Selecting a sensor does not select inference placement. Generic endpoint power is unavailable unless `endpoint_inference_local: true` explicitly asserts that inference runs on the benchmark client. An externally loaded model prevents a verified unloaded-model idle baseline. Missing sensor data remains unavailable.
+
+Hardware inventory is a best-effort, read-only snapshot of the benchmark client, not verified remote server hardware. Additive `metadata_schema_version: 1` metadata accompanies result `schema_version: 2`; historical files remain readable. Available fields include CPU/socket/core counts, RAM modules and reported clocks, GPU VRAM/driver, and current/max-reported PCIe generation and width. DIMM count does not establish active channels. PCIe snapshots can downshift while idle; reported maxima may reflect platform limits. `link_encoding_ceiling_bytes_per_second` is a derived one-direction ceiling after encoding only, excluding packet/system overhead. It is neither a measured DMA rate nor device-memory bandwidth. Unmeasured bandwidth remains null.
+
+Helper throughput and capability benchmarks also run separate transfer microbenchmarks before inference. **Measure transfer bandwidth** in the machine panel runs them independently. Choose **Storage test folder** on the drive holding your weights, or leave it blank to test the results volume; the folder path is excluded from saved public configuration. Storage → RAM reads a flushed 256 MiB temporary file three times in 8 MiB blocks at queue depth one, bypassing the OS page cache with Windows unbuffered I/O, Linux `O_DIRECT` or macOS `F_NOCACHE`. Device/controller caches may still contribute. File creation is excluded from read timing, and the temporary file is removed. This is sequential read throughput on the selected filesystem, not random expert-fetch performance or a measurement of other drives.
+
+RAM → VRAM uses the selected NVIDIA adapter, mapped by PCI bus, through the CUDA driver. It times completed copies from a 64 MiB pinned host buffer, with warmup, three 2 GiB samples, synchronization and a readback check. It describes host-to-device transfers, not internal VRAM bandwidth or pageable-memory performance. The probe avoids starting when reported free VRAM is below 512 MiB. Unsupported hardware, insufficient resources and failed probes are recorded as unavailable rather than estimated. No inference models are loaded or unloaded by the probes. An isolated worker has a 75-second limit.
+
+`hardware.transfer_bandwidth` records protocol `wattever-transfer-v1`, capture time, scope, method, raw byte/time samples and their median bytes/second; UI rates use decimal MB/s and GB/s. Throughput execution sessions retain their own profile. Generic remote endpoints characterize the benchmark client, not the inference server. Browser-only mode cannot perform these native probes. A later measurement can be attached to a saved benchmark only on matching hardware and GPU/driver; it is marked `measured_later_on_matching_hardware`, with historical inference conditions unverified. Original inference measurements and session metadata are preserved.
+
+Optional `reproducibility` settings and `performance_claims` are user-reported public annotations kept separate from detected fields. Record engine/version, model revision, quantization, context, KV precision and MTP draft count when known, plus placement and competing workloads in reviewed notes. Wattever does not invent TFLOPS from GPU names or model quantization. A sourced compute claim must state arithmetic precision, execution path, dense/sparse behavior and whether it is an advertised peak, independent measurement or estimate. Integer INT4/INT8 claims use TOPS; floating-point FP4/FP8/FP16/BF16/FP32 claims use TFLOP/s. Quantized weight storage does not establish inference arithmetic precision.
+
+Quantization storage format (`quantization`, such as `Q4_0`) is separate from the method (`quantization_method`, such as QAT, QAD or UD). LM Studio discovery combines its model catalog and display labels, and records `quantization_source` and `quantization_method_source`. Unknown methods stay unknown; a four-bit format alone does not establish QAT or post-training quantization. Results and model selection show both labels when available. Historical catalog annotations use `lmstudio_catalog_backfill`, which does not verify historical weight bytes.
+
+Each result can also carry a public `model_configuration` and `configuration_id`. It distinguishes requested model alias, canonical checkpoint, automatically resolved opaque endpoint ID/display name, operator reports and control-plane evidence. Endpoint naming provenance is detected, inferred, operator override or unknown; it is not established by ports or model aliases. The private URL-to-ID registry is excluded from public outputs, and URLs are not hashed into route IDs. Unknown quantization, reasoning or MTP is explicit. A configuration hash verifies consistency of public fields; it does not verify endpoint weights, effective settings or inference location. Historical user-reported endpoint identities remain readable. Capability task accuracy uses a separate protocol/result family; see [capability evaluation](docs/capabilities.md).
+
+## Live telemetry and sustained observations
+
+The helper samples whole-client CPU utilization and physical RAM usage independently of GPU sensor availability. GPU utilization, used VRAM, temperature, SM clock and board power describe the selected GPU. These measurements include competing processes and monitoring overhead; they do not isolate inference. VRAM percentage uses the selected adapter's reported capacity. Windows CPU temperature remains unavailable without an actual supported source; Linux may expose a CPU package sensor. Missing temperatures remain null, including on macOS without an available temperature source.
+
+RAM usage means physical total minus OS-reported available memory on Windows and Linux. macOS uses total minus free/inactive pages and labels that availability boundary as an estimate. CPU utilization uses host CPU-time deltas, not load average. GPU snapshots are held briefly while fresh; failed/stale sensors do not become zero utilization.
+
+Stored `telemetry.history` contains elapsed seconds, UTC timestamps, scope and up to 3,600 recent points with explicit ring-retention counts. At 150 ms this covers roughly nine minutes; older points can be dropped. `telemetry.summary` preserves all-run observed sample means, time-weighted means, maxima, first/last readings and coverage despite history eviction. Raw phase samples retain up to 72,000 rows; a phase older than that retention is flagged incomplete.
+
+Time-weighted coverage excludes long sampling gaps. Peaks are observed maxima and can miss shorter spikes. Early/late 60-second means can overlap on short runs. Changes in temperature, clocks or load describe the observed workload/environment; they do not establish throttling or prove sustained model throughput. Compare repeat throughput at matching workload and placement alongside thermal/load traces. Separate graphs per selected metric avoid sharing incompatible units on one chart.
+
+## Sessions and recovery
+
+Each benchmark has one JSON file in `results/runs/`. Generic endpoints require reconnection and a new run rather than resume or same-file extension. A timeout stops the generic run because Wattever cannot verify provider-side cancellation or unload. Inspect the engine before restarting.
+
+Managed LM Studio supports **Add / rerun tests**. Select models and Standard/MTP modes, prompt sizes and query counts, then review the preview. Increase **Total repeats per test** to append repeat slots without replacing saved measurements. Set **Timeout per test** for new attempts, including individual repairs; each session and result retains its actual budget. In **Tests to update**, choose one saved model/size/query-count/repeat to repair only that test; the All measurements table also provides a **Repair repeat** button. **Add missing tests** preserves terminal cases; **Retry failed tests** includes failures and skips; **Rerun selected tests** includes successful cases. A replaced attempt moves to `previous_attempts` and is not averaged with its replacement. An exact snapshot is kept in `results/.history/`. Each execution has session settings and provenance. Resume creates a new run for unfinished work. Both require compatible hardware, selected GPU/driver, corpus and LM Studio version; otherwise start a new benchmark.
+
+Managed requests receive the configured per-test timeout. Prefill speed at shorter contexts does not shorten the budget for a larger context. The same whole-test budget applies while waiting for first output and during decode; output pauses do not impose a shorter hidden deadline. A timeout is a time limit, not physical freeze detection. The helper verifies managed model unload and worker exit before continuing; if verification fails, the run stops. Capacity failures can skip larger cases for that model/concurrency. By default, timeouts and transient request errors do not suppress subsequent repeats or larger contexts; a timed-out managed model is reloaded before another repeat. In the extension dialog's **Failure policy**, you can disable CPU placement fallback and opt to skip remaining repeats and larger contexts after a timeout. This records a practical time limit and explicit skips; it does not establish a hard VRAM allocation limit.
+
+Older schemas and planner settings remain readable. An extended legacy run can contain sessions with different context planning; compare session settings rather than treating them as identical. See [API](docs/api.md), [FAQ](docs/faq.md), and [results guidance](results/README.md).
+
+---
+
+## docs/capabilities.md
+
+Canonical source: [docs/capabilities.md](docs/capabilities.md)
+
+# Capability evaluation
+
+New question subsets use versioned SHA256 ranking of the selection seed and stable item IDs, independent of Python's sampling implementation. Historical Python-sampling records remain readable. Each run also records the exact selected IDs and their digest.
+
+Use **Capabilities** to compare rule-scored task accuracy separately from throughput and power. Connect an endpoint in **Run**, then choose a model, suite, question count, seed, repeats and generation budget. Its display name and opaque route identity are supplied automatically. Launching tests and validating capability imports require the local Python helper. The hosted site can browse, export and compare shared capability results; it does not launch capability inference or import unvalidated capability files.
+
+## Bundled suites
+
+| Suite ID | Questions | Evaluation |
+| --- | ---: | --- |
+| `wattever-core-v1` | 24 | Original arithmetic, logic, typed JSON, instruction, retrieval and code-output tasks; four per category |
+| `gsm8k-test-chat-v1` | 1,319 | GSM8K test split; zero-shot chat with final numeric-answer matching |
+| `arc-challenge-test-chat-v1` | 1,172 | ARC-Challenge test split; zero-shot chat with generated answer-letter matching |
+
+The external test splits are bundled for offline use. GSM8K is pinned to upstream revision `3101c7d5072418e28b9008a6636bde82a006892c` under MIT. ARC uses the `ARC-V1-Feb2018` archive's Challenge test member under CC BY-SA 4.0. The loader checks each extracted file's exact SHA-256 and item count before registering a suite. Source links, hashes, archive member, attribution and licenses are in [dataset provenance](corpora/capabilities/README.md). The archive ETag records source provenance; it is not the extracted file's cryptographic checksum.
+
+**AI2 ARC-Challenge** contains grade-school multiple-choice science questions. It is distinct from the [ARC-AGI grid-reasoning benchmark](https://arcprize.org/arc-agi/1). The dashboard identifies its task type explicitly. A high score on this science-question suite is not an ARC-AGI score or a general intelligence rating. See the [AI2 dataset description](https://huggingface.co/datasets/allenai/ai2_arc).
+
+These are versioned Wattever chat adaptations. GSM8K uses a zero-shot final `#### <number>` answer rather than a published few-shot harness. ARC normalizes option labels to letters and grades generated `ANSWER: <letter>` output rather than option likelihoods. Different prompts, sampling, item selections, output budgets and graders can change results. Do not equate these scores with official leaderboard or other harness scores. Public tasks may have appeared in training; none of these suites measures IQ or establishes a general intelligence ranking. Core is a small functional probe with a possible ceiling effect.
+
+## Run and compare
+
+1. Start the inference engine and load the intended model. Connect it in **Run**; no manual endpoint ID or label is needed. Use an optional canonical model ID if its served alias is ambiguous. An advanced **Display name** override can clarify an ambiguous detected name; keep it public and free of connection URLs or credentials.
+2. Record quantization, model revision, engine/version, context/KV settings, reported reasoning and MTP where known. Configure actual settings in the engine. An omitted or unknown field does not mean disabled.
+3. Open **Capabilities**, select the model and suite, and choose a subset or **Full suite**. The seed selects a deterministic subset; its exact IDs and digest are recorded. Use the same selection and evaluation settings across comparisons. Full suites can take substantial time and provider usage.
+4. Review total generation tokens, optional deadline and repeats. Capability generation settings are independent of the speed benchmark. The default budget is 32,768 tokens for thinking plus final output, with no wall-clock deadline (`0`). This is a ceiling, not a request to generate that many tokens. The server's loaded context and provider limits can impose lower limits. Use Stop to cancel, or set an explicit item deadline when needed. The UI defaults requested reasoning to **None**; **Provider default** omits that API field. Unsupported reasoning requests fail visibly. A short total budget can truncate reasoning before a final answer appears. Inspect the observed reasoning, token usage, output-limit count and coverage; a requested reasoning setting does not prove the engine honored it. Keep budgets consistent across comparable configurations and report deliberate budget changes as separate evaluations.
+5. Start the test. One request runs at a time, with a fresh chat per item/repeat. No model load/unload or MTP command is sent. Local CPU/RAM/GPU telemetry is available only after explicitly confirming inference runs on this computer, including when using an LM Studio endpoint.
+6. Open a saved result to explore its dashboard. Select category bars, outcomes or repeats to filter the question matrix, then select a cell to inspect the prompt, expected output and visible response. Select multiple results for configuration comparisons. Different evaluation keys indicate different experiments.
+
+Requested sampling is recorded, including temperature, optional top-p and reasoning effort. The seed always determines question selection. **Also send seed to the inference API** is off by default; with `send_seed: true`, it additionally requests `seed + repeat` for generation. Top-p defaults to omitted, and a blank temperature omits that parameter. The endpoint's determinism and effective settings are not independently verified. Repeats expose response variation on the same questions and do not create independent new questions. A provider can change its served weights or routing without changing its public alias; record any known changes as a new configuration.
+
+## Explore a result
+
+The overview keeps score and coverage together. Its header shows selected questions versus total suite questions, repeat count, and the descriptive first-repeat 95% interval when recorded. Subset scores are labeled as subsets; a 50-question sample is not the full 1,172-question ARC-Challenge test split. Small samples and scores near the ceiling can limit the ability to distinguish configurations; inspect the questions, coverage and paired evidence rather than comparing headline percentages alone.
+
+The dashboard includes:
+
+| View | What it shows |
+| --- | --- |
+| **Strict rule pass rate** | Passed attempts divided by graded attempts; request errors are excluded |
+| **Correct / planned** | Passed attempts divided by every planned attempt, including unfinished work |
+| **Evaluation coverage** | Graded attempts divided by planned attempts |
+| **Issues to review** | Rule mismatches, output limits and request errors, with distinct outcomes |
+| **Capability profile** | Category pass rates with passed/graded and graded/planned counts |
+| **Outcome breakdown** | A ring and legend separating passes, rule mismatches, output limits, request errors, cancellation, ungraded and unrecorded attempts |
+| **Consistency across repeats** | Per-repeat pass rates and questions whose recorded pass/fail outcome changed |
+
+Select a chart segment, category bar or repeat point to filter the **Question explorer**. Combine category, outcome, repeat and text filters; **Clear filters** restores the full selection. The matrix places questions in rows and repeats in columns, with 12 questions per page. Symbols and outcome labels accompany colors. Unrecorded cells are visible rather than counted as failures.
+
+Select a cell to open its evidence inspector. The question appears above expected and actual output, followed by a human-readable explanation of the recorded rule. Copy controls and previous/next navigation help review matching attempts. **Grading evidence & request metadata** contains the raw grading, normalization, usage and timing fields in a collapsed panel. Model responses remain inert text; inspecting them executes no generated code.
+
+An exact-rule mismatch can be a format failure. For example, if the task requires only `528`, the response `The answer is 528.` fails the exact-text rule despite containing the expected number. Inspect the required output and grading explanation before concluding that the model failed the arithmetic. The dashboard presents the recorded decision; it does not relax the rule or add a model judge.
+
+Live results update as attempts finish while preserving question filters and input focus. You can inspect another saved result without being redirected to the active run. Older files that contain only aggregate scores are labeled **Reported summary only**; question evidence is not reconstructed from their totals.
+
+For API clients, fetch the full run and its suite manifest once through `/api/capabilities/runs/<id>`, then consume `/api/capabilities/events?cursor=<cursor>`. Apply result updates by item ID and repeat, retain the returned cursor, and refresh the final saved result after completion. This avoids repeatedly transferring the full question manifest. See the [API reference](docs/api.md) for request and event routes.
+
+## Compare configurations
+
+Select results in the library and choose a baseline. Overall and category bars show recorded pass rates with their graded denominators. A paired change is available only when evaluation fingerprints and declared suite, scoring, selected questions, sampling and answer-budget settings match. Otherwise the bars remain descriptive and the dashboard marks the paired result **Not comparable**.
+
+The paired percentage-point change is the compared result minus the baseline, using only matching item-ID/repeat pairs graded in both runs. Wins, losses and ties describe those same scored pairs. Errors, cancelled requests, ungraded records and missing observations do not become losses. Different repeat counts can leave unmatched observations outside the paired calculation. This paired change can differ from subtracting overall pass rates when the runs have different graded coverage.
+
+Repeat variation means that scored pass/fail flags changed for the same question. A request error followed by a pass is an availability difference, not evidence of answer variation. The dashboard introduces no new scoring protocol or independence assumption; use the statistical context below when interpreting gaps.
+
+## Grading and uncertainty
+
+Scorers are deterministic and auditable. Exact text ignores surrounding whitespace. Typed JSON rejects duplicate keys, non-finite values, extra keys and value/type mismatches. Numeric final answers use decimal comparison with validated number formatting. Multiple-choice scoring checks the final answer label. No model judge or generated-code execution is used.
+
+Only visible final-answer content is scored; streamed reasoning is not treated as the final answer. A successfully completed stream retains its finish reason, usage and observation metadata even when no final answer appears. Empty final output at `finish_reason: "length"` is an output-limit failure; empty final output at normal completion is a failed task answer. Neither is a transport error. `finish_reason: "length"` is scored incorrect even when a partial answer resembles the expected result. Transport errors and cancellation are unscored and counted separately. A configured positive request deadline stops the evaluation; the helper cannot verify provider-side cancellation. It blocks another benchmark while its request worker remains active. Inspect the engine before restarting.
+
+`accuracy` and `percent` divide correct answers by scored observations, excluding unscored errors. Always inspect `planned`, `attempts`, `scored`, `errors`, `cancelled` and `truncated`. `penalized_accuracy` divides correct answers by all planned observations; unfinished work reduces it. Category and per-repeat statistics accompany the total.
+
+The 95% Wilson interval uses distinct scored items from the first repeat only. It is a descriptive binomial approximation: questions may be correlated and are not a representative sample of intelligence. Repeated responses are dependent observations. An interval is not a significance test between models, and overlapping or non-overlapping intervals alone do not establish a ranking. Compare matching suite/subset, scoring version, token budget and sampling settings, with coverage and failure rates visible.
+
+## Configuration identity and result files
+
+New evaluations record completion policy `finished-stream-visible-answer-v2` in their evaluation fingerprint. Historical no-final-answer error records can lack finish reasons and usage; their cause cannot be reconstructed from the stored record. They remain unchanged and carry an interpretation notice in the dashboard. Rerun with adequate generation settings for a complete evaluation.
+
+Each result contains `model_configuration` and its SHA-256 `configuration_id`. The public configuration records requested/canonical model identifiers, public endpoint ID/label/provider, quantization, engine/version, model revision/source, context/KV settings, and requested/reported/effective reasoning and MTP. Unknown values stay explicit. Effective settings require control-plane evidence; accepting a request is not that evidence. Endpoint URLs and credentials do not enter this public fingerprint.
+
+Connect or a direct start supplies endpoint identity automatically. Naming provenance distinguishes detected service metadata, inference from an official cloud host/declared managed provider, an optional operator display-name override and unknown software. Ports and model aliases are not software evidence. An unknown provider keeps a generic location-based name rather than a guessed engine. Canonical known public API routes use stable public provider IDs; other routes use privately generated opaque IDs with URL mappings kept in the ignored helper registry or browser local storage. Route origin and provider branding do not verify inference location or backend weights, and historical user-reported identities remain readable. See [automatic endpoint identity](docs/api.md#automatic-endpoint-identity).
+
+The suite has a version and content digest. `evaluation_key` fingerprints the evaluation protocol and selected items; repeat count is recorded separately. Fingerprints establish content consistency, not authentication, proof that inference happened, or proof of which weights an endpoint served.
+
+Capability files use `benchmark_kind: "capability"`, `schema_version: 1`, and a separate `results/capabilities/<id>.json` directory. They include the public suite, item answers, scorer decisions, usage/timing provenance and summary. Throughput files remain in `results/runs/` with their existing schema. See [API](docs/api.md) for read/start/cancel/import/export routes.
+
+Import accepts one capability run or an object containing `capability_runs`. It validates public configuration/suite/protocol fingerprints, deterministic item selection and observation uniqueness, then independently re-scores visible audit answers and recomputes statistics. A completed result requires all planned observations. A response redacted for privacy cannot be independently re-scored and is rejected as a full audit import. Preserve the reviewed original locally if you need that audit.
+
+Public suite prompts, expected answers and source citations must remain exact for their digest and audit. Review them, generated answers and all annotations before sharing. Connection credentials and URLs are excluded as connection metadata; arbitrary task text can still contain information you do not want to publish. See [sharing results](docs/sharing-results.md) and [security](SECURITY.md).
 
 ---
 
@@ -202,7 +382,16 @@ Canonical source: [docs/architecture.md](docs/architecture.md)
 flowchart LR
     UI[Local browser UI] -->|HTTP on loopback| Server[Wattever server]
     Server --> Runner[Benchmark runner]
+    Server --> Cap[Capability runner]
+    Cap -->|Sequential streaming requests| Endpoint
+    Cap --> Suites[Offline pinned suites and deterministic scorers]
+    Cap --> CapStore[Capability JSON and audit answers]
+    Cap --> Sensors
+    Runner --> Identity[Public model configuration identity]
+    Cap --> Identity
     Runner -->|CLI and streaming API| LMS[LM Studio]
+    Runner -->|Streaming Chat Completions| Endpoint[Externally managed endpoint]
+    Server -->|Optional model discovery| Endpoint
     Runner --> Corpus[Local prompt corpus]
     Runner --> Sensors[GPU and system telemetry]
     Runner --> Store[JSON results and history]
@@ -213,11 +402,17 @@ flowchart LR
     Adapter --> BrowserStore[Browser storage and JSON export]
 ```
 
-The standard-library server serves local static assets and coordinates one benchmark at a time. The runner plans cases, loads models through LM Studio, collects streaming responses and optional power samples, and saves progress to JSON. The UI reads status and events and displays saved results. System discovery and sensor access are platform dependent; no external service is required by Wattever itself. The LM Studio endpoint can be configured separately.
+The standard-library server serves local static assets and coordinates one benchmark at a time. The runner plans cases, collects streaming responses and optional power samples, and saves progress to JSON. Managed LM Studio uses its CLI for model lifecycle and context/MTP scheduling. The generic endpoint adapter sends streaming Chat Completions requests and optionally discovers model IDs; the engine manages model lifecycle and execution settings. Both use the same helper workload and result pipeline. The UI reads status and events and displays saved results.
 
-The selected sensor and model execution placement are separate. Result files preserve case and session provenance; power estimates have a different boundary from GPU measurements. See [measurements](docs/measurements.md), [API](docs/api.md), and [getting started](docs/getting-started.md).
+Discovery inventories the benchmark client using bounded OS/driver probes. It does not establish remote inference hardware. Generic local-power attribution requires an explicit user assertion. Detected fields, user-reported reproduction settings, sourced compute claims, provider timings and client timings remain distinct. Public result projection removes endpoint connection details and credentials; free-text fields still require review. Result files preserve case/session provenance, and older schema 2 files remain readable with additive metadata. See [measurements](docs/measurements.md), [API](docs/api.md), and [getting started](docs/getting-started.md).
+
+Connect/direct starts resolve endpoint identity without required naming fields. Explicit service metadata and known public API hosts establish detected/inferred service labels; unsupported discovery keeps generic names. Canonical public API routes use stable provider IDs, while other routes use private URL-to-random-ID mappings. Port numbers and model aliases are not software evidence. Route identity and inference-local attribution remain separate.
 
 The hosted browser adapter connects directly to the configured provider after the user chooses Connect. It has no hosted proxy or helper credentials and cannot access helper telemetry or control model loading. The browser and helper use different measurement protocols; see [browser mode](docs/browser.md).
+
+The capability runner shares transport and public model identity with throughput runs but uses separate protocols, storage and deterministic grading. Bundled dataset files are checked against pinned checksums before suite registration; no dataset download occurs during evaluation. One speed or capability benchmark runs at a time. Timeout/cancellation prevents subsequent work while a request worker remains active because provider-side termination is unverified. See [capability evaluation](docs/capabilities.md).
+
+Telemetry has an independent host CPU/RAM sampler and a streaming GPU reader. Recent history is bounded; online all-run aggregates preserve observed means/peaks and coverage. Neither hardware discovery nor telemetry establishes remote inference hardware. The hosted result catalog is read-only and can expose both result families without provider access; launching capability tests requires the helper.
 
 ---
 
@@ -225,27 +420,131 @@ The hosted browser adapter connects directly to the configured provider after th
 
 Canonical source: [docs/api.md](docs/api.md)
 
-# Local HTTP API
+﻿# Local HTTP API
 
-This reference describes the full local helper. Hosted [browser mode](docs/browser.md) uses an in-page adapter, not this HTTP service, and does not support extensions, resume, model unload or telemetry.
+This reference describes the local Python helper. Hosted [browser mode](docs/browser.md) uses an in-page adapter, not this service. The helper binds to `127.0.0.1` on port 8713 by default, or the next available port. `GPU_BENCH_PORT` changes the starting port; `GPU_BENCH_NO_BROWSER=1` suppresses browser opening. Keep this interface on a trusted local machine.
 
-The server binds to `127.0.0.1` on port 8713 by default, or the next available port. Set `GPU_BENCH_PORT` to change the starting port. This local interface is intended for a trusted local user, not exposure to a network. JSON errors have an `error` field; invalid input and runtime conflicts generally return 400, missing runs 404, active-run metadata edits or deletion 409, and unexpected failures 500.
+JSON errors have an `error` field. Invalid input and runtime conflicts generally return 400, missing runs 404, active-run edits or deletion 409, and unexpected failures 500.
 
-Read endpoints: `GET /api/version`, `/api/env`, `/api/models`, `/api/status`, `/api/events?cursor=0`, `/api/runs`, `/api/runs/<id>`, `/api/runs/<id>/download`, `/api/preview?tokens=512`, `/api/export.json` and `/api/export.csv`. Exports accept comma-separated `ids`; without them they include all runs. `GET /api/bench/extend-plan?run_id=<id>` supplies extension options.
+State-changing requests must come from the helper's own browser origin, or an Origin-free local API client. Send JSON bodies with `Content-Type: application/json`; rejected cross-origin or non-JSON changes return 403. Authenticated model discovery must use POST; GET query parameters cannot select a credential environment variable. See [security](SECURITY.md).
 
-State-changing endpoints: `POST /api/bench/start` accepts benchmark configuration; `/api/bench/cancel` requests cancellation; `/api/bench/resume` accepts `run_id`; `/api/bench/extend-plan` previews a selection; `/api/bench/extend` starts it. Extension selection includes `run_id`, `model_modes` (model IDs mapped to arrays of `off` and/or `on`), `sizes`, `concurrency_levels`, `retry_failed`, and `rerun_existing`. Defaults add missing cases; `retry_failed` includes failed and skipped cases; `rerun_existing` includes successful selected cases. Plan first and review its counts. Starting, resuming or extending loads and unloads models, performs inference and writes results; extension saves a history snapshot.
+## Read and control routes
 
-`POST /api/lmstudio/start` starts the LM Studio server, `/api/lmstudio/unload` unloads models, `POST /api/runs/<id>/meta` changes label and notes, `DELETE /api/runs/<id>` moves a run to local trash, and `POST /api/shutdown` stops Wattever. These calls change local state. The active run cannot be edited or deleted. See [measurements](docs/measurements.md) for compatibility and [architecture](docs/architecture.md) for the system boundary.
+Read endpoints are `GET /api/version`, `/api/env`, `/api/models`, `/api/status`, `/api/events?cursor=0`, `/api/runs`, `/api/runs/<id>`, `/api/runs/<id>/download`, `/api/preview?tokens=512`, `/api/export.json` and `/api/export.csv`. Pass the returned event cursor to subsequent polls. Exports accept comma-separated `ids`; without them they include all runs.
 
-## Configuration and examples
+`POST /api/bench/start` accepts benchmark configuration and starts inference. `/api/bench/cancel` requests cancellation. `POST /api/runs/<id>/meta` changes label and notes; `DELETE /api/runs/<id>` moves a run to local trash; `POST /api/shutdown` stops Wattever. An active run cannot be edited or deleted. Benchmark runs write results.
 
-`LMS_BASE_URL` selects the LM Studio API (default `http://localhost:1234`). `GPU_BENCH_PORT` selects the starting local port and `GPU_BENCH_NO_BROWSER=1` suppresses the browser. A new benchmark accepts a JSON object such as:
+Managed LM Studio additionally supports `POST /api/lmstudio/start` and `/api/lmstudio/unload`. Generic endpoints never use the LM Studio CLI to load or unload their models.
+
+`POST /api/hardware/bandwidth` with `{}` measures storage → RAM and pinned RAM → VRAM while no benchmark is running. Optional `gpu_index` selects the NVIDIA sensor; `storage_probe_directory` chooses an existing folder on the storage volume to test (default: results folder). It returns `transfer_bandwidth` with capture time, raw samples, methods and explicit unavailable states. Native transfer probes also run automatically before throughput/capability benchmarks. Throughput start accepts the same private `storage_probe_directory` override. See [measurement methods](docs/measurements.md).
+
+Include `run_id` to attach a later transfer profile to an existing benchmark. Hardware class and selected GPU/driver must match. The file is backed up, inference results stay unchanged, and metadata identifies the later capture time. This does not reconstruct historical transfer conditions.
+
+`POST /api/bench/link` accepts `{"run_ids":["<managed-run>","<endpoint-run>"],"label":"Machine benchmark"}`. It groups stopped benchmarks on matching hardware/GPU/driver, with local inference explicitly asserted for generic endpoints. The first ID is the group root. Each run keeps its provider, settings and measurements; **Open machine benchmark** in Results selects all available members for charts, tables and multi-run JSON/CSV exports. Send all desired member IDs when updating a group. Files are backed up before group metadata is saved.
+
+## Generic endpoint configuration
+
+Use `provider: "openai"` for an externally managed streaming Chat Completions endpoint, including LM Studio used without CLI management. This integration uses an OpenAI-compatible transport subset; it does not implement the complete OpenAI API.
+
+```json
+{
+  "provider": "openai",
+  "endpoint_base_url": "http://127.0.0.1:8000/v1",
+  "endpoint_api_key_env": "BENCHMARK_API_KEY",
+  "endpoint_inference_local": true,
+  "models": ["<served-model-id>"],
+  "sizes": [512, 5000],
+  "concurrency_levels": [1],
+  "max_tokens": 256,
+  "repeats": 2,
+  "reproducibility": {
+    "quantization": "IQ3_S",
+    "context_tokens": 32768,
+    "kv_cache_dtype": "int8"
+  }
+}
+```
+
+Send this to `POST /api/bench/start` only when ready to run inference. Omit `endpoint_api_key_env` if authentication is unnecessary. Otherwise set that environment variable before starting the helper; the field contains only its name. Literal keys are rejected. URLs must use HTTP(S) without embedded credentials, query or fragment. A root URL gets `/v1`; an explicit API path is preserved. Do not supply `/chat/completions` or `/models` as the base.
+
+`endpoint_inference_local` defaults to **false**, including for loopback addresses. Set it true only when inference executes on the benchmark computer. This user assertion permits local power attribution; neither route-origin detection nor a display name verifies server hardware.
+
+`endpoint_reasoning_effort` defaults to null in the throughput API, which omits the request field. The UI defaults **Requested reasoning** to **None**. Set the API field to `none`, `minimal`, `low`, `medium`, `high` or `xhigh` to request standard Chat Completions `reasoning_effort`. Unsupported requests fail visibly. The requested value is recorded separately from the engine's unverified effective behavior. Short budgets may otherwise end during hidden reasoning before a visible answer appears.
+
+`token_limit_field` selects `max_tokens` (default) or `max_completion_tokens`. Explicit `temperature: null` omits that parameter; numeric values request the specified temperature, with UI default 0. Keep parameter choices consistent across comparisons. These are request controls, not verification of server behavior.
+
+`POST /api/endpoint/check` accepts these connection fields and probes discovery without running inference. It returns `ok`, `models`, `manual_model_ids: true`, `provider`, resolved `endpoint_identity`, and an `error` on discovery failure. Exact served model IDs can always be supplied in `models`; discovery alone does not verify streaming inference or usage reporting. `GET /api/models?provider=openai&endpoint_base_url=...` is also available without credential forwarding; use POST for authenticated discovery and to keep connection details out of URL histories.
+
+Discovered models preserve safe endpoint-reported quantization, context and state metadata. Managed LM Studio also uses its native model catalog to capture separately labeled `quantization_method` (QAT, QAD or UD when reported), with `quantization_method_source`. Result rows and optional quantization identity fields `method`/`method_source` retain these labels independently of the storage format. Older identities without method fields remain valid. When quantization appears only in a recognized model-ID suffix, `quantization_source` is `model_identifier`; explicit endpoint metadata uses `endpoint_reported`. An inferred suffix does not verify the served weights. Unknown quantization or context stays unknown. The UI uses a manual model ID only when discovery returns no models.
+
+Results uses the current connection when discovering models for additional tests. With a generic endpoint, **Review new benchmark** opens the current served-model catalog and stages a separate run in Run; it does not modify historical measurements or start inference. Managed LM Studio retains same-file extension. Switching connection invalidates an open or cached model selection. Historical chart filters describe saved measurements, rather than the endpoint's current inventory.
+
+The inference engine controls loaded models, context/KV allocation, quantization, placement, reasoning and speculative decoding. Effective generic settings use `context_policy` and `gpu_offload` of `provider_managed`, with no fallback reload. Result states such as `mtp`, `context_length` and `reasoning_disabled` remain unknown. A client context estimate does not prove the engine's context setting. Generic runs require reconnection and a new run; resume and same-file extension are unavailable. Cancellation aborts client work but cannot verify provider-side termination; a timeout stops the run for operator inspection.
+
+Optional `reproducibility` fields are `engine`, `engine_version`, `model_revision`, `quantization`, `context_tokens`, `kv_cache_dtype` and `mtp_draft_tokens`. Results mark these `user_reported`. Optional `performance_claims` entries contain `precision` (`FP4`, `INT4`, `FP8`, `INT8`, `FP16`, `BF16`, `FP32`), finite non-negative `value`, `unit`, `kind` (`advertised_peak`, `measured`, `estimate`), `sparsity` (`dense`, `sparse`, `unknown`), `execution_path` and `source`. Source and execution path are required. Use `TOPS` for integer precision and `TFLOP/s` for floating point. These annotations stay separate from detected hardware and Wattever measurements; see [measurements](docs/measurements.md).
+
+Endpoint URL, credential variable name and credentials are excluded from public results and exports. Connection configuration is not persisted for generic resume. Review public free-text labels, notes, model names and sources before sharing; see [security](SECURITY.md).
+
+### Automatic endpoint identity
+
+No endpoint label or public ID is required. Connect and direct API starts resolve them automatically. Optional `endpoint_name_override` supplies one public display name; leave it empty to use detection. Legacy `endpoint_id`/`endpoint_label` configuration remains accepted as an operator override.
+
+Identity uses recognized official public cloud hosts or explicit service/backend metadata. Local/private `/health`, `/props` and `/version` probes are read-only and bounded by an overall deadline; unsupported probes fall back without guessing from ports or model aliases. Unknown software receives a **Local endpoint**, **Private endpoint** or **Remote endpoint** name. `endpoint_identity` records `id`, `label`, `source`, `service`, `version`, `location`, `route_registry` and `evidence`. Explicit service metadata is `detected`; recognized cloud hosts and the declared managed LM Studio provider are `inferred`; optional naming overrides are `operator_override`; unsupported detection stays `unknown`. Location describes the route origin, not verified inference hardware.
+
+Canonical known public API routes use stable public provider IDs for community aggregation. Other routes, including custom paths on recognized cloud hosts, receive random opaque IDs stable for the operational base URL in a private local registry. The helper stores that mapping in ignored `results/.endpoint-routes.json`; browser mode uses local storage. URLs are neither hashed into public IDs nor included in public configuration fingerprints. Do not share the registry. Removing it or clearing browser storage can generate a new identity for a privately mapped route. A cloud provider label identifies the public service, not its underlying inference engine or weights.
+
+Optional `canonical_model_id`, `model_source`, `reported_reasoning` and `reported_mtp` (`on`, `off`, `unknown`) describe the model separately. They feed `model_configuration`/`configuration_id` with endpoint identity; requested, reported and verified effective values stay distinct. Historical `user_reported` endpoint provenance remains supported. Hashes verify content consistency, not endpoint authenticity or actual served weights.
+
+## Capability routes
+
+Capability evaluation and validated imports are helper-only; hosted mode provides a shared read/export/compare library. It uses separate files and a sequential request protocol described in [capability evaluation](docs/capabilities.md).
+
+| Route | Behavior |
+| --- | --- |
+| `GET /api/capabilities/suites` | Suite metadata, versions, digests and question counts |
+| `GET /api/capabilities/status` | Running state, live item progress and available local telemetry |
+| `GET /api/capabilities/events?cursor=0` | Bounded event stream snapshot and next cursor |
+| `GET /api/capabilities/runs` | Capability run summaries |
+| `GET /api/capabilities/runs/<id>` | Full saved run |
+| `GET /api/capabilities/runs/<id>/download` | Public audit JSON download |
+| `GET /api/capabilities/export.json?ids=<id>,<id>` | Public `capability_runs` bundle; omitted IDs selects all |
+| `POST /api/capabilities/start` | Validate configuration, save run and start inference |
+| `POST /api/capabilities/cancel` | Abort client work; provider termination remains unverified |
+| `POST /api/capabilities/import` | Validate/re-score one run or a `capability_runs` bundle and save it |
+
+`GET /api/capabilities/suites` also returns `runner` metadata from the running helper process: its `completion_policy`, generation/deadline `defaults`, and accepted `limits`. The UI requires a supported completion policy before launching or validating imports. An older helper can still expose saved results for browsing, but must be relaunched to apply updated capability code; refreshing browser assets alone does not update Python code.
+
+Example start configuration:
+
+```json
+{
+  "provider": "openai",
+  "endpoint_base_url": "http://127.0.0.1:8000/v1",
+  "model": "<served-model-id>",
+  "suite_id": "gsm8k-test-chat-v1",
+  "sample_size": 50,
+  "repeats": 1,
+  "seed": 0,
+  "temperature": 0,
+  "top_p": 1,
+  "endpoint_reasoning_effort": "none",
+  "max_tokens": 32768,
+  "timeout_s": 0,
+  "endpoint_inference_local": false
+}
+```
+
+A model ID is required; endpoint naming/identity is resolved automatically for direct starts as well as the UI. `sample_size: 0` selects the full suite; a positive value selects a deterministic seeded subset, capped by suite size. Defaults are Core v1, 24 questions, one repeat, a 32,768-token total generation budget and no wall-clock deadline (`timeout_s: 0`), question-selection seed 0, temperature 0, omitted top-p and requested reasoning `none`. `send_seed` defaults false; true additionally sends `seed + repeat` to the generation API. Null top-p/temperature omit those parameters. Capability `token_limit_field` defaults to `max_tokens`; `max_completion_tokens` is an explicit alternative for endpoints requiring it. Unsupported parameters are visible failures, not silently retried with different sampling. The capability budget includes reasoning plus final output, and is independent of speed-test generation settings. `max_tokens` accepts 1 to 131,072; `timeout_s` accepts 0 to 86,400 seconds, with 0 meaning no wall-clock deadline. Stop remains available. Context and provider limits can still terminate generation. New evaluations record `completion_policy: "finished-stream-visible-answer-v2"`; the policy is part of the evaluation fingerprint. Historical runs without this field remain readable and retain their recorded decisions.
+
+Only one speed or capability run may execute at a time; conflicting starts/imports return 409. Capability tests do not load/unload models for either provider. Local telemetry requires explicit `endpoint_inference_local: true` for both. An active request worker after timeout/cancellation continues to block new benchmarks. Import recomputes summary/grades from full audit answers and validates hashes; it does not authenticate the reported model or operator.
+
+## Managed LM Studio configuration
+
+The default provider is `lmstudio`. `LMS_BASE_URL` selects its API (default `http://localhost:1234`). For example:
 
 ```json
 {"models":["<installed-model-id>"],"sizes":[512,5000],"concurrency_levels":[1,2],"max_tokens":256,"repeats":1}
 ```
-
-Send it to `POST /api/bench/start` only when ready to run inference. Omitted configuration uses these defaults:
 
 | Setting | Default |
 | --- | --- |
@@ -257,13 +556,17 @@ Send it to `POST /api/bench/start` only when ready to run inference. Omitted con
 | `load_timeout_s`, `per_test_timeout_s`, `power_interval_ms` | 900, 1800, 150 |
 | `gpu_index` | 0 (telemetry sensor only) |
 
-For `POST /api/bench/extend-plan`, use a selection like:
+## Managed LM Studio extensions
+
+`GET /api/bench/extend-plan?run_id=<id>` supplies extension options. `POST /api/bench/extend-plan` previews a selection such as:
 
 ```json
-{"run_id":"<run-id>","model_modes":{"<installed-model-id>":["off","on"]},"sizes":[512,5000],"concurrency_levels":[1,2],"retry_failed":false,"rerun_existing":false}
+{"run_id":"<run-id>","model_modes":{"<installed-model-id>":["off","on"]},"sizes":[512,5000],"concurrency_levels":[1,2],"repeats":2,"retry_failed":false,"rerun_existing":false}
 ```
 
-Review the returned counts and warnings before submitting the selection to `/api/bench/extend`. **Add / rerun tests** modifies the existing benchmark after taking a snapshot; `/api/bench/resume` instead creates a separate run with unfinished work and a link to its source. Compatibility checks apply to both; see [measurements](docs/measurements.md).
+Optional booleans `fallback_on_failure` and `skip_after_timeout` control the new session's load-placement fallback and practical timeout skipping. Timeout-based skips are not hard capacity/OOM claims. Optional `per_test_timeout_s` sets the new execution session's timeout (integer 1 through 7200). Existing measurements retain their recorded budgets. `repeats` is the desired total per case (saved repeat count through 100). Raising it adds new slots. To repair individual cases, optionally supply `selected_cases` as a nonempty array of `[model_id, mtp_boolean, concurrency, target_tokens, zero_based_repeat]` tuples within the selected workload. For example, `[["<installed-model-id>",false,2,5000,0]]` with `rerun_existing: true` replaces only that first repeat. Omit `selected_cases` to use the full selection. Case selection applies only to the execution session; the benchmark keeps its full workload configuration.
+
+Review counts and warnings before submitting the selection to `POST /api/bench/extend`. Defaults add missing cases; `retry_failed` includes failed and skipped cases; `rerun_existing` includes successful selected cases. Extension takes a history snapshot and modifies the existing file. `POST /api/bench/resume` with `run_id` creates a separate run for unfinished work. These operations load/unload models and require compatibility checks; see [measurements](docs/measurements.md) and [architecture](docs/architecture.md).
 
 ---
 
@@ -275,11 +578,11 @@ Canonical source: [docs/faq.md](docs/faq.md)
 
 ## Can I run without installing Wattever?
 
-Yes. The hosted [browser mode](docs/browser.md) connects directly to an OpenAI-compatible endpoint. The endpoint and browser must allow the connection; telemetry, model control and same-file extensions require the full helper.
+Yes. The hosted [browser mode](docs/browser.md) connects directly to an OpenAI-compatible endpoint. The endpoint and browser must allow the connection. The Python helper also supports generic endpoints without LM Studio; managed model control and same-file extensions are specific to its LM Studio provider.
 
 ## Does the selected GPU determine where inference runs?
 
-No. It selects a telemetry sensor. Configure LM Studio placement separately and record the setup in notes. See [measurements](docs/measurements.md).
+No. It selects a telemetry sensor. Configure placement in the inference engine and record the setup in notes. Generic endpoints require an explicit local-inference assertion before attributing client power to inference. See [measurements](docs/measurements.md).
 
 ## Are power numbers comparable?
 
@@ -295,7 +598,35 @@ No. Failures and skipped cases are recorded and can be retried. See [troubleshoo
 
 ## Must a benchmark be complete before I share it?
 
-No. Partial sessions are useful contributions. The helper can add missing cases to the same file later, subject to its compatibility checks. See [sharing results](docs/sharing-results.md).
+No. Partial sessions are useful contributions. Managed LM Studio runs can add missing cases to the same file later, subject to compatibility checks. Generic endpoint and browser experiments use new runs. See [sharing results](docs/sharing-results.md).
+
+## Does any OpenAI-compatible API work?
+
+The required surface is streaming Chat Completions. `/models` discovery is optional because you can enter exact served IDs manually. Missing usage counts leave generic token throughput unavailable. Responses, embeddings, image and audio APIs are not benchmarked. Configure context, KV cache, quantization and MTP in your engine; Wattever's generic adapter does not control them.
+
+## Why can longer prompts show higher prefill throughput?
+
+The displayed metric divides prompt tokens by client TTFT, which includes fixed overhead, queueing and network time. Larger batches can also use hardware more efficiently. Cache reuse and provider warm state can change it further. Inspect separately reported engine timings and cache usage; missing cache data does not establish a cold run.
+
+## Does Wattever measure bandwidth and TFLOPS?
+
+Hardware metadata includes reported memory clocks and PCIe link state where available. Its encoding-based PCIe ceiling is theoretical, and idle links can downshift. It does not benchmark DMA or memory bandwidth or derive compute peaks from GPU names. Optional sourced, precision-specific compute claims are user-reported and stay separate from detected fields. See [measurements](docs/measurements.md).
+
+## Are GSM8K and ARC scores official benchmark results?
+
+They use pinned real test splits, with versioned zero-shot chat prompts and deterministic numeric/answer-letter grading. They are Wattever adaptations, not published few-shot or likelihood-based leaderboard protocols. Compare matching suite/subset, token budget, sampling and grading versions. Public tasks may be contaminated, and repeats are not independent questions. See [capability evaluation](docs/capabilities.md).
+
+## Does a configuration fingerprint prove which model ran?
+
+No. It checks consistency of public model/endpoint identifiers and known/requested/reported settings. A canonical ID helps distinguish a served alias, but hashes do not authenticate weights or server routing. Unknown effective reasoning, MTP or quantization remains unknown.
+
+## Must I invent an endpoint name or ID?
+
+No. Connect resolves them automatically, as do direct API starts. Names come from recognized official cloud hosts or explicit service metadata, with generic Local/Private/Remote endpoint fallbacks when unknown. Ports and model names are not used to guess software. Advanced settings offer one optional **Display name** override. Canonical known public API routes have stable provider IDs; other routes use a private random-ID registry without publishing or hashing the connection URL.
+
+## Can telemetry show thermal throttling?
+
+It shows observed utilization, temperatures, clocks and power where sensors exist. Whole-run aggregates and recent history can reveal changes to investigate. Different workloads and competing processes also change these readings; drift alone does not diagnose throttling. The bounded recent trace may omit older samples while whole-run observed means/peaks remain preserved.
 
 ---
 
@@ -307,15 +638,25 @@ Canonical source: [docs/troubleshooting.md](docs/troubleshooting.md)
 
 - **Hosted page cannot connect:** check the endpoint URL, server availability, CORS and your browser's local-network permission. HTTPS-to-localhost behavior varies by browser. See [browser mode](docs/browser.md).
 - **Browser storage warning:** download the result JSON before closing the page; an in-memory result is lost on reload.
+- **Helper endpoint discovery fails:** verify the API base URL and optional key environment variable in the helper's process. Use a root URL or API base such as `/v1`, not `/chat/completions`. Enter the exact served model ID manually if `/models` is unavailable. Run a small case to verify streaming inference; CORS is not required for helper-to-engine requests. See [API configuration](docs/api.md).
+- **Endpoint name is generic or unexpected:** the service did not expose recognized metadata, or only route-origin information is available. A generic Local/Private/Remote endpoint name is valid and does not block inference. Connect again after correcting the URL, or set the optional advanced **Display name** override. No manual ID is needed. A regenerated ID after clearing local storage or removing the private registry is expected; keep URL mappings private.
+- **Generic endpoint throughput is unavailable:** check whether the provider includes prompt and completion token usage in its stream. Wattever keeps throughput unavailable when those counts are missing; stream chunks are not tokens. Inspect `metric_sources` and `reported_timings` in JSON.
+- **Generic power is unavailable:** local power attribution is disabled by default. Confirm inference runs on this computer before checking that assertion; a loopback proxy alone does not establish local inference. Remote server power cannot be measured by client sensors.
+- **Generic endpoint context failure or timeout:** reduce the workload or adjust context/KV allocation in the inference engine. Inspect the engine after cancellation or timeout; client abort does not verify server termination. Reconnect and start a new run rather than resume/extend.
 - **Helper timeout recovery stopped:** inspect LM Studio and ensure the model and requests have stopped before starting another run. See [measurements](docs/measurements.md).
 
 - **LM Studio or models unavailable:** install LM Studio, run `lms bootstrap`, start its server and check that the models are downloaded. Verify `LMS_BASE_URL` if using a different endpoint. Reopen Wattever and check the Run page.
 - **Power unavailable:** check `nvidia-smi` for NVIDIA sensors. On macOS, use the launcher and accept the optional power prompt; without authorization speed tests still work. Other sensors may not provide power. See [measurements](docs/measurements.md).
 - **Load failure or context overflow:** reduce prompt size or simultaneous queries, inspect model context limits and available memory, or choose a smaller model. A failure is retained in results; use the retry option after correcting the cause.
-- **Extension rejected:** hardware, selected GPU and driver, corpus and LM Studio version must match. Start a separate benchmark if they changed or cannot be verified. See [sessions](docs/measurements.md).
+- **Extension rejected:** extensions require managed LM Studio with matching hardware, selected GPU/driver, corpus and LM Studio version. Generic endpoints use new runs. Start a separate benchmark if compatibility changed or cannot be verified. See [sessions](docs/measurements.md).
 - **No response from Wattever:** check the URL printed by its launcher and keep the server window open. The default starting port is 8713 but another available port may be selected. See [getting started](docs/getting-started.md).
+- **Updated files but old UI or API:** finish active work, restart the helper and reload the page. `/api/version` includes a `build_id`; matching release numbers alone do not establish a matching build. The launcher preserves active speed/capability runs and can replace only an identified idle older helper. Use its printed URL; do not stop the model server to refresh Wattever.
+- **Browser disconnect / WinError 10053:** a closed or aborted browser connection does not establish a benchmark failure. The helper handles disconnects while sending headers/body; reconnect and inspect saved status/results before starting another run. Update/restart an idle helper if its request handler still prints a disconnect traceback.
+- **Capability parameter rejected:** select **Provider default** to omit unsupported `reasoning_effort`, or choose the token-limit field the endpoint supports. A changed request protocol is a distinct comparison. No visible answer after a short budget may mean hidden reasoning consumed it; inspect the run's usage/finish reason and adjust budgets fairly.
+- **Capability import rejected:** use a finished full audit file with matching public configuration/suite/protocol/subset hashes and unchanged answers/grades. Redacted responses cannot be independently re-scored. Completed files need all planned observations; partial work uses cancelled/error/interrupted status. Do not repair hashes to conceal edited measurements.
+- **CPU temperature unavailable or history starts late:** CPU temperature needs an actual supported sensor and can be unavailable while GPU temperature works. History retains the latest 3,600 points; check retention and all-run summary rather than interpreting absent samples as zero or no activity.
 
-- **File-save warning:** update and restart the desktop helper, then use **Add / rerun tests ? Add missing tests** to continue. Completed records remain saved. The warning?s **Technical details** disclosure contains the original diagnostic.
+- **File-save warning:** review the warning's **Technical details** and retain downloaded JSON. For a managed LM Studio run, **Add / rerun tests → Add missing tests** can continue saved work after recovery. Generic endpoint runs start separately.
 
 ---
 
@@ -327,6 +668,8 @@ Canonical source: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 Share benchmark results by opening a pull request with one JSON file in `results/runs/`. The [sharing guide](docs/sharing-results.md) explains the GitHub upload workflow and how to add missing tests later. Review the file for information you do not want to publish and follow [results guidance](results/README.md). Record model builds, placement and relevant settings so readers can interpret results.
 
+Capability contributions use individual `results/capabilities/<id>.json` files. Preserve full public audit answers, scorer decisions, suite/protocol/subset fingerprints and public configuration identities. Review prompts/expected answers and generated text before sharing. The helper's import independently re-scores and checks consistency; fingerprints do not authenticate execution. Keep dataset licenses/attribution and distinguish Wattever chat adaptations from official benchmark harnesses. See [capability evaluation](docs/capabilities.md).
+
 For code changes, preserve old result readability, distinguish measured values from estimates, and document changes in measurement semantics. Wattever uses the Python standard library and local browser assets. See [architecture](docs/architecture.md), [API](docs/api.md), [changelog](CHANGELOG.md), and [security](SECURITY.md).
 
 Run the software checks applicable to your change:
@@ -335,8 +678,12 @@ Run the software checks applicable to your change:
 python -m unittest discover -s tests
 node --check web/app.js
 node tests/test_ui.js
+node tests/test_endpoint_ui.js
+node tests/test_browser_backend.js
+node tests/test_capabilities_ui.js
 node tests/test_tables.js
 python tools/validate_results.py
+python tools/update_docs.py --check
 ```
 
 The optional browser test is `node tests/test_ui_browser.cjs`. State which platforms and real hardware you exercised; software tests cannot establish GPU performance. Follow the [code of conduct](CODE_OF_CONDUCT.md).
@@ -349,7 +696,17 @@ Canonical source: [SECURITY.md](SECURITY.md)
 
 # Security
 
-Wattever serves a local interface that can start benchmarks, load or unload models, and change local results. Keep it bound to loopback and use it only on a trusted machine. Review result files before sharing them.
+The local helper rejects cross-origin state changes and non-loopback Host names. POST requests with a body require `Content-Type: application/json`; authenticated discovery uses `POST /api/endpoint/check`, not query parameters on GET. This prevents an unrelated webpage from asking the helper to forward named environment credentials. Command-line API clients without an Origin header remain supported.
+
+Wattever serves a local interface that can start benchmarks, load or unload managed LM Studio models, and change local results. Keep it bound to loopback and use it only on a trusted machine. Generic endpoints receive your benchmark prompts and can incur provider charges; use a provider you trust.
+
+The helper reads optional endpoint credentials from a named environment variable. Enter the variable name in Wattever, not a literal key. Endpoint URLs, credential variable names and credentials are excluded from public results and exports. They are not a substitute for reviewing free text: labels, notes, model names, reproducibility fields and compute sources are public annotations. Do not put secrets or private server locations in them. Browser-mode keys remain in memory; see [browser privacy](docs/browser.md).
+
+Hardware discovery uses read-only, allow-listed OS/driver fields without elevation. It excludes serial numbers, GPU UUIDs, hostnames, network addresses and user paths. Inventory describes the benchmark client; it does not authenticate a remote inference server or verify its hardware. Local-inference attribution is an explicit user assertion. Review exported JSON before sharing, including older imported results that may contain legacy identifiers.
+
+Capability audit files preserve exact public suite prompts, expected answers and source citations so their dataset digests and grading can be checked. Review those materials and generated answers before publication. Privacy-redacted responses cannot be imported as full independently scored audits. Public model/endpoint IDs must not contain connection locations or secrets. Content fingerprints establish consistency, not authentication or evidence that particular weights were served; see [capability evaluation](docs/capabilities.md).
+
+Canonical known public API routes use stable public provider IDs. Other automatic identities use random public route IDs with private URL mappings in ignored `results/.endpoint-routes.json` or browser local storage. Do not publish those mappings. Connection URLs are not hashed into public IDs or result fingerprints. Service detection and route-origin labels are evidence about the connection, not verification of remote inference hardware or backend weights. Optional display names remain public annotations and need review.
 
 Report suspected vulnerabilities privately to the repository maintainers through GitHub's private vulnerability reporting if available. Do not publish sensitive details before maintainers can respond. See [API](docs/api.md) for state-changing endpoints.
 
@@ -372,6 +729,35 @@ Canonical source: [CHANGELOG.md](CHANGELOG.md)
 # Changelog
 
 ## Unreleased
+
+- Measures sequential storage-to-RAM reads and pinned RAM-to-VRAM transfers before helper benchmarks, with raw samples, methods, capture time, unavailable states and UI/CSV reporting. Supports explicit later hardware-matched annotations on saved runs.
+- Links engine-specific runs into one machine comparison while retaining each provider's settings and measurements.
+- Captures generic endpoint quantization metadata in throughput result rows and accepts structured quantization formats during discovery.
+
+- Adds total-repeat extension, adjustable retry timeouts and individual-test repair for managed benchmarks, preserving backups, successful measurements and replaced attempts. Managed requests honor the configured timeout; retry controls include explicit CPU-fallback and timeout-skipping policies.
+- Captures quantization methods separately from storage formats, including LM Studio QAT, QAD and UD labels, and displays them before runs and throughout results. Catalog backfills retain explicit historical provenance.
+
+- Discovers Results test models from the current authenticated endpoint, prevents stale selections after connection changes, and stages separate generic benchmark runs. Run and Results show quantization with endpoint-versus-model-ID provenance; successful discovery takes precedence over a manual fallback ID.
+
+- Reports capability runner compatibility from the active helper process and blocks outdated launch/import flows with a relaunch message. Suite labels identify AI2 ARC-Challenge science questions separately from ARC-AGI; result headers show subset size, repeat count and descriptive uncertainty.
+
+- Separates capability generation settings from speed tests, defaults to a 32k total thinking-and-answer budget with an optional deadline, and preserves completion metadata for empty final answers. Output limits remain distinct from request failures; new completion-policy fingerprints preserve historical audit compatibility.
+- Aligns capability scorecards with a taller evaluation library, centers the workspace, and labels custom diagnostics separately from published dataset adaptations.
+
+- Adds a visual capability dashboard with score/coverage tiles, category profiles, outcome breakdowns, repeat consistency and a filtered, paginated question-by-repeat matrix. An evidence inspector presents prompts, expected/actual output and rule explanations, with raw audit metadata collapsed. Compatible protocols support paired scored-answer deltas; live updates preserve filters and focus. Recorded scoring rules and protocol versions are unchanged.
+
+- Resolves endpoint display names and stable opaque route IDs automatically from connection evidence, with honest generic fallbacks and one optional advanced display-name override. Manual endpoint naming is no longer required; private URL mappings stay outside shared results.
+
+- Adds a capability evaluation tab with original Core tasks and checksum-pinned GSM8K/ARC-Challenge test splits, deterministic chat-adaptation grading, subset/repeat provenance, audit import/export and a read-only shared result library. These scores are separate from throughput and official leaderboard protocols.
+- Adds public model/endpoint configuration fingerprints distinguishing requested, user-reported, verified and unknown settings, plus explicit reasoning-effort requests.
+- Adds live CPU/GPU/RAM/VRAM telemetry and available temperatures, bounded recent history, whole-run observed means/peaks/coverage and descriptive early/late drift. Selected measures render in separate graphs.
+- Identifies helper builds independently of release version, preserves active speed/capability runs during launch, and handles browser disconnects while sending response headers/body.
+- Introduces browser timing protocol 2 with exact-usage-only throughput, explicit reasoning/output boundaries and public model configuration identities. Historical browser protocol 1 results remain readable and may include estimates.
+
+- Adds generic OpenAI-compatible streaming Chat Completions to the Python helper, with optional discovery, manual model IDs, environment-based authentication and externally managed model settings. LM Studio remains a managed provider; generic experiments use new runs.
+- Adds privacy-conscious CPU, RAM and PCIe provenance, optional user-reported reproducibility settings and sourced precision-specific compute claims. The additive metadata schema is version 1; benchmark schema 2 and historical files remain readable.
+- Separates client timing provenance, provider-reported timings and cache usage. Generic throughput stays unavailable without server token usage; local power attribution requires explicit confirmation that inference runs on the benchmark computer.
+- Excludes endpoint connection details and credentials from public results and exports.
 
 - Keeps shared Results on GitHub-hosted catalog data, omits local execution diagnostics from public exports, and fails closed if the hosted data client is unavailable.
 
@@ -450,6 +836,11 @@ Canonical source: [results/README.md](results/README.md)
 
 # Benchmark sessions
 
+This guide describes throughput files in `results/runs/`. Rule-scored capability
+files are a separate result family under `results/capabilities/`; see
+[capability evaluation](docs/capabilities.md) for their schema, datasets,
+grading, public identities and independent audit import.
+
 One benchmark is one JSON file in `runs/`. A session contains every model,
 prompt size, concurrency level, repeat and failure measured for one machine
 configuration. Changing cards or runtime GPU placement means starting a new
@@ -457,14 +848,16 @@ session. Historical unversioned files remain readable without rewriting them.
 
 ## Run and contribute
 
-1. Launch Wattever and click **Reset for all models** to select every downloaded
-   language model and restore the standard measurement settings.
+1. Launch Wattever, select a provider and connect. Generic endpoints support
+   discovery or manual served model IDs. Managed LM Studio also supports **Reset
+   for all models** to select downloaded models and restore standard settings.
 2. Give the session a useful label, such as `RTX 5060 Ti - stock`. Choose prompt
    sizes and concurrent request counts. Default concurrency is one; click **10**
    to select all levels from one through ten. Prompt-length badges work the same way. Review the total request count.
-3. With multiple cards, configure placement in LM Studio and describe it in the
+3. With multiple cards, configure placement in the inference engine and describe it in the
    **Runtime GPU placement** field. The sensor selector controls power readings
-   only. It does not change where LM Studio executes the model.
+   only. It does not change where the engine executes the model. For generic
+   endpoints, explicitly assert local inference before attributing client power.
 4. Run the benchmark. Failures and partial sessions remain useful data.
 5. Download **JSON** in Results, or take the matching file from `results/runs/`.
    Review it for details you do not want to publish.
@@ -476,17 +869,26 @@ session. Historical unversioned files remain readable without rewriting them.
 
 New files use `schema_version: 2`. See [benchmark.schema.json](results/benchmark.schema.json).
 Fields are additive; the existing `gpu`, `host`, `config` and `results` fields remain.
+Additive inventory/run metadata uses `metadata_schema_version: 1`; old files
+without it remain readable. Unknown data is not inferred from a model or GPU name.
 
 | Field | Meaning |
 | --- | --- |
 | `application` | Tool version and measurement protocol version |
 | `hardware.os` | OS name, release and architecture |
 | `hardware.cpu` | CPU name, physical and logical core counts |
+| `hardware.memory` | RAM module capacity, reported clocks and provenance where available; channel count/bandwidth stay unknown unless available |
 | `hardware.system` | Manufacturer/model and physical RAM in bytes |
 | `hardware.gpus` | Separate entries for every discoverable adapter; name, vendor, memory in bytes, driver and optional sensor index |
 | `hardware.motherboard`, `hardware.firmware`, `hardware.storage` | Best-effort board model, firmware vendor/version and physical disk models/capacity/interface |
 | `classification` | Hardware configuration grouping hash, GPU names and platform; not a unique machine identity |
 | `measurement_scope` | Which GPU sensor supplies power and user-reported runtime placement |
+| `provider` | Public provider label, managed/external model lifecycle and control boundaries |
+| `measurement_client` | Client inventory kept separate when remote inference hardware is unverified |
+| `reproducibility` | User-reported engine/version, model revision, quantization, actual context/KV and MTP draft settings |
+| `performance_claims` | Sourced, user-reported compute claims with precision, execution path, sparsity and peak/measured/estimate classification |
+| `model_configuration`, `configuration_id` | Public model/endpoint settings with requested/reported/verified/unknown provenance and a content-consistency fingerprint |
+| `telemetry.history`, `telemetry.summary` | Bounded recent time series plus whole-run observed means/peaks/coverage and descriptive drift |
 | `corpus.sha256` | Corpus fingerprint for comparing the exact workload |
 | `config` | Selected models, prompt targets, concurrency levels and measurement settings |
 | `results` | Measurements, failures, skips and cancellation records |
@@ -496,6 +898,16 @@ effort; an empty adapter list does not prove that the machine has no GPU.
 New files omit GPU UUIDs, serial numbers, usernames and hostnames. User-entered
 notes and runtime/model names are included; review them before sharing. Historical
 files may still contain a GPU UUID; it may be removed without changing measurements.
+Public outputs exclude endpoint URL, credential environment-variable name and
+credentials. Review all free text, including labels, reproduction fields and
+compute sources. Hardware describes the benchmark client, not verified remote
+inference hardware. PCIe encoding ceilings are theoretical, not measured DMA or
+device-memory bandwidth, and idle snapshots may downshift. Floating compute
+claims use TFLOP/s; integer precision uses TOPS. See [measurement definitions](docs/measurements.md).
+Public endpoint IDs/labels identify routes without connection URLs. Configuration
+hashes do not authenticate actual served weights. Recent telemetry can drop old
+points while whole-run aggregates retain observations; drift alone does not prove
+thermal throttling. Missing temperature or utilization is unavailable, not zero.
 
 ## Concurrent measurements
 
@@ -503,13 +915,20 @@ Each result row includes `concurrency`; missing means one in historical files.
 Single-request prefill/decode retain their original definitions. Groups above
 one contain `requests`, including per-request status, TTFT and decode speed.
 Each concurrent request has its own leading nonce to invalidate prefix caching.
-`lms load --parallel` sets the runtime's prediction capacity for that level.
+In managed LM Studio, `lms load --parallel` sets prediction capacity for that
+level. Generic endpoint concurrency and context capacity are engine controlled.
 
 `aggregate_completion_tps` is successful requests' total output tokens divided
 by group wall time, including prefill and queueing. It is not the sum of individual
-decode speeds. A group is successful only when every request succeeds. If usage
-counts are unavailable, stream chunks supply an estimate and the result says so.
-The UI marks estimated token counts and derived throughput with `*`.
+decode speeds. A group is successful only when every request succeeds. Generic
+endpoint throughput stays unavailable if server token usage is missing. Legacy
+managed results can include explicitly marked stream-chunk estimates; the UI
+marks estimated counts and derived throughput with `*`. Client prompt tokens/TTFT
+is a prefill proxy including overhead, distinct from optional `reported_timings`.
+Missing `cached_prompt_tokens` means unknown cache usage, not zero.
+`timing_scope` distinguishes streamed content/reasoning from hidden reasoning and
+`decode_token_count` records the scoped decode numerator. Reported unstreamed
+reasoning is excluded; ambiguous hidden work can leave decode unavailable.
 
 `group_power` covers the group interval. Concurrent phases overlap, so they do
 not get invented prefill/decode energy splits. Power is for the selected GPU
@@ -529,6 +948,9 @@ Deleting a tracked result produces a local Git deletion. This does not remove
 the upstream copy; include only your new session file in a result contribution.
 
 ## Add, continue or rerun tests
+
+These operations require managed LM Studio. Generic endpoint experiments require
+reconnection and a new run; their public JSON does not persist connection details.
 
 In Results, select a benchmark and choose **Add / rerun tests**. Select models and
 their Standard/MTP techniques, prompt sizes and query counts. Choose an action:

@@ -8,6 +8,9 @@ from wattever import runner
 
 class PlanningTests(unittest.TestCase):
     def setUp(self):
+        probe = patch('wattever.bandwidth.measure', return_value={"protocol":"test"})
+        probe.start()
+        self.addCleanup(probe.stop)
         self.cfg = dict(runner.DEFAULT_CONFIG, models=['a', 'b'], sizes=[512, 5000],
                         concurrency_levels=[1, 2], warmup=False)
 

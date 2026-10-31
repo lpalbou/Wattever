@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Wattever capability evaluation v1",
+  "description": "Auditable rule-scored task evaluation. Content fingerprints establish consistency, not endpoint authenticity or model weights. Run tools/validate_results.py for full subset verification and rescoring.",
+  "type": "object",
+  "required": ["benchmark_kind", "schema_version", "id", "created_at", "status", "application", "model_configuration", "configuration_id", "suite", "suite_id", "suite_version", "suite_digest", "protocol", "evaluation_key", "results", "summary"],
+  "properties": {
+    "benchmark_kind": {"const": "capability"},
+    "schema_version": {"const": 1},
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,199}$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "status": {"enum": ["running", "completed", "cancelled", "error", "interrupted"]},
+    "config": {"type": "object", "properties": {
+      "max_tokens": {"type": "integer", "minimum": 1, "maximum": 131072, "default": 32768},
+      "timeout_s": {"type": "integer", "minimum": 0, "maximum": 86400, "default": 0}
+    }},
+    "model_configuration": {"type": "object", "required": ["fingerprint_version", "model", "request_model", "endpoint", "quantization", "reasoning", "mtp", "configuration_id"]},
+    "configuration_id": {"$ref": "#/$defs/digest"},
+    "suite_digest": {"$ref": "#/$defs/digest"},
+    "evaluation_key": {"$ref": "#/$defs/digest"},
+    "suite": {"type": "object", "required": ["id", "name", "version", "source", "scoring_version", "digest", "tasks"], "properties": {
+      "tasks": {"type": "array", "minItems": 1, "maxItems": 10000, "items": {"type": "object", "required": ["id", "category", "prompt", "scorer"], "properties": {
+        "scorer": {"type": "object", "required": ["kind", "expected"], "properties": {"kind": {"enum": ["exact_text", "json_exact", "numeric_final", "multiple_choice"]}}}
+      }}}
+    }},
+    "protocol": {"type": "object", "required": ["version", "scoring_version", "suite_digest", "selected_item_ids", "selected_item_digest", "sampling", "max_tokens", "token_limit_field", "timeout_s", "repeats"], "properties": {
+      "version": {"const": "wattever-capability-v1"},
+      "completion_policy": {"const": "finished-stream-visible-answer-v2", "description": "Completed streams are graded from visible answers, including empty or token-limited outputs. Missing on historical runs."},
+      "max_tokens": {"type": "integer", "minimum": 1, "maximum": 131072, "default": 32768, "description": "Requested total generation budget, including reasoning and visible answer."},
+      "timeout_s": {"type": "integer", "minimum": 0, "maximum": 86400, "default": 0, "description": "Optional client wall-clock deadline in seconds; zero disables the deadline."},
+      "repeats": {"type": "integer", "minimum": 1, "maximum": 20},
+      "token_limit_field": {"enum": ["max_tokens", "max_completion_tokens"]}
+    }},
+    "results": {"type": "array", "items": {"type": "object", "required": ["item_id", "category", "repeat", "status", "scoring"], "properties": {
+      "status": {"enum": ["ok", "error", "cancelled"]},
+      "repeat": {"type": "integer", "minimum": 0},
+      "response": {"type": "string", "maxLength": 200000},
+      "finish_reason": {"type": ["string", "null"]},
+      "answer_observation": {"enum": ["visible_answer", "missing_visible_answer"]},
+      "observed_output": {"type": ["object", "null"], "description": "Visible/reasoning/stream-complete observation flags from bounded transport capture, distinct from token-limit grading."},
+      "timing_scope": {"type": ["object", "null"]}
+    }}},
+    "summary": {"type": "object", "required": ["planned", "attempts", "scored", "correct", "errors", "accuracy", "penalized_accuracy", "wilson_95", "repeat_scores"]}
+  },
+  "allOf": [{
+    "if": {"required": ["protocol"], "properties": {"protocol": {"required": ["completion_policy"], "properties": {"completion_policy": {"const": "finished-stream-visible-answer-v2"}}}}},
+    "then": {"properties": {"results": {"items": {
+      "if": {"required": ["status"], "properties": {"status": {"const": "ok"}}},
+      "then": {"required": ["finish_reason"], "properties": {
+        "finish_reason": {"type": "string", "enum": ["stop", "length", "tool_calls", "content_filter", "function_call"]},
+        "observed_output": {"properties": {"stream_complete": {"const": true}, "visible_answer_present": {"type": "boolean"}}}
+      }}
+    }}}}
+  }],
+  "$defs": {"digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

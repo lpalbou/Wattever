@@ -12,13 +12,19 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("paths", nargs="*", help="JSON files; defaults to results/runs/*.json")
     args = parser.parse_args()
+    root = Path(__file__).resolve().parents[1] / "results"
     paths = [Path(p) for p in args.paths] if args.paths else sorted(
-        (Path(__file__).resolve().parents[1] / "results" / "runs").glob("*.json"))
+        list((root / "runs").glob("*.json")) + list((root / "capabilities").glob("*.json")))
     failed = False
     for path in paths:
         try:
             run = json.loads(path.read_text(encoding="utf-8"))
-            errors = validate_run(run)
+            if isinstance(run, dict) and run.get("benchmark_kind") == "capability":
+                from wattever.capabilities import validate_import
+                validate_import(run)
+                errors = []
+            else:
+                errors = validate_run(run)
             if isinstance(run, dict) and run.get("id") != path.stem:
                 errors.append("filename must match the benchmark id")
         except (OSError, ValueError) as exc:

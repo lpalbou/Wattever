@@ -1,4 +1,7 @@
 import unittest
+import json
+import subprocess
+from types import SimpleNamespace
 from unittest.mock import patch
 from wattever import hardware, power
 
@@ -9,8 +12,69 @@ class InventoryTests(unittest.TestCase):
         self.equipment_patch = patch.object(hardware, '_equipment', return_value=({}, {}, []))
         self.info_patch.start()
         self.equipment_patch.start()
+        self.memory_patch = patch.object(hardware, '_memory_inventory', return_value={})
+        self.pcie_patch = patch.object(hardware, '_nvidia_pcie', return_value=hardware._pcie(None, None))
+        self.memory_patch.start()
+        self.pcie_patch.start()
         self.addCleanup(self.info_patch.stop)
         self.addCleanup(self.equipment_patch.stop)
+        self.addCleanup(self.memory_patch.stop)
+        self.addCleanup(self.pcie_patch.stop)
+
+    def test_pcie_ceiling_is_not_measured_bandwidth(self):
+        link = hardware._pcie(3, 8, 5, 16, source='test')
+        self.assertAlmostEqual(link['link_encoding_ceiling_bytes_per_second'] / 1e9, 7.8769230769)
+        self.assertIsNone(link['measured_host_to_device_bytes_per_second'])
+        self.assertEqual(link['generation_max_reported'], 5)
+        self.assertIn('idle', link['note'])
+        self.assertIsNone(hardware._pcie(6, 16)['link_encoding_ceiling_bytes_per_second'])
+        self.assertIsNone(hardware._pcie('[N/A]', 8)['link_encoding_ceiling_bytes_per_second'])
+
+    def test_nvidia_link_probe_bounded_and_private_fields_never_queried(self):
+        self.pcie_patch.stop()
+        with patch.object(hardware.pu, 'run', return_value=SimpleNamespace(returncode=0, stdout='1, 8, 3, 16\n')) as run:
+            link = hardware._nvidia_pcie(0)
+        self.assertEqual(link['generation_current'], 1)
+        self.assertEqual(link['generation_max_reported'], 3)
+        self.assertEqual(run.call_args.kwargs['timeout'], 5)
+        command = ' '.join(run.call_args.args[0])
+        for private in ('uuid', 'serial', 'pci.bus_id'):
+            self.assertNotIn(private, command)
+        with patch.object(hardware.pu, 'run', side_effect=subprocess.TimeoutExpired('nvidia-smi', 5)):
+            self.assertIsNone(hardware._nvidia_pcie(0)['generation_current'])
+        self.assertIsNone(hardware._nvidia_pcie(None)['generation_current'])
+
+    def test_memory_allowlist_does_not_infer_channels_or_bandwidth(self):
+        self.memory_patch.stop()
+        raw=[{'Capacity': str(16 * 1024**3), 'Speed': 3200, 'ConfiguredClockSpeed': 2933,
+              'SMBIOSMemoryType': 26, 'DataWidth': 64, 'TotalWidth': 72,
+              'SerialNumber':'secret', 'DeviceLocator':'private-slot', 'BankLabel':'private-bank'}] * 2
+        with patch.object(hardware.pu, 'IS_WINDOWS', True), patch.object(hardware.pu, 'IS_MAC', False), patch.object(hardware, '_json_command', return_value=raw) as command:
+            memory=hardware._memory_inventory()
+        self.assertEqual(memory['installed_capacity_bytes'], 32 * 1024**3)
+        self.assertEqual(memory['module_count'], 2)
+        self.assertEqual(memory['configured_clock_mhz_reported'], [2933])
+        self.assertIsNone(memory['channel_count'])
+        self.assertIsNone(memory['measured_bandwidth_gb_s'])
+        self.assertNotIn('secret', json.dumps(memory))
+        self.assertNotIn('private', json.dumps(memory))
+        for forbidden in ('SerialNumber', 'DeviceLocator', 'BankLabel'):
+            self.assertNotIn(forbidden, ' '.join(command.call_args.args[0]))
+
+    def test_no_fabricated_arithmetic_peaks(self):
+        caps=hardware._capabilities({'compute_cap':'12.0', 'power_limit_w': 180, 'uuid':'secret', 'name':'GPU'})
+        self.assertEqual(caps['compute_capability_reported'], '12.0')
+        self.assertEqual(caps['compute_peaks'], [])
+        self.assertIsNone(caps['measured_memory_bandwidth_gb_s'])
+        self.assertNotIn('secret', json.dumps(caps))
+        self.assertIsNone(hardware._capabilities({'power_limit_w':float('inf')})['power_limit_w_reported'])
+
+    def test_inventory_explicitly_describes_client_not_unknown_remote_server(self):
+        with patch.object(hardware.pu, 'IS_WINDOWS', True), patch.object(hardware, '_windows', return_value=({}, {}, [])), patch.object(power, 'list_gpus', return_value=[]):
+            data=hardware.inventory()
+        self.assertEqual(data['collection']['scope'], 'benchmark_client')
+        self.assertFalse(data['collection']['inference_server_hardware_verified'])
+        self.assertEqual(data['metadata_schema_version'], 1)
 
     def test_windows_equipment_selective_fields(self):
         self.equipment_patch.stop()

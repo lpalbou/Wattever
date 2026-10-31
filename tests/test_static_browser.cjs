@@ -44,12 +44,15 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     browser.stderr.on('data',chunk=>{browserErrors=(browserErrors+chunk).slice(-4000);});
     browser.on('error',error=>{browserErrors+=String(error);});
     const debugFile = path.join(artifacts,'profile','DevToolsActivePort');
-    for(let i=0;i<450 && !fs.existsSync(debugFile);i++) {
+    let debugPort;
+    for(let i=0;i<450 && !debugPort;i++) {
       if(browser.exitCode!==null) throw Error('Browser exited before startup: '+browserErrors);
+      try { const value=Number(fs.readFileSync(debugFile,'utf8').split('\n')[0]);if(Number.isInteger(value) && value>0 && value<65536) debugPort=value; }
+      catch(error) {if(!['ENOENT','EBUSY','EACCES','EPERM'].includes(error.code))throw error;}
+      if(debugPort)break;
       await delay(100);
     }
-    if(!fs.existsSync(debugFile)) throw Error('Browser did not expose its debugging port: '+browserErrors);
-    const debugPort = Number(fs.readFileSync(debugFile,'utf8').split('\n')[0]);
+    if(!debugPort) throw Error('Browser did not expose its debugging port: '+browserErrors);
     const pages = await (await fetch(`http://127.0.0.1:${debugPort}/json/list`)).json();
     ws = new WebSocket(pages.find(page => page.type === 'page').webSocketDebuggerUrl);
     await new Promise((resolve,reject) => { ws.addEventListener('open',resolve,{once:true}); ws.addEventListener('error',reject,{once:true}); });
@@ -174,7 +177,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     await until('state.runs.some(run=>run.id.startsWith("browser-") && run.status==="completed")','Mock browser benchmark completed');
     const run=await evaluate('(async()=>{const rows=await api("/api/runs");return api("/api/runs/"+rows.runs.find(run=>run.id.startsWith("browser-")).id)})()');
     assert.equal(run.measurement_mode,'browser');
-    assert.equal(run.application.protocol_version,'browser-1');
+    assert.equal(run.application.protocol_version,'browser-2');
     assert.equal(run.hardware.source,'manual');
     assert.equal(run.gpu.name,'Manual fixture GPU');
     assert.equal(run.results.length,2);
