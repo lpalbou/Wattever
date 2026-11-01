@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Adds explicit model removal with backups and direct same-file additions/repairs for external endpoints, including mixed-engine GPU benchmarks. Results provides human-facing add, rerun, individual repair and model removal controls.
+
 - Consolidates compatible engine runs into one machine benchmark entry while preserving per-engine sessions, settings, measurements and source metadata. Archives superseded files and retains managed LM Studio repair support.
 
 - Measures sequential storage-to-RAM reads and pinned RAM-to-VRAM transfers before helper benchmarks, with raw samples, methods, capture time, unavailable states and UI/CSV reporting. Supports explicit later hardware-matched annotations on saved runs.

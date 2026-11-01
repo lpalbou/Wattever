@@ -42,7 +42,7 @@ class ConsolidationTests(unittest.TestCase):
         merged=consolidate(['card','external'],'GPU')
         cfg=runner.extension_config(merged,{'model_modes':{'card':['off']}})
         self.assertEqual(cfg['provider'],'lmstudio');self.assertEqual(cfg['models'],['card'])
-        with self.assertRaisesRegex(ValueError,'external engine'):
+        with self.assertRaisesRegex(ValueError,'another engine'):
             runner.extension_config(merged,{'model_modes':{'external':['off']}})
 
     def test_incompatible_sources_rejected_before_writes(self):

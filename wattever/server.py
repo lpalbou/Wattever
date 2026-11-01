@@ -426,6 +426,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"run_id": run_id})
             if route == "/api/bench/extend-plan":
                 return self._json(BENCH.plan_extension(self._body()))
+            if route == "/api/bench/extend-options":
+                body = self._body()
+                return self._json(BENCH.extension_options(body.get("run_id"), body))
             if route == "/api/bench/extend":
                 with WORK_LOCK:
                     conflict = self._work_conflict()
@@ -440,6 +443,17 @@ class Handler(BaseHTTPRequestHandler):
                 if conflict: return self._error(409, conflict)
                 lmstudio.LmsCli().unload_all()
                 return self._json({"ok": True})
+            if route.endswith("/models/delete") and route.startswith("/api/runs/"):
+                body = self._body()
+                run_id = urllib.parse.unquote(route[len("/api/runs/"):-len("/models/delete")])
+                with WORK_LOCK, BENCH._start_lock:
+                    if _any_running():
+                        return self._error(409, "Wait for the benchmark to finish before removing a model.")
+                    from .model_actions import remove_models
+                    result = remove_models(run_id, body.get("models"))
+                    if (BENCH.run or {}).get("id") == run_id:
+                        BENCH.run = store.load(run_id)
+                    return self._json(result)
             if route.endswith("/meta") and route.startswith("/api/runs/"):
                 run_id = urllib.parse.unquote(route[len("/api/runs/"):-len("/meta")])
                 body = self._body()

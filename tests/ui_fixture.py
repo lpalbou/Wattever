@@ -38,7 +38,11 @@ class FakeBench:
     run = None
     events = []
     last_extension = None
-    def extension_options(self, run_id):
+    def extension_options(self, run_id, selection=None):
+        if (selection or {}).get('connection', {}).get('provider') == 'openai':
+            return {'models':[{'id':'external/model','type':'llm','quantization':'IQ3_S','max_context_length':32768}],
+                    'config':dict(runner.DEFAULT_CONFIG,provider='openai',models=[],sizes=[512],concurrency_levels=[1]),
+                    'sizes':[512],'concurrency_levels':[1]}
         return {'models': [{'id':'model-a', 'type':'llm'}, {'id':'model-b', 'type':'llm'}],
                 'sizes': [512], 'concurrency_levels': [1]}
     def plan_extension(self, body):

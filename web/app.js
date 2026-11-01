@@ -156,7 +156,7 @@ async function connectHelperEndpoint() {
       if (!models.length) throw discoveryError || new Error("No model IDs found. Enter the served model ID.");
       env.models = models; env.default_models = models.map(m => m.id);
       env.lms = {server: true, cli: false};
-      env.capabilities = {...env.capabilities, context_planning: false, extend: false};
+      env.capabilities = {...env.capabilities, context_planning: false};
       env.last_config = {...env.defaults, ...config, models: env.default_models};
     } else {
       rememberEndpoint(env,"lmstudio");
@@ -430,6 +430,7 @@ async function init() {
     const target = selectedModelRerun();
     if (target?.ready) openExtendDialog(target.run, target.model);
   });
+  $("#remove-model").addEventListener("click", removeSelectedModel);
   $$("[data-color-by]").forEach(button => button.addEventListener("click", () => {
     state.colorBy = button.dataset.colorBy;
     $$("[data-color-by]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
@@ -1401,7 +1402,8 @@ function resultsConnectionReady() {
   return !state.providerNeedsConnection && (!genericHelper() || state.endpointSignature === helperConnectionSignature()) && (!browserMode() || !!state.env?.lms?.server);
 }
 function resultsTestAction(run) {
-  const newBenchmark = providerManaged() || runProviderManaged(run);
+  if (run.community && !browserMode()) return null;
+  const newBenchmark = browserMode();
   if (!newBenchmark && !state.env?.capabilities?.extend) return null;
   const ready = resultsConnectionReady();
   return {newBenchmark, ready, label: newBenchmark ? "New benchmark on connected endpoint" : "Add / rerun tests",
@@ -1452,23 +1454,54 @@ function renderResultsCatalog() {
 function selectedModelRerun() {
   if (state.compare.size !== 1) return null;
   const run = state.runCache[[...state.compare][0]];
-  if (!run) return null;
+  if (!run || run.community) return null;
   const action = resultsTestAction(run), models = shownModels(allModelsOf([run]));
   if (!action || action.newBenchmark || models.length !== 1) return null;
-  if (run.engine_groups && !managedRunConfig(run).models?.includes(models[0])) return null;
-  return {run, model: models[0], ready: action.ready && !state.benchmarkRunning && run.status !== "running"};
+  const model = models[0], group = executionGroup(run, (run.results || []).find(row => row.model === model) || {});
+  const provider = group?.config?.provider || run.config?.provider || "lmstudio";
+  const connected = helperEndpointConfig();
+  const matches = provider === connected.provider && (provider !== "openai" || !(group?.config || run.config)?.endpoint_id || (group?.config || run.config).endpoint_id === connected.endpoint_id);
+  return {run, model, ready: matches && action.ready && !state.benchmarkRunning && run.status !== "running"};
+}
+
+function selectedModelRemoval() {
+  if (browserMode() || !state.env?.capabilities?.extend || state.compare.size !== 1) return null;
+  const run = state.runCache[[...state.compare][0]];
+  if (!run || run.community) return null;
+  const models = shownModels(allModelsOf([run]));
+  if (models.length !== 1) return null;
+  return {run, model: models[0], ready: !state.benchmarkRunning && run.status !== "running" && allModelsOf([run]).length > 1};
+}
+
+async function removeSelectedModel() {
+  const target = selectedModelRemoval();
+  if (!target?.ready) return;
+  const count = (target.run.results || []).filter(row => row.model === target.model).length;
+  if (!confirm(`Remove ${target.model} and its ${count} measurements from ${target.run.label || target.run.id}? A backup will be kept. Other models remain in this benchmark.`)) return;
+  try {
+    await api(`/api/runs/${encodeURIComponent(target.run.id)}/models/delete`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({models:[target.model]})});
+    delete state.runCache[target.run.id]; state.visibleModels = null;
+    await loadRuns();
+    await selectRun(target.run.id);
+  } catch (error) { alert(error.message); }
 }
 
 function updateModelRerunAvailability() {
   const button = $("#rerun-model");
   if (!button) return;
-  button.hidden = browserMode() || providerManaged() || !state.env?.capabilities?.extend;
+  button.hidden = browserMode() || !state.env?.capabilities?.extend;
   const target = selectedModelRerun();
   button.disabled = !target?.ready;
   button.title = state.benchmarkRunning || target?.run.status === "running"
     ? "Wait for the active benchmark to finish"
     : target ? `Review a rerun of ${target.model} using the saved workload settings`
     : "Select one benchmark and one model to rerun";
+  const remove = $("#remove-model"), removal = selectedModelRemoval();
+  if (remove) {
+    remove.hidden = browserMode() || !state.env?.capabilities?.extend;
+    remove.disabled = !removal?.ready;
+    remove.title = removal ? allModelsOf([removal.run]).length === 1 ? "Use Delete benchmark to remove its last model" : `Remove ${removal.model} and its measurements; keep a backup` : "Select one local benchmark and one model to remove";
+  }
 }
 
 async function openExtendDialog(run, modelId = null, selectedCase = null) {
@@ -1496,27 +1529,29 @@ async function openExtendDialog(run, modelId = null, selectedCase = null) {
       return;
     }
     const [plan, source] = await Promise.all([
-      api("/api/bench/extend-plan?run_id=" + encodeURIComponent(run.id)),
+      genericHelper() ? api("/api/bench/extend-options", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({run_id:run.id, connection:helperEndpointConfig()})}) : api("/api/bench/extend-plan?run_id=" + encodeURIComponent(run.id)),
       api("/api/runs/" + encodeURIComponent(run.id)),
     ]);
     if (!dialog.open || state.extension !== pending) return;
-    if (resultsConnectionKey() !== connectionKey || providerManaged()) throw new Error("The endpoint connection changed. Close this dialog and select tests again.");
-    const cfg = managedRunConfig(source), installed = (plan.models || []).filter(m => m.type !== "embeddings");
+    if (resultsConnectionKey() !== connectionKey) throw new Error("The endpoint connection changed. Close this dialog and select tests again.");
+    const cfg = plan.config || managedRunConfig(source), installed = (plan.models || []).filter(m => m.type !== "embeddings");
     const existing = cfg.models || [];
     const models = [...existing.map(id => installed.find(model => model.id === id) || {id, unavailable: true}),
       ...installed.filter(model => !existing.includes(model.id))];
     if (modelId && (!existing.includes(modelId) || !models.some(model => model.id === modelId && !model.unavailable))) {
-      throw new Error("The selected model is no longer installed. Install it before rerunning its tests.");
+      throw new Error("The selected model is no longer installed or belongs to another engine. Connect its engine and make that model available before rerunning its tests.");
     }
     state.extension = {runId: run.id, source, sourceConfig: cfg, models, connectionKey,
+      connection: helperEndpointConfig(), engineGroupId: plan.engine_group_id, external: genericHelper(),
       initialSizes: plan.sizes || cfg.sizes || [], initialConcurrency: plan.concurrency_levels || cfg.concurrency_levels || [1],
       repeats: Number(cfg.repeats) || 1, selectedCases: selectedCase ? [selectedCase] : null,
-      timeout: Number(source.execution_config?.per_test_timeout_s ?? cfg.per_test_timeout_s) || 1800,
+      timeout: Number(cfg.per_test_timeout_s) || 1800,
       allowFallback: source.execution_config?.fallback_on_failure ?? cfg.fallback_on_failure ?? true,
       skipTimeouts: source.execution_config?.skip_after_timeout ?? cfg.skip_after_timeout ?? false,
       modelModes: modelId ? {[modelId]: benchmarkTechniques(cfg, modelId)} : originalModelSelection(cfg, models),
       sizes: new Set(selectedCase ? [selectedCase[3]] : plan.sizes || []), concurrency: new Set(selectedCase ? [selectedCase[2]] : plan.concurrency_levels || [1]), action: modelId ? "rerun" : "add", revision: 0};
     if (selectedCase) state.extension.modelModes = {[selectedCase[0]]: [selectedCase[1] ? "on" : "off"]};
+    if (state.extension.external) { state.extension.allowFallback = false; state.extension.modelModes = Object.fromEntries(Object.keys(state.extension.modelModes).map(id => [id,["off"]])); }
     renderExtendForm();
     previewExtension();
   } catch (error) {
@@ -1573,6 +1608,8 @@ function extensionProgressMarkup(extension, model) {
 
 function extendBody(extension) {
   return {run_id: extension.runId, model_modes: extension.modelModes,
+    ...(extension.external && extension.connection ? {connection:extension.connection} : {}),
+    ...(extension.engineGroupId ? {engine_group_id:extension.engineGroupId} : {}),
     ...(extension.repeats == null ? {} : {repeats: extension.repeats}),
     ...(extension.timeout == null ? {} : {per_test_timeout_s: extension.timeout}),
     ...(extension.allowFallback == null ? {} : {fallback_on_failure: extension.allowFallback}),
@@ -1586,7 +1623,7 @@ function renderExtendForm() {
   const extension = state.extension;
   const sizes = [...new Set([...(state.env.size_presets || []), ...extension.sizes])].sort((a,b) => a-b);
   const levels = [...new Set([...CONCURRENCY_PRESETS, ...extension.concurrency])].sort((a,b) => a-b);
-  $("#extend-content").innerHTML = `<div class="field"><label>Models and techniques</label><p class="hint">Choose the models and techniques to run. Add missing tests continues unfinished work. Rerun selected tests also repeats successful measurements.</p><p class="extend-continuity" role="status">Successful tests will not run again unless you choose Rerun selected tests.</p><div class="btn-row"><button type="button" class="btn-sm" id="extend-select-existing" title="Restore the benchmark models and techniques; saved measurements remain untouched">Restore benchmark selection</button><button type="button" class="btn-sm" id="extend-clear-selection" title="Clear which models will run; saved results are retained">Clear selection</button></div><p class="hint extend-progress-caption">Progress below covers saved techniques and selected additions at the prompt sizes and query counts shown below. Unchecking a model keeps its results.</p><div class="extend-models">${extension.models.map((m, i) => `<div class="extend-model" data-progress-model="${i}"><div class="extend-model-info"><strong>${esc(m.id)}</strong><small>${esc(quantizationLabel(m))}</small>${extensionProgressMarkup(extension, m)}</div><label title="Standard decoding without MTP"><input type="checkbox" data-model="${i}" data-mode="off" ${(extension.modelModes[m.id] || []).includes("off") ? "checked" : ""} ${m.unavailable ? "disabled" : ""}> Standard</label><label title="Speculative decoding; model and runtime support is not guaranteed"><input type="checkbox" data-model="${i}" data-mode="on" ${(extension.modelModes[m.id] || []).includes("on") ? "checked" : ""} ${m.unavailable ? "disabled" : ""}> MTP</label></div>`).join("") || '<p class="hint">No installed language models found.</p>'}</div></div><div class="field"><label>Prompt sizes</label><p class="hint">Select a maximum to include every smaller size.</p><div class="chips" id="extend-sizes"></div></div><div class="field"><label>Concurrent queries</label><p class="hint">Select a maximum to include every smaller level.</p><div class="chips" id="extend-concurrency"></div></div><fieldset class="extend-actions"><legend>Action</legend><label><input type="radio" name="extend-action" value="add" ${extension.action === "add" ? "checked" : ""}> Add missing tests</label><label><input type="radio" name="extend-action" value="retry" ${extension.action === "retry" ? "checked" : ""}> Retry failed tests <span class="hint">(includes missing and skipped)</span></label><label><input type="radio" name="extend-action" value="rerun" ${extension.action === "rerun" ? "checked" : ""}> Rerun selected tests <span class="hint">(includes successful, failed, skipped and missing)</span></label>${extension.action === "rerun" ? '<p class="banner warn">Selected measurements will be replaced; previous attempts are kept.</p>' : ""}</fieldset>`;
+  $("#extend-content").innerHTML = `<div class="field"><label>Models and techniques</label><p class="hint">Choose the models and techniques to run. Add missing tests continues unfinished work. Rerun selected tests also repeats successful measurements.</p><p class="extend-continuity" role="status">Successful tests will not run again unless you choose Rerun selected tests.</p><div class="btn-row"><button type="button" class="btn-sm" id="extend-select-existing" title="Restore the benchmark models and techniques; saved measurements remain untouched">Restore benchmark selection</button><button type="button" class="btn-sm" id="extend-clear-selection" title="Clear which models will run; saved results are retained">Clear selection</button></div><p class="hint extend-progress-caption">Progress below covers saved techniques and selected additions at the prompt sizes and query counts shown below. Unchecking a model keeps its results.</p><div class="extend-models">${extension.models.map((m, i) => `<div class="extend-model" data-progress-model="${i}"><div class="extend-model-info"><strong>${esc(m.id)}</strong><small>${esc(quantizationLabel(m))}</small>${extensionProgressMarkup(extension, m)}</div><label title="Standard decoding without MTP"><input type="checkbox" data-model="${i}" data-mode="off" ${(extension.modelModes[m.id] || []).includes("off") ? "checked" : ""} ${m.unavailable ? "disabled" : ""}> ${extension.external ? "Provider controlled" : "Standard"}</label><label ${extension.external ? "hidden" : ""} title="Speculative decoding; model and runtime support is not guaranteed"><input type="checkbox" data-model="${i}" data-mode="on" ${(extension.modelModes[m.id] || []).includes("on") ? "checked" : ""} ${m.unavailable ? "disabled" : ""}> MTP</label></div>`).join("") || '<p class="hint">No installed language models found.</p>'}</div></div><div class="field"><label>Prompt sizes</label><p class="hint">Select a maximum to include every smaller size.</p><div class="chips" id="extend-sizes"></div></div><div class="field"><label>Concurrent queries</label><p class="hint">Select a maximum to include every smaller level.</p><div class="chips" id="extend-concurrency"></div></div><fieldset class="extend-actions"><legend>Action</legend><label><input type="radio" name="extend-action" value="add" ${extension.action === "add" ? "checked" : ""}> Add missing tests</label><label><input type="radio" name="extend-action" value="retry" ${extension.action === "retry" ? "checked" : ""}> Retry failed tests <span class="hint">(includes missing and skipped)</span></label><label><input type="radio" name="extend-action" value="rerun" ${extension.action === "rerun" ? "checked" : ""}> Rerun selected tests <span class="hint">(includes successful, failed, skipped and missing)</span></label>${extension.action === "rerun" ? '<p class="banner warn">Selected measurements will be replaced; previous attempts are kept.</p>' : ""}</fieldset>`;
   $("#extend-content").insertAdjacentHTML("afterbegin", `<div class="field"><label for="extend-repeats">Total repeats per test</label><input id="extend-repeats" type="number" min="${Number(extension.sourceConfig.repeats) || 1}" max="100" value="${extension.repeats ?? extension.sourceConfig.repeats ?? 1}" ${extension.selectedCases ? "disabled" : ""}><p class="hint">Increase this to append repeats while keeping existing measurements. Repairing or rerunning a test keeps its previous attempt in history.</p>${extension.selectedCases ? `<p class="banner">Repairing one test only: ${esc(extension.selectedCases[0][0])}, ${fmtTokens(extension.selectedCases[0][3])} prompt tokens, ${extension.selectedCases[0][2]} queries, repeat ${extension.selectedCases[0][4]+1}.</p>` : ""}</div>`);
   const installedIds = new Set(extension.models.filter(model => !model.unavailable).map(model => model.id));
   $("#extend-content").insertAdjacentHTML("afterbegin", `<div class="field"><label for="extend-timeout">Timeout per test (seconds)</label><input id="extend-timeout" type="number" min="1" max="7200" value="${extension.timeout ?? 1800}"><p class="hint">Applies to these new attempts. Saved measurements keep their settings. Longer contexts can take much longer when GPU memory spills into RAM.</p></div>`);
@@ -1594,7 +1631,7 @@ function renderExtendForm() {
     extension.timeout = Number($("#extend-timeout").value);
     previewExtension();
   });
-  $("#extend-content").insertAdjacentHTML("afterbegin", `<details class="adv"><summary>Failure policy</summary><label><input id="extend-fallback" type="checkbox" ${extension.allowFallback ? "checked" : ""}> Allow CPU placement fallback after a model load failure</label><label><input id="extend-skip-timeouts" type="checkbox" ${extension.skipTimeouts ? "checked" : ""}> Skip remaining repeats and larger contexts after a timeout</label><p class="hint">A timeout marks a practical time limit, not proof of a hardware allocation failure. Skipped tests are identified separately.</p></details>`);
+  $("#extend-content").insertAdjacentHTML("afterbegin", `<details class="adv"><summary>Failure policy</summary><label><input id="extend-fallback" type="checkbox" ${extension.external ? "disabled" : ""} ${!extension.external && extension.allowFallback ? "checked" : ""}> Allow CPU placement fallback after a model load failure</label><label><input id="extend-skip-timeouts" type="checkbox" ${extension.skipTimeouts ? "checked" : ""}> Skip remaining repeats and larger contexts after a timeout</label><p class="hint">A timeout marks a practical time limit, not proof of a hardware allocation failure. Skipped tests are identified separately.</p></details>`);
   $("#extend-fallback").addEventListener("change", () => { extension.allowFallback = $("#extend-fallback").checked; previewExtension(); });
   $("#extend-skip-timeouts").addEventListener("change", () => { extension.skipTimeouts = $("#extend-skip-timeouts").checked; previewExtension(); });
   const repairCases = [...new Map((extension.source.results || []).filter(row => installedIds.has(row.model)).map(row => {
@@ -1647,7 +1684,7 @@ function renderExtendForm() {
 async function previewExtension() {
   const extension = state.extension;
   if (!extension || extension.mode === "new") return;
-  if (providerManaged() || extension.connectionKey !== resultsConnectionKey()) {
+  if (browserMode() || extension.connectionKey !== resultsConnectionKey()) {
     $("#extend-start").disabled = true;
     $("#extend-preview").innerHTML = banner("err", "Endpoint changed", "Close this dialog and select tests from the current connection again.");
     return;
@@ -1690,7 +1727,7 @@ async function startExtension() {
     showPanel("run");
     return;
   }
-  if (providerManaged() || runProviderManaged(extension.source)) {
+  if (browserMode()) {
     $("#extend-preview").innerHTML = banner("err", "New benchmark required", "Select models from the currently connected endpoint to create a new benchmark.");
     return;
   }
@@ -1709,7 +1746,7 @@ async function startExtension() {
 
 function detailedResultsTable(run) {
   const repairable = !run.community && run.status !== "running" && !state.benchmarkRunning
-    && !browserMode() && !runProviderManaged(run) && state.env?.capabilities?.extend;
+    && !browserMode() && state.env?.capabilities?.extend;
   const fields = [
     ["Status", row => row.status], ["Repeat", row => (row.repeat || 0) + 1],
     ["Actual prompt tokens", row => row.prompt_tokens], ["Query context", row => row.per_request_context_length || row.context_length],
@@ -1742,7 +1779,7 @@ function detailedResultsTable(run) {
   const rows = (run.results || []).flatMap(row => [...fields.map(([label, get]) => {
     const value = get(row);
     if (value == null || value === "") return "";
-    const repair = label === "Status" && repairable && !rowProviderManaged(run, row)
+    const repair = label === "Status" && repairable
       ? `<button class="btn-sm" data-run-id="${esc(run.id)}" data-repair-case="${esc(JSON.stringify([row.model, !!row.mtp, row.concurrency || 1, row.target_tokens, row.repeat || 0]))}" title="Rerun only this test; its previous attempt is retained">Repair repeat ${(row.repeat || 0)+1}</button>` : "";
     return `<tr class="colored-result-row" style="--table-color:${tableRowColor(run, row.model, modelUniverse())}"><td>${esc(row.model)}</td><td>${fmtTokens(row.target_tokens)}</td><td>${row.concurrency || 1}</td><td>${esc(sessionLabel(run, row))}</td><td>${esc(label)}</td><td class="measure-cell">${esc(typeof value === "number" ? n(value) : value)}${label.includes("tk/s") ? estimatedMark(row, label.startsWith("Group")) : ""}${repair}</td></tr>`;
   }), ...(row.requests || []).flatMap((request, index) => [

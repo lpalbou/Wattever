@@ -34,36 +34,29 @@ function fixture(provider='openai'){
  const calls=[];
  current.context.transport=async(path,options)=>{
   calls.push({path,options});
-  assert.equal(path,'/api/endpoint/check','A connected generic endpoint must never query native LM Studio catalogs');
-  return{ok:true,endpoint_identity:{label:'Strata'},models:[{id:'served/qwen-flash',type:'llm',quantization:'IQ3_S',max_context_length:32768,loaded_context_length:16384},{id:'embedder',type:'embeddings'}]};
+  if(path==='/api/bench/extend-options')return {config:{provider:'openai',models:[],sizes:[512],concurrency_levels:[1],repeats:1},models:[{id:'served/qwen-flash',type:'llm',quantization:'IQ3_S'}],sizes:[512],concurrency_levels:[1]};
+  if(path==='/api/runs/historical')return current.evaluate('state.runCache.historical');
+  throw Error('Unexpected request '+path);
  };
- current.evaluate('api=transport');
+ current.evaluate('api=transport;renderExtendForm=()=>effects.forms++;previewExtension=()=>effects.previews++');
  const historical=current.evaluate('JSON.stringify(state.runCache.historical)');
- current.node('#extend-run').textContent='Add / rerun tests';
  current.evaluate('updateExtendAvailability()');
- assert.match(current.node('#extend-run').textContent,/New benchmark/,'Cached native Results actions must adapt to the current provider');
+ assert.equal(current.node('#extend-run').textContent,'Add / rerun tests');
  await current.evaluate('openExtendDialog(state.runCache.historical)');
- assert.equal(calls.length,1);
- assert.equal(calls[0].options.method,'POST');
+ assert.equal(calls.length,2);
  const request=JSON.parse(calls[0].options.body);
- assert.equal(request.endpoint_base_url,'http://127.0.0.1:8086/v1');
- assert.equal(request.endpoint_api_key_env,'CURRENT_ENDPOINT_API_KEY');
- assert.equal(request.provider,'openai');
- assert.equal(current.evaluate('state.extension.mode'),'new');
+ assert.equal(request.connection.endpoint_base_url,'http://127.0.0.1:8086/v1');
+ assert.equal(request.connection.endpoint_api_key_env,'CURRENT_ENDPOINT_API_KEY');
+ assert.equal(current.evaluate('state.extension.runId'),'historical');
+ assert.equal(current.evaluate('state.extension.external'),true);
  assert.equal(current.evaluate('state.extension.models.map(model=>model.id).join()'),'served/qwen-flash');
- assert(!current.node('#extend-content').innerHTML.includes('native/stale-model'));
- assert.match(current.node('#extend-content').innerHTML,/IQ3_S/);
- assert.match(current.node('#extend-content').innerHTML,/ctx 32\.768k/);
- assert.match(current.node('#extend-content').innerHTML,/loaded ctx 16\.384k/);
- assert.match(current.node('#extend-start').textContent,/Review new benchmark/);
- await current.evaluate('startExtension()');
- assert.equal(calls.length,1,'Reviewing a new benchmark must not start inference or invoke native extension');
- assert.equal(current.evaluate('[...state.models].join()'),'served/qwen-flash');
- assert.equal(current.effects.panels.join(),'run');
- assert.equal(current.effects.renders,1);
+ assert.equal(current.effects.forms,1);
  assert.equal(current.evaluate('JSON.stringify(state.runCache.historical)'),historical);
- assert.equal(current.evaluate('allModelsOf([state.runCache.historical]).join()'),'native/stale-model','Historical Results filters must remain historical');
-
+ current.evaluate('state.extension.modelModes={"served/qwen-flash":["off"]}');
+ const body=JSON.parse(current.evaluate('JSON.stringify(extendBody(state.extension))'));
+ assert.equal(body.run_id,'historical');
+ assert.equal(body.connection.provider,'openai');
+ assert.equal(body.fallback_on_failure,false);
  const native=fixture('lmstudio'), nativeCalls=[];
  native.context.transport=async path=>{
   nativeCalls.push(path);
@@ -117,7 +110,7 @@ function fixture(provider='openai'){
 
  const stale=fixture();
  let resolve;
- stale.context.transport=()=>new Promise(done=>{resolve=done;});
+ stale.context.transport=async path=>path==='/api/runs/historical'?stale.evaluate('state.runCache.historical'):new Promise(done=>{resolve=done;});
  stale.evaluate('api=transport');
  const pending=stale.evaluate('openExtendDialog(state.runCache.historical)');
  stale.node('#helper-url').value='http://127.0.0.1:9999/v1';
@@ -126,17 +119,13 @@ function fixture(provider='openai'){
  assert(!stale.node('#extend-content').innerHTML.includes('served/old-connection'));
  assert.equal(stale.node('#extend-start').disabled,true);
 
- const submit=fixture();let submitCalls=0;
- submit.context.transport=async()=>{submitCalls++;return{models:[{id:'served/qwen',type:'llm'}]};};
- submit.evaluate('api=transport');await submit.evaluate('openExtendDialog(state.runCache.historical)');
- submit.node('#helper-key-env').value='DIFFERENT_ENDPOINT_KEY';
- await submit.evaluate('startExtension()');
- assert.match(submit.node('#extend-preview').innerHTML,/Endpoint changed/);
- assert.equal(submitCalls,1);assert.equal(submit.effects.panels.length,0);
-
+ current.node('#helper-key-env').value='DIFFERENT_ENDPOINT_KEY';
+ await current.evaluate('startExtension()');
+ assert.match(current.node('#extend-preview').innerHTML,/Endpoint changed/);
+ assert.equal(calls.length,2);
  const failure=fixture();failure.context.transport=async()=>{throw Error('Current endpoint unavailable');};
  failure.evaluate('api=transport');await failure.evaluate('openExtendDialog(state.runCache.historical)');
  assert.match(failure.node('#extend-content').innerHTML,/Current endpoint unavailable/);
  assert(!failure.node('#extend-content').innerHTML.includes('native/stale-model'));
- console.log('Results catalogs follow the current endpoint, preserve metadata/history, reject stale connections and retain managed extension behavior');
+ console.log('Endpoint and managed additions stay in the existing benchmark; stale connections are rejected');
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -146,6 +146,56 @@ def planned_cases(cfg):
     return cases
 
 
+def extension_base(source, selection):
+    """Select an execution engine; connection secrets are supplied afresh."""
+    connection = selection.get("connection") or {}
+    if not isinstance(connection, dict):
+        raise ValueError("Connection must be an endpoint configuration object.")
+    provider = connection.get("provider", "lmstudio")
+    if provider not in ("lmstudio", "openai"):
+        raise ValueError("Choose an LM Studio or OpenAI-compatible connection.")
+    groups = source.get("engine_groups") or []
+    group_id = selection.get("engine_group_id")
+    candidates = [g for g in groups if g["config"].get("provider", "lmstudio") == provider
+                  and (not group_id or g["id"] == group_id)]
+    if len(candidates) > 1:
+        candidates = [g for g in candidates if g["config"].get("endpoint_id") == connection.get("endpoint_id")]
+    if len(candidates) > 1 or (group_id and not candidates):
+        raise ValueError("Select the saved engine and reconnect its endpoint.")
+    if candidates:
+        cfg = copy.deepcopy(candidates[0]["config"])
+        cfg["engine_group_id"] = candidates[0]["id"]
+    elif not groups and source["config"].get("provider", "lmstudio") == provider:
+        cfg = copy.deepcopy(source["config"])
+    else:
+        # A new engine is added to this machine benchmark, never a new file.
+        cfg = {k:copy.deepcopy(source["config"][k]) for k in
+               ("sizes", "concurrency_levels", "repeats", "max_tokens", "gpu_index") if k in source["config"]}
+        cfg.update(provider=provider, models=[], mtp_modes=["off"])
+    chosen = list((selection.get("model_modes") or {}).keys())
+    if len(chosen) == 1 and chosen[0] in cfg.get("models", []):
+        previous = next((s.get("config", {}) for s in reversed(source.get("sessions", []))
+                         if chosen[0] in s.get("config", {}).get("models", [])
+                         and s.get("config", {}).get("provider", "lmstudio") == provider), {})
+        for key in ("reproducibility", "reported_mtp", "reported_reasoning", "canonical_model_id", "model_source"):
+            if key in previous:
+                cfg[key] = copy.deepcopy(previous[key])
+    saved_endpoint = cfg.get("endpoint_id")
+    if provider == "openai":
+        if not connection.get("endpoint_base_url"):
+            raise ValueError("Reconnect the external endpoint in Run first. Connection details are not stored.")
+        fresh = dict(DEFAULT_CONFIG, **connection)
+        endpoints.validate(fresh)
+        endpoints.resolve_identity(fresh)
+        if saved_endpoint and saved_endpoint != fresh.get("endpoint_id"):
+            raise ValueError("The connected endpoint differs from the saved engine.")
+        # Keep recorded workload/metadata; only refresh connection information.
+        cfg.update({k:v for k,v in fresh.items() if k in connection or k in
+                    ("endpoint_base_url", "endpoint_id", "endpoint_identity", "endpoint_label")})
+        cfg.update(mtp_modes=["off"], fallback_on_failure=False)
+    return dict(DEFAULT_CONFIG, **cfg)
+
+
 def extension_config(source, selection):
     """Add or repair workloads, recording a selected timeout in the new session."""
     modes = selection.get("model_modes")
@@ -155,14 +205,12 @@ def extension_config(source, selection):
         if (not isinstance(model, str) or not model or not isinstance(values, list)
                 or not values or any(mode not in ("off", "on") for mode in values)):
             raise ValueError("Each model needs Standard (off), MTP (on), or both.")
-    from .consolidation import managed_config
-    saved_config = managed_config(source)
-    if source.get("engine_groups"):
-        external = {m for g in source["engine_groups"] if g["config"].get("provider") == "openai"
-                    for m in g["config"].get("models", [])} - set(saved_config.get("models", []))
-        if external.intersection(modes):
-            raise ValueError("These tests belong to an external engine. Reconnect that endpoint to run them.")
-    cfg = dict(DEFAULT_CONFIG, **saved_config)
+    cfg = extension_base(source, selection)
+    other_models = set(source["config"].get("models", [])) - set(cfg["models"])
+    if other_models.intersection(modes):
+        raise ValueError("These model IDs belong to another engine. Reconnect that engine to repair them; use distinct served IDs for new variants.")
+    if cfg.get("provider") == "openai" and any(values != ["off"] for values in modes.values()):
+        raise ValueError("MTP is provider controlled on external endpoints.")
     cfg.pop("selected_cases", None)
     repeats = selection.get("repeats", cfg["repeats"])
     if type(repeats) is not int or not int(cfg["repeats"]) <= repeats <= 100:
@@ -323,15 +371,15 @@ class BenchRunner:
             return self._start(managed_config(source) if source.get("engine_groups") else
                                source.get("execution_config") or source.get("config"), resume_source=source)
 
-    def extension_options(self, run_id):
+    def extension_options(self, run_id, selection=None):
         source = store.load(run_id)
         if not source:
             raise ValueError("No such benchmark.")
-        if (source.get("config") or {}).get("provider") == "openai":
-            raise ValueError("Reconnect the external endpoint and start a new run. Connection details are not stored.")
-        return {"models": [m for m in lmstudio.list_models() if m.get("type") != "embeddings"],
-                "sizes": source["config"]["sizes"],
-                "concurrency_levels": source["config"].get("concurrency_levels", [1])}
+        cfg = extension_base(source, selection or {})
+        catalog = endpoints.list_models(cfg) if cfg.get("provider") == "openai" else lmstudio.list_models()
+        return {"models": [m for m in catalog if m.get("type") != "embeddings"],
+                "config": endpoints.public_config(cfg), "engine_group_id": cfg.get("engine_group_id"),
+                "sizes": cfg["sizes"], "concurrency_levels": cfg["concurrency_levels"]}
 
     def plan_extension(self, selection):
         source = store.load(selection.get("run_id"))
@@ -357,9 +405,7 @@ class BenchRunner:
                 if type(selection.get(key, False)) is not bool:
                     raise ValueError("%s must be true or false." % key)
             cfg = extension_config(source, selection)
-            if cfg.get("provider") == "openai":
-                raise ValueError("Reconnect the external endpoint and start a new run. Connection details are not stored.")
-            catalog = [m for m in lmstudio.list_models() if m.get("type") != "embeddings"]
+            catalog = [m for m in (endpoints.list_models(cfg) if cfg.get("provider") == "openai" else lmstudio.list_models()) if m.get("type") != "embeddings"]
             self._model_catalog = {m["id"]: m for m in catalog}
             installed = set(self._model_catalog)
             missing = set(cfg["models"]) - installed
@@ -384,7 +430,7 @@ class BenchRunner:
         allowed = set(DEFAULT_CONFIG) | {"endpoint_base_url", "endpoint_api_key_env", "endpoint_id", "canonical_model_id", "model_modes",
                                         "runtime_gpu_placement", "reproducibility", "performance_claims",
                                         "reported_mtp", "reported_reasoning", "model_source", "temperature", "token_limit_field",
-                                        "endpoint_identity", "endpoint_name_override", "selected_cases", "storage_probe_directory"}
+                                        "endpoint_identity", "endpoint_name_override", "selected_cases", "storage_probe_directory", "engine_group_id"}
         cfg.update({k: v for k, v in (config or {}).items() if k in allowed})
         if "selected_cases" in cfg and resume_source is None:
             raise ValueError("Individual test selection requires an existing benchmark. Use Add / rerun tests.")
@@ -468,7 +514,9 @@ class BenchRunner:
             prior_execution = resume_source.get("execution_config") or resume_source.get("config") or {}
             if not extend_in_place and prior_execution.get("context_planner_version") != DEFAULT_CONFIG["context_planner_version"]:
                 raise ValueError("This run used an older context planner. Start a new benchmark to keep measurements comparable.")
-            if resume_source.get("lms_version") != run["lms_version"]:
+            had_managed = resume_source["config"].get("provider", "lmstudio") == "lmstudio" or any(
+                g["config"].get("provider") == "lmstudio" for g in resume_source.get("engine_groups", []))
+            if cfg.get("provider") != "openai" and had_managed and resume_source.get("lms_version") != run["lms_version"]:
                 raise ValueError("LM Studio version differs. Start a new benchmark.")
             old_class = (resume_source.get("classification") or {}).get("hardware_class")
             if not old_class or old_class != run["classification"]["hardware_class"]:
@@ -485,6 +533,8 @@ class BenchRunner:
             current_application = run["application"]
             current_id, current_created = run["id"], run["created_at"]
             run = copy.deepcopy(resume_source)
+            if cfg.get("provider") == "lmstudio" and not had_managed:
+                run["lms_version"] = self.cli.version()
             run["sessions"] = run.get("sessions") or [{
                 "id": "initial", "started_at": run.get("created_at"), "config": copy.deepcopy(run["config"]),
                 "application": copy.deepcopy(run.get("application")), "status": run.get("status"),
@@ -514,9 +564,8 @@ class BenchRunner:
             run["results"] = kept
             run["execution_config"] = endpoints.public_config(cfg)
             run["config"] = endpoints.public_config(merged_config(resume_source["config"], cfg))
-            for group in run.get("engine_groups", []):
-                if group["config"].get("provider", "lmstudio") == cfg.get("provider", "lmstudio"):
-                    group["config"] = endpoints.public_config(merged_config(group["config"], cfg))
+            from .model_actions import update_engine
+            update_engine(run, cfg, resume_source)
             run["status"] = "running"
             run["updated_at"] = current_created
             run.pop("finished_at", None)
@@ -544,11 +593,11 @@ class BenchRunner:
         run.setdefault("sessions", []).append({
             "id": session_id, "started_at": _now_iso(), "status": "running",
             "config": endpoints.public_config(cfg), "application": current_application,
-            "lms_version": run.get("lms_version"), "retry_failed": retry_failed,
+            "lms_version": self.cli.version(), "retry_failed": retry_failed,
             "rerun_existing": rerun_existing,
         })
         if run.get("engine_groups"):
-            group = next(g for g in run["engine_groups"] if g["config"].get("provider", "lmstudio") == cfg.get("provider", "lmstudio"))
+            group = next(g for g in run["engine_groups"] if g["id"] == cfg.get("engine_group_id"))
             run["sessions"][-1].update(engine_group_id=group["id"], source_run_id=run["id"])
         store.save(run)
         store.save_config(endpoints.public_config(cfg))
@@ -1235,10 +1284,10 @@ class BenchRunner:
         if self.sampler and hasattr(self.sampler, "summary"):
             summary = self.sampler.summary()
             if isinstance(summary, dict): run["telemetry"] = {"summary": summary}
-        if (run.get("config") or {}).get("provider") == "openai":
+        if cfg.get("provider") == "openai":
             result.update(mtp=None, mtp_source="unknown; externally managed", context_length=None,
                           context_control="external", reasoning_disabled=None,
-                          reasoning_control="effective setting unknown; explicit standard effort request only" if run["config"].get("endpoint_reasoning_effort") is not None else "unknown; no reasoning control parameter sent",
+                          reasoning_control="effective setting unknown; explicit standard effort request only" if cfg.get("endpoint_reasoning_effort") is not None else "unknown; no reasoning control parameter sent",
                           load_parallel_capacity=None, context_budget_source="client planning estimate; not a verified server allocation")
         if run.get("active_session_id"):
             result["session_id"] = run["active_session_id"]
