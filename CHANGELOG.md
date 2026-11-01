@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Consolidates compatible engine runs into one machine benchmark entry while preserving per-engine sessions, settings, measurements and source metadata. Archives superseded files and retains managed LM Studio repair support.
+
 - Measures sequential storage-to-RAM reads and pinned RAM-to-VRAM transfers before helper benchmarks, with raw samples, methods, capture time, unavailable states and UI/CSV reporting. Supports explicit later hardware-matched annotations on saved runs.
 - Links engine-specific runs into one machine comparison while retaining each provider's settings and measurements.
 - Captures generic endpoint quantization metadata in throughput result rows and accepts structured quantization formats during discovery.

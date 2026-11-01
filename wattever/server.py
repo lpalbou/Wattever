@@ -355,6 +355,13 @@ class Handler(BaseHTTPRequestHandler):
             self.close_connection = True
             return self._error(403, denied)
         try:
+            if route == "/api/bench/consolidate":
+                with WORK_LOCK:
+                    if _any_running():
+                        return self._error(409, "Wait for the benchmark to finish before consolidating results.")
+                    from .consolidation import consolidate
+                    body = self._body()
+                    return self._json(store.summarise(consolidate(body.get("run_ids"), body.get("label"))))
             if route == "/api/bench/link":
                 with WORK_LOCK:
                     if _any_running():

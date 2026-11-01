@@ -392,12 +392,16 @@ CSV_COLUMNS = [
     ("ram_to_vram_bytes_per_second", lambda r, run: _transfer_profile(r, run).get("ram_to_vram", {}).get("bytes_per_second")),
     ("transfer_bandwidth_captured_at", lambda r, run: _transfer_profile(r, run).get("captured_at")),
     ("transfer_bandwidth_provenance", lambda r, run: _transfer_profile(r, run).get("provenance")),
+    ("engine_provider", lambda r, run: _session_config(r, run).get("provider", "lmstudio")),
+    ("engine_group_id", lambda r, run: next((s.get("engine_group_id") for s in run.get("sessions", []) if s.get("id") == r.get("session_id")), None)),
+    ("source_run_id", lambda r, run: next((s.get("source_run_id") for s in run.get("sessions", []) if s.get("id") == r.get("session_id")), run.get("id"))),
 ]
 
 
 def _transfer_profile(row, run):
     session = next((s for s in run.get("sessions", []) if s.get("id") == row.get("session_id")), {})
-    return session.get("transfer_bandwidth") or (run.get("hardware") or {}).get("transfer_bandwidth") or {}
+    group = next((g for g in run.get("engine_groups", []) if g.get("id") == session.get("engine_group_id")), {})
+    return session.get("transfer_bandwidth") or group.get("hardware", {}).get("transfer_bandwidth") or (run.get("hardware") or {}).get("transfer_bandwidth") or {}
 
 
 def _session_config(row, run):

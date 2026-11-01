@@ -63,6 +63,25 @@ function browserMode() { return typeof window !== "undefined" && window.WATTEVER
 function genericHelper() { return !browserMode() && $("#helper-provider")?.value === "openai"; }
 function providerManaged() { return browserMode() || genericHelper(); }
 function runProviderManaged(run) { return run.measurement_mode === "browser" || run.config?.provider === "openai"; }
+function executionGroup(run, row) {
+  const session = (run.sessions || []).find(item => item.id === row.session_id);
+  return (run.engine_groups || []).find(group => group.id === session?.engine_group_id);
+}
+function rowProviderManaged(run, row) {
+  const group = executionGroup(run, row);
+  return group ? group.config?.provider === "openai" : runProviderManaged(run);
+}
+function managedRunConfig(run) {
+  return (run.engine_groups || []).find(group => group.config?.provider === "lmstudio")?.config || run.config || {};
+}
+function measurementRuns(runs) {
+  return runs.flatMap(run => !run.engine_groups?.length ? [run] : run.engine_groups.map(group => ({
+    ...run, ...group, id: run.id + "::" + group.id, parent_run_id: run.id,
+    label: (run.label || run.id) + " · " + group.label, engine_groups: undefined,
+    sessions: (run.sessions || []).filter(session => session.engine_group_id === group.id),
+    results: (run.results || []).filter(row => executionGroup(run, row)?.id === group.id),
+  })));
+}
 function helperEndpointConfig() {
   const provider=browserMode()?"openai":$("#helper-provider")?.value || "lmstudio";
   const override=$(browserMode() ? "#browser-name-override" : "#helper-name-override")?.value.trim() || "";
@@ -756,6 +775,7 @@ function scientificMetadata(run) {
   const scope = run.measurement_scope || {};
   const tags = Array.isArray(run.tags) ? run.tags.filter(tag => typeof tag === "string").slice(0, 24) : [];
   return (provider.kind ? `<p class="hint"><b>Provider:</b> ${esc(provider.label || provider.kind)}; ${esc(provider.model_management || "unknown")} model management.</p>` : "")
+    + (run.engine_groups?.length ? `<p class="hint"><b>Engines in this benchmark:</b> ${run.engine_groups.map(group => `${esc(group.label)} (${(group.config?.models || []).length} models)`).join("; ")}. Settings, transfer profiles and runtime observations are retained in their execution sessions.</p>` : "")
     + (tags.length ? `<p class="hint"><b>Tags:</b> ${tags.map(esc).join(" · ")}</p>` : "")
     + modelConfigurationsMarkup(run)
     + telemetryMarkup(run)
@@ -1197,7 +1217,7 @@ async function loadRuns() {
   state.runs = runs;
   for (const summary of runs) {
     const cached = state.runCache[summary.id];
-    if (cached && ((cached.results || []).length !== summary.n_results || cached.status !== summary.status)) delete state.runCache[summary.id];
+    if (cached && ((cached.results || []).length !== summary.n_results || cached.status !== summary.status || (cached.label || "") !== (summary.label || "") || (cached.notes || "") !== (summary.notes || ""))) delete state.runCache[summary.id];
   }
   state.compare = new Set([...state.compare].filter((id) => runs.some((run) => run.id === id)));
   if ((!state.selectionInitialized || (state.selected && !runs.some((run) => run.id === state.selected))) && runs.length) state.compare.add(runs[0].id);
@@ -1291,8 +1311,9 @@ function sessionSettings(run) {
   return `<details class="adv"><summary>Sessions (${sessions.length})</summary><div>${sessions.map((session, index) => {
     const cfg = sessionConfig(session);
     const modelCount = cfg.model_modes ? Object.keys(cfg.model_modes).length : (cfg.models || []).length;
+    const engine = (run.engine_groups || []).find(group => group.id === session.engine_group_id)?.label || cfg.reproducibility?.engine || cfg.provider || "LM Studio";
     const modes = cfg.model_modes ? [...new Set(Object.values(cfg.model_modes).flat())] : (cfg.mtp_modes || []);
-    return `<p class="hint"><b>Session ${index + 1}</b>${session.started_at ? ` / ${esc(session.started_at)}` : ""} / ${modelCount} models / ${esc(cfg.provider === "openai" ? "provider controlled technique" : modes.join(" + ") || "unknown technique")} / planner ${esc(cfg.context_planner_version ?? "legacy")} / ${esc(cfg.context_policy || "per_test")} / reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}%</p>`;
+    return `<p class="hint"><b>Session ${index + 1} · ${esc(engine)}</b>${session.started_at ? ` / ${esc(session.started_at)}` : ""} / ${modelCount} models / ${esc(cfg.provider === "openai" ? "provider controlled technique; reported MTP " + (cfg.reported_mtp || "unknown") : modes.join(" + ") || "unknown technique")} / planner ${esc(cfg.context_planner_version ?? "legacy")} / ${esc(cfg.context_policy || "per_test")} / reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}%</p>`;
   }).join("")}</div></details>`;
 }
 
@@ -1347,7 +1368,7 @@ function renderRunDetail(run) {
   const levelRows = (run.results || []).filter(row => (row.concurrency || 1) === state.comparisonConcurrency);
   const failureNotice = levelRows.length && !levelRows.some(row => row.status === "ok")
     ? `<p class="hint" role="status">No successful tests at concurrency ${state.comparisonConcurrency}. Check All measurements for failure details.</p>` : "";
-  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${testAction ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" || !testAction.ready ? "disabled" : ""} title="${esc(testAction.title)}">${esc(testAction.label)}</button>` : ""}<button class="btn-sm" id="rename-run" title="${run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : "Edit this benchmark name and notes"}" ${run.status === "running" || run.community ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="${run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""}>${run.community ? "Hide" : "Delete"}</button></header>${liveNotice}${sourceNotice}${measurementNotice}${failureNotice}${sessionAllocationNotice}${incompleteNotice}<div class="result-stats">${stat("Best prefill", best("prefill_tps") ? fmt(best("prefill_tps"), 0) : "?", "tk/s")}${stat("Best output", best("decode_tps") ? fmt(best("decode_tps"), 1) : "?", "tk/s")}${stat("Successful tests", `${ok.length}/${(run.results || []).length}`, "")}</div><details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}${scientificMetadata(run)}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
+  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${testAction ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" || !testAction.ready ? "disabled" : ""} title="${esc(testAction.title)}">${esc(testAction.label)}</button>` : ""}<button class="btn-sm" id="rename-run" title="${run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : "Edit this benchmark name and notes"}" ${run.status === "running" || run.community ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="${run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""}>${run.community ? "Hide" : "Delete"}</button></header>${liveNotice}${sourceNotice}${measurementNotice}${failureNotice}${sessionAllocationNotice}${incompleteNotice}<div class="result-stats">${stat("Best prefill", best("prefill_tps") ? fmt(best("prefill_tps"), 0) : "?", "tk/s")}${stat("Best output", best("decode_tps") ? fmt(best("decode_tps"), 1) : "?", "tk/s")}${stat("Successful tests", `${ok.length}/${(run.results || []).length}`, "")}</div><details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}${scientificMetadata(run)}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "per_session" ? "context, placement and techniques recorded per engine/session" : cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
   $("#extend-run")?.addEventListener("click", () => openExtendDialog(run));
   bindTelemetry($("#run-detail"),run);
   $("#delete-run").addEventListener("click", () => deleteRun(run));
@@ -1434,6 +1455,7 @@ function selectedModelRerun() {
   if (!run) return null;
   const action = resultsTestAction(run), models = shownModels(allModelsOf([run]));
   if (!action || action.newBenchmark || models.length !== 1) return null;
+  if (run.engine_groups && !managedRunConfig(run).models?.includes(models[0])) return null;
   return {run, model: models[0], ready: action.ready && !state.benchmarkRunning && run.status !== "running"};
 }
 
@@ -1479,7 +1501,7 @@ async function openExtendDialog(run, modelId = null, selectedCase = null) {
     ]);
     if (!dialog.open || state.extension !== pending) return;
     if (resultsConnectionKey() !== connectionKey || providerManaged()) throw new Error("The endpoint connection changed. Close this dialog and select tests again.");
-    const cfg = source.config || {}, installed = (plan.models || []).filter(m => m.type !== "embeddings");
+    const cfg = managedRunConfig(source), installed = (plan.models || []).filter(m => m.type !== "embeddings");
     const existing = cfg.models || [];
     const models = [...existing.map(id => installed.find(model => model.id === id) || {id, unavailable: true}),
       ...installed.filter(model => !existing.includes(model.id))];
@@ -1713,13 +1735,14 @@ function detailedResultsTable(run) {
     ["Quantization", row => quantizationLabel(row)],
     ["Quantization format source", row => row.quantization_source],
     ["Quantization method source", row => row.quantization_method_source],
-    ["Speculative decoding", row => run.measurement_mode === "browser" || run.config?.provider === "openai" ? "provider controlled" : row.mtp ? "on" : "off"],
+    ["Engine", row => executionGroup(run, row)?.label || run.provider?.label || run.config?.provider || "LM Studio"],
+    ["Speculative decoding", row => rowProviderManaged(run, row) ? `provider controlled; reported ${row.model_configuration?.mtp?.user_reported || "unknown"}` : row.mtp ? "on" : "off"],
     ["VRAM peak (MB)", row => row.vram_peak_mb], ["Failure", row => row.message || row.fail_kind],
   ];
   const rows = (run.results || []).flatMap(row => [...fields.map(([label, get]) => {
     const value = get(row);
     if (value == null || value === "") return "";
-    const repair = label === "Status" && repairable
+    const repair = label === "Status" && repairable && !rowProviderManaged(run, row)
       ? `<button class="btn-sm" data-run-id="${esc(run.id)}" data-repair-case="${esc(JSON.stringify([row.model, !!row.mtp, row.concurrency || 1, row.target_tokens, row.repeat || 0]))}" title="Rerun only this test; its previous attempt is retained">Repair repeat ${(row.repeat || 0)+1}</button>` : "";
     return `<tr class="colored-result-row" style="--table-color:${tableRowColor(run, row.model, modelUniverse())}"><td>${esc(row.model)}</td><td>${fmtTokens(row.target_tokens)}</td><td>${row.concurrency || 1}</td><td>${esc(sessionLabel(run, row))}</td><td>${esc(label)}</td><td class="measure-cell">${esc(typeof value === "number" ? n(value) : value)}${label.includes("tk/s") ? estimatedMark(row, label.startsWith("Group")) : ""}${repair}</td></tr>`;
   }), ...(row.requests || []).flatMap((request, index) => [
@@ -1821,7 +1844,7 @@ function encodingLegend(metricKeys, runs) {
   const shapes = {circle: "&#9679;", square: "&#9632;", triangle: "&#9650;", diamond: "&#9670;"};
   const benchmarkItems = runs.map(run => `<span>${state.colorBy === "benchmarks" ? `<i style="background:${runColor(run.id)}"></i>` : `<b>${shapes[markerForRun(run.id)] || "&#9679;"}</b>`}${esc(run.label || run.id)}</span>`).join("");
   const measures = metricKeys.length > 1 ? `<div class="legend-group measure-legend"><span class="legend-key">Measures</span>${metricKeys.map(key => `<span><svg width="28" height="10" aria-hidden="true"><line x1="0" y1="5" x2="28" y2="5" stroke="currentColor" stroke-width="2" stroke-dasharray="${measureAppearance({}, key, metricKeys, false).dash || ""}"/></svg>${esc(METRICS[key].label)}</span>`).join("")}</div>` : "";
-  return `<div class="legend-stack">${runs.length > 1 || state.colorBy === "benchmarks" ? `<div class="legend-group"><span class="legend-key">Benchmarks</span>${benchmarkItems}</div>` : ""}${measures}</div>`;
+  return `<div class="legend-stack">${runs.length > 1 || state.colorBy === "benchmarks" ? `<div class="legend-group"><span class="legend-key">${runs.some(run => run.parent_run_id) ? "GPU / engine" : "Benchmarks"}</span>${benchmarkItems}</div>` : ""}${measures}</div>`;
 }
 
 async function renderSummary() {
@@ -1835,7 +1858,7 @@ async function renderSummary() {
   }
   await ensureRuns(ids);
   if (generation !== state.resultsRender) return;
-  const runs = ids.map((id) => state.runCache[id]).filter(Boolean);
+  const runs = measurementRuns(ids.map((id) => state.runCache[id]).filter(Boolean));
   const allModels = allModelsOf(runs);
   $("#summary-export").href = "/api/export.csv?ids=" + ids.map(encodeURIComponent).join(",");
 
@@ -2054,6 +2077,7 @@ function failuresFor(run, model, mtp) {
  * follows the run, so MTP is distinguished by a dashed stroke and by its name
  * rather than by stealing a second hue from the categorical order. */
 function tracksFor(runs) {
+  runs = measurementRuns(runs);
   const modes = state.mtpFilter === "all" ? [false, true] : [state.mtpFilter === "on"];
   const tracks = [];
   for (const run of runs) {

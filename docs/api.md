@@ -20,6 +20,8 @@ Include `run_id` to attach a later transfer profile to an existing benchmark. Ha
 
 `POST /api/bench/link` accepts `{"run_ids":["<managed-run>","<endpoint-run>"],"label":"Machine benchmark"}`. It groups stopped benchmarks on matching hardware/GPU/driver, with local inference explicitly asserted for generic endpoints. The first ID is the group root. Each run keeps its provider, settings and measurements; **Open machine benchmark** in Results selects all available members for charts, tables and multi-run JSON/CSV exports. Send all desired member IDs when updating a group. Files are backed up before group metadata is saved.
 
+`POST /api/bench/consolidate` accepts the same `run_ids` and a `label` to store their measurements in **one benchmark file and one library entry**. Put the destination first. Sources must have matching hardware/GPU/driver, corpus and measurement protocol, with identified execution sessions. Backups are saved and the other source files move to local trash. The destination retains every result, configuration fingerprint, execution session and source metadata. Its aggregate configuration uses `provider: "mixed"`; `engine_groups` and each session's `engine_group_id` identify actual providers and settings. Charts and CSV preserve engine attribution. Managed LM Studio tests can still be repaired within that benchmark; external-engine tests require reconnection and separate execution before consolidation.
+
 ## Generic endpoint configuration
 
 Use `provider: "openai"` for an externally managed streaming Chat Completions endpoint, including LM Studio used without CLI management. This integration uses an OpenAI-compatible transport subset; it does not implement the complete OpenAI API.

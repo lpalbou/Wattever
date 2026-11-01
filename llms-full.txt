@@ -183,6 +183,8 @@ For a command-line contribution, fork and clone the repository, create a branch,
 
 For a linked machine comparison, contribute every member listed in `comparison_group.run_ids`, including its root run. **Open machine benchmark** then selects the available members together in Results. The files retain separate engines, settings and sessions; a group does not turn externally queued requests into parallel backend execution. Use clear labels and optional public `tags` for the GPU, engine, model, quantization and technique; tags appear with the run's scientific metadata. Review notes and recorded runtime observations alongside requested/reported/effective settings. See [machine comparison linking](docs/api.md).
 
+To keep one entry per machine configuration, use the helper's [consolidation route](docs/api.md) before contributing. Publish the resulting single JSON file and remove the superseded source entries from the active catalog. Engine-specific results, settings and provenance remain inside the benchmark's sessions, `engine_groups` and source metadata. Consolidation preserves measurement rows and does not change the backend's concurrency behavior.
+
 ## Add missing tests later
 
 Same-file continuation applies to managed LM Studio runs. Generic endpoint and browser experiments require a new run; connection details are not stored in public result files.
@@ -443,6 +445,8 @@ Managed LM Studio additionally supports `POST /api/lmstudio/start` and `/api/lms
 Include `run_id` to attach a later transfer profile to an existing benchmark. Hardware class and selected GPU/driver must match. The file is backed up, inference results stay unchanged, and metadata identifies the later capture time. This does not reconstruct historical transfer conditions.
 
 `POST /api/bench/link` accepts `{"run_ids":["<managed-run>","<endpoint-run>"],"label":"Machine benchmark"}`. It groups stopped benchmarks on matching hardware/GPU/driver, with local inference explicitly asserted for generic endpoints. The first ID is the group root. Each run keeps its provider, settings and measurements; **Open machine benchmark** in Results selects all available members for charts, tables and multi-run JSON/CSV exports. Send all desired member IDs when updating a group. Files are backed up before group metadata is saved.
+
+`POST /api/bench/consolidate` accepts the same `run_ids` and a `label` to store their measurements in **one benchmark file and one library entry**. Put the destination first. Sources must have matching hardware/GPU/driver, corpus and measurement protocol, with identified execution sessions. Backups are saved and the other source files move to local trash. The destination retains every result, configuration fingerprint, execution session and source metadata. Its aggregate configuration uses `provider: "mixed"`; `engine_groups` and each session's `engine_group_id` identify actual providers and settings. Charts and CSV preserve engine attribution. Managed LM Studio tests can still be repaired within that benchmark; external-engine tests require reconnection and separate execution before consolidation.
 
 ## Generic endpoint configuration
 
@@ -731,6 +735,8 @@ Canonical source: [CHANGELOG.md](CHANGELOG.md)
 # Changelog
 
 ## Unreleased
+
+- Consolidates compatible engine runs into one machine benchmark entry while preserving per-engine sessions, settings, measurements and source metadata. Archives superseded files and retains managed LM Studio repair support.
 
 - Measures sequential storage-to-RAM reads and pinned RAM-to-VRAM transfers before helper benchmarks, with raw samples, methods, capture time, unavailable states and UI/CSV reporting. Supports explicit later hardware-matched annotations on saved runs.
 - Links engine-specific runs into one machine comparison while retaining each provider's settings and measurements.

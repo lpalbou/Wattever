@@ -155,7 +155,14 @@ def extension_config(source, selection):
         if (not isinstance(model, str) or not model or not isinstance(values, list)
                 or not values or any(mode not in ("off", "on") for mode in values)):
             raise ValueError("Each model needs Standard (off), MTP (on), or both.")
-    cfg = dict(DEFAULT_CONFIG, **(source.get("config") or {}))
+    from .consolidation import managed_config
+    saved_config = managed_config(source)
+    if source.get("engine_groups"):
+        external = {m for g in source["engine_groups"] if g["config"].get("provider") == "openai"
+                    for m in g["config"].get("models", [])} - set(saved_config.get("models", []))
+        if external.intersection(modes):
+            raise ValueError("These tests belong to an external engine. Reconnect that endpoint to run them.")
+    cfg = dict(DEFAULT_CONFIG, **saved_config)
     cfg.pop("selected_cases", None)
     repeats = selection.get("repeats", cfg["repeats"])
     if type(repeats) is not int or not int(cfg["repeats"]) <= repeats <= 100:
@@ -312,7 +319,9 @@ class BenchRunner:
                 raise ValueError("No such benchmark.")
             if (source.get("config") or {}).get("provider") == "openai":
                 raise ValueError("Reconnect the external endpoint and start a new run. Connection details are not stored.")
-            return self._start(source.get("execution_config") or source.get("config"), resume_source=source)
+            from .consolidation import managed_config
+            return self._start(managed_config(source) if source.get("engine_groups") else
+                               source.get("execution_config") or source.get("config"), resume_source=source)
 
     def extension_options(self, run_id):
         source = store.load(run_id)
@@ -505,6 +514,9 @@ class BenchRunner:
             run["results"] = kept
             run["execution_config"] = endpoints.public_config(cfg)
             run["config"] = endpoints.public_config(merged_config(resume_source["config"], cfg))
+            for group in run.get("engine_groups", []):
+                if group["config"].get("provider", "lmstudio") == cfg.get("provider", "lmstudio"):
+                    group["config"] = endpoints.public_config(merged_config(group["config"], cfg))
             run["status"] = "running"
             run["updated_at"] = current_created
             run.pop("finished_at", None)
@@ -535,6 +547,9 @@ class BenchRunner:
             "lms_version": run.get("lms_version"), "retry_failed": retry_failed,
             "rerun_existing": rerun_existing,
         })
+        if run.get("engine_groups"):
+            group = next(g for g in run["engine_groups"] if g["config"].get("provider", "lmstudio") == cfg.get("provider", "lmstudio"))
+            run["sessions"][-1].update(engine_group_id=group["id"], source_run_id=run["id"])
         store.save(run)
         store.save_config(endpoints.public_config(cfg))
 

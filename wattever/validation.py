@@ -109,6 +109,23 @@ def validate_run(run):
             errors.append("config.concurrency_levels must be unique")
     if run.get("status") not in ("running", "completed", "cancelled", "error", "interrupted"):
         errors.append("unknown run status")
+    if run["config"].get("provider") == "mixed":
+        groups = run.get("engine_groups")
+        if not isinstance(groups, list) or len(groups) < 2 or any(
+                not isinstance(g, dict) or not isinstance(g.get("id"), str) or
+                not isinstance(g.get("config"), dict) or g["config"].get("provider") not in ("lmstudio", "openai") for g in groups):
+            errors.append("Mixed benchmarks require separate engine groups and configurations")
+        else:
+            by_id = {g["id"]:g for g in groups}
+            if len(by_id) != len(groups): errors.append("Engine group IDs must be unique")
+            sessions = run.get("sessions") or []
+            by_session = {s.get("id"):s for s in sessions if isinstance(s, dict)}
+            for session in sessions:
+                group = by_id.get(session.get("engine_group_id")) if isinstance(session, dict) else None
+                if not group or session.get("config", {}).get("provider", "lmstudio") != group["config"]["provider"]:
+                    errors.append("Each mixed benchmark session must identify its engine group")
+            if any(row.get("session_id") not in by_session for row in run["results"] if isinstance(row, dict)):
+                errors.append("Each mixed benchmark measurement must reference an execution session")
     # Public scientific annotations remain explicitly operator reported. Validate
     # them without resolving endpoints or inspecting credentials on import.
     for path, block in (("config", run["config"]), ("run", run)):
