@@ -273,6 +273,11 @@ Transfer profiles also measure native RAM copy payload throughput with one worke
 
 In Machine details, use **Additional storage folders** to compare drives during the same measurement; separate existing folders with semicolons. Each volume gets its own temporary unbuffered read test and raw samples. The selected primary volume remains separate. Paths stay private; volume letters, available device model names and measured rates can be shared. Inference may benefit differently because model loading, mmap faults, OS caches and CPU/GPU overlap affect its I/O.
 
+Execution sessions retain their hardware snapshot and transfer profile, including reported RAM clocks. Later independent captures remain available in **Independent hardware measurements**. This preserves conditions across storage or memory-setting experiments.
+
+When a benchmark includes a Strata storage comparison, its primary results stay in the main charts. **Strata storage comparison** shows paired successful-repeat medians and offers a separate CSV containing both conditions. The JSON retains frozen baseline and alternative measurements. Standard benchmark CSV exports cover primary measurements. Cache state and observed model-loading boundaries belong in the experiment notes; a faster sequential disk test alone does not establish faster inference.
+
+
 ## Sessions and recovery
 
 Each benchmark has one JSON file in `results/runs/`. The local helper supports same-file additions and repairs for both LM Studio and external endpoints. Reconnect the original external endpoint before repairing its tests; URLs and credentials are not saved. A timeout stops the generic run because Wattever cannot verify provider-side cancellation or unload. Inspect the engine before restarting.
@@ -584,6 +589,8 @@ Review counts and warnings before submitting the selection to `POST /api/bench/e
 
 `POST /api/runs/<id>/models/delete` with `{"models":["<model-id>"]}` removes selected models, their results and planned workloads from that benchmark. Other models are preserved. It creates a history backup and returns `run`, `removed_measurements` and `backup_created`. Active work blocks removal. The last model requires whole-benchmark deletion.
 
+A saved `storage_comparison` with protocol `wattever-storage-comparison-v1` can retain frozen `baseline_results`, `alternate_results`, condition labels, paired summary `rows` and cache notes. Both measurement arrays use ordinary result-row fields and stay separate from the primary `results` matrix. JSON exports retain them; Results provides a dedicated comparison CSV.
+
 ---
 
 ## docs/faq.md
@@ -745,6 +752,8 @@ Canonical source: [CHANGELOG.md](CHANGELOG.md)
 # Changelog
 
 ## Unreleased
+
+- Retains session hardware conditions and displays paired storage experiments with separate CSV exports. Repair defaults follow the latest policy for the selected engine.
 
 - Measures single/parallel native RAM copy throughput and multiple storage volumes, with raw samples, device labels, UI reporting and CSV exports.
 

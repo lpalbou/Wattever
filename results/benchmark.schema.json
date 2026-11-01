@@ -263,6 +263,18 @@
         }
       }
     },
+    "storage_comparison": {
+      "type": "object",
+      "required": ["protocol", "baseline_label", "alternative_label", "baseline_results", "alternate_results", "rows"],
+      "properties": {
+        "protocol": {"const": "wattever-storage-comparison-v1"},
+        "baseline_label": {"type": "string"},
+        "alternative_label": {"type": "string"},
+        "baseline_results": {"type": "array", "items": {"$ref": "#/$defs/result"}},
+        "alternate_results": {"type": "array", "items": {"$ref": "#/$defs/result"}},
+        "rows": {"type": "array", "maxItems": 200, "items": {"type": "object"}}
+      }
+    },
     "results": {
       "type": "array",
       "items": {

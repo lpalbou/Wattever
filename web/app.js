@@ -431,6 +431,15 @@ async function init() {
     if (target?.ready) openExtendDialog(target.run, target.model);
   });
   $("#remove-model").addEventListener("click", removeSelectedModel);
+  document.addEventListener("click", event => {
+    const button = event.target.closest?.("[data-storage-export]");
+    if (!button) return;
+    const run = state.runCache[button.dataset.storageExport];
+    if (!run?.storage_comparison) return;
+    const link = document.createElement("a"), url = URL.createObjectURL(new Blob([storageComparisonCsv(run)], {type:"text/csv;charset=utf-8"}));
+    link.href = url; link.download = run.id + "-storage-comparison.csv"; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
   $$("[data-color-by]").forEach(button => button.addEventListener("click", () => {
     state.colorBy = button.dataset.colorBy;
     $$("[data-color-by]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
@@ -731,6 +740,31 @@ function transferBandwidthMarkup(profile) {
   return `<details class="adv"><summary>Measured transfer bandwidth</summary>${rows}<p class="hint">${esc(profile.captured_at || "Unknown measurement time")}; ${esc(profile.provenance || "measured on benchmark client")}. ${profile.provenance === "measured_later_on_matching_hardware" ? "Measured after this benchmark on matching hardware; original inference conditions were not verified." : ""}</p><p class="hint">Median of ${esc(profile.storage_to_ram?.samples?.length ?? 0)} storage samples and ${esc(profile.ram_to_vram?.samples?.length ?? 0)} GPU samples. Separate transfer microbenchmarks; workload caching and overlap can change application throughput.</p></details>`;
 }
 
+function storageComparisonMarkup(run) {
+  const comparison = run.storage_comparison;
+  if (!comparison || comparison.protocol !== "wattever-storage-comparison-v1") return "";
+  const number = value => typeof value === "number" && Number.isFinite(value) ? value.toFixed(2) : "—";
+  const rows = (comparison.rows || []).slice(0, 200).map(row => `<tr><td>${esc(row.model)}<small>${esc(row.quantization || "unknown quant")}</small></td><td>${esc(fmtTokens(row.target_tokens))}</td><td>${esc(row.concurrency)}</td><td>${esc(row.paired_successes ?? 0)}</td><td>${number(row.baseline_wall_s)}</td><td>${number(row.alternative_wall_s)}</td><td>${number(row.wall_speedup)}${row.wall_speedup > 0 ? "×" : ""}</td></tr>`).join("");
+  return `<details class="adv"><summary>Strata storage comparison</summary><p class="hint">Primary: ${esc(comparison.baseline_label || "baseline storage")}. Alternative: ${esc(comparison.alternative_label || "alternative storage")}. Main charts retain the primary storage measurements.</p><p class="hint">${esc(comparison.cache_policy || "Cache conditions were not controlled.")} Values are descriptive medians of paired successful repeats; a speedup above 1 means the alternative completed sooner.</p><button type="button" class="btn-sm" data-storage-export="${esc(run.id)}" ${(comparison.alternate_results || []).length ? "" : "disabled"}>Export storage comparison CSV</button><div class="table-wrap"><table><thead><tr><th>Model / quant</th><th>Prompt</th><th>Queries</th><th>Paired repeats</th><th>Primary wall (s)</th><th>Alternative wall (s)</th><th>Observed speedup</th></tr></thead><tbody>${rows}</tbody></table></div></details>`;
+}
+
+function storageComparisonCsv(run) {
+  const comparison = run.storage_comparison || {}, alternatives = comparison.alternate_results || [];
+  const key = row => JSON.stringify([row.model, !!row.mtp, row.concurrency || 1, row.target_tokens, row.repeat || 0]);
+  const selected = new Set(alternatives.map(key));
+  const columns = ["condition", "model", "quantization", "quantization_method", "target_tokens", "concurrency", "repeat", "status", "prompt_tokens", "completion_tokens", "wall_s", "ttft_s", "prefill_tps", "decode_tps", "aggregate_completion_tps", "session_id"];
+  const quote = value => {
+    if (value == null) return "";
+    let text = String(value);
+    if (typeof value === "string" && /^[=+\-@\t\r]/.test(text)) text = "'" + text;
+    return '"' + text.replace(/"/g, '""') + '"';
+  };
+  const rows = [[comparison.baseline_label || "primary", (comparison.baseline_results || run.results || []).filter(row => selected.has(key(row)))],
+    [comparison.alternative_label || "alternative", alternatives]].flatMap(([condition, values]) => values.map(row =>
+      columns.map(column => quote(column === "condition" ? condition : column === "repeat" ? (row.repeat || 0) + 1 : row[column])).join(",")));
+  return [columns.map(quote).join(","), ...rows].join("\r\n");
+}
+
 const TELEMETRY_METRICS = {
   cpu_util_percent:["CPU load","%",1],gpu_util:["GPU load","%",1],system_memory_percent:["RAM used","%",1],vram_percent:["VRAM used","%",1],
   system_memory_used_bytes:["RAM used","GiB",1073741824],vram_mb:["VRAM used","GiB",1024],cpu_temp_c:["CPU temperature","°C",1],temp_c:["GPU temperature","°C",1],
@@ -781,6 +815,7 @@ function scientificMetadata(run) {
     + (run.engine_groups?.length ? `<p class="hint"><b>Engines in this benchmark:</b> ${run.engine_groups.map(group => `${esc(group.label)} (${(group.config?.models || []).length} models)`).join("; ")}. Settings, transfer profiles and runtime observations are retained in their execution sessions.</p>` : "")
     + (tags.length ? `<p class="hint"><b>Tags:</b> ${tags.map(esc).join(" · ")}</p>` : "")
     + ((run.hardware_measurement_history || []).some(capture => capture.transfer_bandwidth) ? `<details class="adv"><summary>Independent hardware measurements</summary>${run.hardware_measurement_history.filter(capture => capture.transfer_bandwidth).map(capture => transferBandwidthMarkup(capture.transfer_bandwidth)).join("")}</details>` : "")
+    + storageComparisonMarkup(run)
     + modelConfigurationsMarkup(run)
     + telemetryMarkup(run)
     + (scope.hardware_attribution ? `<p class="hint"><b>Inference hardware attribution:</b> ${esc(scope.hardware_attribution)}</p>` : "")
@@ -1322,7 +1357,10 @@ function sessionSettings(run) {
     const modelCount = cfg.model_modes ? Object.keys(cfg.model_modes).length : (cfg.models || []).length;
     const engine = (run.engine_groups || []).find(group => group.id === session.engine_group_id)?.label || cfg.reproducibility?.engine || cfg.provider || "LM Studio";
     const modes = cfg.model_modes ? [...new Set(Object.values(cfg.model_modes).flat())] : (cfg.mtp_modes || []);
-    return `<p class="hint"><b>Session ${index + 1} · ${esc(engine)}</b>${session.started_at ? ` / ${esc(session.started_at)}` : ""} / ${modelCount} models / ${esc(cfg.provider === "openai" ? "provider controlled technique; reported MTP " + (cfg.reported_mtp || "unknown") : modes.join(" + ") || "unknown technique")} / planner ${esc(cfg.context_planner_version ?? "legacy")} / ${esc(cfg.context_policy || "per_test")} / reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}%</p>`;
+    const clocks = session.hardware?.memory?.configured_clock_mhz_reported || [];
+    const conditions = (clocks.length || session.storage_condition ? `<p class="hint">${clocks.length ? "RAM firmware clock reports: " + clocks.map(esc).join(", ") + " MHz. " : ""}${session.storage_condition ? "Storage condition: " + esc(session.storage_condition) + "." : ""}</p>` : "") + (session.transfer_bandwidth ? transferBandwidthMarkup(session.transfer_bandwidth) : "") + (session.runtime_observations?.length ? `<details class="adv"><summary>Observed runtime configuration</summary><pre>${esc(JSON.stringify(session.runtime_observations, null, 2))}</pre></details>` : "");
+
+    return `<p class="hint"><b>Session ${index + 1} · ${esc(engine)}</b>${session.started_at ? ` / ${esc(session.started_at)}` : ""} / ${modelCount} models / ${esc(cfg.provider === "openai" ? "provider controlled technique; reported MTP " + (cfg.reported_mtp || "unknown") : modes.join(" + ") || "unknown technique")} / planner ${esc(cfg.context_planner_version ?? "legacy")} / ${esc(cfg.context_policy || "per_test")} / reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}%</p>${conditions}`;
   }).join("")}</div></details>`;
 }
 
@@ -1555,8 +1593,8 @@ async function openExtendDialog(run, modelId = null, selectedCase = null) {
       initialSizes: plan.sizes || cfg.sizes || [], initialConcurrency: plan.concurrency_levels || cfg.concurrency_levels || [1],
       repeats: Number(cfg.repeats) || 1, selectedCases: selectedCase ? [selectedCase] : null,
       timeout: Number(cfg.per_test_timeout_s) || 1800,
-      allowFallback: source.execution_config?.fallback_on_failure ?? cfg.fallback_on_failure ?? true,
-      skipTimeouts: source.execution_config?.skip_after_timeout ?? cfg.skip_after_timeout ?? false,
+      allowFallback: cfg.fallback_on_failure ?? true,
+      skipTimeouts: cfg.skip_after_timeout ?? false,
       modelModes: modelId ? {[modelId]: benchmarkTechniques(cfg, modelId)} : originalModelSelection(cfg, models),
       sizes: new Set(selectedCase ? [selectedCase[3]] : plan.sizes || []), concurrency: new Set(selectedCase ? [selectedCase[2]] : plan.concurrency_levels || [1]), action: modelId ? "rerun" : "add", revision: 0};
     if (selectedCase) state.extension.modelModes = {[selectedCase[0]]: [selectedCase[1] ? "on" : "off"]};

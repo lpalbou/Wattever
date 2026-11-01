@@ -175,8 +175,25 @@ def validate_run(run):
             for configuration in configurations:
                 try: verify_model_configuration(configuration, require_endpoint=False)
                 except (ValueError, TypeError, KeyError) as exc: errors.append("model_configurations: " + str(exc))
-    for index, row in enumerate(run["results"]):
-        prefix = "results[%d]" % index
+    measurements = [("results[%d]" % i, row) for i,row in enumerate(run["results"])]
+    comparison = run.get("storage_comparison")
+    if comparison is not None:
+        if not isinstance(comparison, dict) or comparison.get("protocol") != "wattever-storage-comparison-v1":
+            errors.append("storage_comparison needs a supported protocol")
+        else:
+            for name in ("baseline_label", "alternative_label"):
+                if not isinstance(comparison.get(name), str) or not comparison[name]:
+                    errors.append("storage_comparison.%s must be a condition label" % name)
+            summaries = comparison.get("rows")
+            if not isinstance(summaries, list) or len(summaries) > 200 or any(not isinstance(row, dict) for row in summaries):
+                errors.append("storage_comparison.rows must contain up to 200 summary objects")
+            for name in ("baseline_results", "alternate_results"):
+                values = comparison.get(name)
+                if not isinstance(values, list) or len(values) > 100000:
+                    errors.append("storage_comparison.%s must be a bounded measurement array" % name)
+                else:
+                    measurements.extend(("storage_comparison.%s[%d]" % (name,i), row) for i,row in enumerate(values))
+    for prefix, row in measurements:
         if not isinstance(row, dict):
             errors.append(prefix + " must be an object")
             continue

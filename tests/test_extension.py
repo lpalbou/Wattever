@@ -141,6 +141,16 @@ class ExtensionTests(unittest.TestCase):
             self.assertEqual(cfg['storage_probe_directories'],[folder])
             self.assertNotIn('storage_probe_directories',runner.endpoints.public_config(cfg))
 
+    def test_extension_defaults_to_latest_session_failure_policy(self):
+        source=self.source()
+        source['sessions']=[{'config':dict(source['config'],per_test_timeout_s=300,
+                                         fallback_on_failure=False,skip_after_timeout=True)}]
+        cfg=runner.extension_config(source,self.selection())
+        self.assertEqual(cfg['per_test_timeout_s'],300)
+        self.assertFalse(cfg['fallback_on_failure'])
+        self.assertTrue(cfg['skip_after_timeout'])
+        self.assertEqual(source['config']['per_test_timeout_s'],1800)
+
     def test_practical_limits_are_explicit_session_options(self):
         source=self.source()
         cfg=runner.extension_config(source,dict(self.selection(),fallback_on_failure=False,skip_after_timeout=True))

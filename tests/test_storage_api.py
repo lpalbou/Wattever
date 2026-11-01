@@ -49,6 +49,15 @@ class StorageTests(unittest.TestCase):
         sleep.assert_called_once_with(0.025)
         self.assertEqual(list(Path(store.RUNS_DIR).glob("*.tmp")), [])
 
+    def test_storage_experiment_validates_frozen_measurements(self):
+        self.run['storage_comparison']={'protocol':'wattever-storage-comparison-v1',
+            'baseline_label':'Samsung','alternative_label':'NVMe','rows':[],
+            'baseline_results':copy.deepcopy(self.run['results']),
+            'alternate_results':copy.deepcopy(self.run['results'])}
+        self.assertEqual(validate_run(self.run),[])
+        self.run['storage_comparison']['alternate_results'][0]['model']=None
+        self.assertTrue(any('storage_comparison.alternate_results[0].model' in error for error in validate_run(self.run)))
+
     def test_save_permanent_permission_error_preserves_original(self):
         store.save(self.run)
         original = Path(store.path_for("sample")).read_bytes()

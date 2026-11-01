@@ -26,3 +26,17 @@ context.taggedRun = {tags: ['RTX 5070 Ti', 'Strata', '<script>'], config: {}};
 const taggedHtml = vm.runInContext('scientificMetadata(taggedRun)', context);
 assert.match(taggedHtml, /Tags:<\/b> RTX 5070 Ti · Strata · &lt;script&gt;/);
 assert.doesNotMatch(taggedHtml, /<script>/);
+context.comparisonRun={id:'sample',results:[{model:'m',target_tokens:512,concurrency:1,repeat:0,wall_s:10,status:'ok'},
+  {model:'other',target_tokens:512,wall_s:99,status:'ok'}],storage_comparison:{protocol:'wattever-storage-comparison-v1',
+  baseline_label:'Samsung SATA',alternative_label:'NVMe',cache_policy:'OS cache uncontrolled',rows:[
+    {model:'m<script>',quantization:'IQ3_S',target_tokens:512,concurrency:1,paired_successes:2,baseline_wall_s:10,alternative_wall_s:5,wall_speedup:2}],
+  alternate_results:[{model:'m',target_tokens:512,concurrency:1,repeat:0,wall_s:5,status:'ok'}]}};
+const comparisonHtml=vm.runInContext('storageComparisonMarkup(comparisonRun)',context);
+assert.match(comparisonHtml,/2.00×/);assert.match(comparisonHtml,/OS cache uncontrolled/);
+assert.match(comparisonHtml,/m&lt;script&gt;/);assert.doesNotMatch(comparisonHtml,/<script>/);
+const csv=vm.runInContext('storageComparisonCsv(comparisonRun)',context);
+assert.equal(csv.split('\r\n').length,3);assert.match(csv,/Samsung SATA/);assert.match(csv,/NVMe/);
+assert.doesNotMatch(csv,/other/);
+vm.runInContext('comparisonRun.storage_comparison.baseline_results=[{...comparisonRun.results[0]}];comparisonRun.results[0].wall_s=123',context);
+const frozenCsv=vm.runInContext('storageComparisonCsv(comparisonRun)',context);
+assert.doesNotMatch(frozenCsv,/123/);assert.match(frozenCsv,/"10"/);

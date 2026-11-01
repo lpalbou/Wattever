@@ -60,6 +60,14 @@ def remove_models(run_id, models):
     count = sum(row.get("model") in removed for row in run["results"])
     run["results"] = [row for row in run["results"] if row.get("model") not in removed]
     run["previous_attempts"] = [row for row in run.get("previous_attempts", []) if row.get("model") not in removed]
+    comparison = run.get("storage_comparison")
+    if isinstance(comparison, dict):
+        for key in ("rows", "baseline_results", "alternate_results"):
+            comparison[key] = [row for row in comparison.get(key, []) if row.get("model") not in removed]
+        if "model_ids" in comparison:
+            comparison["model_ids"] = [m for m in comparison["model_ids"] if m not in removed]
+        if not comparison.get("alternate_results"):
+            run.pop("storage_comparison", None)
 
     def filter_config(cfg):
         if not cfg:
@@ -85,7 +93,8 @@ def remove_models(run_id, models):
             run["provider"] = copy.deepcopy(groups[0].get("provider", {}))
     # Rebuild configuration references from the retained measurements.
     run["model_configurations"] = list({r["configuration_id"]:r["model_configuration"]
-        for r in run["results"] if r.get("configuration_id") and r.get("model_configuration")}.values())
+        for r in run["results"] + run.get("storage_comparison", {}).get("alternate_results", [])
+        if r.get("configuration_id") and r.get("model_configuration")}.values())
     run.setdefault("model_edit_history", []).append({"action": "remove_models", "models": sorted(removed),
         "removed_measurements": count, "at": datetime.datetime.now(datetime.timezone.utc).isoformat()})
     from .runner import BenchRunner

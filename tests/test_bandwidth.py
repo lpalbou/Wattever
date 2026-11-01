@@ -103,6 +103,15 @@ class BandwidthTests(unittest.TestCase):
         self.assertEqual(run['engine_groups'][0]['hardware']['transfer_bandwidth']['captured_at'],'old')
         self.assertEqual(run['engine_groups'][1]['hardware']['transfer_bandwidth']['storage_to_ram']['volume'],'F:')
 
+    def test_csv_uses_the_execution_session_ram_clock(self):
+        import csv,io
+        from wattever import store
+        run={'id':'sample','hardware':{'memory':{'configured_clock_mhz_reported':[2133]}},
+             'sessions':[{'id':'new','hardware':{'memory':{'configured_clock_mhz_reported':[3200]}}}],
+             'results':[{'model':'m','target_tokens':512,'concurrency':1,'status':'ok','session_id':'new'}]}
+        row=next(csv.DictReader(io.StringIO(store.to_csv([run]))))
+        self.assertEqual(row['ram_configured_clock_mhz_reported'],'[3200]')
+
     def test_multiple_volumes_keep_independent_samples_and_cleanup(self):
         with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
             def worker(args, **kwargs):

@@ -172,6 +172,12 @@ def extension_base(source, selection):
         cfg = {k:copy.deepcopy(source["config"][k]) for k in
                ("sizes", "concurrency_levels", "repeats", "max_tokens", "gpu_index") if k in source["config"]}
         cfg.update(provider=provider, models=[], mtp_modes=["off"])
+    latest = next((s.get("config", {}) for s in reversed(source.get("sessions", []))
+                   if s.get("config", {}).get("provider", "lmstudio") == provider
+                   and (not cfg.get("engine_group_id") or s.get("engine_group_id") == cfg["engine_group_id"])), {})
+    for key in ("per_test_timeout_s", "fallback_on_failure", "skip_after_timeout"):
+        if key in latest:
+            cfg[key] = copy.deepcopy(latest[key])
     chosen = list((selection.get("model_modes") or {}).keys())
     if chosen and (len(chosen) != 1 or chosen[0] not in cfg.get("models", [])):
         # A served alias, model source or model-specific quant/KV declaration
@@ -524,6 +530,7 @@ class BenchRunner:
         from .privacy import public_projection
         run["performance_claims"] = public_projection({"performance_claims": cfg.get("performance_claims") or []})["performance_claims"]
         current_application = copy.deepcopy(run["application"])
+        current_hardware = copy.deepcopy(run.get("hardware") or {})
         if resume_source:
             prior_execution = resume_source.get("execution_config") or resume_source.get("config") or {}
             if not extend_in_place and prior_execution.get("context_planner_version") != DEFAULT_CONFIG["context_planner_version"]:
@@ -607,6 +614,7 @@ class BenchRunner:
         run.setdefault("sessions", []).append({
             "id": session_id, "started_at": _now_iso(), "status": "running",
             "config": endpoints.public_config(cfg), "application": current_application,
+            "hardware": current_hardware,
             "lms_version": self.cli.version(), "retry_failed": retry_failed,
             "rerun_existing": rerun_existing,
         })

@@ -138,7 +138,7 @@ def storage_probe(directory):
         drive = directory.drive
         if pu.IS_WINDOWS and len(drive) == 2 and drive[0].isalpha() and drive[1] == ":":
             try:
-                command = "Get-Partition -DriveLetter '%s' | Get-Disk | Select-Object FriendlyName,BusType | ConvertTo-Json -Compress" % drive[0]
+                command = "Get-Partition -DriveLetter '%s' | Get-Disk | Select-Object FriendlyName,@{Name='BusType';Expression={$_.BusType.ToString()}} | ConvertTo-Json -Compress" % drive[0]
                 query = pu.run(["powershell", "-NoProfile", "-Command", command], timeout=8)
                 disk = json.loads(query.stdout) if query.returncode == 0 else {}
                 if isinstance(disk, dict):
@@ -352,6 +352,8 @@ def attach(run, profile, *, provenance="measured_before_session"):
             session["transfer_bandwidth"] = copy.deepcopy(profile)
             for group in run.get("engine_groups", []):
                 if group.get("id") == session.get("engine_group_id"):
+                    if session.get("hardware"):
+                        group["hardware"] = copy.deepcopy(session["hardware"])
                     group.setdefault("hardware", {})["transfer_bandwidth"] = copy.deepcopy(profile)
     return profile
 

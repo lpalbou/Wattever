@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Retains session hardware conditions and displays paired storage experiments with separate CSV exports. Repair defaults follow the latest policy for the selected engine.
+
 - Measures single/parallel native RAM copy throughput and multiple storage volumes, with raw samples, device labels, UI reporting and CSV exports.
 
 - Adds explicit model removal with backups and direct same-file additions/repairs for external endpoints, including mixed-engine GPU benchmarks. Results provides human-facing add, rerun, individual repair and model removal controls.

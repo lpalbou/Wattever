@@ -46,6 +46,13 @@ class ModelActionTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'stop'):remove_models('card',['external'])
             backup.assert_not_called()
 
+    def test_model_removal_also_removes_its_storage_comparisons(self):
+        self.source['storage_comparison']={'rows':[{'model':'external'}],
+                                           'alternate_results':[dict(self.b['results'][0])]}
+        store.save(self.source)
+        remove_models('card',['external'])
+        self.assertNotIn('storage_comparison',store.load('card'))
+
     def execute_selection(self, models, **options):
         selection=dict(run_id='card',connection=self.connection,model_modes={m:['off'] for m in models},
                        sizes=[512],concurrency_levels=[1],**options)

@@ -392,6 +392,7 @@ CSV_COLUMNS = [
     ("ram_to_vram_bytes_per_second", lambda r, run: _transfer_profile(r, run).get("ram_to_vram", {}).get("bytes_per_second")),
     ("ram_copy_single_bytes_per_second", lambda r, run: _transfer_profile(r, run).get("ram_copy_single", {}).get("bytes_per_second")),
     ("ram_copy_parallel_bytes_per_second", lambda r, run: _transfer_profile(r, run).get("ram_copy_parallel", {}).get("bytes_per_second")),
+    ("ram_configured_clock_mhz_reported", lambda r, run: json.dumps(_session_hardware(r, run).get("memory", {}).get("configured_clock_mhz_reported", []))),
     ("additional_storage_volumes", lambda r, run: json.dumps(_transfer_profile(r, run).get("storage_volumes", []))),
     ("transfer_bandwidth_captured_at", lambda r, run: _transfer_profile(r, run).get("captured_at")),
     ("transfer_bandwidth_provenance", lambda r, run: _transfer_profile(r, run).get("provenance")),
@@ -410,6 +411,11 @@ def _transfer_profile(row, run):
 def _session_config(row, run):
     return next((session.get("config", {}) for session in run.get("sessions", [])
                  if session.get("id") == row.get("session_id")), run.get("config") or {})
+
+
+def _session_hardware(row, run):
+    session = next((s for s in run.get("sessions", []) if s.get("id") == row.get("session_id")), {})
+    return session.get("hardware") or run.get("hardware") or {}
 
 
 def to_csv(runs):

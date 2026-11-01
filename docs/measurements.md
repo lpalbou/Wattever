@@ -56,6 +56,11 @@ Transfer profiles also measure native RAM copy payload throughput with one worke
 
 In Machine details, use **Additional storage folders** to compare drives during the same measurement; separate existing folders with semicolons. Each volume gets its own temporary unbuffered read test and raw samples. The selected primary volume remains separate. Paths stay private; volume letters, available device model names and measured rates can be shared. Inference may benefit differently because model loading, mmap faults, OS caches and CPU/GPU overlap affect its I/O.
 
+Execution sessions retain their hardware snapshot and transfer profile, including reported RAM clocks. Later independent captures remain available in **Independent hardware measurements**. This preserves conditions across storage or memory-setting experiments.
+
+When a benchmark includes a Strata storage comparison, its primary results stay in the main charts. **Strata storage comparison** shows paired successful-repeat medians and offers a separate CSV containing both conditions. The JSON retains frozen baseline and alternative measurements. Standard benchmark CSV exports cover primary measurements. Cache state and observed model-loading boundaries belong in the experiment notes; a faster sequential disk test alone does not establish faster inference.
+
+
 ## Sessions and recovery
 
 Each benchmark has one JSON file in `results/runs/`. The local helper supports same-file additions and repairs for both LM Studio and external endpoints. Reconnect the original external endpoint before repairing its tests; URLs and credentials are not saved. A timeout stops the generic run because Wattever cannot verify provider-side cancellation or unload. Inspect the engine before restarting.
