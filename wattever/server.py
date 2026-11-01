@@ -80,7 +80,8 @@ def _cap_bench():
 def _cap_telemetry_start(run, cfg):
     client = hardware.inventory()
     from . import bandwidth
-    client["transfer_bandwidth"] = bandwidth.measure(cfg.get("gpu_index", 0), directory=cfg.get("storage_probe_directory") or None)
+    client["transfer_bandwidth"] = bandwidth.measure(cfg.get("gpu_index", 0), directory=cfg.get("storage_probe_directory") or None,
+        **({"directories": cfg["storage_probe_directories"]} if cfg.get("storage_probe_directories") else {}))
     run["measurement_client"] = {"hardware": client, "scope": "load-generating benchmark client"}
     run["measurement_scope"] = {"inference_hardware_source": "user_reported_local" if cfg.get("endpoint_inference_local") else "unknown",
                                 "inference_hardware_verified": False,
@@ -377,6 +378,8 @@ class Handler(BaseHTTPRequestHandler):
                     folder = body.get("storage_probe_directory")
                     if folder not in (None, "") and (not isinstance(folder, str) or not os.path.isdir(folder)):
                         raise ValueError("Storage test folder must be an existing local directory.")
+                    folders = body.get("storage_probe_directories")
+                    endpoints.validate(dict(provider="lmstudio", storage_probe_directories=folders))
                     gpu_index = body.get("gpu_index", 0)
                     if type(gpu_index) is not int or not 0 <= gpu_index <= 255:
                         raise ValueError("GPU sensor index must be an integer in 0..255.")
@@ -389,7 +392,8 @@ class Handler(BaseHTTPRequestHandler):
                         # Validate before doing resource-consuming work or making a backup.
                         bandwidth.backfill(copy.deepcopy(target), current,
                                            {"captured_at": "validation"})
-                    profile = bandwidth.measure(gpu_index, directory=folder or None)
+                    profile = bandwidth.measure(gpu_index, directory=folder or None,
+                                                **({"directories": folders} if folders else {}))
                     if target:
                         store.backup(target["id"])
                         bandwidth.backfill(target, current, profile)

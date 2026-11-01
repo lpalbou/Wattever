@@ -710,7 +710,7 @@ function hardwareMarkup(hw) {
   return `<p class="hint">${esc([os.name, os.release, os.architecture].filter(Boolean).join(" "))} - ${esc(cpu.name || "CPU unknown")} - ${esc([system.manufacturer, system.model].filter(Boolean).join(" "))}</p>
     <p class="hint">${cpu.physical_cores != null ? `${esc(cpu.physical_cores)} physical cores / ` : ""}${esc(cpu.logical_cores ?? "unknown")} threads${system.memory_bytes ? ` - ${(system.memory_bytes / 1073741824).toFixed(1)} GiB RAM` : ""}</p>`
     + (cpu.socket_count ? `<p class="hint">CPU sockets: ${esc(cpu.socket_count)}${cpu.max_clock_mhz_reported ? `; reported maximum clock ${esc(cpu.max_clock_mhz_reported)} MHz` : ""}.</p>` : "")
-    + (memory.module_count ? `<p class="hint">RAM: ${esc(memory.module_count)} modules${memory.configured_clock_mhz_reported?.length ? `; firmware clock reports ${memory.configured_clock_mhz_reported.map(esc).join(", ")} MHz` : ""}. Channel count ${esc(memory.channel_count ?? "unknown")}; memory bandwidth not measured.</p>` : "")
+    + (memory.module_count ? `<p class="hint">RAM: ${esc(memory.module_count)} modules${memory.configured_clock_mhz_reported?.length ? `; firmware clock reports ${memory.configured_clock_mhz_reported.map(esc).join(", ")} MHz` : ""}. Channel count ${esc(memory.channel_count ?? "unknown")}; ${hw.transfer_bandwidth?.ram_copy_parallel?.status === "ok" ? "measured copy throughput below" : "memory bandwidth not measured"}.</p>` : "")
     + gpus.map((g, i) => `<p class="hint"><b>GPU ${i + 1}:</b> ${esc(g.name || "Unknown")} ${g.memory_bytes ? `- ${(g.memory_bytes / 1073741824).toFixed(1)} GiB` : ""} ${g.driver ? `- driver ${esc(g.driver)}` : ""} ${g.sensor_index != null ? `- sensor ${esc(g.sensor_index)}` : ""}</p>${pcie(g)}`).join("")
     + (board.model ? `<p class="hint"><b>Motherboard:</b> ${esc([board.manufacturer, board.model].filter(Boolean).join(" "))}</p>` : "")
     + (firmware.version ? `<p class="hint"><b>Firmware:</b> ${esc([firmware.vendor, firmware.version].filter(Boolean).join(" "))}</p>` : "")
@@ -720,11 +720,13 @@ function hardwareMarkup(hw) {
 
 function transferBandwidthMarkup(profile) {
   if (!profile) return '<p class="hint">Storage → RAM and RAM → VRAM bandwidth: not measured.</p>';
-  const rows = [["storage_to_ram", "Storage → RAM"], ["ram_to_vram", "RAM → VRAM"]].map(([key, label]) => {
-    const value = profile[key] || {};
+  const measurements = [["Storage → RAM", profile.storage_to_ram || {}], ["RAM → VRAM", profile.ram_to_vram || {}],
+    ...["ram_copy_single", "ram_copy_parallel"].filter(key => profile[key]).map(key => [key === "ram_copy_single" ? "RAM copy · one worker" : "RAM copy · parallel workers", profile[key]]),
+    ...(profile.storage_volumes || []).map(value => ["Storage → RAM", value])];
+  const rows = measurements.map(([label, value]) => {
     const speed = value.status === "ok" && Number.isFinite(value.bytes_per_second) && value.bytes_per_second > 0
       ? `${(value.bytes_per_second / 1e9).toFixed(2)} GB/s (${(value.bytes_per_second / 1e6).toFixed(0)} MB/s)` : `Unavailable: ${esc(value.reason || "not supported")}`;
-    return `<p class="hint"><b>${label}:</b> ${speed}${value.host_memory ? `; ${esc(value.host_memory)} host memory` : ""}${value.volume ? `; volume ${esc(value.volume)}` : ""}</p><p class="hint">${esc(value.note || "")}</p>`;
+    return `<p class="hint"><b>${label}:</b> ${speed}${value.host_memory ? `; ${esc(value.host_memory)} host memory` : ""}${value.workers ? `; ${esc(value.workers)} workers; copied payload bytes` : ""}${value.volume ? `; volume ${esc(value.volume)}` : ""}${value.device_model ? `; ${esc(value.device_model)}` : ""}</p><p class="hint">${esc(value.note || "")}</p>`;
   }).join("");
   return `<details class="adv"><summary>Measured transfer bandwidth</summary>${rows}<p class="hint">${esc(profile.captured_at || "Unknown measurement time")}; ${esc(profile.provenance || "measured on benchmark client")}. ${profile.provenance === "measured_later_on_matching_hardware" ? "Measured after this benchmark on matching hardware; original inference conditions were not verified." : ""}</p><p class="hint">Median of ${esc(profile.storage_to_ram?.samples?.length ?? 0)} storage samples and ${esc(profile.ram_to_vram?.samples?.length ?? 0)} GPU samples. Separate transfer microbenchmarks; workload caching and overlap can change application throughput.</p></details>`;
 }
@@ -778,6 +780,7 @@ function scientificMetadata(run) {
   return (provider.kind ? `<p class="hint"><b>Provider:</b> ${esc(provider.label || provider.kind)}; ${esc(provider.model_management || "unknown")} model management.</p>` : "")
     + (run.engine_groups?.length ? `<p class="hint"><b>Engines in this benchmark:</b> ${run.engine_groups.map(group => `${esc(group.label)} (${(group.config?.models || []).length} models)`).join("; ")}. Settings, transfer profiles and runtime observations are retained in their execution sessions.</p>` : "")
     + (tags.length ? `<p class="hint"><b>Tags:</b> ${tags.map(esc).join(" · ")}</p>` : "")
+    + ((run.hardware_measurement_history || []).some(capture => capture.transfer_bandwidth) ? `<details class="adv"><summary>Independent hardware measurements</summary>${run.hardware_measurement_history.filter(capture => capture.transfer_bandwidth).map(capture => transferBandwidthMarkup(capture.transfer_bandwidth)).join("")}</details>` : "")
     + modelConfigurationsMarkup(run)
     + telemetryMarkup(run)
     + (scope.hardware_attribution ? `<p class="hint"><b>Inference hardware attribution:</b> ${esc(scope.hardware_attribution)}</p>` : "")
@@ -794,7 +797,7 @@ function renderHardware() {
       event.target.disabled = true;
       $("#transfer-status").textContent = " Measuring storage and GPU transfers…";
       try {
-        const result = await api("/api/hardware/bandwidth", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({gpu_index: Number($("#gpu-index").value) || 0, storage_probe_directory: $("#storage-probe-directory")?.value.trim() || null})});
+        const result = await api("/api/hardware/bandwidth", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({gpu_index: Number($("#gpu-index").value) || 0, storage_probe_directory: $("#storage-probe-directory")?.value.trim() || null, storage_probe_directories: storageProbeDirectories()})});
         state.env.hardware.transfer_bandwidth = result.transfer_bandwidth;
         renderHardware();
       } catch (error) {
@@ -813,6 +816,10 @@ function renderConcurrency() {
     state.concurrencyLevels = through(levels, value);
     renderConcurrency(); updatePlan();
   }, String, "simultaneous queries");
+}
+
+function storageProbeDirectories() {
+  return ($("#storage-probe-directories")?.value || "").split(";").map(value => value.trim()).filter(Boolean);
 }
 function prepareCleanRun() {
   state.models = new Set(state.env.models.filter((m) => m.type !== "embeddings").map((m) => m.id));
@@ -993,6 +1000,7 @@ function collectConfig() {
   return {
     ...helperEndpointConfig(),
     storage_probe_directory: browserMode() ? null : $("#storage-probe-directory")?.value.trim() || null,
+    storage_probe_directories: browserMode() ? [] : storageProbeDirectories(),
     ...publicRunMetadata(),
     canonical_model_id: $("#meta-canonical-model")?.value.trim() || "",
     reported_mtp: $("#meta-reported-mtp")?.value || "unknown",
@@ -1543,6 +1551,7 @@ async function openExtendDialog(run, modelId = null, selectedCase = null) {
     }
     state.extension = {runId: run.id, source, sourceConfig: cfg, models, connectionKey,
       connection: helperEndpointConfig(), engineGroupId: plan.engine_group_id, external: genericHelper(),
+      storageDirectory: $("#storage-probe-directory")?.value.trim() || null, storageDirectories: storageProbeDirectories(),
       initialSizes: plan.sizes || cfg.sizes || [], initialConcurrency: plan.concurrency_levels || cfg.concurrency_levels || [1],
       repeats: Number(cfg.repeats) || 1, selectedCases: selectedCase ? [selectedCase] : null,
       timeout: Number(cfg.per_test_timeout_s) || 1800,
@@ -1608,6 +1617,8 @@ function extensionProgressMarkup(extension, model) {
 
 function extendBody(extension) {
   return {run_id: extension.runId, model_modes: extension.modelModes,
+    ...(extension.storageDirectory ? {storage_probe_directory:extension.storageDirectory} : {}),
+    ...(extension.storageDirectories?.length ? {storage_probe_directories:extension.storageDirectories} : {}),
     ...(extension.external && extension.connection ? {connection:extension.connection} : {}),
     ...(extension.engineGroupId ? {engine_group_id:extension.engineGroupId} : {}),
     ...(extension.repeats == null ? {} : {repeats: extension.repeats}),

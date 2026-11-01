@@ -327,7 +327,7 @@ def _public_run(run):
 def _validate_config(config):
     if not isinstance(config,dict): raise ValueError("Capability configuration must be an object.")
     cfg = dict(DEFAULT_CONFIG)
-    allowed = set(DEFAULT_CONFIG) | {"model","models","endpoint_base_url","endpoint_api_key_env","reproducibility","reported_mtp","reported_reasoning","requested_mtp","model_source","canonical_model_id","label","notes","gpu_index","power_interval_ms","other_idle_w","cpu_tdp_w","endpoint_identity","endpoint_name_override","storage_probe_directory"}
+    allowed = set(DEFAULT_CONFIG) | {"model","models","endpoint_base_url","endpoint_api_key_env","reproducibility","reported_mtp","reported_reasoning","requested_mtp","model_source","canonical_model_id","label","notes","gpu_index","power_interval_ms","other_idle_w","cpu_tdp_w","endpoint_identity","endpoint_name_override","storage_probe_directory","storage_probe_directories"}
     cfg.update({key:value for key,value in config.items() if key in allowed})
     if "models" in cfg and (not isinstance(cfg["models"],list) or any(not isinstance(m,str) for m in cfg["models"])): raise ValueError("Models must be a list of identifiers.")
     cfg["model"] = cfg.get("model") or next(iter(cfg.get("models") or []),None)

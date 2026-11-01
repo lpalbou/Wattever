@@ -31,6 +31,7 @@ class BandwidthTests(unittest.TestCase):
 
     def test_worker_records_independent_failures_without_paths(self):
         with patch.object(bandwidth, "storage_probe", side_effect=OSError("C:/secret/weights")), \
+             patch.object(bandwidth, "memory_probe", return_value={"status":"ok", "bytes_per_second":456}), \
              patch.object(bandwidth, "cuda_probe", return_value={"status":"ok", "bytes_per_second":123}):
             profile = bandwidth._worker("ignored", 0)
         self.assertEqual(profile["storage_to_ram"]["status"], "unavailable")
@@ -59,6 +60,7 @@ class BandwidthTests(unittest.TestCase):
         self.assertEqual(run["sessions"], original["sessions"])
         self.assertEqual(value["provenance"], "measured_later_on_matching_hardware")
         self.assertNotIn("provenance", profile)
+        self.assertEqual(run['hardware_measurement_history'][0]['transfer_bandwidth'],value)
         different = copy.deepcopy(original)
         different["gpu"]["driver"] = "2"
         with self.assertRaisesRegex(ValueError, "driver differs"):
@@ -84,6 +86,27 @@ class BandwidthTests(unittest.TestCase):
         from wattever import endpoints
         self.assertNotIn("storage_probe_directory", endpoints.public_config({
             "storage_probe_directory":"C:/private/models", "provider":"lmstudio"}))
+        self.assertNotIn("storage_probe_directories", endpoints.public_config({
+            "storage_probe_directories":["F:/private/models"], "provider":"lmstudio"}))
+
+    def test_native_ram_copy_completes_and_releases_buffers(self):
+        result = bandwidth.memory_probe(workers=2, buffer_bytes=4096, copies=2)
+        self.assertEqual(result["working_set_bytes"], 16384)
+        self.assertTrue(result["verified_readback"])
+        self.assertEqual([s["bytes"] for s in result["samples"]], [16384] * 3)
+
+    def test_multiple_volumes_keep_independent_samples_and_cleanup(self):
+        with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
+            def worker(args, **kwargs):
+                from types import SimpleNamespace
+                extras=json.loads(args[-1])
+                self.assertEqual(len(extras),1)
+                self.assertEqual(Path(extras[0]).parent,Path(second).resolve())
+                return SimpleNamespace(returncode=0,stdout=json.dumps({"protocol":"wattever-transfer-v1"}))
+            with patch.object(bandwidth.subprocess,'run',side_effect=worker):
+                bandwidth.measure(directory=first,directories=[first,second,second])
+            self.assertEqual(list(Path(first).iterdir()),[])
+            self.assertEqual(list(Path(second).iterdir()),[])
 
 
 if __name__ == "__main__":

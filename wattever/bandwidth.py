@@ -4,6 +4,8 @@ The storage test bypasses the OS page cache, not a drive's hardware cache. CUDA
 copies use pinned host memory and synchronization, not a PCIe speed estimate.
 """
 import copy
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import ExitStack
 import ctypes as ct
 import json
 import math
@@ -14,6 +16,7 @@ import statistics
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 from datetime import datetime, timezone
 
@@ -131,9 +134,20 @@ def storage_probe(directory):
             raise
     try:
         samples, method = (_windows_reads(path) if pu.IS_WINDOWS else _posix_reads(path))
+        device = {}
+        drive = directory.drive
+        if pu.IS_WINDOWS and len(drive) == 2 and drive[0].isalpha() and drive[1] == ":":
+            try:
+                command = "Get-Partition -DriveLetter '%s' | Get-Disk | Select-Object FriendlyName,BusType | ConvertTo-Json -Compress" % drive[0]
+                query = pu.run(["powershell", "-NoProfile", "-Command", command], timeout=8)
+                disk = json.loads(query.stdout) if query.returncode == 0 else {}
+                if isinstance(disk, dict):
+                    device = {"device_model": disk.get("FriendlyName"), "bus_type": disk.get("BusType")}
+            except (OSError, ValueError, subprocess.SubprocessError):
+                pass
         return _summary(samples, method=method, file_bytes=FILE_BYTES, block_bytes=BLOCK_BYTES,
                         queue_depth=1, os_page_cache="bypassed", storage_scope="probe_directory_volume",
-                        volume=directory.drive or "results filesystem",
+                        volume=directory.drive or "results filesystem", **device,
                         note="Sequential reads of a flushed temporary file on the selected volume (results volume by default). File creation is excluded. Device/controller caches may contribute; model files on other volumes need separate measurement.")
     finally:
         path.unlink(missing_ok=True)
@@ -215,21 +229,82 @@ def cuda_probe(gpu_index):
         destroy(context)
 
 
-def _worker(directory, gpu_index):
+def memory_probe(workers=1, buffer_bytes=64 * MIB, copies=8):
+    """Completed native copies over a working set larger than typical CPU caches.
+
+    Report copied payload bytes, not a guessed memory-controller traffic rate.
+    ctypes releases the GIL around memmove; every worker owns disjoint buffers.
+    """
+    if not 1 <= workers <= 8 or buffer_bytes < 4096 or copies < 1:
+        raise ValueError("Invalid bounded memory-copy workload")
+    buffers = [(mmap.mmap(-1, buffer_bytes), mmap.mmap(-1, buffer_bytes)) for _ in range(workers)]
+    views = []
+    try:
+        pointers = []
+        for source, destination in buffers:
+            src, dst = ct.c_char.from_buffer(source), ct.c_char.from_buffer(destination)
+            views.extend((src, dst))
+            a, b = ct.addressof(src), ct.addressof(dst)
+            ct.memset(a, 0x5a, buffer_bytes)
+            ct.memset(b, 0, buffer_bytes)
+            pointers.append((a, b))
+        samples = []
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            def transfer(pair, gate, count):
+                gate.wait()
+                for _ in range(count):
+                    ct.memmove(pair[1], pair[0], buffer_bytes)
+            for sample in range(SAMPLES + 1):
+                clock = {}
+                gate = threading.Barrier(workers + 1, action=lambda: clock.update(start=time.perf_counter()))
+                tasks = [pool.submit(transfer, pair, gate, copies if sample else 1) for pair in pointers]
+                gate.wait(timeout=15)
+                for task in tasks:
+                    task.result(timeout=20)
+                elapsed = time.perf_counter() - clock["start"]
+                if sample:
+                    samples.append({"bytes": workers * buffer_bytes * copies, "elapsed_s": elapsed})
+        verified = all(destination[0] == 0x5a and destination[-1] == 0x5a for _, destination in buffers)
+        if not verified:
+            raise RuntimeError("Memory-copy verification failed")
+        return _summary(samples, method="native_memmove_disjoint_buffers", workers=workers,
+                        buffer_bytes_per_worker=buffer_bytes, working_set_bytes=workers * buffer_bytes * 2,
+                        copies_per_sample=copies, verified_readback=True, byte_accounting="copied_payload",
+                        note="Native RAM copy payload throughput. Each payload byte requires a source read and destination write; 2x this rate is logical read+write bandwidth, not measured DRAM bus traffic. Cache/write-allocation effects and worker count influence results.")
+    finally:
+        views.clear()
+        # Loop variables can retain exported mmap references.
+        src = dst = None
+        for source, destination in buffers:
+            source.close()
+            destination.close()
+
+
+def _worker(directory, gpu_index, extra_directories=None):
     result = {"schema_version": 1, "captured_at": datetime.now(timezone.utc).isoformat(),
               "scope": "benchmark_client", "unit": "bytes_per_second",
               "protocol": "wattever-transfer-v1"}
     for key, call in (("storage_to_ram", lambda: storage_probe(directory)),
-                      ("ram_to_vram", lambda: cuda_probe(gpu_index))):
+                      ("ram_to_vram", lambda: cuda_probe(gpu_index)),
+                      ("ram_copy_single", lambda: memory_probe()),
+                      ("ram_copy_parallel", lambda: memory_probe(min(8, max(1, (os.cpu_count() or 2) // 2))))):
         try:
             result[key] = call()
         except Exception as exc:
             # Public files never include driver diagnostics or local file paths.
             result[key] = _unavailable("Transfer probe could not complete (%s)" % type(exc).__name__)
+    if extra_directories:
+        result["storage_volumes"] = []
+        for folder in extra_directories:
+            try:
+                result["storage_volumes"].append(storage_probe(folder))
+            except Exception as exc:
+                result["storage_volumes"].append(dict(_unavailable("Storage probe could not complete (%s)" % type(exc).__name__),
+                                                       volume=Path(folder).drive or "additional filesystem"))
     return result
 
 
-def measure(gpu_index=0, directory=None):
+def measure(gpu_index=0, directory=None, directories=None):
     """Run before inference; bounded child process releases its CUDA context on exit."""
     global _latest
     directory = str(Path(directory or Path(__file__).resolve().parents[1] / "results").resolve())
@@ -237,10 +312,20 @@ def measure(gpu_index=0, directory=None):
         Path(directory).mkdir(parents=True, exist_ok=True)
         # The child owns only this freshly created directory. Timeout cleanup is
         # performed after subprocess.run has killed and reaped the child.
-        with tempfile.TemporaryDirectory(prefix=".transfer-", dir=directory) as scratch:
+        with ExitStack() as owned:
+            scratch = owned.enter_context(tempfile.TemporaryDirectory(prefix=".transfer-", dir=directory))
             assert Path(scratch).resolve().parent == Path(directory)
-            result = subprocess.run([sys.executable, "-m", "wattever.bandwidth", "--worker", scratch,
-                                     str(gpu_index)], timeout=75, capture_output=True, text=True,
+            extras = []
+            for folder in dict.fromkeys(str(Path(p).resolve()) for p in (directories or [])):
+                if folder == directory:
+                    continue
+                if not Path(folder).is_dir():
+                    raise ValueError("Additional storage folders must exist")
+                extras.append(owned.enter_context(tempfile.TemporaryDirectory(prefix=".transfer-", dir=folder)))
+            args = [sys.executable, "-m", "wattever.bandwidth", "--worker", scratch, str(gpu_index)]
+            if extras:
+                args.append(json.dumps(extras))
+            result = subprocess.run(args, timeout=75, capture_output=True, text=True,
                                     cwd=str(Path(__file__).resolve().parents[1]), **pu.popen_kwargs())
         if result.returncode:
             raise ValueError("Worker failed")
@@ -253,7 +338,9 @@ def measure(gpu_index=0, directory=None):
         return {"schema_version": 1, "captured_at": datetime.now(timezone.utc).isoformat(),
                 "scope": "benchmark_client", "protocol": "wattever-transfer-v1", "unit": "bytes_per_second",
                 "storage_to_ram": _unavailable("Probe worker failed or exceeded 75 seconds"),
-                "ram_to_vram": _unavailable("Probe worker failed or exceeded 75 seconds")}
+                "ram_to_vram": _unavailable("Probe worker failed or exceeded 75 seconds"),
+                "ram_copy_single": _unavailable("Probe worker failed or exceeded 75 seconds"),
+                "ram_copy_parallel": _unavailable("Probe worker failed or exceeded 75 seconds")}
 
 
 def attach(run, profile, *, provenance="measured_before_session"):
@@ -280,11 +367,13 @@ def backfill(run, current, profile):
                  historical_inference_conditions_verified=False)
     run.setdefault("hardware", {})["transfer_bandwidth"] = value
     run.setdefault("hardware_measurement_history", []).append({"captured_at": value["captured_at"],
-        "kind": "transfer_bandwidth", "provenance": value["provenance"]})
+        "kind": "transfer_bandwidth", "provenance": value["provenance"],
+        "hardware_snapshot": copy.deepcopy(current.get("hardware") or {}),
+        "transfer_bandwidth": copy.deepcopy(value)})
     return value
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4 or sys.argv[1] != "--worker":
+    if len(sys.argv) not in (4, 5) or sys.argv[1] != "--worker":
         raise SystemExit("Internal bandwidth worker requires a directory and GPU sensor index")
-    print(json.dumps(_worker(sys.argv[2], int(sys.argv[3]))))
+    print(json.dumps(_worker(sys.argv[2], int(sys.argv[3]), json.loads(sys.argv[4]) if len(sys.argv) == 5 else None)))

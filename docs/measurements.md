@@ -50,6 +50,12 @@ Stored `telemetry.history` contains elapsed seconds, UTC timestamps, scope and u
 
 Time-weighted coverage excludes long sampling gaps. Peaks are observed maxima and can miss shorter spikes. Early/late 60-second means can overlap on short runs. Changes in temperature, clocks or load describe the observed workload/environment; they do not establish throttling or prove sustained model throughput. Compare repeat throughput at matching workload and placement alongside thermal/load traces. Separate graphs per selected metric avoid sharing incompatible units on one chart.
 
+## RAM and storage comparisons
+
+Transfer profiles also measure native RAM copy payload throughput with one worker and several workers. Each worker uses disjoint 64 MiB source and destination buffers; committed pages, one warmup pass, three timed samples and readback checks are included. The working set exceeds typical CPU caches. Reported bytes count copied payload: logical source reads plus destination writes equal twice that count, while actual DRAM traffic depends on caching and write allocation. This is a copy microbenchmark, not peak DRAM bandwidth or a channel-count measurement.
+
+In Machine details, use **Additional storage folders** to compare drives during the same measurement; separate existing folders with semicolons. Each volume gets its own temporary unbuffered read test and raw samples. The selected primary volume remains separate. Paths stay private; volume letters, available device model names and measured rates can be shared. Inference may benefit differently because model loading, mmap faults, OS caches and CPU/GPU overlap affect its I/O.
+
 ## Sessions and recovery
 
 Each benchmark has one JSON file in `results/runs/`. The local helper supports same-file additions and repairs for both LM Studio and external endpoints. Reconnect the original external endpoint before repairing its tests; URLs and credentials are not saved. A timeout stops the generic run because Wattever cannot verify provider-side cancellation or unload. Inspect the engine before restarting.

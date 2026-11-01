@@ -19,6 +19,7 @@ PRIVATE_KEYS = {
     "hostname", "hostaddress", "serveraddress", "ip", "ipaddress", "ipv4", "ipv6", "macaddress", "username",
     "userprofile", "computername", "machinename", "serial", "serialnumber", "uuid",
     "deviceuuid", "gpuuuid", "machineid", "deviceid", "connection", "connectionconfig",
+    "storageprobedirectory", "storageprobedirectories",
 }
 
 

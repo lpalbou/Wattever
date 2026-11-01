@@ -216,6 +216,10 @@ def extension_config(source, selection):
                 or not values or any(mode not in ("off", "on") for mode in values)):
             raise ValueError("Each model needs Standard (off), MTP (on), or both.")
     cfg = extension_base(source, selection)
+    storage = {key: selection[key] for key in ("storage_probe_directory", "storage_probe_directories") if key in selection}
+    if storage:
+        endpoints.validate(dict(storage, provider="lmstudio"))
+        cfg.update(storage)
     other_models = set(source["config"].get("models", [])) - set(cfg["models"])
     if other_models.intersection(modes):
         raise ValueError("These model IDs belong to another engine. Reconnect that engine to repair them; use distinct served IDs for new variants.")
@@ -440,7 +444,7 @@ class BenchRunner:
         allowed = set(DEFAULT_CONFIG) | {"endpoint_base_url", "endpoint_api_key_env", "endpoint_id", "canonical_model_id", "model_modes",
                                         "runtime_gpu_placement", "reproducibility", "performance_claims",
                                         "reported_mtp", "reported_reasoning", "model_source", "temperature", "token_limit_field",
-                                        "endpoint_identity", "endpoint_name_override", "selected_cases", "storage_probe_directory", "engine_group_id"}
+                                        "endpoint_identity", "endpoint_name_override", "selected_cases", "storage_probe_directory", "storage_probe_directories", "engine_group_id"}
         cfg.update({k: v for k, v in (config or {}).items() if k in allowed})
         if "selected_cases" in cfg and resume_source is None:
             raise ValueError("Individual test selection requires an existing benchmark. Use Add / rerun tests.")
@@ -658,7 +662,8 @@ class BenchRunner:
             self.live["phase"] = "measuring transfer bandwidth"
             self.emit("phase", phase=self.live["phase"])
             from . import bandwidth
-            profile = bandwidth.measure(cfg["gpu_index"], directory=cfg.get("storage_probe_directory") or None)
+            profile = bandwidth.measure(cfg["gpu_index"], directory=cfg.get("storage_probe_directory") or None,
+                                        **({"directories": cfg["storage_probe_directories"]} if cfg.get("storage_probe_directories") else {}))
             bandwidth.attach(run, profile)
             for name in ("storage_to_ram", "ram_to_vram"):
                 value = profile.get(name, {})

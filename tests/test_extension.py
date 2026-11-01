@@ -133,6 +133,14 @@ class ExtensionTests(unittest.TestCase):
             with self.subTest(timeout=timeout),self.assertRaises(ValueError):
                 runner.extension_config(source,dict(self.selection(),per_test_timeout_s=timeout))
 
+    def test_extension_keeps_private_storage_measurement_selection(self):
+        with TemporaryDirectory() as folder:
+            cfg=runner.extension_config(self.source(),dict(self.selection(),storage_probe_directory=folder,
+                                                          storage_probe_directories=[folder]))
+            self.assertEqual(cfg['storage_probe_directory'],folder)
+            self.assertEqual(cfg['storage_probe_directories'],[folder])
+            self.assertNotIn('storage_probe_directories',runner.endpoints.public_config(cfg))
+
     def test_practical_limits_are_explicit_session_options(self):
         source=self.source()
         cfg=runner.extension_config(source,dict(self.selection(),fallback_on_failure=False,skip_after_timeout=True))

@@ -401,6 +401,9 @@
         "unit": {"const": "bytes_per_second"},
         "storage_to_ram": {"$ref": "#/$defs/transferMeasurement"},
         "ram_to_vram": {"$ref": "#/$defs/transferMeasurement"},
+        "ram_copy_single": {"$ref": "#/$defs/transferMeasurement"},
+        "ram_copy_parallel": {"$ref": "#/$defs/transferMeasurement"},
+        "storage_volumes": {"type": "array", "maxItems": 8, "items": {"$ref": "#/$defs/transferMeasurement"}},
         "provenance": {"enum": ["measured_before_session", "measured_later_on_matching_hardware"]}
       }
     },

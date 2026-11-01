@@ -13,7 +13,7 @@ import tempfile
 import threading
 import time
 
-PRIVATE_KEYS = {"endpoint_base_url", "endpoint_api_key_env", "api_key", "apiKey", "authorization", "storage_probe_directory"}
+PRIVATE_KEYS = {"endpoint_base_url", "endpoint_api_key_env", "api_key", "apiKey", "authorization", "storage_probe_directory", "storage_probe_directories"}
 ROUTE_REGISTRY_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results", ".endpoint-routes.json")
 _IDENTITY_LOCK = threading.RLock()
 _ROUTE_CACHE = {}
@@ -256,6 +256,10 @@ def validate(cfg):
     if folder not in (None, "") and (not isinstance(folder, str) or len(folder) > 4096 or
                                      not os.path.isdir(folder)):
         raise ValueError("Storage test folder must be an existing local directory.")
+    folders = cfg.get("storage_probe_directories")
+    if folders is not None and (not isinstance(folders, list) or len(folders) > 8 or any(
+            not isinstance(p, str) or len(p) > 4096 or not os.path.isdir(p) for p in folders)):
+        raise ValueError("Choose up to eight existing additional storage folders.")
     if cfg.get("token_limit_field", "max_tokens") not in ("max_tokens", "max_completion_tokens"):
         raise ValueError("Token limit field must be max_tokens or max_completion_tokens.")
     temperature = cfg.get("temperature")

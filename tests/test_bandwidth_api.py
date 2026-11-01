@@ -63,5 +63,15 @@ class BandwidthApiTests(unittest.TestCase):
         self.assertEqual(caught.exception.code,400)
         self.probe.assert_not_called()
 
+    def test_additional_volume_paths_are_validated_and_passed_privately(self):
+        with tempfile.TemporaryDirectory() as folder:
+            self.post({'storage_probe_directories':[folder]})
+            self.probe.assert_called_once_with(0,directory=None,directories=[folder])
+        self.probe.reset_mock()
+        with self.assertRaises(urllib.error.HTTPError) as caught:
+            self.post({'storage_probe_directories':['missing-folder']})
+        self.assertEqual(caught.exception.code,400)
+        self.probe.assert_not_called()
+
 
 if __name__ == '__main__': unittest.main()

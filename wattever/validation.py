@@ -17,8 +17,14 @@ def validate_transfer_bandwidth(profile):
         datetime.datetime.fromisoformat(profile.get("captured_at", "").replace("Z", "+00:00"))
     except (AttributeError, TypeError, ValueError):
         errors.append("transfer_bandwidth.captured_at must be an ISO timestamp")
-    for key in ("storage_to_ram", "ram_to_vram"):
-        value = profile.get(key)
+    values = [(key, profile.get(key)) for key in ("storage_to_ram", "ram_to_vram")]
+    values += [(key, profile[key]) for key in ("ram_copy_single", "ram_copy_parallel") if key in profile]
+    volumes = profile.get("storage_volumes", [])
+    if not isinstance(volumes, list) or len(volumes) > 8:
+        errors.append("storage_volumes must contain at most eight measurements")
+    else:
+        values += [("storage_volumes[%d]" % i, v) for i,v in enumerate(volumes)]
+    for key, value in values:
         if not isinstance(value, dict) or value.get("status") not in ("ok", "unavailable"):
             errors.append("transfer_bandwidth.%s needs a supported status" % key)
             continue

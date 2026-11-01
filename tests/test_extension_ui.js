@@ -30,6 +30,8 @@ vm.runInContext(`
   const append={sourceConfig:{models:['m'],repeats:1,mtp_modes:['off']},repeats:2,modelModes:{m:['off']},sizes:new Set([512]),concurrency:new Set([1]),source:{results:[{model:'m',target_tokens:512,concurrency:1,repeat:0,status:'ok'}]}};
   if(extensionModelProgress(append,{id:'m'}).unfinished!==1 || extendBody(append).repeats!==2) throw Error('Increasing repeats appends one slot');
   append.timeout=3600;
+  append.storageDirectory='F:/models';append.storageDirectories=['C:/models'];
+  if(extendBody(append).storage_probe_directory!=='F:/models' || extendBody(append).storage_probe_directories[0]!=='C:/models') throw Error('Repairs retain selected private measurement folders');
   if(extendBody(append).per_test_timeout_s!==3600) throw Error('Repair timeout is recorded in the new session payload');
   append.selectedCases=[['m',false,1,512,0]];append.action='rerun';
   if(extensionModelProgress(append,{id:'m'}).total!==1 || extensionModelProgress(append,{id:'m'}).ok!==1) throw Error('Individual repair progress stays scoped');
