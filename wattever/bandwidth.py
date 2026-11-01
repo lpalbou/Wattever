@@ -350,6 +350,9 @@ def attach(run, profile, *, provenance="measured_before_session"):
     for session in run.get("sessions", []):
         if session.get("id") == run.get("active_session_id"):
             session["transfer_bandwidth"] = copy.deepcopy(profile)
+            for group in run.get("engine_groups", []):
+                if group.get("id") == session.get("engine_group_id"):
+                    group.setdefault("hardware", {})["transfer_bandwidth"] = copy.deepcopy(profile)
     return profile
 
 

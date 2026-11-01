@@ -95,6 +95,14 @@ class BandwidthTests(unittest.TestCase):
         self.assertTrue(result["verified_readback"])
         self.assertEqual([s["bytes"] for s in result["samples"]], [16384] * 3)
 
+    def test_session_transfer_capture_updates_only_its_engine_group(self):
+        run={'active_session_id':'new','sessions':[{'id':'new','engine_group_id':'strata'}],
+             'engine_groups':[{'id':'lm','hardware':{'transfer_bandwidth':{'captured_at':'old'}}},
+                              {'id':'strata','hardware':{}}]}
+        bandwidth.attach(run,{'captured_at':'new','storage_to_ram':{'volume':'F:'}})
+        self.assertEqual(run['engine_groups'][0]['hardware']['transfer_bandwidth']['captured_at'],'old')
+        self.assertEqual(run['engine_groups'][1]['hardware']['transfer_bandwidth']['storage_to_ram']['volume'],'F:')
+
     def test_multiple_volumes_keep_independent_samples_and_cleanup(self):
         with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
             def worker(args, **kwargs):

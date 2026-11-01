@@ -43,10 +43,22 @@ class ConcurrencyTests(unittest.TestCase):
         self.assertEqual(result["status"], "failed")
         self.assertEqual(result["fail_kind"], runner.FAIL_ERROR)
         self.cfg["per_test_timeout_s"] = 0.03
-        with patch.object(runner.lmstudio, "measure_completion", side_effect=lambda *a, **k: time.sleep(0.2)):
+        def blocked(*args, **kwargs):
+            while not kwargs["cancel"].is_set():
+                time.sleep(0.001)
+            raise runner.lmstudio.Cancelled()
+        def recover(model, threads, responses):
+            for thread in threads:
+                thread.join(timeout=5)
+            self.assertTrue(all(not thread.is_alive() for thread in threads))
+        with patch.object(runner.lmstudio, "measure_completion", side_effect=blocked), \
+             patch.object(self.runner, "_recover_requests", side_effect=recover) as recovery:
             result = self.runner._concurrent_test({"nonce": "abc"}, self.cfg, "m", "Benchmark request abc\n", 2, None)
         self.assertEqual(result["fail_kind"], runner.FAIL_TIMEOUT)
-        self.assertLess(result["wall_s"], 0.15)
+        self.assertEqual(result["timeout_trigger"], "configured deadline")
+        self.assertEqual(result["timeout_elapsed_s"], result["wall_s"])
+        self.assertNotIn("recovery_error", result)
+        recovery.assert_called_once()
 
     def test_cancel_is_recorded(self):
         self.runner.cancel_event.set()
