@@ -104,6 +104,11 @@ class ModelActionTests(unittest.TestCase):
         self.assertEqual(len(bench.run['engine_groups']),2)
         self.assertEqual(bench.run['results'],self.a['results'])
         self.assertTrue(all(s.get('engine_group_id') for s in bench.run['sessions']))
+        group=next(g for g in bench.run['engine_groups'] if g['config']['provider']=='openai')
+        self.assertFalse(group['measurement_scope']['context_control'])
+        self.assertFalse(group['measurement_scope']['mtp_control'])
+        self.assertEqual(group['measurement_scope'],bench.run['sessions'][-1]['measurement_scope'])
+        self.assertEqual(bench.run['measurement_scope']['context_control'],'per execution session')
 
     def test_external_requires_fresh_matching_connection_and_keeps_secrets_private(self):
         with self.assertRaisesRegex(ValueError,'another engine'):

@@ -531,6 +531,7 @@ class BenchRunner:
         run["performance_claims"] = public_projection({"performance_claims": cfg.get("performance_claims") or []})["performance_claims"]
         current_application = copy.deepcopy(run["application"])
         current_hardware = copy.deepcopy(run.get("hardware") or {})
+        current_measurement_scope = copy.deepcopy(run.get("measurement_scope") or {})
         if resume_source:
             prior_execution = resume_source.get("execution_config") or resume_source.get("config") or {}
             if not extend_in_place and prior_execution.get("context_planner_version") != DEFAULT_CONFIG["context_planner_version"]:
@@ -586,7 +587,7 @@ class BenchRunner:
             run["execution_config"] = endpoints.public_config(cfg)
             run["config"] = endpoints.public_config(merged_config(resume_source["config"], cfg))
             from .model_actions import update_engine
-            update_engine(run, cfg, resume_source)
+            update_engine(run, cfg, resume_source, measurement_scope=current_measurement_scope)
             run["status"] = "running"
             run["updated_at"] = current_created
             run.pop("finished_at", None)
@@ -615,6 +616,7 @@ class BenchRunner:
             "id": session_id, "started_at": _now_iso(), "status": "running",
             "config": endpoints.public_config(cfg), "application": current_application,
             "hardware": current_hardware,
+            "measurement_scope": current_measurement_scope,
             "lms_version": self.cli.version(), "retry_failed": retry_failed,
             "rerun_existing": rerun_existing,
         })

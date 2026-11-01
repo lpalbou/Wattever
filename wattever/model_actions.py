@@ -7,7 +7,7 @@ from . import endpoints, store
 from .consolidation import machine_config
 
 
-def update_engine(run, cfg, source):
+def update_engine(run, cfg, source, *, measurement_scope=None):
     from .runner import merged_config
     groups = run.get("engine_groups") or []
     provider = cfg.get("provider", "lmstudio")
@@ -34,12 +34,17 @@ def update_engine(run, cfg, source):
         groups.append(group)
     else:
         group["config"] = endpoints.public_config(merged_config(group["config"], cfg))
+    if measurement_scope is not None:
+        group["measurement_scope"] = copy.deepcopy(measurement_scope)
     cfg["engine_group_id"] = group["id"]
     run["execution_config"] = endpoints.public_config(cfg)
     run["engine_groups"] = groups
     run["config"] = machine_config(groups) if len(groups) > 1 else copy.deepcopy(groups[0]["config"])
     run["provider"] = ({"kind": "mixed", "label": "Multiple engines", "model_management": "per_session"}
                        if len(groups) > 1 else copy.deepcopy(groups[0].get("provider", {})))
+    if len(groups) > 1:
+        run.setdefault("measurement_scope", {}).update(runtime_gpu_placement="per execution session",
+            context_control="per execution session", mtp_control="per execution session")
     # Power and transfer evidence belongs to the actual execution sessions.
     run.pop("telemetry", None)
 

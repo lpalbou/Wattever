@@ -58245,8 +58245,10 @@
  "measurement_scope": {
   "power_gpu_sensor_index": 0,
   "power_boundary": "selected GPU only; not the sum of all connected GPUs",
-  "runtime_gpu_placement": "unknown; managed by LM Studio",
-  "runtime_gpu_placement_source": "unknown"
+  "runtime_gpu_placement": "per execution session",
+  "runtime_gpu_placement_source": "unknown",
+  "context_control": "per execution session",
+  "mtp_control": "per execution session"
  },
  "classification": {
   "hardware_class": "cdf67bbdfe46901f1e4c",
@@ -59211,7 +59213,13 @@
    "power_source": "nvidia-smi",
    "finished_at": "2026-10-31T03:57:54+00:00",
    "engine_group_id": "original",
-   "source_run_id": "20261030-211908_rtx-5060-ti_af3694cca3"
+   "source_run_id": "20261030-211908_rtx-5060-ti_af3694cca3",
+   "measurement_scope": {
+    "power_gpu_sensor_index": 0,
+    "power_boundary": "selected GPU only; not the sum of all connected GPUs",
+    "runtime_gpu_placement": "unknown; managed by LM Studio",
+    "runtime_gpu_placement_source": "unknown"
+   }
   },
   {
    "id": "541cafcf15f8",
@@ -59370,7 +59378,13 @@
    "power_source": "nvidia-smi",
    "finished_at": "2026-11-01T02:56:17+00:00",
    "engine_group_id": "original",
-   "source_run_id": "20261030-211908_rtx-5060-ti_af3694cca3"
+   "source_run_id": "20261030-211908_rtx-5060-ti_af3694cca3",
+   "measurement_scope": {
+    "power_gpu_sensor_index": 0,
+    "power_boundary": "selected GPU only; not the sum of all connected GPUs",
+    "runtime_gpu_placement": "unknown; managed by LM Studio",
+    "runtime_gpu_placement_source": "unknown"
+   }
   },
   {
    "id": "0fa85d5ef48b",
@@ -59585,7 +59599,13 @@
    "power_source": "nvidia-smi",
    "finished_at": "2026-11-01T03:13:10+00:00",
    "engine_group_id": "original",
-   "source_run_id": "20261030-211908_rtx-5060-ti_af3694cca3"
+   "source_run_id": "20261030-211908_rtx-5060-ti_af3694cca3",
+   "measurement_scope": {
+    "power_gpu_sensor_index": 0,
+    "power_boundary": "selected GPU only; not the sum of all connected GPUs",
+    "runtime_gpu_placement": "unknown; managed by LM Studio",
+    "runtime_gpu_placement_source": "unknown"
+   }
   },
   {
    "id": "1d2c1a9d4ce0",
@@ -59990,7 +60010,13 @@
     }
    ],
    "engine_group_id": "original",
-   "source_run_id": "20261030-211908_rtx-5060-ti_af3694cca3"
+   "source_run_id": "20261030-211908_rtx-5060-ti_af3694cca3",
+   "measurement_scope": {
+    "power_gpu_sensor_index": 0,
+    "power_boundary": "selected GPU only; not the sum of all connected GPUs",
+    "runtime_gpu_placement": "unknown; managed by LM Studio",
+    "runtime_gpu_placement_source": "unknown"
+   }
   },
   {
    "id": "a5a543c4a5e1",
@@ -60302,7 +60328,13 @@
     }
    ],
    "engine_group_id": "original",
-   "source_run_id": "20261030-211908_rtx-5060-ti_af3694cca3"
+   "source_run_id": "20261030-211908_rtx-5060-ti_af3694cca3",
+   "measurement_scope": {
+    "power_gpu_sensor_index": 0,
+    "power_boundary": "selected GPU only; not the sum of all connected GPUs",
+    "runtime_gpu_placement": "unknown; managed by LM Studio",
+    "runtime_gpu_placement_source": "unknown"
+   }
   },
   {
    "id": "98cc3b20c276",
@@ -62802,7 +62834,13 @@
     }
    ],
    "engine_group_id": "original",
-   "source_run_id": "20261030-211908_rtx-5060-ti_af3694cca3"
+   "source_run_id": "20261030-211908_rtx-5060-ti_af3694cca3",
+   "measurement_scope": {
+    "power_gpu_sensor_index": 0,
+    "power_boundary": "selected GPU only; not the sum of all connected GPUs",
+    "runtime_gpu_placement": "unknown; managed by LM Studio",
+    "runtime_gpu_placement_source": "unknown"
+   }
   },
   {
    "id": "64b38bde0008",
@@ -63027,7 +63065,13 @@
    "finished_at": "2026-11-01T06:05:37+00:00",
    "timeout_policy_note": "Only Bonsai 80K pair repeat 2 retried with 600s after repeat 1 passed at 299.7s and repeat 2 reached its 300s cutoff; unchanged model, context and placement. Retry passed at 299.8s. High GPU activity observed during the original pair.",
    "engine_group_id": "original",
-   "source_run_id": "20261030-211908_rtx-5060-ti_af3694cca3"
+   "source_run_id": "20261030-211908_rtx-5060-ti_af3694cca3",
+   "measurement_scope": {
+    "power_gpu_sensor_index": 0,
+    "power_boundary": "selected GPU only; not the sum of all connected GPUs",
+    "runtime_gpu_placement": "unknown; managed by LM Studio",
+    "runtime_gpu_placement_source": "unknown"
+   }
   },
   {
    "id": "f4bf1ae00ad5",
@@ -63639,6 +63683,17 @@
     "file_tier_read_mb_latest": 1793561.1,
     "host_cache_pageable_fallback_observed": true
    },
+   "measurement_scope": {
+    "power_gpu_sensor_index": 0,
+    "power_boundary": "selected GPU only; not the sum of all connected GPUs",
+    "runtime_gpu_placement": "unknown; externally managed",
+    "runtime_gpu_placement_source": "unknown",
+    "context_control": false,
+    "mtp_control": false,
+    "mtp_state": "unknown; configured by endpoint operator",
+    "hardware_attribution": "user_reported: inference runs on the measurement client",
+    "inference_local_source": "user_reported"
+   },
    "diagnostic_redacted": true
   },
   {
@@ -64083,6 +64138,17 @@
     "decode_gpu_expert_cache_hit_percent_median": 72.2,
     "file_tier_read_mb_latest": 619017.9,
     "host_cache_pageable_fallback_observed": true
+   },
+   "measurement_scope": {
+    "power_gpu_sensor_index": 0,
+    "power_boundary": "selected GPU only; not the sum of all connected GPUs",
+    "runtime_gpu_placement": "unknown; externally managed",
+    "runtime_gpu_placement_source": "unknown",
+    "context_control": false,
+    "mtp_control": false,
+    "mtp_state": "unknown; configured by endpoint operator",
+    "hardware_attribution": "user_reported: inference runs on the measurement client",
+    "inference_local_source": "user_reported"
    }
   },
   {
@@ -64527,6 +64593,17 @@
     "decode_gpu_expert_cache_hit_percent_median": null,
     "file_tier_read_mb_latest": null,
     "host_cache_pageable_fallback_observed": false
+   },
+   "measurement_scope": {
+    "power_gpu_sensor_index": 0,
+    "power_boundary": "selected GPU only; not the sum of all connected GPUs",
+    "runtime_gpu_placement": "unknown; externally managed",
+    "runtime_gpu_placement_source": "unknown",
+    "context_control": false,
+    "mtp_control": false,
+    "mtp_state": "unknown; configured by endpoint operator",
+    "hardware_attribution": "user_reported: inference runs on the measurement client",
+    "inference_local_source": "user_reported"
    }
   }
  ],
@@ -64547,6 +64624,11 @@
    "source": "lmstudio_catalog_backfill",
    "rows": 240,
    "scope": "Matching model ID and recorded format; current catalog labels, historical weight bytes not verified"
+  },
+  {
+   "at": "2026-11-01T09:18:43.669151+00:00",
+   "action": "Restore provider-specific measurement scope per engine and session; mixed benchmark control belongs to each execution session. Inference measurements unchanged.",
+   "source": "Saved execution configuration and provider control contract"
   }
  ],
  "tags": [
@@ -110641,7 +110723,18 @@
    },
    "source_run_ids": [
     "20261030-211908_rtx-5060-ti_af3694cca3"
-   ]
+   ],
+   "measurement_scope": {
+    "power_gpu_sensor_index": 0,
+    "power_boundary": "selected GPU only; not the sum of all connected GPUs",
+    "runtime_gpu_placement": "unknown; externally managed",
+    "runtime_gpu_placement_source": "unknown",
+    "context_control": false,
+    "mtp_control": false,
+    "mtp_state": "unknown; configured by endpoint operator",
+    "hardware_attribution": "user_reported: inference runs on the measurement client",
+    "inference_local_source": "user_reported"
+   }
   }
  ],
  "telemetry": {
