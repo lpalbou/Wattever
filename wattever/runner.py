@@ -173,6 +173,16 @@ def extension_base(source, selection):
                ("sizes", "concurrency_levels", "repeats", "max_tokens", "gpu_index") if k in source["config"]}
         cfg.update(provider=provider, models=[], mtp_modes=["off"])
     chosen = list((selection.get("model_modes") or {}).keys())
+    if chosen and (len(chosen) != 1 or chosen[0] not in cfg.get("models", [])):
+        # A served alias, model source or model-specific quant/KV declaration
+        # from a previous model must never silently describe a new variant.
+        for key in ("canonical_model_id", "model_source"):
+            cfg.pop(key, None)
+        if any(model not in cfg.get("models", []) for model in chosen):
+            for key in ("reported_mtp", "reported_reasoning"):
+                cfg.pop(key, None)
+            cfg["reproducibility"] = {k:v for k,v in (cfg.get("reproducibility") or {}).items()
+                                      if k in ("engine", "engine_version")}
     if len(chosen) == 1 and chosen[0] in cfg.get("models", []):
         previous = next((s.get("config", {}) for s in reversed(source.get("sessions", []))
                          if chosen[0] in s.get("config", {}).get("models", [])

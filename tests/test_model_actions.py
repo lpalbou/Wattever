@@ -78,10 +78,17 @@ class ModelActionTests(unittest.TestCase):
         self.assertEqual([r['id'] for r in store.list_runs()],['card'])
 
     def test_external_new_model_adds_to_existing_group(self):
+        group=next(g for g in self.source['engine_groups'] if g['config']['provider']=='openai')
+        group['config'].update(canonical_model_id='old-checkpoint',reported_mtp='on')
+        store.save(self.source)
         bench=self.execute_selection(['new-model'])
         self.assertEqual(bench.run['results'],self.source['results'])
         self.assertEqual(bench.run['config']['models'],['card','external','new-model'])
         self.assertEqual(len(bench.run['engine_groups']),2)
+        cfg=bench.run['sessions'][-1]['config']
+        self.assertNotIn('canonical_model_id',cfg)
+        self.assertNotIn('quantization',cfg.get('reproducibility',{}))
+        self.assertNotIn('reported_mtp',cfg)
 
     def test_first_external_model_upgrades_existing_benchmark(self):
         store.save(self.a);self.source=self.a
