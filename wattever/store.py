@@ -254,7 +254,9 @@ def summarise(run):
         "gpu_offload": (run.get("config") or {}).get("gpu_offload"),
         "n_results": len(results),
         "n_ok": len(ok),
-        "n_failed": len(results) - len(ok),
+        "n_failed": sum(r.get("status") == "failed" for r in results),
+        "n_skipped": sum(r.get("status") == "skipped" for r in results),
+        "n_cancelled": sum(r.get("status") == "cancelled" for r in results),
         "idle": run.get("idle") or {},
     }
 

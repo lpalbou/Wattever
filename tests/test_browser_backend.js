@@ -30,6 +30,9 @@ const modelResponse=()=>({ok:true,json:async()=>({data:[{id:'test-model',quantiz
  const a=adapter.importRun({id:'test',results:[]});
  const b=adapter.importRun({id:'test',results:[]});
  assert.notStrictEqual(a.id,b.id);
+ const outcomes=adapter.importRun({id:'outcomes',results:['ok','ok','failed','skipped','cancelled'].map(status=>({model:'m',target_tokens:512,status}))});
+ const outcomesSummary=(await adapter.request('/api/runs')).runs.find(run=>run.id===outcomes.id);
+ assert.deepStrictEqual(['n_results','n_ok','n_failed','n_skipped','n_cancelled'].map(key=>outcomesSummary[key]),[5,2,1,1,1]);
  assert.strictEqual((await adapter.request('/api/import',{method:'POST',body:JSON.stringify({runs:[{id:'other',results:[]}]})})).runs.length,1);
  assert(![...storage.values()].join('').includes('secret'));
  const before=storage.get('wattever.browser.runs.v1');

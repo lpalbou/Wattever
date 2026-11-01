@@ -164,7 +164,7 @@
     return result;
   }
   function exportRun(run) { const copy = publicProjection(run); delete copy.community; return copy; }
-  function summary(run) { const rows = run.results || []; return {community:!!run.community, id:run.id, label:run.label, notes:run.notes, created_at:run.created_at, status:run.status, gpu:run.gpu || {}, host:run.host || {}, hardware:run.hardware || {}, config:run.config || {}, models:[...new Set(rows.map(r=>r.model).filter(Boolean))], sizes:[...new Set(rows.map(r=>r.target_tokens).filter(Boolean))], concurrency_levels:[...new Set(rows.map(r=>r.concurrency || 1))], n_results:rows.length, n_ok:rows.filter(r=>r.status === "ok").length, n_failed:rows.filter(r=>r.status !== "ok").length}; }
+  function summary(run) { const rows = run.results || []; return {community:!!run.community, id:run.id, label:run.label, notes:run.notes, created_at:run.created_at, status:run.status, gpu:run.gpu || {}, host:run.host || {}, hardware:run.hardware || {}, config:run.config || {}, models:[...new Set(rows.map(r=>r.model).filter(Boolean))], sizes:[...new Set(rows.map(r=>r.target_tokens).filter(Boolean))], concurrency_levels:[...new Set(rows.map(r=>r.concurrency || 1))], n_results:rows.length, n_ok:rows.filter(r=>r.status === "ok").length, n_failed:rows.filter(r=>r.status === "failed").length, n_skipped:rows.filter(r=>r.status === "skipped").length, n_cancelled:rows.filter(r=>r.status === "cancelled").length}; }
   function status() { return {running, cancelling, run_id:active && active.id, run:active && summary(active), live, storage_error:storageError}; }
   function emit(kind, extra) { events.push(Object.assign({kind, seq:events.length}, extra)); }
   function configure(config) {

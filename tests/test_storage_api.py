@@ -31,6 +31,13 @@ class StorageTests(unittest.TestCase):
                     "results": [{"model": "model", "target_tokens": 512, "concurrency": 1,
                                  "status": "ok", "decode_tps": 10}]}
 
+    def test_summary_separates_failures_from_unattempted_cases(self):
+        self.run['results'] = [dict(self.run['results'][0], status=status)
+                               for status in ('ok', 'ok', 'failed', 'skipped', 'cancelled')]
+        summary = store.summarise(self.run)
+        self.assertEqual([summary[key] for key in ('n_results', 'n_ok', 'n_failed', 'n_skipped', 'n_cancelled')],
+                         [5, 2, 1, 1, 1])
+
     def test_save_retries_transient_permission_error(self):
         store.save(self.run)
         updated = copy.deepcopy(self.run)

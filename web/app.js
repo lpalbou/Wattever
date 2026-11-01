@@ -1310,6 +1310,8 @@ function renderRunsList() {
             ${run.community ? '<span class="badge accent badge-shared">Shared</span>' : ""}
             <span class="badge">${run.n_ok} ok</span>
             ${run.n_failed ? `<span class="badge">${run.n_failed} failed</span>` : ""}
+            ${run.n_skipped ? `<span class="badge">${run.n_skipped} skipped</span>` : ""}
+            ${run.n_cancelled ? `<span class="badge">${run.n_cancelled} cancelled</span>` : ""}
             ${(run.mtp_modes || []).includes("on") ? '<span class="badge accent">MTP</span>' : ""}
             ${run.status === "running" ? '<span class="badge badge-live">Live</span>' : run.status !== "completed" ? `<span class="badge">${esc(run.status)}</span>` : ""}
           </span>
