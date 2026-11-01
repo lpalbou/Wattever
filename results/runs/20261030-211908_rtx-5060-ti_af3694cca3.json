@@ -58009,10 +58009,35 @@
    "configured_clock_mhz_reported": [
     2133
    ],
-   "channel_count": null,
+   "channel_count": 4,
    "measured_bandwidth_gb_s": null,
    "source": "Win32_PhysicalMemory",
-   "note": "Module count does not establish active memory channels. Clocks are firmware/OS reports; bandwidth has not been benchmarked."
+   "note": "Channel topology includes source, method and capture time. Populated channels and active controller mode are distinct. Clocks are firmware/OS reports; transfer probes are stored separately.",
+   "channel_topology": {
+    "status": "detected",
+    "source": "CPU-Z 3.01.0 independent controller check",
+    "method": "memory_controller_active_mode_report",
+    "captured_at": "2026-11-01T16:26:56.313369+00:00",
+    "channel_count": 4,
+    "populated_channel_count": 4,
+    "active_channel_count": 4,
+    "note": "Independent controller report identified Quad mode. Built-in firmware topology corroborates four populated channels. This later check does not establish historical inference settings; Wattever requires no CPU-Z installation.",
+    "memory_type": "DDR4",
+    "dram_clock_mhz_detected": 1065.2,
+    "effective_transfer_rate_mt_s_derived": 2130.4,
+    "native_probe": {
+     "status": "inferred",
+     "source": "SMBIOS Type 17",
+     "method": "explicit_firmware_channel_slot_labels",
+     "captured_at": "2026-11-01T16:36:57.579366+00:00",
+     "channel_count": 4,
+     "populated_channel_count": 4,
+     "active_channel_count": null,
+     "note": "Populated channels inferred from explicit firmware channel/slot labels, not DIMM count. Active controller mode is unverified."
+    },
+    "provenance": "detected_later_on_matching_hardware",
+    "historical_inference_conditions_verified": false
+   }
   },
   "motherboard": {
    "manufacturer": "EVGA INTERNATIONAL CO.,LTD",
@@ -126558,6 +126583,36 @@
      }
     ],
     "provenance": "measured_later_on_matching_hardware",
+    "historical_inference_conditions_verified": false
+   }
+  },
+  {
+   "kind": "memory_topology",
+   "captured_at": "2026-11-01T16:26:56.313369+00:00",
+   "provenance": "detected_later_on_matching_hardware",
+   "memory_topology": {
+    "status": "detected",
+    "source": "CPU-Z 3.01.0 independent controller check",
+    "method": "memory_controller_active_mode_report",
+    "captured_at": "2026-11-01T16:26:56.313369+00:00",
+    "channel_count": 4,
+    "populated_channel_count": 4,
+    "active_channel_count": 4,
+    "note": "Independent controller report identified Quad mode. Built-in firmware topology corroborates four populated channels. This later check does not establish historical inference settings; Wattever requires no CPU-Z installation.",
+    "memory_type": "DDR4",
+    "dram_clock_mhz_detected": 1065.2,
+    "effective_transfer_rate_mt_s_derived": 2130.4,
+    "native_probe": {
+     "status": "inferred",
+     "source": "SMBIOS Type 17",
+     "method": "explicit_firmware_channel_slot_labels",
+     "captured_at": "2026-11-01T16:36:57.579366+00:00",
+     "channel_count": 4,
+     "populated_channel_count": 4,
+     "active_channel_count": null,
+     "note": "Populated channels inferred from explicit firmware channel/slot labels, not DIMM count. Active controller mode is unverified."
+    },
+    "provenance": "detected_later_on_matching_hardware",
     "historical_inference_conditions_verified": false
    }
   }

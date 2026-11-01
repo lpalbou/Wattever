@@ -672,7 +672,7 @@ async function renderResultsView() {
   const shown = shownModels(models);
   $("#summary-export").href = "/api/export.csv?ids=" + ids.map(encodeURIComponent).join(",");
   $("#summary-export").hidden = !runs.length;
-  const detailSignature = JSON.stringify([state.selected, state.comparisonConcurrency, resultsConnectionKey(), !!state.env?.capabilities?.extend, runs.map(run => [run.id, run.status, run.label, run.notes, (run.results || []).length])]);
+  const detailSignature = JSON.stringify([state.selected, state.comparisonConcurrency, resultsConnectionKey(), !!state.env?.capabilities?.extend, runs.map(run => [run.id, run.status, run.label, run.notes, (run.results || []).length, run.hardware?.memory, run.hardware_follow_ups])]);
   if (detailSignature !== state.detailSignature) {
     const selection = JSON.stringify([...state.compare]);
     const keepDetailsOpen = state.detailSelection === selection && $("#run-detail details")?.open;
@@ -847,8 +847,21 @@ function machineHeaderMarkup(env) {
   const size=value=>value>0 ? Number(value.toFixed(1))+" GiB" : "Unreported";
   const shared=(gpu.memory_architecture || card.memory_architecture)==="unified";
   return [["CPU",compactCpuName(cpu),cpu],["GPU",gpuName.replace(/^NVIDIA (?:GeForce\s+)?/,"")+(hw.gpus?.length>1 ? ` +${hw.gpus.length-1} GPU` : ""),gpuName],
-    ["RAM",size(ram/1073741824),"System memory"],[shared ? "Shared memory" : "VRAM",size(vram),shared ? "Unified memory shared with CPU" : "Per-card GPU memory"]]
+    ["RAM",size(ram/1073741824)+(hw.memory?.channel_count ? ` · ${hw.memory.channel_count} ch` : ""),memoryChannelBadges(hw.memory)[0].title],[shared ? "Shared memory" : "VRAM",size(vram),shared ? "Unified memory shared with CPU" : "Per-card GPU memory"]]
     .map(([label,value,title])=>`<span class="machine-header-item" title="${esc(title || value)}"><small>${esc(label)}</small><strong${label==="GPU" ? ' id="machine-name"' : label==="VRAM" || label==="Shared memory" ? ' id="machine-memory"' : ""}>${esc(value)}</strong></span>`).join("");
+}
+function memoryChannelBadges(memory={}) {
+  memory=memory || {};
+  const topology=memory.channel_topology || {}, active=topology.active_channel_count;
+  const count=active || topology.populated_channel_count || memory.channel_count;
+  const source=topology.source || "Source unreported";
+  const later=topology.provenance === "detected_later_on_matching_hardware";
+  const title=[source,topology.method,topology.captured_at,topology.note || topology.reason,
+    later && "Detected after this benchmark; historical inference conditions were not verified."].filter(Boolean).join(" · ");
+  if(!count) return [{label:"Channels unreported",title:title || "No channel topology supplied. DIMM count and bandwidth do not establish channels."}];
+  return [{label:`${count} ${active ? "active channels" : topology.populated_channel_count ? "populated channels" : "channels · reported"}`,title},
+    {label:active ? "Controller detected" : topology.status === "inferred" ? "Firmware layout · inferred" : "OS / firmware reported",title},
+    ...(later ? [{label:"Detected later",title}] : [])];
 }
 function hardwareTile(label,value,badges=[],icon="") {
   return `<article class="hardware-tile"><span class="hardware-tile-label">${icon ? hardwareGlyph(icon) : ""}${esc(label)}</span><strong>${esc(value || "Unreported")}</strong><div class="condition-badges">${badges.filter(Boolean).map(item=>typeof item === "string" ? conditionBadge(item) : conditionBadge(item.label,item.title)).join("")}</div></article>`;
@@ -863,7 +876,7 @@ function hardwareMarkup(hw) {
   const gib=bytes=>bytes>0 ? Number((bytes/1073741824).toFixed(1))+" GiB" : "Unreported";
   const ram=memory.installed_capacity_bytes || system.memory_bytes;
   const compute=[hardwareTile("CPU",compactCpuName(cpu.name),[cpu.physical_cores && `${cpu.physical_cores} cores`,cpu.logical_cores && `${cpu.logical_cores} threads`,cpu.socket_count && `${cpu.socket_count} socket${cpu.socket_count===1 ? "" : "s"}`],"cpu"),
-    hardwareTile("System memory",gib(ram),[memory.module_count && `${memory.module_count} modules`,...(memory.configured_clock_mhz_reported || []).map(clock=>({label:`${clock} reported clock`,title:"Firmware/OS report, not an independent clock measurement"})),memory.channel_count ? `${memory.channel_count} channels` : "Channels unreported"],"memory")];
+    hardwareTile("System memory",gib(ram),[memory.module_count && `${memory.module_count} modules`,...(memory.configured_clock_mhz_reported || []).map(clock=>({label:`${clock} reported clock`,title:"Firmware/OS report, not an independent clock measurement"})),...memoryChannelBadges(memory)],"memory")];
   for(const [index,card] of (hw.gpus || []).entries()) {
     const link=card.pcie || {}, shared=card.memory_architecture==="unified";
     compute.push(hardwareTile(`GPU ${index+1}`,String(card.name || "GPU unreported").replace(/^NVIDIA (?:GeForce\s+)?/,""),[
@@ -905,6 +918,8 @@ function hardwareBadgesMarkup(source) {
   if (ram > 0) badges.push(conditionBadge(`${Number((ram / 1073741824).toFixed(1))} GiB RAM`));
   const clocks = hw.memory?.configured_clock_mhz_reported || [];
   if (clocks.length) badges.push(conditionBadge(`${clocks.join(" / ")} RAM clock`, "Firmware/OS reported value; not a measured memory clock"));
+  badges.push(...memoryChannelBadges(hw.memory).map(item=>conditionBadge(item.label,item.title)));
+  if ((source.hardware_follow_ups || []).some(item=>item.kind === "memory_topology" && item.status === "pending")) badges.push(conditionBadge("Memory check pending reconnect","Reconnect this benchmark's GPU to capture memory topology on its matching configuration."));
   const profile = hw.transfer_bandwidth;
   const disks = [...(hw.storage || []), ...(profile ? [profile.storage_to_ram, ...(profile.storage_volumes || [])].filter(Boolean) : [])];
   const kinds = new Map();
@@ -1109,6 +1124,13 @@ function renderHardware() {
   if ($("#machine-badges")) $("#machine-badges").innerHTML = machineHeaderMarkup(state.env);
   $("#hardware-inventory").innerHTML = (state.env.hardware?.source === "manual" ? '<p class="hint">Hardware details entered manually; not detected or measured.</p>' : "") + hardwareMarkup(state.env.hardware);
   if (!browserMode()) {
+    if(state.env.capabilities?.memory_topology) {
+      const followUps=state.env.hardware_follow_ups || [];
+      $("#hardware-inventory").insertAdjacentHTML("beforeend", memoryFollowUpMarkup(followUps));
+      $("#hardware-inventory").querySelectorAll("[data-memory-follow-up]").forEach(button=>button.addEventListener("click",()=>refreshMemoryTopology(button.dataset.memoryFollowUp,button,Number(button.dataset.gpuIndex) || 0)));
+      $("#hardware-inventory").insertAdjacentHTML("beforeend", '<button class="btn-sm" id="detect-memory-topology">Refresh memory topology</button><span class="hint" id="memory-topology-status"> Built-in OS / firmware probe; no install needed.</span>');
+      $("#detect-memory-topology").addEventListener("click",event=>refreshMemoryTopology(null,event.target));
+    } else $("#hardware-inventory").insertAdjacentHTML("beforeend", '<p class="hint">Relaunch the desktop helper to enable built-in memory topology detection.</p>');
     $("#hardware-inventory").insertAdjacentHTML("beforeend", '<button class="btn-sm" id="measure-transfers">Measure transfer bandwidth</button><span class="hint" id="transfer-status"> Auto-measured before benchmarks.</span>');
     $("#measure-transfers").addEventListener("click", async (event) => {
       event.target.disabled = true;
@@ -1126,6 +1148,30 @@ function renderHardware() {
   if ($("#storage-probe-field")) $("#storage-probe-field").hidden = browserMode();
   const sensors = gpus.filter((g) => g.sensor_index != null);
   $("#gpu-index").innerHTML = sensors.length ? sensors.map((g) => `<option value="${esc(g.sensor_index)}">${esc(g.sensor_index)}: ${esc(g.name)}</option>`).join("") : '<option value="0">0 (default sensor)</option>';
+}
+function memoryFollowUpMarkup(followUps=[]) {
+  return followUps.length ? `<section class="hardware-section memory-follow-ups"><h4>Configuration check due</h4>${followUps.map(item=>`<div class="probe-empty">${conditionBadge(item.label)}<span>Matching GPU reconnected: update this benchmark's memory channel record.</span><button class="btn-sm" data-memory-follow-up="${esc(item.run_id)}" data-gpu-index="${esc(item.gpu_index ?? 0)}">Update memory topology</button></div>`).join("")}</section>` : "";
+}
+async function refreshMemoryTopology(runId,button,gpuIndex) {
+  button.disabled=true;
+  const status=$("#memory-topology-status");
+  if(status) status.textContent=" Reading built-in OS / firmware topology…";
+  try {
+    const result=await api("/api/hardware/memory",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({run_id:runId || undefined,gpu_index:gpuIndex ?? (Number($("#gpu-index").value) || 0)})});
+    state.env.hardware.memory=result.memory;
+    if(runId) {
+      state.env.hardware_follow_ups=(state.env.hardware_follow_ups || []).filter(item=>item.run_id !== runId);
+      delete state.runCache[runId];state.detailSignature=null;
+      await loadRuns();
+    }
+    renderHardware();
+    $("#memory-topology-status").textContent=result.memory.channel_topology?.status === "unavailable"
+      ? " Channel topology unavailable from this OS / firmware. No channel count was assumed."
+      : " Topology captured; badges identify the source and verification level.";
+  } catch(error) {
+    if(status) status.textContent=" "+error.message;
+    button.disabled=false;
+  }
 }
 function renderConcurrency() {
   const levels = [...new Set([...CONCURRENCY_PRESETS, ...state.concurrencyLevels])].sort((a, b) => a - b);
@@ -1540,7 +1586,7 @@ async function loadRuns() {
   state.runs = runs;
   for (const summary of runs) {
     const cached = state.runCache[summary.id];
-    if (cached && ((cached.results || []).length !== summary.n_results || cached.status !== summary.status || (cached.label || "") !== (summary.label || "") || (cached.notes || "") !== (summary.notes || ""))) delete state.runCache[summary.id];
+    if (cached && ((cached.results || []).length !== summary.n_results || cached.status !== summary.status || (cached.label || "") !== (summary.label || "") || (cached.notes || "") !== (summary.notes || "") || JSON.stringify(cached.hardware?.memory) !== JSON.stringify(summary.hardware?.memory))) delete state.runCache[summary.id];
   }
   state.compare = new Set([...state.compare].filter((id) => runs.some((run) => run.id === id)));
   if ((!state.selectionInitialized || (state.selected && !runs.some((run) => run.id === state.selected))) && runs.length) state.compare.add(runs[0].id);

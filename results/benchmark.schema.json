@@ -141,7 +141,11 @@
         },
         "memory": {
           "type": "object",
-          "description": "Allowlisted DIMM reports; module count does not establish channels. Bandwidth is null unless measured."
+          "description": "Allowlisted DIMM reports and dependency-free OS/firmware topology. Populated channels and active controller mode are distinct; DIMM count and bandwidth do not establish either.",
+          "properties": {
+            "channel_count": {"type": ["integer", "null"], "minimum": 1},
+            "channel_topology": {"$ref": "#/$defs/memoryTopology"}
+          }
         }
       }
     },
@@ -402,6 +406,21 @@
     }
   },
   "$defs": {
+    "memoryTopology": {
+      "type": "object",
+      "required": ["status", "source", "method", "captured_at", "channel_count", "active_channel_count", "populated_channel_count"],
+      "properties": {
+        "status": {"enum": ["reported", "inferred", "detected", "unavailable"]},
+        "source": {"type": ["string", "null"]},
+        "method": {"type": ["string", "null"]},
+        "captured_at": {"type": "string", "format": "date-time"},
+        "channel_count": {"type": ["integer", "null"], "minimum": 1},
+        "populated_channel_count": {"type": ["integer", "null"], "minimum": 1},
+        "active_channel_count": {"type": ["integer", "null"], "minimum": 1},
+        "historical_inference_conditions_verified": {"type": "boolean"},
+        "provenance": {"type": "string"}
+      }
+    },
     "transferBandwidth": {
       "type": "object",
       "required": ["schema_version", "protocol", "captured_at", "scope", "unit", "storage_to_ram", "ram_to_vram"],

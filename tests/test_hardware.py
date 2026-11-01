@@ -4,6 +4,7 @@ import subprocess
 from types import SimpleNamespace
 from unittest.mock import patch
 from wattever import hardware, power
+from wattever import memory_topology
 
 
 class InventoryTests(unittest.TestCase):
@@ -16,6 +17,9 @@ class InventoryTests(unittest.TestCase):
         self.pcie_patch = patch.object(hardware, '_nvidia_pcie', return_value=hardware._pcie(None, None))
         self.memory_patch.start()
         self.pcie_patch.start()
+        self.topology_patch = patch.object(memory_topology, 'capture', return_value=memory_topology.unavailable())
+        self.topology_patch.start()
+        self.addCleanup(self.topology_patch.stop)
         self.addCleanup(self.info_patch.stop)
         self.addCleanup(self.equipment_patch.stop)
         self.addCleanup(self.memory_patch.stop)

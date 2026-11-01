@@ -369,6 +369,26 @@ class Handler(BaseHTTPRequestHandler):
                         return self._error(409, "Wait for the benchmark to finish before linking results.")
                     body = self._body()
                     return self._json(store.link_runs(body.get("run_ids"), body.get("label", "Machine benchmark")))
+            if route == "/api/hardware/memory":
+                with WORK_LOCK:
+                    if _any_running():
+                        return self._error(409, "Wait for the benchmark to finish before detecting memory topology.")
+                    from . import memory_topology
+                    body = self._body()
+                    gpu_index = body.get("gpu_index", 0)
+                    if type(gpu_index) is not int or not 0 <= gpu_index <= 255:
+                        raise ValueError("GPU sensor index must be an integer in 0..255.")
+                    target = store.load(body["run_id"]) if body.get("run_id") else None
+                    if body.get("run_id") and target is None:
+                        return self._error(404, "no such run")
+                    current = {"hardware": hardware.inventory(), "gpu": power.gpu_info(gpu_index)}
+                    topology = current["hardware"]["memory"]["channel_topology"]
+                    if target:
+                        memory_topology.backfill(copy.deepcopy(target), current, topology)
+                        store.backup(target["id"])
+                        memory_topology.backfill(target, current, topology)
+                        store.save(target)
+                    return self._json({"memory": current["hardware"]["memory"], "run_id": body.get("run_id")})
             if route == "/api/hardware/bandwidth":
                 with WORK_LOCK:
                     if _any_running():
@@ -528,18 +548,19 @@ class Handler(BaseHTTPRequestHandler):
                     "provider": endpoints.public_provider(cfg)}
 
     def env_payload(self):
-        from . import bandwidth
+        from . import bandwidth, memory_topology
         models = self.models_payload()
         selected, missing = default_selection(models)
         cli = lmstudio.LmsCli()
         server_up = cli.server_running()
         gpu = power.gpu_info(0)
+        sensors = power.list_gpus()
         machine = hardware.inventory()
         profile = bandwidth.latest()
         if profile is None:
             profile = bandwidth.saved_capture(machine, gpu)
         return {
-            "gpus": power.list_gpus(),
+            "gpus": sensors,
             "gpu": gpu,
             "platform": platform_util.platform_label(),
             "power": {
@@ -551,6 +572,7 @@ class Handler(BaseHTTPRequestHandler):
             },
             "host": store.host_info(),
             "hardware": dict(machine, transfer_bandwidth=profile),
+            "hardware_follow_ups": memory_topology.pending(store.list_runs(full=True), sensors),
             "lms": {"cli": cli.available, "exe": cli.exe,
                     "server": server_up, "version": cli.version()},
             "models": models,
@@ -560,7 +582,8 @@ class Handler(BaseHTTPRequestHandler):
             "defaults": runner.DEFAULT_CONFIG,
             "capabilities": {"resume": True, "extend": True, "context_planning": True, "context_planner_version": 1,
                              "providers": ["lmstudio", "openai"], "external_model_management": False,
-                             "capability_benchmarks": True, "transfer_bandwidth": True},
+                             "capability_benchmarks": True, "transfer_bandwidth": True,
+                             "memory_topology": True},
             "size_presets": [512, 5000, 10000, 20000, 40000, 80000,
                              100000, 120000, 150000, 200000, 260000],
             "concurrency_presets": list(range(1, 11)) + [15, 20, 30, 40, 50, 75, 100],

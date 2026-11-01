@@ -80,13 +80,16 @@ def _memory_inventory():
     installed = sum(capacities) if capacities and len(capacities) == len(modules) else None
     if pu.IS_MAC:
         installed = _positive(pu.sysctl('hw.memsize'))
+    from . import memory_topology
+    topology = memory_topology.capture(len(modules) if modules else None)
     return {'modules': modules, 'module_count': len(modules) if modules else None,
             'installed_capacity_bytes': installed,
             'configured_clock_mhz_reported': sorted(set(m['configured_clock_mhz_reported'] for m in modules
                                                        if m.get('configured_clock_mhz_reported'))),
-            'channel_count': None, 'measured_bandwidth_gb_s': None,
+            'channel_count': topology['channel_count'], 'channel_topology': topology,
+            'measured_bandwidth_gb_s': None,
             'source': source,
-            'note': 'Module count does not establish active memory channels. Clocks are firmware/OS reports; bandwidth has not been benchmarked.'}
+            'note': 'Channel topology includes its source and detection method; populated channels do not verify active controller mode. Module count does not establish channels. Clocks are firmware/OS reports; measured transfer probes are stored separately.'}
 
 
 def _pcie(gen, width, max_gen=None, max_width=None, source=None):

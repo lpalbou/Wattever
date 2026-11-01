@@ -11,4 +11,13 @@ context.hw={cpu:{name:'CPU<script>',physical_cores:6,logical_cores:12},system:{m
 html=vm.runInContext('hardwareMarkup(hw)',context);
 for(const label of ['Compute &amp; memory','Storage inventory','Transfer measurements','Platform','hardware-tile','6 cores','12 threads','4 modules','2 devices','HDD','SSD','NVMe'])assert(html.includes(label),label);
 assert.match(html,/CPU&lt;script&gt;/);assert.doesNotMatch(html,/<script>/);assert.doesNotMatch(html,/PCIe snapshot:|CPU sockets:/);
+context.hw.memory={module_count:4,channel_count:2,channel_topology:{status:'inferred',source:'SMBIOS Type 17',populated_channel_count:2,active_channel_count:null,note:'Active controller mode unverified'}};
+html=vm.runInContext('hardwareMarkup(hw)',context);
+assert.match(html,/2 populated channels/);assert.match(html,/Firmware layout/);assert.doesNotMatch(html,/2 active channels/);
+context.hw.memory.channel_topology={status:'detected',source:'Controller',channel_count:4,active_channel_count:4,provenance:'detected_later_on_matching_hardware'};
+html=vm.runInContext('hardwareBadgesMarkup({hardware:hw})',context);
+assert.match(html,/4 active channels/);assert.match(html,/Detected later/);assert.match(html,/historical inference conditions were not verified/);
+html=vm.runInContext('memoryFollowUpMarkup([{run_id:"5070",label:"RTX 5070 Ti"}])',context);
+assert.match(html,/Matching GPU reconnected/);assert.match(html,/data-memory-follow-up="5070"/);
+assert.equal(vm.runInContext('memoryFollowUpMarkup([])',context),'');
 console.log('Visual machine header, grouped hardware tiles, accurate memory and unknown states passed');

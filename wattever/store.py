@@ -242,6 +242,7 @@ def summarise(run):
         "hardware": run.get("hardware") or {},
         "classification": run.get("classification") or {},
         "comparison_group": run.get("comparison_group"),
+        "hardware_follow_ups": run.get("hardware_follow_ups", []),
         "schema_version": run.get("schema_version", 1),
         "concurrency_levels": sorted({r.get("concurrency", 1) for r in results}),
         "models": sorted({r.get("model") for r in results if r.get("model")}),
@@ -395,6 +396,12 @@ CSV_COLUMNS = [
     ("ram_copy_single_bytes_per_second", lambda r, run: _transfer_profile(r, run).get("ram_copy_single", {}).get("bytes_per_second")),
     ("ram_copy_parallel_bytes_per_second", lambda r, run: _transfer_profile(r, run).get("ram_copy_parallel", {}).get("bytes_per_second")),
     ("ram_configured_clock_mhz_reported", lambda r, run: json.dumps(_session_hardware(r, run).get("memory", {}).get("configured_clock_mhz_reported", []))),
+    ("ram_channel_count", lambda r, run: _memory_topology(r, run).get("channel_count")),
+    ("ram_active_channel_count", lambda r, run: _memory_topology(r, run).get("active_channel_count")),
+    ("ram_channel_source", lambda r, run: _memory_topology(r, run).get("source")),
+    ("ram_channel_method", lambda r, run: _memory_topology(r, run).get("method")),
+    ("ram_channel_captured_at", lambda r, run: _memory_topology(r, run).get("captured_at")),
+    ("ram_channel_provenance", lambda r, run: _memory_topology(r, run).get("provenance", "session_inventory")),
     ("additional_storage_volumes", lambda r, run: json.dumps(_transfer_profile(r, run).get("storage_volumes", []))),
     ("transfer_bandwidth_captured_at", lambda r, run: _transfer_profile(r, run).get("captured_at")),
     ("transfer_bandwidth_provenance", lambda r, run: _transfer_profile(r, run).get("provenance")),
@@ -413,6 +420,11 @@ def _transfer_profile(row, run):
 def _session_config(row, run):
     return next((session.get("config", {}) for session in run.get("sessions", [])
                  if session.get("id") == row.get("session_id")), run.get("config") or {})
+
+
+def _memory_topology(row, run):
+    recorded = _session_hardware(row, run).get("memory", {}).get("channel_topology") or {}
+    return recorded if recorded.get("channel_count") else (run.get("hardware") or {}).get("memory", {}).get("channel_topology") or {}
 
 
 def _session_hardware(row, run):
