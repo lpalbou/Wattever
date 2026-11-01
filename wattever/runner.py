@@ -1269,10 +1269,14 @@ class BenchRunner:
             base.update({"fail_kind": FAIL_TIMEOUT if timed_out else failure.get("fail_kind", FAIL_ERROR),
                          "message": failure.get("message", "One or more requests failed.")})
             if timed_out:
+                recovery_note = ("server-side cancellation could not be verified; benchmark stopped"
+                                 if cfg.get("provider") == "openai" else
+                                 "managed model unload and request-worker exit could not be verified; benchmark stopped"
+                                 if recovery_error else "managed model unloaded and request-workers exited")
                 base.update(timeout_trigger="decode inactivity" if stalled else "configured deadline",
                             timeout_elapsed_s=wall,
-                            message="Group exceeded %s; managed model unload and request-worker exit were checked." %
-                                    ("decode inactivity limit" if stalled else "configured per-test timeout"))
+                            message="Group exceeded %s; %s." %
+                                    ("decode inactivity limit" if stalled else "configured per-test timeout", recovery_note))
         return base
 
     def _record(self, run, result, done):

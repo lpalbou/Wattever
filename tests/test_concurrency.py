@@ -67,6 +67,26 @@ class ConcurrencyTests(unittest.TestCase):
         self.assertEqual(result["status"], "cancelled")
         self.assertEqual(result["message"], "Cancelled by the user.")
 
+    def test_external_timeout_preserves_unverified_cancellation(self):
+        cfg = dict(self.cfg, provider="openai", per_test_timeout_s=0.03)
+        def blocked(*args, **kwargs):
+            while not kwargs["cancel"].is_set():
+                time.sleep(0.001)
+            raise runner.lmstudio.Cancelled()
+        def recover(model, threads, responses):
+            for thread in threads:
+                thread.join(timeout=5)
+            self.assertTrue(all(not thread.is_alive() for thread in threads))
+            raise runner.RecoveryError("External server cancellation is unverified")
+        with patch.object(self.runner, "_measure_completion", side_effect=blocked), \
+             patch.object(self.runner, "_recover_requests", side_effect=recover):
+            result = self.runner._concurrent_test({"nonce":"abc"}, cfg, "m", "Benchmark request abc\n", 2, None)
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result["fail_kind"], runner.FAIL_TIMEOUT)
+        self.assertIn("server-side cancellation could not be verified", result["message"])
+        self.assertNotIn("managed model unload", result["message"])
+        self.assertIn("unverified", result["recovery_error"])
+
 
 class StreamingIntegrationTests(unittest.TestCase):
     def test_http_streams_overlap_and_validate_completion(self):
