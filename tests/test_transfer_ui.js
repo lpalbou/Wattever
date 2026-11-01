@@ -17,3 +17,7 @@ html = vm.runInContext('transferBandwidthMarkup(profile)', context);
 assert.match(html, /Unavailable: &lt;driver unavailable&gt;/);
 assert.doesNotMatch(html, /13.54/);
 console.log('Transfer bandwidth labels, units, unavailable state and historical provenance passed');
+context.taggedRun = {tags: ['RTX 5070 Ti', 'Strata', '<script>'], config: {}};
+const taggedHtml = vm.runInContext('scientificMetadata(taggedRun)', context);
+assert.match(taggedHtml, /Tags:<\/b> RTX 5070 Ti · Strata · &lt;script&gt;/);
+assert.doesNotMatch(taggedHtml, /<script>/);

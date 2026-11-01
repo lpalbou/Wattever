@@ -754,7 +754,9 @@ function scientificMetadata(run) {
   const claims = run.performance_claims || run.config?.performance_claims || [];
   const provider = run.provider || {};
   const scope = run.measurement_scope || {};
+  const tags = Array.isArray(run.tags) ? run.tags.filter(tag => typeof tag === "string").slice(0, 24) : [];
   return (provider.kind ? `<p class="hint"><b>Provider:</b> ${esc(provider.label || provider.kind)}; ${esc(provider.model_management || "unknown")} model management.</p>` : "")
+    + (tags.length ? `<p class="hint"><b>Tags:</b> ${tags.map(esc).join(" · ")}</p>` : "")
     + modelConfigurationsMarkup(run)
     + telemetryMarkup(run)
     + (scope.hardware_attribution ? `<p class="hint"><b>Inference hardware attribution:</b> ${esc(scope.hardware_attribution)}</p>` : "")

@@ -1,8 +1,8 @@
 {
  "id": "20261031-165925_rtx-5070-ti_57b747d701",
  "created_at": "2026-10-31T16:59:25+00:00",
- "label": "RTX 5070 Ti 15.9 GB VRAM / 63.9 GB RAM / Intel(R) Core(TM) i7-5820K CPU @ 3.30GHz",
- "notes": "Models: google/gemma-4-e4b, qwen/qwen3.5-9b, spark-x2.6-4b, lfm2.5-24b-a2b, openai/gpt-oss-20b, google/gemma-4-26b-a4b-qat, google/gemma-4-12b-qat, google/gemma-4-e2b, qwen3.8-27b@q3_k_xl, prism-ml/bonsai-27b\nPrompt tokens: 512, 5k, 10k, 20k, 40k, 80k\nSimultaneous queries: 1, 2\nAnswer: 256 tokens; repeats: 1\nPlacement: prefer GPU; CPU fallback: on\nReasoning: off; speculative decoding: off\nWarmup: on; skip larger sizes after failure: on\nContext allocation: matched to each test",
+ "label": "RTX 5070 Ti | LM Studio | 10 models",
+ "notes": "Models: google/gemma-4-e4b, qwen/qwen3.5-9b, spark-x2.6-4b, lfm2.5-24b-a2b, openai/gpt-oss-20b, google/gemma-4-26b-a4b-qat, google/gemma-4-12b-qat, google/gemma-4-e2b, qwen3.8-27b@q3_k_xl, prism-ml/bonsai-27b\nPrompt tokens: 512, 5k, 10k, 20k, 40k, 80k\nSimultaneous queries: 1, 2\nOutput limit: 256 tokens; repeats per case: 2\nEngine: LM Studio; reasoning requested off; speculative decoding off\nContext allocation: matched to each test\nPlacement and failure policies are recorded per execution session; repair sessions may differ from the initial session.\nCoverage: 240 accounted cases (222 successful, 6 failed, 12 skipped).\nPart of the RTX 5070 Ti - LM Studio + Strata comparison (13 model entries, 312 cases).",
  "gpu": {
   "name": "NVIDIA GeForce RTX 5070 Ti",
   "vram_total_mb": 16303.0,
@@ -129740,6 +129740,13 @@
    "source": "lmstudio_catalog_backfill",
    "rows": 120,
    "scope": "Matching model ID and recorded format; current catalog labels, historical weight bytes not verified"
+  },
+  {
+   "at": "2026-11-01T00:15:46.487080+00:00",
+   "kind": "publication_labels_tags_and_group",
+   "previous_label": "RTX 5070 Ti 15.9 GB VRAM / 63.9 GB RAM / Intel(R) Core(TM) i7-5820K CPU @ 3.30GHz",
+   "previous_notes": "Models: google/gemma-4-e4b, qwen/qwen3.5-9b, spark-x2.6-4b, lfm2.5-24b-a2b, openai/gpt-oss-20b, google/gemma-4-26b-a4b-qat, google/gemma-4-12b-qat, google/gemma-4-e2b, qwen3.8-27b@q3_k_xl, prism-ml/bonsai-27b\nPrompt tokens: 512, 5k, 10k, 20k, 40k, 80k\nSimultaneous queries: 1, 2\nAnswer: 256 tokens; repeats: 1\nPlacement: prefer GPU; CPU fallback: on\nReasoning: off; speculative decoding: off\nWarmup: on; skip larger sizes after failure: on\nContext allocation: matched to each test",
+   "measurements_changed": false
   }
  ],
  "previous_attempts": [
@@ -131416,6 +131423,37 @@
    "kind": "transfer_bandwidth",
    "provenance": "measured_later_on_matching_hardware"
   }
+ ],
+ "comparison_group": {
+  "id": "machine-17e888d2aaba4d60",
+  "label": "RTX 5070 Ti - LM Studio + Strata",
+  "root_run_id": "20261031-165925_rtx-5070-ti_57b747d701",
+  "run_ids": [
+   "20261031-165925_rtx-5070-ti_57b747d701",
+   "20261031-225458_rtx-5070-ti_2743a7268a",
+   "20261031-231950_rtx-5070-ti_bb78bd65b5",
+   "20261031-234041_rtx-5070-ti_d2488c8f89"
+  ],
+  "tags": [
+   "RTX 5070 Ti",
+   "LM Studio",
+   "Strata",
+   "512-80000 tokens",
+   "1-2 clients",
+   "2 repeats"
+  ],
+  "model_entry_count": 13,
+  "case_count": 312
+ },
+ "tags": [
+  "RTX 5070 Ti",
+  "LM Studio",
+  "512-80000 tokens",
+  "1-2 clients",
+  "2 repeats",
+  "MTP off",
+  "GPU placement preferred",
+  "per-test context"
  ],
  "public_export": {
   "diagnostics": "omitted",

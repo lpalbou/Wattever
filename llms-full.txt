@@ -181,6 +181,8 @@ The hosted Results view includes a shared catalog built from benchmark JSON file
 
 For a command-line contribution, fork and clone the repository, create a branch, and copy the single result file to `results/runs/`. Run `python tools/validate_results.py results/runs/<id>.json`, then `git add results/runs/<id>.json`, commit, push your branch and open a pull request. Stage the specific result file so unrelated local files and deletions are excluded.
 
+For a linked machine comparison, contribute every member listed in `comparison_group.run_ids`, including its root run. **Open machine benchmark** then selects the available members together in Results. The files retain separate engines, settings and sessions; a group does not turn externally queued requests into parallel backend execution. Use clear labels and optional public `tags` for the GPU, engine, model, quantization and technique; tags appear with the run's scientific metadata. Review notes and recorded runtime observations alongside requested/reported/effective settings. See [machine comparison linking](docs/api.md).
+
 ## Add missing tests later
 
 Same-file continuation applies to managed LM Studio runs. Generic endpoint and browser experiments require a new run; connection details are not stored in public result files.
