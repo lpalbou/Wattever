@@ -31,6 +31,7 @@ const state = {
   extension: null,
   detectedEndpoint: null,
   detectedEndpointProvider: null,
+  storageViews: {},
 };
 
 const CONCURRENCY_PRESETS = [...Array.from({length: 10}, (_, i) => i + 1), 15, 20, 30, 40, 50, 75, 100];
@@ -440,6 +441,17 @@ async function init() {
     link.href = url; link.download = run.id + "-storage-comparison.csv"; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
+  document.addEventListener("change", event => {
+    const select = event.target.closest?.("[data-storage-filter]");
+    if (!select) return;
+    const panel = select.closest("[data-storage-comparison]"), id = panel?.dataset.storageComparison;
+    const run = state.runCache[id];
+    if (!run?.storage_comparison) return;
+    const controls = Object.fromEntries(Array.from(panel.querySelectorAll("[data-storage-filter]"), input=>[input.dataset.storageFilter,input.value]));
+    state.storageViews[id] = controls;
+    panel.outerHTML = storageComparisonMarkup(run);
+    document.querySelector(`[data-storage-comparison="${CSS.escape(id)}"] [data-storage-filter="${select.dataset.storageFilter}"]`)?.focus({preventScroll:true});
+  });
   $$("[data-color-by]").forEach(button => button.addEventListener("click", () => {
     state.colorBy = button.dataset.colorBy;
     $$("[data-color-by]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
@@ -727,6 +739,68 @@ function hardwareMarkup(hw) {
     + transferBandwidthMarkup(hw.transfer_bandwidth);
 }
 
+function conditionBadge(label, title = "", kind = "") {
+  return `<span class="badge condition-badge ${esc(kind)}"${title ? ` title="${esc(title)}"` : ""}>${esc(label)}</span>`;
+}
+
+function storageKind(disk) {
+  const bus = String(disk.bus_type || disk.interface || "");
+  const media = String(disk.media_type || "");
+  if (/nvme/i.test(bus + " " + (disk.device_model || disk.model || ""))) return "NVMe";
+  if (/hdd|hard disk/i.test(media) || disk.rotational === true) return "HDD";
+  if (/ssd|solid state/i.test(media + " " + (disk.device_model || disk.model || "")) || disk.rotational === false) return "SSD";
+  return "Disk";
+}
+
+function hardwareBadgesMarkup(source) {
+  const hw = source.hardware || {}, gpu = source.gpu || {}, host = source.host || {};
+  const remote = source.config?.provider === "openai" && source.config.endpoint_inference_local === false;
+  if (remote) return `<div class="condition-badges" aria-label="Machine">${conditionBadge("Remote hardware unknown")}</div>`;
+  const cards = hw.gpus?.length ? hw.gpus : gpu.name ? [{name:gpu.name, memory_bytes:gpu.vram_total_mb * 1048576, memory_architecture:gpu.memory_architecture}] : [];
+  const badges = cards.flatMap(card => [conditionBadge(String(card.name || "GPU").replace(/^NVIDIA (?:GeForce\s+)?/, ""), "Graphics card", "gpu-badge"),
+    ...(card.memory_bytes > 0 ? [conditionBadge(`${Number((card.memory_bytes / 1073741824).toFixed(1))} GiB ${card.memory_architecture === "unified" ? "unified" : "VRAM"}`)] : [])]);
+  const ram = hw.memory?.installed_capacity_bytes || hw.system?.memory_bytes || host.ram_gb * 1073741824;
+  if (ram > 0) badges.push(conditionBadge(`${Number((ram / 1073741824).toFixed(1))} GiB RAM`));
+  const clocks = hw.memory?.configured_clock_mhz_reported || [];
+  if (clocks.length) badges.push(conditionBadge(`${clocks.join(" / ")} RAM clock`, "Firmware/OS reported value; not a measured memory clock"));
+  const profile = hw.transfer_bandwidth;
+  const disks = [...(hw.storage || []), ...(profile ? [profile.storage_to_ram, ...(profile.storage_volumes || [])].filter(Boolean) : [])];
+  const kinds = new Map();
+  for (const disk of disks) {
+    const kind = storageKind(disk), names = kinds.get(kind) || [];
+    names.push(disk.device_model || disk.model || "Storage type unavailable"); kinds.set(kind,names);
+  }
+  for (const [kind,names] of kinds) badges.push(conditionBadge(kind, [...new Set(names)].join("; "), "storage-badge"));
+  return `<div class="condition-badges" aria-label="Machine">${badges.join("")}</div>`;
+}
+
+function engineBadgesMarkup(run) {
+  const groups = run.engine_groups?.length ? run.engine_groups : [{config:run.config || {}, label:run.provider?.label}];
+  return `<div class="engine-badges" aria-label="Engine settings">${groups.map(group => {
+    const cfg = group.config || {}, external = cfg.provider === "openai";
+    const name = cfg.reproducibility?.engine || group.label || (external ? cfg.endpoint_label || "OpenAI endpoint" : "LM Studio");
+    const configurations = (run.results || []).filter(row => !group.id || row.engine_group_id === group.id).map(row => row.model_configuration).filter(Boolean);
+    const effective = [...new Set(configurations.map(item => item.mtp?.effective || "unknown"))];
+    const modes = cfg.mtp_modes || [];
+    const mtp = external ? (effective.length === 1 && effective[0] !== "unknown" ? `MTP ${effective[0]} · verified` : cfg.reported_mtp && cfg.reported_mtp !== "unknown" ? `MTP ${cfg.reported_mtp} · reported` : cfg.requested_mtp && cfg.requested_mtp !== "unknown" ? `MTP ${cfg.requested_mtp} · requested` : "MTP unknown")
+      : `MTP ${modes.length > 1 ? "on + off" : modes[0] || "unknown"} · requested`;
+    const context = cfg.reproducibility?.context_tokens;
+    return `<div class="engine-condition">${conditionBadge(name,"Inference engine","engine-badge")}${conditionBadge(mtp, external ? "Provider reported/requested state does not establish effective MTP. Inspect per-model settings." : "Benchmark technique selection; inspect per-model effective settings.")}${context ? conditionBadge(`${fmtTokens(context)} context`,"Reported engine context") : conditionBadge(cfg.context_policy === "per_test" ? "Context per test" : "Context provider controlled")}${cfg.repeats ? conditionBadge(`${cfg.repeats} repeats`) : ""}</div>`;
+  }).join("")}</div>`;
+}
+
+function bandwidthBadgesMarkup(profile) {
+  if (!profile) return "";
+  const values = [["SSD → RAM",profile.storage_to_ram],...(profile.storage_volumes || []).map(item => [`${storageKind(item)} → RAM`,item]),
+    ["RAM copy · 1 worker",profile.ram_copy_single],["RAM copy · parallel",profile.ram_copy_parallel],["RAM → VRAM",profile.ram_to_vram]];
+  if (profile.storage_to_ram) values[0][0] = `${storageKind(profile.storage_to_ram)} → RAM`;
+  return `<div class="condition-badges bandwidth-badges" aria-label="Measured bandwidth">${conditionBadge(profile.provenance === "measured_later_on_matching_hardware" ? "Independent probes" : "Transfer probes",`${profile.captured_at || "Unknown time"}; ${profile.provenance || "benchmark client"}. Separate microbenchmarks; not observed inference traffic.`)}${values.filter(([,item])=>item?.status === "ok" && item.bytes_per_second > 0).map(([label,item])=>conditionBadge(`${label}${item.volume ? ` (${item.volume})` : ""} · ${(item.bytes_per_second / 1e9).toFixed(2)} GB/s`,item.workers ? "Copied payload throughput; not peak DRAM bus bandwidth" : item.note || "Separate transfer microbenchmark")).join("")}</div>`;
+}
+
+function displayBandwidthProfile(run) {
+  return (run.hardware_measurement_history || []).filter(capture=>capture.transfer_bandwidth).slice(-1)[0]?.transfer_bandwidth || run.hardware?.transfer_bandwidth;
+}
+
 function transferBandwidthMarkup(profile) {
   if (!profile) return '<p class="hint">Storage → RAM and RAM → VRAM bandwidth: not measured.</p>';
   const measurements = [["Storage → RAM", profile.storage_to_ram || {}], ["RAM → VRAM", profile.ram_to_vram || {}],
@@ -740,17 +814,78 @@ function transferBandwidthMarkup(profile) {
   return `<details class="adv"><summary>Measured transfer bandwidth</summary>${rows}<p class="hint">${esc(profile.captured_at || "Unknown measurement time")}; ${esc(profile.provenance || "measured on benchmark client")}. ${profile.provenance === "measured_later_on_matching_hardware" ? "Measured after this benchmark on matching hardware; original inference conditions were not verified." : ""}</p><p class="hint">Median of ${esc(profile.storage_to_ram?.samples?.length ?? 0)} storage samples and ${esc(profile.ram_to_vram?.samples?.length ?? 0)} GPU samples. Separate transfer microbenchmarks; workload caching and overlap can change application throughput.</p></details>`;
 }
 
+const STORAGE_METRICS = {
+  wall_s: {label:"Completion time",unit:"s",lower:true},
+  ttft_s: {label:"Time to first token / query",unit:"s",lower:true},
+  prefill_tps: {label:"Prefill / query",unit:"tk/s",lower:false},
+  decode_tps: {label:"Decode / query",unit:"tk/s",lower:false},
+};
+function storageMedian(values) {
+  const sorted = values.filter(value => typeof value === "number" && Number.isFinite(value) && value > 0).sort((a,b)=>a-b);
+  return sorted.length ? (sorted[Math.floor((sorted.length-1)/2)] + sorted[Math.floor(sorted.length/2)]) / 2 : null;
+}
+function storageMetricValue(row,metric) {
+  if (row.status !== "ok") return null;
+  if (metric === "wall_s") return Number.isFinite(row.wall_s) && row.wall_s > 0 ? row.wall_s : null;
+  return storageMedian((row.requests || [row]).map(request => request.status && request.status !== "ok" ? null : request[metric]));
+}
+function storageComparisonGroups(run, metric = "wall_s") {
+  const comparison = run.storage_comparison || {};
+  const baseline = comparison.baseline_results || run.results || [], alternate = comparison.alternate_results || [];
+  const groupKey = row => JSON.stringify([row.model,!!row.mtp,row.concurrency || 1,row.target_tokens]);
+  const caseKey = row => JSON.stringify([!!row.mtp,row.repeat || 0]);
+  const groups = new Map((comparison.rows || []).map(row=>[groupKey(row),{...row,baseline:[],alternate:[]}]));
+  for (const [condition,rows] of [["baseline",baseline],["alternate",alternate]]) for (const row of rows) {
+    const key = groupKey(row);
+    if (!groups.has(key)) groups.set(key,{model:row.model,mtp:row.mtp,quantization:row.quantization,quantization_method:row.quantization_method,target_tokens:row.target_tokens,concurrency:row.concurrency || 1,baseline:[],alternate:[]});
+    groups.get(key)[condition].push(row);
+  }
+  return [...groups.values()].filter(group=>group.alternate.length || (comparison.rows || []).some(row=>groupKey(row)===groupKey(group))).map(group=>{
+    const original = new Map(group.baseline.map(row=>[caseKey(row),row]));
+    const paired = group.alternate.map(row=>[original.get(caseKey(row)),row]).filter(([a,b])=>a && storageMetricValue(a,metric) != null && storageMetricValue(b,metric) != null);
+    const raw = group.baseline.length || group.alternate.length;
+    const a = storageMedian((paired.length ? paired.map(pair=>pair[0]) : group.baseline).map(row=>storageMetricValue(row,metric)));
+    const b = storageMedian((paired.length ? paired.map(pair=>pair[1]) : group.alternate).map(row=>storageMetricValue(row,metric)));
+    const pairedCount = raw ? paired.length : metric === "wall_s" ? group.paired_successes || 0 : 0;
+    const primary = raw ? a : metric === "wall_s" ? (pairedCount ? group.baseline_wall_s : group.baseline_success_wall_s_median) ?? null : null;
+    const alternative = raw ? b : metric === "wall_s" ? (pairedCount ? group.alternative_wall_s : group.alternative_success_wall_s_median) ?? null : null;
+    return {...group,primary,alternative,pairedCount,
+      baselinePassed:raw ? group.baseline.filter(row=>row.status==="ok").length : group.baseline_successes,
+      alternativePassed:raw ? group.alternate.filter(row=>row.status==="ok").length : group.alternative_successes,
+      speedup:pairedCount && primary > 0 && alternative > 0 ? (STORAGE_METRICS[metric].lower ? primary/alternative : alternative/primary) : null};
+  });
+}
 function storageComparisonMarkup(run) {
   const comparison = run.storage_comparison;
   if (!comparison || comparison.protocol !== "wattever-storage-comparison-v1") return "";
+  const groups = storageComparisonGroups(run);
+  const sizes = [...new Set(groups.map(row=>row.target_tokens))].sort((a,b)=>a-b);
+  const models = [...new Set(groups.map(row=>row.model))];
+  const ratios = new Map(models.map(model=>[model,groups.filter(group=>group.model===model).flatMap(group=>{
+    const baseline = new Map(group.baseline.map(row=>[row.repeat || 0,row]));
+    return group.alternate.filter(row=>row.status === "ok" && baseline.get(row.repeat || 0)?.status === "ok" && row.wall_s > 0 && baseline.get(row.repeat || 0).wall_s > 0).map(row=>baseline.get(row.repeat || 0).wall_s/row.wall_s);
+  })]));
+  models.sort((a,b)=>(storageMedian(ratios.get(b)) || 0)-(storageMedian(ratios.get(a)) || 0));
+  const saved = state.storageViews[run.id] || {};
+  const view = {size:sizes.includes(Number(saved.size)) ? Number(saved.size) : sizes[sizes.length-1],model:models.includes(saved.model) ? saved.model : "all",concurrency:saved.concurrency || "all",metric:STORAGE_METRICS[saved.metric] ? saved.metric : "wall_s"};
+  const visible = storageComparisonGroups(run,view.metric).filter(row=>row.target_tokens===view.size && (view.model === "all" || row.model === view.model) && (view.concurrency === "all" || row.concurrency === Number(view.concurrency))).sort((a,b)=>models.indexOf(a.model)-models.indexOf(b.model) || a.concurrency-b.concurrency);
   const number = value => typeof value === "number" && Number.isFinite(value) ? value.toFixed(2) : "—";
-  const wall = (row, pairedKey, independentKey) => {
-    const paired = row.paired_successes > 0;
-    const value = paired ? row[pairedKey] : (row[independentKey] ?? row[pairedKey]);
-    return number(value) + (!paired && Number.isFinite(value) ? "<small>unpaired</small>" : "");
+  const cell = (group,condition) => {
+    const value = group[condition];
+    if (!Number.isFinite(value)) {
+      const timeout = group[condition === "primary" ? "baseline" : "alternate"].find(row=>row.status === "failed" && row.fail_kind === "timeout");
+      if (timeout) return `Timeout<small>${number(timeout.timeout_budget_s || timeout.wall_s)} s case limit</small>`;
+    }
+    return number(value) + (!group.pairedCount && Number.isFinite(value) ? "<small>unpaired</small>" : "");
   };
-  const rows = (comparison.rows || []).slice(0, 200).map(row => `<tr><td>${esc(row.model)}<small>${esc(row.quantization || "unknown quant")}</small></td><td>${esc(fmtTokens(row.target_tokens))}</td><td>${esc(row.concurrency)}</td><td>${esc(row.baseline_successes ?? "unknown")} / ${esc(row.alternative_successes ?? "unknown")}</td><td>${esc(row.paired_successes ?? 0)}</td><td>${wall(row,"baseline_wall_s","baseline_success_wall_s_median")}</td><td>${wall(row,"alternative_wall_s","alternative_success_wall_s_median")}</td><td>${number(row.wall_speedup)}${row.wall_speedup > 0 ? "×" : ""}</td></tr>`).join("");
-  return `<details class="adv"><summary>Strata storage comparison</summary><p class="hint">Primary: ${esc(comparison.baseline_label || "baseline storage")}. Alternative: ${esc(comparison.alternative_label || "alternative storage")}. Main charts retain the primary storage measurements.</p><p class="hint">${esc(comparison.cache_policy || "Cache conditions were not controlled.")} Medians use matched successful repeats. If no successful pair exists, available per-condition medians are labeled unpaired. Speedup uses matched pairs only; above 1 means the alternative completed sooner.</p><button type="button" class="btn-sm" data-storage-export="${esc(run.id)}" ${(comparison.alternate_results || []).length ? "" : "disabled"}>Export storage comparison CSV</button><div class="table-wrap"><table><thead><tr><th>Model / quant</th><th>Prompt</th><th>Queries</th><th>Passed (primary / alt)</th><th>Paired repeats</th><th>Primary wall (s)</th><th>Alternative wall (s)</th><th>Observed speedup</th></tr></thead><tbody>${rows}</tbody></table></div></details>`;
+  const shortName = model => String(model).replace(/^qwen3\.8-flash-next-unsloth-/i,"Flash Next · ").replace(/^qwen3\.8-flash-next-/i,"Flash Next · ").replace(/^qwen3\.6-35b-a3b-/i,"Qwen 3.6 35B A3B · ");
+  const headline = models.map(model=>{
+    const paired = ratios.get(model);
+    return `<div class="storage-highlight"><span title="${esc(model)}">${esc(shortName(model))}</span><strong>${number(storageMedian(paired))}${paired.length ? "×" : ""}</strong><small>median completion speedup · ${paired.length} matched cases</small></div>`;
+  }).join("");
+  const rows = visible.map(group=>`<tr><td title="${esc(group.model)}">${esc(shortName(group.model))}<div class="condition-badges">${conditionBadge(group.quantization || "Quant unknown")}${group.quantization_method ? conditionBadge(group.quantization_method) : ""}</div></td><td>${esc(group.concurrency)}</td><td>${cell(group,"primary")}</td><td>${cell(group,"alternative")}</td><td>${number(group.speedup)}${group.speedup ? "×" : ""}</td><td>${esc(group.baselinePassed ?? "unknown")} / ${esc(group.alternativePassed ?? "unknown")}</td></tr>`).join("");
+  const repeatRows = visible.flatMap(group=>[[comparison.baseline_label || "Primary",group.baseline],[comparison.alternative_label || "Alternative",group.alternate]].flatMap(([label,measurements])=>measurements.map(row=>`<tr><td title="${esc(row.model)}">${esc(shortName(row.model))}</td><td>${esc(label)}</td><td>${esc(group.concurrency)}</td><td>${esc((row.repeat || 0)+1)}</td><td>${statusCell(row)}</td><td>${number(row.wall_s)}</td><td>${number(storageMetricValue(row,"ttft_s"))}</td><td>${number(storageMetricValue(row,"prefill_tps"))}</td><td>${number(storageMetricValue(row,"decode_tps"))}</td><td><details><summary>Queries</summary>${(row.requests || [row]).map((request,index)=>`<div class="query-evidence">${conditionBadge(`Query ${index+1}`)}${conditionBadge(`${request.prompt_tokens ?? "?"} input / ${request.completion_tokens ?? "?"} output tokens`)}${conditionBadge(`${number(request.wall_s)} s total`)}${conditionBadge(`${number(request.ttft_s)} s TTFT`)}${conditionBadge(`${number(request.decode_tps)} tk/s decode`)}</div>`).join("")}</details></td></tr>`))).join("");
+  return `<section class="storage-comparison" data-storage-comparison="${esc(run.id)}" aria-label="Strata storage comparison"><header><h3>Strata · SSD vs NVMe</h3><button type="button" class="btn-sm" data-storage-export="${esc(run.id)}" ${(comparison.alternate_results || []).length ? "" : "disabled"}>Export both drives CSV</button></header><div class="condition-badges">${conditionBadge(comparison.baseline_label || "Primary","Primary measurements stay in the main charts","storage-badge")}${conditionBadge(comparison.alternative_label || "Alternative","Alternative observations stay in this comparison","storage-badge")}</div><div class="storage-highlights">${headline}</div><div class="storage-filters"><label>Prompt tokens<select data-storage-filter="size" title="Target prompt tokens for this storage comparison">${sizes.map(size=>`<option value="${size}" ${size===view.size ? "selected" : ""}>${esc(fmtTokens(size))}</option>`).join("")}</select></label><label>Queries<select data-storage-filter="concurrency" title="Number of simultaneous clients; provider scheduling remains unchanged">${["all",...[...new Set(groups.map(row=>row.concurrency))].sort((a,b)=>a-b)].map(value=>`<option value="${value}" ${String(value)===String(view.concurrency) ? "selected" : ""}>${value === "all" ? "All" : value}</option>`).join("")}</select></label><label>Measure<select data-storage-filter="metric" title="Completion covers all queries; other metrics are per-query medians. Prefill includes client TTFT and queueing.">${Object.entries(STORAGE_METRICS).map(([key,item])=>`<option value="${key}" ${key===view.metric ? "selected" : ""}>${esc(item.label)}</option>`).join("")}</select></label><label>Model<select data-storage-filter="model" title="Choose one model or compare all recorded storage variants"><option value="all">All models</option>${models.map(model=>`<option value="${esc(model)}" ${model===view.model ? "selected" : ""}>${esc(shortName(model))}</option>`).join("")}</select></label></div><div class="table-wrap"><table class="storage-numbers"><thead><tr><th>Model / quant</th><th>Queries</th><th>${esc(comparison.baseline_label || "Primary")} (${STORAGE_METRICS[view.metric].unit})</th><th>${esc(comparison.alternative_label || "Alternative")} (${STORAGE_METRICS[view.metric].unit})</th><th>Speedup</th><th>Passed (primary / alt)</th></tr></thead><tbody>${rows}</tbody></table></div><p class="hint storage-caption">${esc(fmtTokens(view.size))} prompt tokens · medians of matched successful repeats. Unpaired values have no speedup. Completion time covers all queries; other metrics use the per-query median within each repeat.</p><details class="adv storage-repeats"><summary>Individual repeats &amp; query timings</summary><div class="table-wrap"><table><thead><tr><th>Model</th><th>Storage</th><th>Queries</th><th>Repeat</th><th>Status</th><th>Completion (s)</th><th>TTFT / query (s)</th><th>Prefill / query (tk/s)</th><th>Decode / query (tk/s)</th><th>Per-query evidence</th></tr></thead><tbody>${repeatRows}</tbody></table></div></details><details class="adv"><summary>Comparison settings &amp; limits</summary><p class="hint">${esc(comparison.cache_policy || "Cache state was not controlled.")} Summary speedups are medians of matched case ratios across all prompt sizes and query counts. Two repeats are descriptive; output token counts can differ. Main charts use the primary storage condition.</p></details></section>`;
 }
 
 function storageComparisonCsv(run) {
@@ -826,7 +961,6 @@ function scientificMetadata(run) {
     + (run.engine_groups?.length ? `<p class="hint"><b>Engines in this benchmark:</b> ${run.engine_groups.map(group => `${esc(group.label)} (${(group.config?.models || []).length} models)`).join("; ")}. Settings, transfer profiles and runtime observations are retained in their execution sessions.</p>` : "")
     + (tags.length ? `<p class="hint"><b>Tags:</b> ${tags.map(esc).join(" · ")}</p>` : "")
     + ((run.hardware_measurement_history || []).some(capture => capture.transfer_bandwidth) ? `<details class="adv"><summary>Independent hardware measurements</summary>${run.hardware_measurement_history.filter(capture => capture.transfer_bandwidth).map(capture => transferBandwidthMarkup(capture.transfer_bandwidth)).join("")}</details>` : "")
-    + storageComparisonMarkup(run)
     + modelConfigurationsMarkup(run)
     + telemetryMarkup(run)
     + (scope.hardware_attribution ? `<p class="hint"><b>Inference hardware attribution:</b> ${esc(scope.hardware_attribution)}</p>` : "")
@@ -836,6 +970,7 @@ function scientificMetadata(run) {
 }
 function renderHardware() {
   const gpus = (state.env.hardware || {}).gpus || [];
+  if ($("#machine-badges")) $("#machine-badges").innerHTML = hardwareBadgesMarkup(state.env) + bandwidthBadgesMarkup(state.env.hardware?.transfer_bandwidth);
   $("#hardware-inventory").innerHTML = (state.env.hardware?.source === "manual" ? '<p class="hint">Hardware details entered manually; not detected or measured.</p>' : "") + hardwareMarkup(state.env.hardware);
   if (!browserMode()) {
     $("#hardware-inventory").insertAdjacentHTML("beforeend", '<button class="btn-sm" id="measure-transfers">Measure transfer bandwidth</button><span class="hint" id="transfer-status"> Included automatically before each benchmark.</span>');
@@ -990,13 +1125,9 @@ function checkComparability() {
 }
 
 function generatedMetadata(env, cfg) {
-  const hw = env.hardware || {}, host = env.host || {};
-  const memory = (value, unit) => Number.isFinite(value) && value > 0 ? `${Number(value.toFixed(1))} GB ${unit}` : "";
-  const cpu = (hw.cpu || {}).name || host.cpu || "";
-  const ram = memory((hw.system || {}).memory_bytes ? hw.system.memory_bytes / 1073741824 : host.ram_gb, "RAM");
+  const hw = env.hardware || {};
   const cards = (hw.gpus || []).length ? hw.gpus : (env.gpu && env.gpu.name ? [{name: env.gpu.name, memory_bytes: env.gpu.vram_total_mb * 1048576, memory_architecture: env.gpu.memory_architecture}] : []);
-  const gpuNames = cards.map((gpu) => [String(gpu.name || "Unknown GPU").replace(/^NVIDIA (?:GeForce\s+)?/, ""), memory(gpu.memory_bytes / 1073741824, gpu.memory_architecture === "unified" ? "unified" : "VRAM")].filter(Boolean).join(" "));
-  const label = cfg.provider === "openai" && !cfg.endpoint_inference_local ? (cfg.endpoint_label || "Endpoint benchmark") : [cfg.gpu_offload === "off" ? "CPU only" : gpuNames.join(" + "), ram, cpu].filter(Boolean).join(" / ") || "Local benchmark";
+  const label = cfg.provider === "openai" && !cfg.endpoint_inference_local ? (cfg.endpoint_label || "Endpoint benchmark") : (cfg.gpu_offload === "off" ? "CPU only" : cards.map(gpu => String(gpu.name || "Unknown GPU").replace(/^NVIDIA (?:GeForce\s+)?/, "")).join(" + ")) || "Local benchmark";
   const allModels = (env.models || []).filter((model) => model.type !== "embeddings").map((model) => model.id);
   const selected = cfg.models || [];
   const models = selected.length && selected.length === allModels.length && allModels.every((id) => selected.includes(id))
@@ -1037,6 +1168,7 @@ function updatePlan() {
     : "Choose at least one model and workload.";
   const reconnect = !!state.providerNeedsConnection || (genericHelper() && state.endpointSignature !== helperConnectionSignature());
   $("#start-btn").disabled = !tests || reconnect;
+  if ($("#run-condition-badges")) $("#run-condition-badges").innerHTML = engineBadgesMarkup({config:collectConfig()});
   if (reconnect && $("#helper-status")) { $("#helper-status").textContent = "Connect to apply changes."; $("#helper-status").dataset.state = "pending"; }
   checkComparability();
 }
@@ -1428,7 +1560,7 @@ function renderRunDetail(run) {
   const levelRows = (run.results || []).filter(row => (row.concurrency || 1) === state.comparisonConcurrency);
   const failureNotice = levelRows.length && !levelRows.some(row => row.status === "ok")
     ? `<p class="hint" role="status">No successful tests at concurrency ${state.comparisonConcurrency}. Check All measurements for failure details.</p>` : "";
-  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${testAction ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" || !testAction.ready ? "disabled" : ""} title="${esc(testAction.title)}">${esc(testAction.label)}</button>` : ""}<button class="btn-sm" id="rename-run" title="${run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : "Edit this benchmark name and notes"}" ${run.status === "running" || run.community ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="${run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""}>${run.community ? "Hide" : "Delete"}</button></header>${liveNotice}${sourceNotice}${measurementNotice}${failureNotice}${sessionAllocationNotice}${incompleteNotice}<div class="result-stats">${stat("Best prefill", best("prefill_tps") ? fmt(best("prefill_tps"), 0) : "?", "tk/s")}${stat("Best output", best("decode_tps") ? fmt(best("decode_tps"), 1) : "?", "tk/s")}${stat("Successful tests", `${ok.length}/${(run.results || []).length}`, "")}</div><details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}${scientificMetadata(run)}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "per_session" ? "context, placement and techniques recorded per engine/session" : cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
+  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${testAction ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" || !testAction.ready ? "disabled" : ""} title="${esc(testAction.title)}">${esc(testAction.label)}</button>` : ""}<button class="btn-sm" id="rename-run" title="${run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : "Edit this benchmark name and notes"}" ${run.status === "running" || run.community ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="${run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""}>${run.community ? "Hide" : "Delete"}</button></header>${hardwareBadgesMarkup(run)}${engineBadgesMarkup(run)}${bandwidthBadgesMarkup(displayBandwidthProfile(run))}${liveNotice}${sourceNotice}${measurementNotice}${failureNotice}${sessionAllocationNotice}${incompleteNotice}<div class="result-stats">${stat("Best prefill", best("prefill_tps") ? fmt(best("prefill_tps"), 0) : "?", "tk/s")}${stat("Best output", best("decode_tps") ? fmt(best("decode_tps"), 1) : "?", "tk/s")}${stat("Successful tests", `${ok.length}/${(run.results || []).length}`, "")}</div>${storageComparisonMarkup(run)}<details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}${scientificMetadata(run)}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "per_session" ? "context, placement and techniques recorded per engine/session" : cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
   $("#extend-run")?.addEventListener("click", () => openExtendDialog(run));
   bindTelemetry($("#run-detail"),run);
   $("#delete-run").addEventListener("click", () => deleteRun(run));

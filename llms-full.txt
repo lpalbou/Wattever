@@ -10,6 +10,7 @@
 - [Sharing results](docs/sharing-results.md): shared catalog, contributions and continuing helper sessions.
 - [Getting started](docs/getting-started.md): provider choice, automatic endpoint identity, connection, manual model IDs and first run.
 - [Measurements](docs/measurements.md): client/provider timings, cache provenance, power boundaries, hardware and compute claims.
+- [RTX 5060 Ti storage comparison](docs/5060-ti-storage-comparison.md): recorded Strata SATA/NVMe timings, repeats, speedups and hardware conditions.
 - [Capability evaluation](docs/capabilities.md): visual score/coverage dashboard, question-by-repeat evidence explorer, pinned Core/GSM8K/ARC suites and paired-comparison limits.
 - [Architecture](docs/architecture.md): components and boundaries.
 - [API](docs/api.md): automatic naming/opaque route identity, private registry boundaries, environment-based authentication, local routes and managed-only extensions.
@@ -56,7 +57,9 @@ Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/), start an O
 
 See [Getting started](docs/getting-started.md) for both provider modes and [Measurements and sessions](docs/measurements.md) for interpretation. The inference engine controls model quantization, context, KV cache and speculative decoding. GPU monitoring selects a sensor only. Generic endpoint power measurements require an explicit assertion that inference runs on the benchmark computer; remote inference power remains unavailable.
 
-**Results** provides Summary, Table and Compare views with common benchmark, model, measure and concurrency filters. Tables can be copied as tab-separated text. Managed LM Studio runs support **Add / rerun tests**; generic endpoints use new runs. One JSON file stores each benchmark. Optional reproducibility settings and sourced compute claims accompany detected hardware without being presented as detected measurements. Review JSON before publication; see [results guidance](results/README.md).
+**Results** provides Summary, Table and Compare views with common benchmark, model, measure and concurrency filters. Tables can be copied as tab-separated text. The local helper supports **Add / rerun tests** for managed LM Studio and reconnected external endpoints. One JSON file stores each benchmark. Optional reproducibility settings and sourced compute claims accompany detected hardware without being presented as detected measurements. Review JSON before publication; see [results guidance](results/README.md).
+
+Run and Results show compact GPU, memory, storage and engine-setting badges. For recorded storage experiments, the visible **SSD vs NVMe** panel compares actual timings with prompt/query/metric filters and individual repeats. See the [RTX 5060 Ti Strata comparison](docs/5060-ti-storage-comparison.md) for the measured gains and conditions.
 
 The hosted Results view also includes a shared catalog that you can browse without connecting a model provider. See [sharing results](docs/sharing-results.md) to contribute your benchmark or add missing tests later.
 
@@ -90,6 +93,7 @@ Canonical source: [docs/README.md](docs/README.md)
 - [Sharing results](docs/sharing-results.md): shared catalog, contributions and completing a benchmark later.
 - [Getting started](docs/getting-started.md): managed LM Studio or generic endpoint setup, authentication, manual model IDs and first benchmark.
 - [Measurements and sessions](docs/measurements.md): client/provider metrics, cache provenance, hardware, compute claims, power boundaries and comparisons.
+- [RTX 5060 Ti storage comparison](docs/5060-ti-storage-comparison.md): measured Strata results on Samsung SATA SSD and NVMe, both repeats, transfer rates and comparison settings.
 - [Capability evaluation](docs/capabilities.md): visual score/coverage dashboard, question-by-repeat explorer, compatible paired comparisons, offline pinned suites and audit imports.
 - [Architecture](docs/architecture.md): components and data flow.
 - [API](docs/api.md): local HTTP interface and side effects.
@@ -275,7 +279,9 @@ In Machine details, use **Additional storage folders** to compare drives during 
 
 Execution sessions retain their hardware snapshot and transfer profile, including reported RAM clocks. Later independent captures remain available in **Independent hardware measurements**. This preserves conditions across storage or memory-setting experiments.
 
-When a benchmark includes a Strata storage comparison, its primary results stay in the main charts. **Strata storage comparison** shows each condition's successful-case count and paired successful-repeat medians, and offers a separate CSV containing both conditions. A condition with more successful cases can support a workload even when no paired speedup is available. Without a successful pair, available per-condition medians are marked unpaired and speedup stays blank. Its `request_metrics_json` column preserves each query's token counts and timings, including concurrent queries. The JSON retains frozen baseline and alternative measurements. Standard benchmark CSV exports cover primary measurements. Compare token counts as well as wall time: shorter outputs can finish sooner. Cache state and observed model-loading boundaries belong in the experiment notes; a faster sequential disk test alone does not establish faster inference.
+Run and Results expose compact GPU, RAM/VRAM, storage and engine-setting badges. MTP badges distinguish requested, reported and verified states; unknown effective behavior stays unknown. Storage classes use reported media/bus evidence where available; an unspecified SATA device is not assumed to be an HDD. Full inventory and notes remain expandable. Bandwidth badges prefer an independent capture when available and identify it as **Independent probes**; hover for capture time and provenance. Each execution session retains its own probe measurements.
+
+When a benchmark includes a Strata storage comparison, its primary results stay in the main charts. The visible **Strata SSD vs NVMe** panel defaults to the largest prompt size and shows both query counts. Its cards summarize the median completion-time speedup across all matched successful cases. Filter **Prompt tokens**, **Queries**, **Measure** and **Model** for condition-specific medians, units and pass counts. Completion time covers the entire case; TTFT, prefill and decode use per-query medians within each repeat, then medians across matched repeats. Expand **Individual repeats & query timings** for raw attempts and individual query counts/timings. **Export both drives CSV** contains both conditions. The [recorded 5060 Ti comparison](docs/5060-ti-storage-comparison.md) includes both 80k repeats and machine transfer rates. A condition with more successful cases can support a workload even when no paired speedup is available. Without a successful pair, available per-condition medians are marked unpaired and speedup stays blank. Its `request_metrics_json` column preserves each query's token counts and timings, including concurrent queries. The JSON retains frozen baseline and alternative measurements. Standard benchmark CSV exports cover primary measurements. Compare token counts as well as wall time: shorter outputs can finish sooner. Cache state and observed model-loading boundaries belong in the experiment notes; a faster sequential disk test alone does not establish faster inference.
 
 
 ## Sessions and recovery
@@ -386,6 +392,62 @@ Capability files use `benchmark_kind: "capability"`, `schema_version: 1`, and a 
 Import accepts one capability run or an object containing `capability_runs`. It validates public configuration/suite/protocol fingerprints, deterministic item selection and observation uniqueness, then independently re-scores visible audit answers and recomputes statistics. A completed result requires all planned observations. A response redacted for privacy cannot be independently re-scored and is rejected as a full audit import. Preserve the reviewed original locally if you need that audit.
 
 Public suite prompts, expected answers and source citations must remain exact for their digest and audit. Review them, generated answers and all annotations before sharing. Connection credentials and URLs are excluded as connection metadata; arbitrary task text can still contain information you do not want to publish. See [sharing results](docs/sharing-results.md) and [security](SECURITY.md).
+
+---
+
+## docs/5060-ti-storage-comparison.md
+
+Canonical source: [docs/5060-ti-storage-comparison.md](docs/5060-ti-storage-comparison.md)
+
+# RTX 5060 Ti: Strata SSD and NVMe comparison
+
+Open **Results**, select **RTX 5060 Ti**, and use the visible **Strata · SSD vs NVMe** panel. It opens at **80k prompt tokens**, showing both query counts. Change **Prompt tokens**, **Queries**, **Measure** or **Model** to inspect the full matrix. Expand **Individual repeats & query timings** for each measured attempt and query. **Export both drives CSV** downloads all 144 baseline/alternative records.
+
+The [benchmark JSON](results/runs/20261030-211908_rtx-5060-ti_af3694cca3.json) retains 312 primary Samsung cases plus 72 alternative NVMe observations in the same machine entry. `storage_comparison` contains frozen baseline and alternative rows, per-workload medians, a per-model summary, copy verification and comparison settings. Main charts retain Samsung measurements for the GPU comparison.
+
+## Measured inference effect
+
+| Model / quant | Median completion speedup | Matched cases | Samsung passed | NVMe passed |
+| --- | ---: | ---: | ---: | ---: |
+| Qwen 3.6 35B A3B UD-Q4_K_XL | 1.002x | 24 | 24/24 | 24/24 |
+| Flash Next IQ3_S | 1.013x | 24 | 24/24 | 24/24 |
+| Flash Next UD-IQ4_XS | 1.745x | 22 | 22/24 | 24/24 |
+
+Speedup is the median Samsung/NVMe wall-time ratio over matching successful cases across all six prompt sizes and both query counts. A timeout is excluded from that ratio. The following 80k values retain both individual repeats; seconds cover completion of all queries in the case.
+
+| Model / quant | Queries | Samsung repeat 1 / 2 (s) | NVMe repeat 1 / 2 (s) |
+| --- | ---: | --- | --- |
+| Qwen 3.6 35B A3B UD-Q4_K_XL | 1 | 191.28 / 185.88 | 192.46 / 187.37 |
+| Qwen 3.6 35B A3B UD-Q4_K_XL | 2 | 368.98 / 371.94 | 370.73 / 370.85 |
+| Flash Next IQ3_S | 1 | 115.42 / 115.67 | 114.16 / 113.26 |
+| Flash Next IQ3_S | 2 | 225.89 / 227.68 | 226.04 / 226.79 |
+| Flash Next UD-IQ4_XS | 1 | 323.77 / 324.55 | 179.20 / 176.34 |
+| Flash Next UD-IQ4_XS | 2 | timeout at 600s / skipped | 353.48 / 350.29 |
+
+UD-IQ4_XS benefits substantially from NVMe, including successful 80k paired workloads. IQ3_S and Qwen 3.6 inference timings are essentially unchanged. The UD-IQ4_XS observation includes physical-drive I/O samples during inference; a faster sequential disk rate alone does not establish an inference benefit.
+
+## Machine and transfer measurements
+
+| Component / path | Recorded condition or median rate |
+| --- | --- |
+| GPU | RTX 5060 Ti 16 GB; PCIe 3 x8 under transfer |
+| CPU / RAM | Intel i7-5820K; 64 GB; firmware reports 2133 MT/s; BIOS unchanged |
+| Samsung SSD 870 EVO SATA to RAM | 0.54 GB/s |
+| AirDisk NVMe (F:) to RAM | 2.82 GB/s |
+| RAM copy, one / six workers | 9.93 / 20.63 GB/s copied payload |
+| Pinned RAM to VRAM | 6.58 GB/s |
+
+The sequential NVMe read probe is 5.23x faster. RAM copy payload throughput is not peak DRAM bus bandwidth. All 78 copied files (195.7 GiB) passed source-stream and destination-readback SHA256 checks; Samsung originals remain available.
+
+## Comparison conditions
+
+- Six targets: 512, 5k, 10k, 20k, 40k and 80k; one/two simultaneous clients; two repeats; 256 output-token limit; 600-second case limit. Actual input/output counts remain in the raw query records.
+- Same model files, quantizations, 98,304-token engine context and Strata 0.1.52. MTP is requested/reported on; effective execution remains unknown where native counters do not establish it. One backend slot queues the two clients.
+- Flash Next uses the same 40 GiB host expert-cache cap on both drives, with observed pageable fallback after Windows refused the pinned allocation. The 5070 Ti benchmark used automatic host residency, so its Strata memory policy differs.
+- Native Qwen 3.6 matches 21 GPU experts per layer and 18.75 GiB pinned host residency. The requested GPU budget is 3 GiB on Samsung and 2.65 GiB on NVMe to preserve that effective placement.
+- OS standby caches were not forcibly flushed. Model-loading observations are not controlled cold-start timings. Two repeats describe these workloads; they do not establish universal speedup or statistical significance.
+
+See [measurement definitions](docs/measurements.md) for client timing, concurrency and cache boundaries.
 
 ---
 
@@ -752,6 +814,8 @@ Canonical source: [CHANGELOG.md](CHANGELOG.md)
 # Changelog
 
 ## Unreleased
+
+- Shows compact hardware, storage and engine-setting badges on Run and Results. Results exposes SSD/NVMe timings with workload/metric filters, matched-case speedups, individual repeats and per-query evidence. Documents the recorded 5060 Ti storage experiment.
 
 - Retains session hardware conditions and displays paired storage experiments with separate CSV exports. Repair defaults follow the latest policy for the selected engine.
 

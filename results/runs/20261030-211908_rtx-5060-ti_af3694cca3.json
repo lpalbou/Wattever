@@ -58026,22 +58026,50 @@
    {
     "model": "ST16000NM000J-2TW103",
     "capacity_bytes": 16000900392960,
-    "interface": "IDE"
+    "interface": "IDE",
+    "media_type": "HDD",
+    "bus_type": "SATA",
+    "media_type_provenance": {
+     "source": "later Win32_DiskDrive and Get-PhysicalDisk inventory; matched model and capacity",
+     "captured_at": "2026-11-01T13:15:00.517643+00:00",
+     "original_inference_conditions_verified": false
+    }
    },
    {
     "model": "ST10000NM001G-2MW103",
     "capacity_bytes": 10000830067200,
-    "interface": "IDE"
+    "interface": "IDE",
+    "media_type": "HDD",
+    "bus_type": "SATA",
+    "media_type_provenance": {
+     "source": "later Win32_DiskDrive and Get-PhysicalDisk inventory; matched model and capacity",
+     "captured_at": "2026-11-01T13:15:00.517643+00:00",
+     "original_inference_conditions_verified": false
+    }
    },
    {
     "model": "Samsung SSD 870 EVO 4TB",
     "capacity_bytes": 4000784417280,
-    "interface": "IDE"
+    "interface": "IDE",
+    "media_type": "SSD",
+    "bus_type": "SATA",
+    "media_type_provenance": {
+     "source": "later Win32_DiskDrive and Get-PhysicalDisk inventory; matched model and capacity",
+     "captured_at": "2026-11-01T13:15:00.517643+00:00",
+     "original_inference_conditions_verified": false
+    }
    },
    {
     "model": "ST10000NM001G-2MW103",
     "capacity_bytes": 10000830067200,
-    "interface": "IDE"
+    "interface": "IDE",
+    "media_type": "HDD",
+    "bus_type": "SATA",
+    "media_type_provenance": {
+     "source": "later Win32_DiskDrive and Get-PhysicalDisk inventory; matched model and capacity",
+     "captured_at": "2026-11-01T13:15:00.517643+00:00",
+     "original_inference_conditions_verified": false
+    }
    }
   ],
   "os": {
@@ -238839,6 +238867,54 @@
      "bytes": 889017216
     }
    ]
+  },
+  "summary": {
+   "metric": "wall_s",
+   "statistic": "median of baseline / alternative completion times over matched successful cases, across all prompt sizes and query counts",
+   "models": [
+    {
+     "model": "qwen3.6-35b-a3b-ud-q4_k_xl",
+     "quantization": "UD-Q4_K_XL",
+     "quantization_method": "UD",
+     "matched_successful_cases": 24,
+     "median_wall_speedup": 1.0016425816456538,
+     "baseline_status_counts": {
+      "ok": 24
+     },
+     "alternative_status_counts": {
+      "ok": 24
+     }
+    },
+    {
+     "model": "qwen3.8-flash-next-iq3_s",
+     "quantization": "IQ3_S",
+     "quantization_method": null,
+     "matched_successful_cases": 24,
+     "median_wall_speedup": 1.0126665956272312,
+     "baseline_status_counts": {
+      "ok": 24
+     },
+     "alternative_status_counts": {
+      "ok": 24
+     }
+    },
+    {
+     "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "quantization": "UD-IQ4_XS",
+     "quantization_method": "UD",
+     "matched_successful_cases": 22,
+     "median_wall_speedup": 1.7454004181853373,
+     "baseline_status_counts": {
+      "ok": 22,
+      "failed": 1,
+      "skipped": 1
+     },
+     "alternative_status_counts": {
+      "ok": 24
+     }
+    }
+   ],
+   "source": "storage_comparison.baseline_results and alternate_results; no failed or unattempted case receives a speedup"
   }
  },
  "strata_initial_startup_attempts": [
@@ -238853,6 +238929,63 @@
    "gpu_utilization_percent_observed": 2,
    "engine_rss_gb_observed": 31.17,
    "action": "Strata Control Stop; engine exited and system RAM returned to 8.9%. Retry uses an explicit 40 GiB host-cache budget. No benchmark requests sent during this unsuccessful startup."
+  }
+ ],
+ "hardware_inventory_annotations": [
+  {
+   "kind": "storage_media_classification",
+   "captured_at": "2026-11-01T13:15:00.517643+00:00",
+   "storage": [
+    {
+     "model": "ST16000NM000J-2TW103",
+     "capacity_bytes": 16000900392960,
+     "interface": "IDE",
+     "media_type": "HDD",
+     "bus_type": "SATA",
+     "media_type_provenance": {
+      "source": "later Win32_DiskDrive and Get-PhysicalDisk inventory; matched model and capacity",
+      "captured_at": "2026-11-01T13:15:00.517643+00:00",
+      "original_inference_conditions_verified": false
+     }
+    },
+    {
+     "model": "ST10000NM001G-2MW103",
+     "capacity_bytes": 10000830067200,
+     "interface": "IDE",
+     "media_type": "HDD",
+     "bus_type": "SATA",
+     "media_type_provenance": {
+      "source": "later Win32_DiskDrive and Get-PhysicalDisk inventory; matched model and capacity",
+      "captured_at": "2026-11-01T13:15:00.517643+00:00",
+      "original_inference_conditions_verified": false
+     }
+    },
+    {
+     "model": "Samsung SSD 870 EVO 4TB",
+     "capacity_bytes": 4000784417280,
+     "interface": "IDE",
+     "media_type": "SSD",
+     "bus_type": "SATA",
+     "media_type_provenance": {
+      "source": "later Win32_DiskDrive and Get-PhysicalDisk inventory; matched model and capacity",
+      "captured_at": "2026-11-01T13:15:00.517643+00:00",
+      "original_inference_conditions_verified": false
+     }
+    },
+    {
+     "model": "ST10000NM001G-2MW103",
+     "capacity_bytes": 10000830067200,
+     "interface": "IDE",
+     "media_type": "HDD",
+     "bus_type": "SATA",
+     "media_type_provenance": {
+      "source": "later Win32_DiskDrive and Get-PhysicalDisk inventory; matched model and capacity",
+      "captured_at": "2026-11-01T13:15:00.517643+00:00",
+      "original_inference_conditions_verified": false
+     }
+    }
+   ],
+   "original_inference_conditions_verified": false
   }
  ],
  "public_export": {

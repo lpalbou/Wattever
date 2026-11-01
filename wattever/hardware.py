@@ -256,16 +256,27 @@ def _equipment():
     firmware = {'vendor': None, 'version': None}
     storage = []
     if pu.IS_WINDOWS:
-        script = ("$ErrorActionPreference='Stop'; "
+        script = ("$ErrorActionPreference='Stop'; $physical=@(); "
+                  "try {$physical=@(Get-PhysicalDisk -ErrorAction Stop | Select-Object DeviceId,MediaType,BusType)} catch {}; "
                   "@{board=(Get-CimInstance Win32_BaseBoard | Select-Object Manufacturer,Product); "
                   "firmware=(Get-CimInstance Win32_BIOS | Select-Object Manufacturer,SMBIOSBIOSVersion); "
-                  "storage=@(Get-CimInstance Win32_DiskDrive | Select-Object Model,Size,InterfaceType)} | ConvertTo-Json -Depth 4 -Compress")
+                  "physical_storage=$physical; "
+                  "storage=@(Get-CimInstance Win32_DiskDrive | Select-Object Index,Model,Size,InterfaceType)} | ConvertTo-Json -Depth 4 -Compress")
         data = _json_command(['powershell', '-NoProfile', '-NonInteractive', '-Command', script]) or {}
         raw_board, raw_fw = data.get('board') or {}, data.get('firmware') or {}
         board = {'manufacturer': raw_board.get('Manufacturer'), 'model': raw_board.get('Product')}
         firmware = {'vendor': raw_fw.get('Manufacturer'), 'version': raw_fw.get('SMBIOSBIOSVersion')}
         storage = [{'model': d.get('Model'), 'capacity_bytes': _number(d.get('Size')),
                     'interface': d.get('InterfaceType')} for d in _entries(data.get('storage'))]
+        physical = {str(d.get('DeviceId')): d for d in _entries(data.get('physical_storage')) if d.get('DeviceId') is not None}
+        for disk, raw in zip(storage, _entries(data.get('storage'))):
+            detail = physical.get(str(raw.get('Index')), {})
+            media = {3: 'HDD', 4: 'SSD', '3': 'HDD', '4': 'SSD'}.get(detail.get('MediaType'), detail.get('MediaType'))
+            bus = {17: 'NVMe', 11: 'SATA', 7: 'USB', 8: 'RAID', '17': 'NVMe', '11': 'SATA', '7': 'USB', '8': 'RAID'}.get(detail.get('BusType'), detail.get('BusType'))
+            if media in ('SSD', 'HDD'):
+                disk['media_type'] = media
+            if isinstance(bus, str) and bus in ('NVMe', 'SATA', 'USB', 'RAID', 'SAS', 'SCSI'):
+                disk['bus_type'] = bus
     elif pu.IS_LINUX:
         def read(path):
             try:
@@ -285,6 +296,10 @@ def _equipment():
             interface = 'NVMe' if name.startswith('nvme') else ('MMC' if name.startswith('mmc') else None)
             storage.append({'model': model, 'capacity_bytes': sectors * 512 if sectors is not None else None,
                             'interface': interface})
+            rotational = read(os.path.join(path, 'queue', 'rotational'))
+            if rotational in ('0', '1'):
+                storage[-1]['rotational'] = rotational == '1'
+                storage[-1]['media_type'] = 'HDD' if rotational == '1' else 'SSD'
     elif pu.IS_MAC:
         # Only allow-listed fields; profiler can return serials and volume names.
         data = _json_command(['system_profiler', '-json', 'SPNVMeDataType'], timeout=30) or {}

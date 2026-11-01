@@ -69,6 +69,21 @@ class InventoryTests(unittest.TestCase):
         self.assertNotIn('secret', json.dumps(caps))
         self.assertIsNone(hardware._capabilities({'power_limit_w':float('inf')})['power_limit_w_reported'])
 
+    def test_windows_storage_types_match_devices_without_publishing_identifiers(self):
+        self.equipment_patch.stop()
+        data = {'storage': [{'Index': 1, 'Model': 'SSD', 'InterfaceType': 'IDE'},
+                            {'Index': 2, 'Model': 'Disk', 'InterfaceType': 'IDE'},
+                            {'Index': 3, 'Model': 'Unknown', 'InterfaceType': 'SATA'}],
+                'physical_storage': [{'DeviceId': '2', 'MediaType': 3, 'BusType': 11},
+                                     {'DeviceId': '1', 'MediaType': 'SSD', 'BusType': 17, 'SerialNumber': 'private'}]}
+        with patch.object(hardware.pu, 'IS_WINDOWS', True), patch.object(hardware, '_json_command', return_value=data):
+            _, _, disks = hardware._equipment()
+        self.assertEqual((disks[0]['media_type'], disks[0]['bus_type']), ('SSD', 'NVMe'))
+        self.assertEqual((disks[1]['media_type'], disks[1]['bus_type']), ('HDD', 'SATA'))
+        self.assertNotIn('media_type', disks[2])
+        self.assertNotIn('private', json.dumps(disks))
+        self.assertNotIn('DeviceId', json.dumps(disks))
+
     def test_inventory_explicitly_describes_client_not_unknown_remote_server(self):
         with patch.object(hardware.pu, 'IS_WINDOWS', True), patch.object(hardware, '_windows', return_value=({}, {}, [])), patch.object(power, 'list_gpus', return_value=[]):
             data=hardware.inventory()

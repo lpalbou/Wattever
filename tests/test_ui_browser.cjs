@@ -89,7 +89,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     await check('document.querySelector("#app-version").textContent === "v2.4.1"', 'Version comes from the server');
     await check('!document.querySelector("#machine-card").open && !document.querySelector("#advanced-settings").open', 'Details start collapsed');
     await check('!document.querySelector("#size-quick, #concurrency-quick, #cpu-tdp, #other-idle")', 'No duplicate shortcuts or power inputs');
-    await check('document.querySelector("#run-label").value.includes("RTX 5060 Ti") && document.querySelector("#run-label").value.includes("32 GB RAM")', 'Hardware name is filled automatically');
+    await check('document.querySelector("#run-label").value === "RTX 5060 Ti" && document.querySelector("#machine-badges").textContent.includes("32 GiB RAM") && document.querySelector("#machine-badges").textContent.includes("16 GiB VRAM")', 'Concise hardware name and machine badges are filled automatically');
     await check('document.querySelector("#run-notes").value.includes("Reasoning: off")', 'Settings notes are filled automatically');
     await clickValue('#concurrency-chips input', 5);
     await check('[...state.concurrencyLevels].join() === "1,2,3,4,5"', 'Five selects one through five');
@@ -542,6 +542,31 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     await delay(100);
     await check('document.querySelector("#cap-filter-outcome").value==="issues" && !!document.querySelector("#cap-inspector .cap-answer-inspector") && !document.querySelector("#cap-inspector .cap-audit-fields").open && document.documentElement.scrollWidth<=innerWidth+1', 'Issue review and collapsed raw evidence remain usable without overflow on a phone');
     await screenshot('capabilities-inspector-phone');
+    await send('Emulation.setDeviceMetricsOverride', {width:1440,height:1100,deviceScaleFactor:1,mobile:false});
+    await evaluate(`(async()=>{
+      const make=(size,c,rep,wall,scale=1,status='ok')=>({model:'test/model',quantization:'IQ3_S',target_tokens:size,concurrency:c,repeat:rep,status,wall_s:wall,
+        requests:Array.from({length:c},()=>({status,prompt_tokens:size+1,completion_tokens:128,wall_s:wall,ttft_s:10*scale,prefill_tps:100/scale,decode_tps:20/scale}))});
+      state.runCache.live.storage_comparison={protocol:'wattever-storage-comparison-v1',baseline_label:'Samsung SSD',alternative_label:'NVMe',
+        baseline_results:[make(512,1,0,100),make(512,1,1,120),make(80000,1,0,300),make(80000,1,1,320),make(80000,2,0,600,1,'failed'),make(80000,2,1,null,1,'skipped')],
+        alternate_results:[make(512,1,0,50,.5),make(512,1,1,60,.5),make(80000,1,0,150,.5),make(80000,1,1,160,.5),make(80000,2,0,350,.5),make(80000,2,1,352,.5)]};
+      state.detailSignature=null;showPanel('results');await selectRun('live');
+    })()`);
+    for(let i=0;i<100&&!await evaluate('!!document.querySelector("[data-storage-comparison=live]")');i++)await delay(50);
+    await check('!!document.querySelector("[data-storage-comparison=live]") && !document.querySelector("[data-storage-comparison=live]").closest("details")', 'Storage comparison is visible outside machine disclosures');
+    await check('document.querySelector("[data-storage-filter=size]").value==="80000" && document.querySelectorAll(".storage-numbers tbody tr").length===2', 'Largest prompt defaults to both query counts');
+    await check('document.querySelectorAll(".storage-numbers tbody tr")[1].textContent.includes("351.00") && document.querySelectorAll(".storage-numbers tbody tr")[1].textContent.includes("unpaired") && document.querySelectorAll(".storage-numbers tbody tr")[1].children[4].textContent===String.fromCharCode(0x2014)', 'NVMe succeeds beside a primary timeout without an invented speedup');
+    await evaluate('document.querySelector(".storage-comparison").scrollIntoView({block:"start"});window.scrollBy(0,-90)');
+    await screenshot('storage-comparison-desktop');
+    await evaluate('document.querySelector("[data-storage-filter=size]").value="512";document.querySelector("[data-storage-filter=size]").dispatchEvent(new Event("change",{bubbles:true}))');
+    await check('document.querySelectorAll(".storage-numbers tbody tr").length===1 && document.querySelector(".storage-numbers").textContent.includes("110.00") && document.querySelector(".storage-numbers").textContent.includes("55.00") && document.activeElement.dataset.storageFilter==="size"', 'Prompt filter updates actual numbers and preserves keyboard focus');
+    await evaluate('document.querySelector("[data-storage-filter=metric]").value="ttft_s";document.querySelector("[data-storage-filter=metric]").dispatchEvent(new Event("change",{bubbles:true}))');
+    await check('document.querySelector(".storage-numbers").textContent.includes("10.00") && document.querySelector(".storage-numbers").textContent.includes("5.00") && document.querySelector(".storage-numbers").textContent.includes("2.00")', 'TTFT metric uses matched per-query values and correct speedup direction');
+    await evaluate('document.querySelector(".storage-repeats").open=true;document.querySelector(".storage-repeats tbody details").open=true');
+    await check('document.querySelectorAll(".storage-repeats tbody tr").length===4 && document.querySelector(".storage-repeats .query-evidence").textContent.includes("513 input / 128 output")', 'Both repeats and raw query counts are available on demand');
+    await send('Emulation.setDeviceMetricsOverride', {width:390,height:844,deviceScaleFactor:1,mobile:true});
+    await evaluate('document.querySelector(".storage-repeats").open=false;document.querySelector(".storage-comparison").scrollIntoView({block:"start"});window.scrollBy(0,-90)');
+    await check('document.documentElement.scrollWidth<=innerWidth+1', 'Storage comparison fits phone width with local table scrolling');
+    await screenshot('storage-comparison-phone');
     assert.equal(errors.length, 0, JSON.stringify(errors));
     console.log('Browser checks passed: Results, metadata, responsive layout, capability charts, audit inspector, filters, pagination, keyboard controls and paired protocol comparisons.');
     console.log('Screenshots: ' + artifacts);

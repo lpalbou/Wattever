@@ -361,6 +361,32 @@ main { max-width: 1480px; padding: 32px 40px 80px; }
 .machine-card[open] .chevron { transform: rotate(180deg); }
 .machine-body { border-top: 1px solid var(--border); padding: 20px 24px; }
 .machine-body > p { margin: 0; font-size: 12px; }
+.condition-badges, .engine-condition { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.condition-badges { margin: 8px 0; }
+.condition-badge { white-space: normal; line-height: 1.5; font-size: 11px; }
+.gpu-badge, .engine-badge { color: var(--text-primary); border-color: var(--border-strong); }
+.storage-badge { color: var(--accent); }
+.engine-badges { display: grid; gap: 6px; margin: 10px 0; }
+.bandwidth-badges .condition-badge { font-variant-numeric: tabular-nums; }
+.machine-badge-summary { margin: -14px 0 10px; }
+.run-condition-summary { margin: 0 0 20px; }
+.storage-comparison { border-top: 1px solid var(--border); padding-top: 18px; margin: 18px 0; min-width: 0; }
+.storage-comparison > header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.storage-comparison h3 { margin: 0; font-size: 16px; }
+.storage-highlights { display: grid; grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); gap: 10px; margin: 14px 0; }
+.storage-highlight { display: grid; gap: 6px; padding: 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface-2); min-width: 0; }
+.storage-highlight > span { font-size: 12px; overflow-wrap: anywhere; }
+.storage-highlight > strong { font-size: 24px; font-variant-numeric: tabular-nums; }
+.storage-highlight > small { color: var(--text-secondary); font-size: 11px; }
+.storage-filters { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+.storage-filters label { display: grid; gap: 5px; flex: 1 1 130px; min-width: 0; color: var(--text-secondary); font-size: 11px; }
+.storage-filters select { width: 100%; min-width: 0; font-size: 12px; }
+.storage-numbers th { white-space: normal; }
+.storage-numbers td { font-variant-numeric: tabular-nums; }
+.storage-numbers td:first-child { min-width: 150px; }
+.storage-numbers .condition-badges { margin: 5px 0 0; }
+.storage-caption { margin-top: 8px; }
+.query-evidence { padding: 8px 0; display: flex; flex-wrap: wrap; gap: 5px; min-width: 250px; }
 .setup-grid { display: grid; grid-template-columns: minmax(280px, .85fr) minmax(0, 1.5fr); gap: 24px; align-items: start; margin-bottom: 24px; }
 .models-card, .workload-card { min-width: 0; }
 .model-list { max-height: 342px; overflow-y: auto; gap: 8px; scrollbar-width: thin; padding: 2px 6px 2px 0; }

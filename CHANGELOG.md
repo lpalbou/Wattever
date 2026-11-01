@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Shows compact hardware, storage and engine-setting badges on Run and Results. Results exposes SSD/NVMe timings with workload/metric filters, matched-case speedups, individual repeats and per-query evidence. Documents the recorded 5060 Ti storage experiment.
+
 - Retains session hardware conditions and displays paired storage experiments with separate CSV exports. Repair defaults follow the latest policy for the selected engine.
 
 - Measures single/parallel native RAM copy throughput and multiple storage volumes, with raw samples, device labels, UI reporting and CSV exports.

@@ -15,7 +15,9 @@ Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/), start an O
 
 See [Getting started](docs/getting-started.md) for both provider modes and [Measurements and sessions](docs/measurements.md) for interpretation. The inference engine controls model quantization, context, KV cache and speculative decoding. GPU monitoring selects a sensor only. Generic endpoint power measurements require an explicit assertion that inference runs on the benchmark computer; remote inference power remains unavailable.
 
-**Results** provides Summary, Table and Compare views with common benchmark, model, measure and concurrency filters. Tables can be copied as tab-separated text. Managed LM Studio runs support **Add / rerun tests**; generic endpoints use new runs. One JSON file stores each benchmark. Optional reproducibility settings and sourced compute claims accompany detected hardware without being presented as detected measurements. Review JSON before publication; see [results guidance](results/README.md).
+**Results** provides Summary, Table and Compare views with common benchmark, model, measure and concurrency filters. Tables can be copied as tab-separated text. The local helper supports **Add / rerun tests** for managed LM Studio and reconnected external endpoints. One JSON file stores each benchmark. Optional reproducibility settings and sourced compute claims accompany detected hardware without being presented as detected measurements. Review JSON before publication; see [results guidance](results/README.md).
+
+Run and Results show compact GPU, memory, storage and engine-setting badges. For recorded storage experiments, the visible **SSD vs NVMe** panel compares actual timings with prompt/query/metric filters and individual repeats. See the [RTX 5060 Ti Strata comparison](docs/5060-ti-storage-comparison.md) for the measured gains and conditions.
 
 The hosted Results view also includes a shared catalog that you can browse without connecting a model provider. See [sharing results](docs/sharing-results.md) to contribute your benchmark or add missing tests later.
 

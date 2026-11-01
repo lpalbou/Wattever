@@ -54,12 +54,12 @@ vm.runInContext(`
     models: [{id: 'model', type: 'llm'}],
   };
   const generated = generatedMetadata(machine, cfg);
-  if (generated.label !== 'RTX 5060 Ti 16 GB VRAM / 64 GB RAM / Test CPU') throw Error('hardware name');
+  if (generated.label !== 'RTX 5060 Ti') throw Error('hardware name');
   if (!generated.notes.includes('all 1 installed models') || !generated.notes.includes('Simultaneous queries: 1, 10') || !generated.notes.includes('Reasoning: off')) throw Error('settings notes');
   const changed = generatedMetadata(machine, {...cfg, models: [], concurrency_levels: [1,2], max_tokens: 512, gpu_offload: 'off'});
-  if (!changed.label.startsWith('CPU only /') || !changed.notes.includes('Answer: 512 tokens') || !changed.notes.includes('Models: none')) throw Error('changed config metadata');
+  if (changed.label !== 'CPU only' || !changed.notes.includes('Answer: 512 tokens') || !changed.notes.includes('Models: none')) throw Error('changed config metadata');
   const dual = generatedMetadata({...machine, hardware: {...machine.hardware, gpus: [...machine.hardware.gpus, {name: 'GTX 1080 Ti', memory_bytes: 11 * 1073741824, sensor_index: 1}]}}, cfg);
-  if (!dual.label.includes('GTX 1080 Ti 11 GB VRAM') || !dual.notes.includes('monitoring only')) throw Error('multi GPU metadata');
+  if (!dual.label.includes('GTX 1080 Ti') || !dual.notes.includes('monitoring only')) throw Error('multi GPU metadata');
   const minimal = generatedMetadata({}, cfg);
   if (minimal.label !== 'Local benchmark' || minimal.label.includes('undefined')) throw Error('missing hardware metadata');
   const rows = [
