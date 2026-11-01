@@ -1,8 +1,8 @@
 # RTX 5060 Ti: Strata SSD and NVMe comparison
 
-Open **Results**, select **RTX 5060 Ti**, and use the visible **Strata · SSD vs NVMe** panel. It opens at **80k prompt tokens**, showing both query counts. Change **Prompt tokens**, **Queries**, **Measure** or **Model** to inspect the full matrix. Expand **Individual repeats & query timings** for each measured attempt and query. **Export both drives CSV** downloads all 144 baseline/alternative records.
+Open **Results** and select **RTX 5060 Ti**. **Summary** shows coverage, machine-transfer rates and the recorded storage experiment. Choose **Compare recorded storage** to select both measured storage conditions and their models in **Compare**. Use **Recorded conditions**, **Measures**, **Queries** and **Models** to control the charts; choose an overlay or one chart per model. Switch to **Table** for the same selected measurements and expand **All measurements** for individual repeats and exact query token counts/timings. **Export CSV** exports the selected conditions, model and query count. The Summary experiment's **Export both conditions CSV** downloads all 144 baseline/alternative records.
 
-The [benchmark JSON](../results/runs/20261030-211908_rtx-5060-ti_af3694cca3.json) retains 312 primary Samsung cases plus 72 alternative NVMe observations in the same machine entry. `storage_comparison` contains frozen baseline and alternative rows, per-workload medians, a per-model summary, copy verification and comparison settings. Main charts retain Samsung measurements for the GPU comparison.
+The [benchmark JSON](../results/runs/20261030-211908_rtx-5060-ti_af3694cca3.json) retains 312 primary Samsung cases plus 72 alternative NVMe observations in the same machine entry. `storage_comparison` contains frozen baseline and alternative rows, per-workload medians, a per-model summary, copy verification and comparison settings. Views use the primary Samsung measurements by default. Selecting NVMe adds its recorded observations without replacing the primary results.
 
 ## Measured inference effect
 

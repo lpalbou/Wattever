@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Organizes Results into Summary (coverage and machine transfers), Table (values and repeats), and Compare (charts). Shared condition selection includes storage alternatives only when recorded, keeps SSD/NVMe series separate, and exports selected conditions. Uses HDD/SSD/NVMe consistently and annotates known historical Samsung C: metadata without changing measurements.
+
 - Shows compact hardware, storage and engine-setting badges on Run and Results. Results exposes SSD/NVMe timings with workload/metric filters, matched-case speedups, individual repeats and per-query evidence. Documents the recorded 5060 Ti storage experiment.
 
 - Retains session hardware conditions and displays paired storage experiments with separate CSV exports. Repair defaults follow the latest policy for the selected engine.

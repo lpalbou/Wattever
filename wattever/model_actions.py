@@ -71,6 +71,9 @@ def remove_models(run_id, models):
             comparison[key] = [row for row in comparison.get(key, []) if row.get("model") not in removed]
         if "model_ids" in comparison:
             comparison["model_ids"] = [m for m in comparison["model_ids"] if m not in removed]
+        summary = comparison.get("summary")
+        if isinstance(summary, dict) and isinstance(summary.get("models"), list):
+            summary["models"] = [item for item in summary["models"] if item.get("model") not in removed]
         if not comparison.get("alternate_results"):
             run.pop("storage_comparison", None)
 
@@ -93,6 +96,11 @@ def remove_models(run_id, models):
     if run.get("engine_groups"):
         run["engine_groups"] = groups
         run["sessions"] = [s for s in run.get("sessions", []) if s.get("config", {}).get("models")]
+        retained_sessions = {session["id"] for session in run["sessions"]}
+        for group in groups:
+            for key in ("primary_session_ids", "alternative_session_ids"):
+                if key in group:
+                    group[key] = [session_id for session_id in group[key] if session_id in retained_sessions]
         run["config"] = machine_config(groups) if len(groups) > 1 else copy.deepcopy(groups[0]["config"])
         if len(groups) == 1:
             run["provider"] = copy.deepcopy(groups[0].get("provider", {}))

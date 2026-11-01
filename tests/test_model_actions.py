@@ -53,6 +53,54 @@ class ModelActionTests(unittest.TestCase):
         remove_models('card',['external'])
         self.assertNotIn('storage_comparison',store.load('card'))
 
+    def storage_variants_fixture(self):
+        group = next(g for g in self.source['engine_groups'] if g['config']['provider'] == 'openai')
+        external_session = next(s for s in self.source['sessions'] if s['engine_group_id'] == group['id'])
+        group['config']['models'].append('keep')
+        self.source['config']['models'].append('keep')
+        retained = dict(self.b['results'][0], model='keep', session_id='keep-primary', engine_group_id=group['id'])
+        self.source['results'].append(retained)
+        for session_id, model in [('keep-primary', 'keep'), ('external-alternate', 'external'), ('keep-alternate', 'keep')]:
+            cfg = dict(copy.deepcopy(external_session['config']), models=[model])
+            self.source['sessions'].append(dict(id=session_id, engine_group_id=group['id'], config=cfg, status='completed'))
+        group['primary_session_ids'] = [external_session['id'], 'keep-primary']
+        group['alternative_session_ids'] = ['external-alternate', 'keep-alternate']
+        self.source['storage_comparison'] = {
+            'model_ids': ['external', 'keep'],
+            'rows': [{'model': 'external'}, {'model': 'keep'}],
+            'baseline_results': [copy.deepcopy(self.b['results'][0]), copy.deepcopy(retained)],
+            'alternate_results': [dict(self.b['results'][0], session_id='external-alternate'),
+                                  dict(retained, session_id='keep-alternate')],
+            'summary': {'metric': 'wall_s', 'models': [{'model': 'external', 'median_wall_speedup': 2},
+                                                     {'model': 'keep', 'median_wall_speedup': 1.5}]},
+            'model_files_copy': {'verified': True, 'files': 78, 'total_bytes': 210135967743,
+                                 'gguf_hashes': [{'file': 'external.gguf', 'sha256': 'historical-copy-hash'}]},
+        }
+        store.save(self.source)
+        return group
+
+    def test_model_removal_filters_storage_summary_but_preserves_copy_evidence(self):
+        self.storage_variants_fixture()
+        manifest = copy.deepcopy(self.source['storage_comparison']['model_files_copy'])
+        remove_models('card', ['external'])
+        comparison = store.load('card')['storage_comparison']
+        self.assertEqual(comparison['model_ids'], ['keep'])
+        for key in ('rows', 'baseline_results', 'alternate_results'):
+            self.assertEqual([row['model'] for row in comparison[key]], ['keep'])
+        self.assertEqual(comparison['summary'], {'metric': 'wall_s', 'models': [{'model': 'keep', 'median_wall_speedup': 1.5}]})
+        self.assertEqual(comparison['model_files_copy'], manifest)
+
+    def test_model_removal_prunes_references_to_removed_storage_sessions(self):
+        original_group = self.storage_variants_fixture()
+        remove_models('card', ['external'])
+        updated = store.load('card')
+        group = next(g for g in updated['engine_groups'] if g['id'] == original_group['id'])
+        self.assertEqual(group['primary_session_ids'], ['keep-primary'])
+        self.assertEqual(group['alternative_session_ids'], ['keep-alternate'])
+        retained_ids = {session['id'] for session in updated['sessions']}
+        self.assertNotIn('external-alternate', retained_ids)
+        self.assertTrue(set(group['primary_session_ids'] + group['alternative_session_ids']) <= retained_ids)
+
     def execute_selection(self, models, **options):
         selection=dict(run_id='card',connection=self.connection,model_modes={m:['off'] for m in models},
                        sizes=[512],concurrency_levels=[1],**options)

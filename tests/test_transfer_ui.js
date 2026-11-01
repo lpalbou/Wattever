@@ -31,14 +31,11 @@ context.comparisonRun={id:'sample',results:[{model:'m',target_tokens:512,concurr
   baseline_label:'Samsung SATA',alternative_label:'NVMe',cache_policy:'OS cache uncontrolled',rows:[
     {model:'m<script>',quantization:'IQ3_S',target_tokens:512,concurrency:1,baseline_successes:2,alternative_successes:2,paired_successes:2,baseline_wall_s:10,alternative_wall_s:5,wall_speedup:2}],
   alternate_results:[{model:'m',target_tokens:512,concurrency:1,repeat:0,wall_s:5,status:'ok'}]}};
-const comparisonHtml=vm.runInContext('storageComparisonMarkup(comparisonRun)',context);
-assert.match(comparisonHtml,/2.00×/);assert.match(comparisonHtml,/OS cache uncontrolled/);
-assert.match(comparisonHtml,/m&lt;script&gt;/);assert.doesNotMatch(comparisonHtml,/<script>/);
-assert.match(comparisonHtml,/Passed \(primary \/ alt\)/);assert.match(comparisonHtml,/<td>2 \/ 2<\/td>/);
-vm.runInContext('comparisonRun.storage_comparison.rows[0]={model:"m",target_tokens:80000,concurrency:2,baseline_successes:0,alternative_successes:2,paired_successes:0,alternative_success_wall_s_median:350}',context);
-const unpairedHtml=vm.runInContext('storageComparisonMarkup(comparisonRun)',context);
-assert.match(unpairedHtml,/<td>0 \/ 2<\/td>/);assert.doesNotMatch(unpairedHtml.match(/<table class="storage-numbers">[\s\S]*?<\/table>/)[0],/2.00\u00d7/);
-assert.match(unpairedHtml,/350.00<small>unpaired<\/small>/);
+context.comparisonRun.storage_comparison.baseline_results=[{...context.comparisonRun.results[0]}];
+const comparisonHtml=vm.runInContext('storageExperimentSummary(comparisonRun)',context);
+assert.match(comparisonHtml,/data-compare-storage="sample"/);
+assert.match(comparisonHtml,/Samsung SATA/);assert.match(comparisonHtml,/NVMe/);
+assert.match(comparisonHtml,/2.00/);
 const csv=vm.runInContext('storageComparisonCsv(comparisonRun)',context);
 assert.equal(csv.split('\r\n').length,3);assert.match(csv,/Samsung SATA/);assert.match(csv,/NVMe/);
 assert.doesNotMatch(csv,/other/);
@@ -68,14 +65,14 @@ assert.deepEqual([group.primary,group.alternative,group.speedup],[20,10,2]);
 group=vm.runInContext('storageComparisonGroups(metricRun,"decode_tps")[0]',context);
 assert.deepEqual([group.primary,group.alternative,group.speedup],[30,60,2]);
 assert.equal(JSON.stringify(context.metricRun),before,'Rendering must preserve raw observations');
-const direct=vm.runInContext('storageComparisonMarkup(metricRun)',context);
-assert.match(direct,/^<section/);assert.match(direct,/<option value="80000" selected>80k/);
-assert.match(direct,/Individual repeats/);assert.match(direct,/\? input \/ \? output tokens/);
+const direct=vm.runInContext('storageExperimentSummary(metricRun)',context);
+assert.match(direct,/^<section/);assert.match(direct,/Compare recorded storage/);
+assert.match(direct,/alternative observations/);
 context.timeoutRun=JSON.parse(JSON.stringify(context.metricRun));
 context.timeoutRun.storage_comparison.baseline_results.forEach(row=>{row.status='failed';row.fail_kind='timeout';row.timeout_budget_s=600;});
-const limited=vm.runInContext('storageComparisonMarkup(timeoutRun)',context);
-assert.match(limited,/Timeout<small>600.00 s case limit/);
-assert.match(limited,/<td>0 \/ 2<\/td>/);
+const limited=vm.runInContext('storageExperimentSummary(timeoutRun)',context);
+assert.match(limited,/No matched successes/);
+assert.doesNotMatch(limited,/2.00/);
 context.badgeRun={hardware:{gpus:[{name:'NVIDIA GeForce RTX 5060 Ti',memory_bytes:16*1073741824}],system:{memory_bytes:64*1073741824},
  storage:[{model:'Hard disk',rotational:true},{model:'SSD model',interface:'SATA'},{model:'Unknown disk',interface:'SATA'}],
  transfer_bandwidth:{storage_volumes:[{device_model:'Example',bus_type:'NVMe'}]}},

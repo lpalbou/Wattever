@@ -387,6 +387,18 @@ main { max-width: 1480px; padding: 32px 40px 80px; }
 .storage-numbers .condition-badges { margin: 5px 0 0; }
 .storage-caption { margin-top: 8px; }
 .query-evidence { padding: 8px 0; display: flex; flex-wrap: wrap; gap: 5px; min-width: 250px; }
+.result-navigation { padding: 0 20px 12px; }
+.result-navigation .result-tabs { margin-bottom: 8px; }
+.result-navigation p { margin: 0; }
+.results-controls { padding: 18px 20px; }
+.results-controls > .color-control { position: static; justify-content: flex-end; margin: 0 0 12px; }
+.recorded-conditions { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 14px; }
+.recorded-conditions .chips { margin-top: 9px; }
+.recorded-conditions p { margin: 8px 0 0; }
+.recorded-experiment { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 16px; }
+.recorded-experiment > header { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.recorded-experiment h3 { margin: 0; flex: 1; font-size: 16px; }
+.comparison-heading > label { display: grid; gap: 5px; font-size: 12px; max-width: 230px; }
 .setup-grid { display: grid; grid-template-columns: minmax(280px, .85fr) minmax(0, 1.5fr); gap: 24px; align-items: start; margin-bottom: 24px; }
 .models-card, .workload-card { min-width: 0; }
 .model-list { max-height: 342px; overflow-y: auto; gap: 8px; scrollbar-width: thin; padding: 2px 6px 2px 0; }
@@ -931,3 +943,11 @@ tfoot td { white-space: normal; font-size: 11px; text-align: left; }
   .endpoint-primary .field:first-child, .endpoint-primary .field:nth-child(2) { flex-basis: 100%; }
   .topbar .tabs { flex-wrap: wrap; }
 }
+
+/* Results navigation owns tabs; filters belong only to Table and Compare. */
+.results-controls { padding: 18px 20px; }
+.results-controls > .color-control { position: static; justify-content: flex-end; margin: 0 0 12px; padding-top: 0; }
+
+.model-cell > small { display: block; margin-top: 4px; color: var(--text-secondary); }
+
+@media (max-width: 760px) { .comparison-heading { flex-wrap: wrap; } .comparison-heading > label { flex: 1 0 100%; max-width: none; } }
