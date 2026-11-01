@@ -130,12 +130,24 @@ function renderRecordedConditions(runs) {
   const signature = JSON.stringify(variants.map(run=>[run.id,run.label]));
   if (container.dataset.conditions !== signature) {
     container.dataset.conditions = signature;
-    container.innerHTML = `<span class="measure-heading">Recorded conditions</span><div class="chips">${variants.map(run=>`<label class="chip" title="Show recorded measurements: ${esc(run.label || run.id)}"><input type="checkbox" data-condition-id="${esc(run.id)}">${esc(run.label || run.id)}</label>`).join("")}</div><p class="hint">Showing recorded measurements only.</p>`;
+    container.innerHTML = `<div class="condition-selection-heading"><span class="measure-heading">Recorded conditions</span><span class="dim condition-total"></span></div><div class="chips">${variants.map(run=>`<label class="chip condition-choice" title="Show recorded measurements: ${esc(run.label || run.id)}"><input type="checkbox" data-condition-id="${esc(run.id)}"><span class="condition-copy"><strong>${esc(run.label || run.id)}</strong><small class="condition-count"></small></span></label>`).join("")}</div>`;
   }
+  container.querySelector(".condition-total").textContent = `${selected.size} selected / ${variants.length} recorded`;
   container.querySelectorAll("[data-condition-id]").forEach(input=>{
     input.checked = selected.has(input.dataset.conditionId);
     input.closest(".chip").dataset.on = input.checked ? "1" : "0";
+    const run=variants.find(item=>item.id === input.dataset.conditionId), rows=conditionRows(run);
+    const measured=rows.filter(row=>row.status === "ok" && selectedMetricKeys().some(key=>Number.isFinite(METRICS[key].get(row)))).length;
+    input.closest(".chip").querySelector(".condition-count").textContent=rows.length ? `${rows.length} matching cases · ${measured} measured` : "0 cases for current model / queries";
   });
+}
+
+function conditionRows(run,models=null) {
+  return (run?.results || []).filter(row=>(models ? models.includes(row.model) : state.visibleModels === null || state.visibleModels.has(row.model)) && (row.concurrency || 1) === state.comparisonConcurrency &&
+    (state.mtpFilter === "all" || (!runProviderManaged(run) && !!row.mtp === (state.mtpFilter === "on"))));
+}
+function chartConditions(runs,models,keys) {
+  return runs.filter(run=>conditionRows(run,models).some(row=>row.status === "ok" ? keys.some(key=>Number.isFinite(METRICS[key].get(row))) : ["failed","skipped"].includes(row.status) && row.fail_kind !== "mtp_unsupported"));
 }
 
 function storageExperimentSummary(run) {
@@ -715,23 +727,8 @@ function renderEnv() {
 
   const unified = gpu.memory_architecture === "unified";
   const src = (env.power || {}).source;
-  $("#machine-stats").innerHTML = [
-    stat("GPU", gpu.name ? gpu.name.replace(/^NVIDIA GeForce\s+/, "") : "none",
-      gpu.compute_cap ? (unified ? gpu.compute_cap : "SM " + gpu.compute_cap) : ""),
-    stat(unified ? "Unified memory" : "VRAM",
-      gpu.vram_total_mb ? (gpu.vram_total_mb / 1024).toFixed(0) : "—",
-      unified ? "GB shared with CPU" : "GB"),
-    stat("Power", (env.power || {}).readable ? "measured" : "not available",
-      src && src !== "none" ? "via " + src : "speed only"),
-    stat(unified ? "macOS" : "Driver", gpu.driver || "—",
-      gpu.pcie_gen ? "PCIe gen " + gpu.pcie_gen : ""),
-    stat("System RAM", host.ram_gb ? Math.round(host.ram_gb) : "—", "GB"),
-    stat("Corpus", (env.corpus || {}).approx_tokens == null ? "unknown" : Math.round(env.corpus.approx_tokens / 1000), (env.corpus || {}).approx_tokens == null ? "" : "k tokens available"),
-  ].join("");
-  $("#machine-name").textContent = gpu.name ? gpu.name.replace(/^NVIDIA GeForce\s+/, "") : "CPU benchmark";
-  $("#machine-memory").textContent = gpu.vram_total_mb ? `${(gpu.vram_total_mb / 1024).toFixed(0)} GB ${unified ? "unified memory" : "VRAM"}` : "";
-  $("#machine-sub").textContent = [host.cpu, host.cores_logical ? host.cores_logical + " threads" : "", host.os]
-    .filter(Boolean).join("  ·  ");
+  $("#machine-stats").innerHTML = conditionBadge((env.power || {}).readable ? "Power telemetry available" : "Power telemetry unavailable",src || "No supported power source")
+    + conditionBadge((env.corpus || {}).approx_tokens == null ? "Corpus unknown" : fmtTokens(env.corpus.approx_tokens)+" corpus tokens");
 
   const banners = [];
   if (providerManaged()) {
@@ -838,25 +835,50 @@ function renderRange(selector, presets, selected, onSelect, format, unit) {
   }));
 }
 
+function compactCpuName(name) {
+  return String(name || "CPU unreported").replace(/\(R\)|\(TM\)/gi,"").replace(/\s+CPU\b/i,"").replace(/\s+@\s+.*$/,"").replace(/\s+/g," ").trim();
+}
+function machineHeaderMarkup(env) {
+  const hw=env.hardware || {}, host=env.host || {}, card=(hw.gpus || [])[0] || {};
+  const cpu=hw.cpu?.name || host.cpu, gpu=env.gpu || {};
+  const gpuName=gpu.name || card.name || "GPU unreported";
+  const ram=hw.memory?.installed_capacity_bytes || hw.system?.memory_bytes || host.ram_gb*1073741824;
+  const vram=gpu.vram_total_mb ? gpu.vram_total_mb/1024 : card.memory_bytes/1073741824;
+  const size=value=>value>0 ? Number(value.toFixed(1))+" GiB" : "Unreported";
+  const shared=(gpu.memory_architecture || card.memory_architecture)==="unified";
+  return [["CPU",compactCpuName(cpu),cpu],["GPU",gpuName.replace(/^NVIDIA (?:GeForce\s+)?/,"")+(hw.gpus?.length>1 ? ` +${hw.gpus.length-1} GPU` : ""),gpuName],
+    ["RAM",size(ram/1073741824),"System memory"],[shared ? "Shared memory" : "VRAM",size(vram),shared ? "Unified memory shared with CPU" : "Per-card GPU memory"]]
+    .map(([label,value,title])=>`<span class="machine-header-item" title="${esc(title || value)}"><small>${esc(label)}</small><strong${label==="GPU" ? ' id="machine-name"' : label==="VRAM" || label==="Shared memory" ? ' id="machine-memory"' : ""}>${esc(value)}</strong></span>`).join("");
+}
+function hardwareTile(label,value,badges=[],icon="") {
+  return `<article class="hardware-tile"><span class="hardware-tile-label">${icon ? hardwareGlyph(icon) : ""}${esc(label)}</span><strong>${esc(value || "Unreported")}</strong><div class="condition-badges">${badges.filter(Boolean).map(item=>typeof item === "string" ? conditionBadge(item) : conditionBadge(item.label,item.title)).join("")}</div></article>`;
+}
+function hardwareGlyph(name) {
+  const shapes={cpu:'<rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 1v4m6-4v4M9 19v4m6-4v4M1 9h4m-4 6h4m14-6h4m-4 6h4"/>',memory:'<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10v4m4-4v4m4-4v4m4-4v4M6 18v3m4-3v3m4-3v3m4-3v3"/>',gpu:'<rect x="2" y="5" width="20" height="13" rx="2"/><circle cx="10" cy="11.5" r="4"/><path d="M17 9h3m-3 5h3M6 18v3"/>',storage:'<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="10" r="4"/><path d="m12 10 5 7M6 18h3"/>',platform:'<rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 22h8m-4-4v4"/>',transfer:'<path d="M3 7h18m-5-5 5 5-5 5M21 17H3m5-5-5 5 5 5"/>'};
+  return `<span class="hardware-glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">${shapes[name] || shapes.platform}</svg></span>`;
+}
 function hardwareMarkup(hw) {
-  hw = hw || {};
-  const cpu = hw.cpu || {}, system = hw.system || {}, os = hw.os || {};
-  const gpus = hw.gpus || [];
-  const board = hw.motherboard || {}, firmware = hw.firmware || {}, memory = hw.memory || {};
-  const pcie = g => {
-    const link = g.pcie || {};
-    if (!link.generation_current && !link.generation_max_reported) return "";
-    return `<p class="hint">PCIe snapshot: Gen ${esc(link.generation_current ?? "?")} x${esc(link.width_current ?? "?")}; reported maximum Gen ${esc(link.generation_max_reported ?? "?")} x${esc(link.width_max_reported ?? "?")}${link.link_encoding_ceiling_bytes_per_second ? `; encoding ceiling ${(link.link_encoding_ceiling_bytes_per_second / 1e9).toFixed(2)} GB/s one way` : ""}. May reflect an idle downshift; transfer measurements are listed separately.</p>`;
-  };
-  return `<p class="hint">${esc([os.name, os.release, os.architecture].filter(Boolean).join(" "))} - ${esc(cpu.name || "CPU unknown")} - ${esc([system.manufacturer, system.model].filter(Boolean).join(" "))}</p>
-    <p class="hint">${cpu.physical_cores != null ? `${esc(cpu.physical_cores)} physical cores / ` : ""}${esc(cpu.logical_cores ?? "unknown")} threads${system.memory_bytes ? ` - ${(system.memory_bytes / 1073741824).toFixed(1)} GiB RAM` : ""}</p>`
-    + (cpu.socket_count ? `<p class="hint">CPU sockets: ${esc(cpu.socket_count)}${cpu.max_clock_mhz_reported ? `; reported maximum clock ${esc(cpu.max_clock_mhz_reported)} MHz` : ""}.</p>` : "")
-    + (memory.module_count ? `<p class="hint">RAM: ${esc(memory.module_count)} modules${memory.configured_clock_mhz_reported?.length ? `; firmware clock reports ${memory.configured_clock_mhz_reported.map(esc).join(", ")} MHz` : ""}. Channel count ${esc(memory.channel_count ?? "unknown")}; ${hw.transfer_bandwidth?.ram_copy_parallel?.status === "ok" ? "measured copy throughput below" : "memory bandwidth not measured"}.</p>` : "")
-    + gpus.map((g, i) => `<p class="hint"><b>GPU ${i + 1}:</b> ${esc(g.name || "Unknown")} ${g.memory_bytes ? `- ${(g.memory_bytes / 1073741824).toFixed(1)} GiB` : ""} ${g.driver ? `- driver ${esc(g.driver)}` : ""} ${g.sensor_index != null ? `- sensor ${esc(g.sensor_index)}` : ""}</p>${pcie(g)}`).join("")
-    + (board.model ? `<p class="hint"><b>Motherboard:</b> ${esc([board.manufacturer, board.model].filter(Boolean).join(" "))}</p>` : "")
-    + (firmware.version ? `<p class="hint"><b>Firmware:</b> ${esc([firmware.vendor, firmware.version].filter(Boolean).join(" "))}</p>` : "")
-    + (hw.storage || []).map((disk) => `<p class="hint"><b>Storage:</b> ${esc(disk.model || "Unknown")}${disk.capacity_bytes ? ` - ${(disk.capacity_bytes / 1000000000).toFixed(0)} GB` : ""} ${esc(disk.interface || "")}</p>`).join("")
-    + transferBandwidthMarkup(hw.transfer_bandwidth);
+  hw=hw || {};
+  const cpu=hw.cpu || {}, memory=hw.memory || {}, system=hw.system || {}, os=hw.os || {};
+  const gib=bytes=>bytes>0 ? Number((bytes/1073741824).toFixed(1))+" GiB" : "Unreported";
+  const ram=memory.installed_capacity_bytes || system.memory_bytes;
+  const compute=[hardwareTile("CPU",compactCpuName(cpu.name),[cpu.physical_cores && `${cpu.physical_cores} cores`,cpu.logical_cores && `${cpu.logical_cores} threads`,cpu.socket_count && `${cpu.socket_count} socket${cpu.socket_count===1 ? "" : "s"}`],"cpu"),
+    hardwareTile("System memory",gib(ram),[memory.module_count && `${memory.module_count} modules`,...(memory.configured_clock_mhz_reported || []).map(clock=>({label:`${clock} reported clock`,title:"Firmware/OS report, not an independent clock measurement"})),memory.channel_count ? `${memory.channel_count} channels` : "Channels unreported"],"memory")];
+  for(const [index,card] of (hw.gpus || []).entries()) {
+    const link=card.pcie || {}, shared=card.memory_architecture==="unified";
+    compute.push(hardwareTile(`GPU ${index+1}`,String(card.name || "GPU unreported").replace(/^NVIDIA (?:GeForce\s+)?/,""),[
+      card.memory_bytes && `${gib(card.memory_bytes)} ${shared ? "shared" : "VRAM"}`,card.driver && `Driver ${card.driver}`,
+      link.generation_current && {label:`PCIe ${link.generation_current} x${link.width_current ?? "?"} snapshot`,title:"May reflect an idle downshift; not a transfer measurement"},
+      link.generation_max_reported && {label:`Reported max Gen ${link.generation_max_reported} x${link.width_max_reported ?? "?"}`,title:"Reported platform/adapter limit, not observed transfer throughput"}],"gpu"));
+  }
+  const clean=value=>value && !/to be filled|default string|system product name/i.test(value) ? value : null;
+  const board=[clean(hw.motherboard?.manufacturer),clean(hw.motherboard?.model)].filter(Boolean).join(" ");
+  const platform=hardwareTile("Platform",[os.name,os.release,os.architecture].filter(Boolean).join(" "),[board,clean(hw.firmware?.version) && `Firmware ${hw.firmware.version}`],"platform");
+  const disks=new Map();
+  for(const disk of hw.storage || []) {const key=JSON.stringify([disk.model,disk.capacity_bytes,storageKind(disk),disk.bus_type]);const item=disks.get(key) || {...disk,count:0};item.count++;disks.set(key,item);}
+  const capacity=bytes=>bytes>=1e12 ? Number((bytes/1e12).toFixed(1))+" TB" : bytes>=1e9 ? Number((bytes/1e9).toFixed(0))+" GB" : bytes>0 ? Number((bytes/1e6).toFixed(0))+" MB" : "Capacity unreported";
+  const storage=[...disks.values()].map(disk=>hardwareTile(storageKind(disk) || "Storage type unreported",disk.model || "Model unreported",[capacity(disk.capacity_bytes)+(disk.count>1 ? " each" : ""),disk.count>1 && `${disk.count} devices`,disk.bus_type && disk.bus_type !== storageKind(disk) && disk.bus_type],"storage")).join("");
+  return `<div class="hardware-visual"><section class="hardware-section"><h4>Compute &amp; memory</h4><div class="hardware-grid">${compute.join("")}</div></section>${storage ? `<section class="hardware-section"><h4>Storage inventory</h4><div class="hardware-grid storage-inventory">${storage}</div></section>` : ""}${transferBandwidthMarkup(hw.transfer_bandwidth)}<section class="hardware-section"><h4>Platform</h4><div class="hardware-grid">${platform}</div></section></div>`;
 }
 
 function conditionBadge(label, title = "", kind = "") {
@@ -923,16 +945,19 @@ function displayBandwidthProfile(run) {
 }
 
 function transferBandwidthMarkup(profile) {
-  if (!profile) return '<p class="hint">Storage → RAM and RAM → VRAM bandwidth: not measured.</p>';
-  const measurements = [["Storage → RAM", profile.storage_to_ram || {}], ["RAM → VRAM", profile.ram_to_vram || {}],
-    ...["ram_copy_single", "ram_copy_parallel"].filter(key => profile[key]).map(key => [key === "ram_copy_single" ? "RAM copy · one worker" : "RAM copy · parallel workers", profile[key]]),
-    ...(profile.storage_volumes || []).map(value => ["Storage → RAM", value])];
-  const rows = measurements.map(([label, value]) => {
-    const speed = value.status === "ok" && Number.isFinite(value.bytes_per_second) && value.bytes_per_second > 0
-      ? `${(value.bytes_per_second / 1e9).toFixed(2)} GB/s (${(value.bytes_per_second / 1e6).toFixed(0)} MB/s)` : `Unavailable: ${esc(value.reason || "not supported")}`;
-    return `<p class="hint"><b>${label}:</b> ${speed}${value.host_memory ? `; ${esc(value.host_memory)} host memory` : ""}${value.workers ? `; ${esc(value.workers)} workers; copied payload bytes` : ""}${value.volume ? `; volume ${esc(value.volume)}` : ""}${value.device_model ? `; ${esc(value.device_model)}` : ""}</p><p class="hint">${esc(value.note || "")}</p>`;
+  if (!profile) return `<section class="hardware-section"><h4>Transfer measurements</h4><div class="probe-empty">${conditionBadge("No transfer capture attached")}<span class="hint">No transfer values were supplied for this snapshot.</span></div></section>`;
+  const paths=[["Storage to RAM",profile.storage_to_ram],...(profile.storage_volumes || []).map(value=>["Storage to RAM",value]),["RAM copy - 1 worker",profile.ram_copy_single],["RAM copy - parallel",profile.ram_copy_parallel],["RAM to VRAM",profile.ram_to_vram]].filter(([,value])=>value);
+  const tiles=paths.map(([label,value])=>{
+    const ok=value.status === "ok" && Number.isFinite(value.bytes_per_second) && value.bytes_per_second>0;
+    const name=label.startsWith("Storage") ? `${storageKind(value) || "Storage"}${value.volume ? ` (${value.volume})` : ""} to RAM` : label;
+    return hardwareTile(name,ok ? (value.bytes_per_second/1e9).toFixed(2)+" GB/s" : "Unavailable",[
+      ok && `${(value.bytes_per_second/1e6).toFixed(0)} MB/s`,value.device_model,value.host_memory && `${value.host_memory} host memory`,
+      value.workers && `${value.workers} worker${value.workers===1 ? "" : "s"}`,value.workers && "Copied payload",
+      {label:`${value.samples?.length || 0} samples`,title:value.note || value.reason || "Separate transfer microbenchmark"},!ok && value.reason],"transfer");
   }).join("");
-  return `<details class="adv"><summary>Measured transfer bandwidth</summary>${rows}<p class="hint">${esc(profile.captured_at || "Unknown measurement time")}; ${esc(profile.provenance || "measured on benchmark client")}. ${profile.provenance === "measured_later_on_matching_hardware" ? "Measured after this benchmark on matching hardware; original inference conditions were not verified." : ""}</p><p class="hint">Median of ${esc(profile.storage_to_ram?.samples?.length ?? 0)} storage samples and ${esc(profile.ram_to_vram?.samples?.length ?? 0)} GPU samples. Separate transfer microbenchmarks; workload caching and overlap can change application throughput.</p></details>`;
+  const saved=profile.restored_from_saved_capture || profile.reused_saved_capture || profile.saved_capture || profile.provenance === "measured_later_on_matching_hardware";
+  const timestamp=profile.captured_at ? profile.captured_at.replace("T"," ").slice(0,19)+" UTC" : "Capture time unreported";
+  return `<section class="hardware-section transfer-profile"><div class="hardware-section-heading"><h4>Transfer measurements</h4><div class="condition-badges">${conditionBadge(saved ? "Saved capture" : "Session capture")}${conditionBadge(timestamp)}</div></div><div class="hardware-grid transfer-grid">${tiles}</div><details class="hw-methods"><summary>Methods &amp; provenance</summary><div class="condition-badges">${conditionBadge(profile.protocol || "Protocol unreported")}${conditionBadge(profile.provenance || "Measured on benchmark client")}</div><p class="hint">${profile.provenance === "measured_later_on_matching_hardware" ? "Measured after this benchmark on matching hardware; original inference conditions were not verified." : "Separate transfer microbenchmarks; not observed inference traffic."}</p><p class="hint">Median of ${esc(profile.storage_to_ram?.samples?.length ?? 0)} storage samples and ${esc(profile.ram_to_vram?.samples?.length ?? 0)} GPU samples. RAM copy rates count payload bytes.</p></details></section>`;
 }
 
 const STORAGE_METRICS = {
@@ -1081,10 +1106,10 @@ function scientificMetadata(run) {
 }
 function renderHardware() {
   const gpus = (state.env.hardware || {}).gpus || [];
-  if ($("#machine-badges")) $("#machine-badges").innerHTML = hardwareBadgesMarkup(state.env) + bandwidthBadgesMarkup(state.env.hardware?.transfer_bandwidth);
+  if ($("#machine-badges")) $("#machine-badges").innerHTML = machineHeaderMarkup(state.env);
   $("#hardware-inventory").innerHTML = (state.env.hardware?.source === "manual" ? '<p class="hint">Hardware details entered manually; not detected or measured.</p>' : "") + hardwareMarkup(state.env.hardware);
   if (!browserMode()) {
-    $("#hardware-inventory").insertAdjacentHTML("beforeend", '<button class="btn-sm" id="measure-transfers">Measure transfer bandwidth</button><span class="hint" id="transfer-status"> Included automatically before each benchmark.</span>');
+    $("#hardware-inventory").insertAdjacentHTML("beforeend", '<button class="btn-sm" id="measure-transfers">Measure transfer bandwidth</button><span class="hint" id="transfer-status"> Auto-measured before benchmarks.</span>');
     $("#measure-transfers").addEventListener("click", async (event) => {
       event.target.disabled = true;
       $("#transfer-status").textContent = " Measuring storage and GPU transfers…";
@@ -2185,14 +2210,49 @@ function chartAppearance(run, model, models, mtp) {
   return {
     color: byModel ? modelColor(model, models) : resolveColor(runColor(run.id)),
     marker: run.storage_alternative ? "diamond" : Charts.MARKERS[shapeIndex % Charts.MARKERS.length],
-    dash: run.storage_alternative ? "7 4" : mtp ? "2 2" : Charts.DASHES[shapeIndex % Charts.DASHES.length],
+    dash: run.storage_alternative ? "7 4" : mtp ? "2 2" : run.storage_condition ? null : Charts.DASHES[shapeIndex % Charts.DASHES.length],
   };
 }
 function encodingLegend(metricKeys, runs) {
   const shapes = {circle: "&#9679;", square: "&#9632;", triangle: "&#9650;", diamond: "&#9670;"};
   const benchmarkItems = runs.map(run => `<span>${state.colorBy === "benchmarks" ? `<i style="background:${runColor(run.id)}"></i>` : `<b>${shapes[run.storage_alternative ? "diamond" : markerForRun(run.id)] || "&#9679;"}</b>`}${run.storage_alternative ? '<svg width="24" height="8" aria-hidden="true"><line x1="0" y1="4" x2="24" y2="4" stroke="currentColor" stroke-dasharray="7 4"/></svg>' : ""}${esc(run.label || run.id)}</span>`).join("");
   const measures = metricKeys.length > 1 ? `<div class="legend-group measure-legend"><span class="legend-key">Measures</span>${metricKeys.map(key => `<span><svg width="28" height="10" aria-hidden="true"><line x1="0" y1="5" x2="28" y2="5" stroke="currentColor" stroke-width="2" stroke-dasharray="${measureAppearance({}, key, metricKeys, false).dash || ""}"/></svg>${esc(METRICS[key].label)}</span>`).join("")}</div>` : "";
-  return `<div class="legend-stack">${runs.length > 1 || state.colorBy === "benchmarks" ? `<div class="legend-group"><span class="legend-key">${runs.some(run => run.parent_run_id) ? "GPU / engine" : "Benchmarks"}</span>${benchmarkItems}</div>` : ""}${measures}</div>`;
+  return `<div class="legend-stack">${runs.length ? `<div class="legend-group"><span class="legend-key">${runs.some(run => run.parent_run_id) ? "GPU / engine" : "Benchmarks"}</span>${benchmarkItems}</div>` : ""}${measures}</div>`;
+}
+
+function comparisonReadout(runs,models,key) {
+  if(models.length !== 1) return "";
+  const model=models[0],metric=METRICS[key];
+  const tracks=tracksFor(runs).filter(track=>conditionRows(track.run,[model]).some(row=>!!row.mtp === !!track.mtp));
+  if(tracks.length<2) return "";
+  const lists=tracks.map(track=>conditionRows(track.run,[model]).filter(row=>!!row.mtp === !!track.mtp));
+  const common=[...new Set(lists[0].map(row=>row.target_tokens))].filter(size=>lists.every(rows=>rows.some(row=>row.target_tokens===size)));
+  if(!common.length) return "";
+  const size=Math.max(...common),rows=lists.map(list=>list.filter(row=>row.target_tokens===size));
+  const baseline=new Map(rows[0].filter(row=>row.status==="ok" && Number.isFinite(metric.get(row))).map(row=>[row.repeat || 0,row]));
+  const baselineMedian=storageMedian([...baseline.values()].map(row=>metric.get(row)));
+  const format=value=>Number.isFinite(value) ? fmt(value,2)+" "+metric.unit : "Unavailable";
+  const cells=tracks.map((track,index)=>{
+    const measured=rows[index].filter(row=>row.status==="ok" && Number.isFinite(metric.get(row)));
+    const matched=measured.filter(row=>baseline.has(row.repeat || 0));
+    const value=storageMedian(measured.map(row=>metric.get(row)));
+    let change="",direction="same",reference="";
+    if(index && matched.length) {
+      const base=storageMedian(matched.map(row=>metric.get(baseline.get(row.repeat || 0))));
+      const pairedValue=storageMedian(matched.map(row=>metric.get(row)));
+      if(base>0 && pairedValue>0) {
+        const percent=(pairedValue/base-1)*100;
+        change=`${percent>0 ? "+" : ""}${percent.toFixed(1)}%${metric.unit==="s" ? " time" : metric.unit==="tk/s" ? " tk/s" : ""}`;
+        if(base !== baselineMedian || pairedValue !== value) reference=`Matched: ${format(base)} → ${format(pairedValue)}`;
+        direction=Math.abs(percent)<.05 ? "same" : metric.better === "low" ? percent<0 ? "better" : "worse" : metric.better === "high" ? percent>0 ? "better" : "worse" : "same";
+      }
+    }
+    const timeout=rows[index].find(row=>row.status==="failed" && row.fail_kind==="timeout");
+    const text=value!=null ? format(value) : timeout ? `Timeout · ${fmt(timeout.timeout_budget_s || timeout.wall_s,0)} s limit` : "No successful measurement";
+    const label=track.run.storage_condition || track.name;
+    return `<div class="chart-readout-item"><span title="${esc(track.name)}">${esc(label)}</span><strong>${esc(text)}</strong><small>${measured.length} measured repeat${measured.length===1 ? "" : "s"}${index ? matched.length ? ` · ${matched.length} matched` : " · unpaired" : ""}</small>${change ? `<span class="metric-delta" data-direction="${direction}" title="Change against the first condition using matching successful repeats; descriptive, not a significance test">${esc(change)}${reference ? " · matched only" : ""}</span>` : ""}${reference ? `<small>${esc(reference)}</small>` : ""}</div>`;
+  }).join("");
+  return `<div class="chart-readout" aria-label="Recorded condition values"><div class="chart-readout-title">${esc(fmtTokens(size))} prompt tokens · ${esc(metric.label)} · ${state.comparisonConcurrency} quer${state.comparisonConcurrency===1 ? "y" : "ies"}</div><div class="chart-readout-values">${cells}</div></div>`;
 }
 
 async function renderOverview() {
@@ -2229,23 +2289,28 @@ async function renderOverview() {
         <div class="spacer"></div><span class="dim" style="font-size:12px">${esc(u.unit)} / ${state.comparisonConcurrency} simultaneous queries</span>
       </header>
       <div id="summary-legend-${i}"></div>
+      <div id="summary-readout-${i}"></div>
       <div class="plot" id="summary-plot-${i}" style="margin-top:4px"></div>
       <p class="hint" id="summary-note-${i}" style="margin:8px 0 0"></p>
     </div>`).join("");
 
   units.forEach((u, i) => {
-    $(`#summary-legend-${i}`).innerHTML = encodingLegend(u.keys, runs);
+    const plottedRuns=chartConditions(runs,models,u.keys);
+    $(`#summary-legend-${i}`).innerHTML = encodingLegend(u.keys, plottedRuns);
+    $(`#summary-readout-${i}`).innerHTML = comparisonReadout(plottedRuns,models,u.keys[0]);
     const series = [];
     const sizes = new Set();
     for (const key of u.keys) {
       const metric = METRICS[key];
-      for (const run of runs) {
+      for (const run of plottedRuns) {
         for (const mtp of (state.mtpFilter === "all" ? [false, true] : [state.mtpFilter === "on"])) {
           if (runProviderManaged(run) && (state.mtpFilter !== "all" || mtp)) continue;
           for (const model of models) {
             const pts = pointsFor(run, model, metric, mtp);
-            if (!pts.length) continue;
+            const failed = failuresFor(run,model,mtp);
+            if (!pts.length && !failed.length) continue;
             pts.forEach((p) => sizes.add(p.x));
+            failed.forEach(point=>sizes.add(point.x));
             const bits = [model, metric.label];
             if (runs.length > 1) bits.push(run.label || run.id);
             if (mtp) bits.push("MTP");
@@ -2254,7 +2319,7 @@ async function renderOverview() {
               name: bits.join("  ·  "),
               ...measureAppearance(chartAppearance(run, model, allModels, mtp), key, u.keys, mtp),
               points: pts.map((p) => ({ ...p, unit: metric.unit })),
-              failures: u.keys.indexOf(key) === 0 ? failuresFor(run, model, mtp) : [],
+              failures: u.keys.indexOf(key) === 0 ? failed : [],
             });
           }
         }
@@ -2349,10 +2414,11 @@ async function renderCompare() {
     for (const model of shown) {
       const facet = document.createElement("div");
       facet.className = "facet";
-      facet.innerHTML = `<h4>${esc(model)}</h4><div class="sub">${esc(modelSubtitle(runs, model))}</div><div class="sub">${esc(group.keys.map(key => METRICS[key].label).join(" + "))} / ${esc(group.unit)}</div>${encodingLegend(group.keys, runs)}<div class="plot"></div>`;
+      facet.innerHTML = `<h4>${esc(model)}</h4><div class="sub">${esc(modelSubtitle(runs, model))}</div><div class="sub">${esc(group.keys.map(key => METRICS[key].label).join(" + "))} / ${esc(group.unit)}</div>${encodingLegend(group.keys,chartConditions(runs,[model],group.keys))}${comparisonReadout(chartConditions(runs,[model],group.keys),[model],group.keys[0])}<div class="plot"></div>`;
       grid.appendChild(facet);
-      const sizes = [...new Set(tracks.flatMap(track => (track.run.results || []).filter(row => row.model === model && !!row.mtp === !!track.mtp && (row.concurrency || 1) === state.comparisonConcurrency).map(row => row.target_tokens)))].sort((a, b) => a - b);
-      const series = group.keys.flatMap(key => tracks.map(track => ({
+      const modelTracks=tracks.filter(track=>conditionRows(track.run,[model]).some(row=>!!row.mtp === !!track.mtp && (row.status === "ok" ? group.keys.some(key=>Number.isFinite(METRICS[key].get(row))) : ["failed","skipped"].includes(row.status))));
+      const sizes = [...new Set(modelTracks.flatMap(track => (track.run.results || []).filter(row => row.model === model && !!row.mtp === !!track.mtp && (row.concurrency || 1) === state.comparisonConcurrency).map(row => row.target_tokens)))].sort((a, b) => a - b);
+      const series = group.keys.flatMap(key => modelTracks.map(track => ({
         id: track.key + "|" + key, name: `${track.name} / ${METRICS[key].label}`,
         ...measureAppearance(chartAppearance(track.run, model, models, track.mtp), key, group.keys, track.mtp),
         points: pointsFor(track.run, model, METRICS[key], track.mtp),
@@ -2362,7 +2428,7 @@ async function renderCompare() {
       if (group.keys.length === 1 && METRICS[group.keys[0]].kind === "bars") {
         const metric = METRICS[group.keys[0]];
         Charts.bars(plot, {unit: group.unit, yLabel: group.unit, xLabel: "prefill tokens", height: 250,
-          groups: sizes.map(size => ({label: fmtTokens(size), bars: tracks.map(track => {
+          groups: sizes.map(size => ({label: fmtTokens(size), bars: modelTracks.map(track => {
             const row = pick(track.run, model, size, track.mtp, metric);
             return {id: track.key, name: track.name, ...chartAppearance(track.run, model, models, track.mtp), value: row && row.status === "ok" ? metric.get(row) : null};
           })})),
@@ -2466,7 +2532,7 @@ function quantizationLabel(model) {
 }
 
 function modelSubtitle(runs, model) {
-  return [...new Set(runs.map(run => {
+  return [...new Set(runs.filter(run=>(run.results || []).some(row=>row.model === model)).map(run => {
     const hit = (run.results || []).find(row => row.model === model && row.quantization);
     return hit ? quantizationLabel(hit) : "Quant unknown";
   }))].join(" / ");

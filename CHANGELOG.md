@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Shows CPU, GPU, RAM and per-card VRAM in the collapsed machine header, with shared visual hardware/storage/transfer cards on Run and Results. Restores compatible saved transfer captures with their original timestamps. Recorded conditions have visible selection and matching-case counts; chart legends and numeric readouts reflect the plotted conditions and matched repeats.
+
 - Organizes Results into Summary (coverage and machine transfers), Table (values and repeats), and Compare (charts). Shared condition selection includes storage alternatives only when recorded, keeps SSD/NVMe series separate, and exports selected conditions. Uses HDD/SSD/NVMe consistently and annotates known historical Samsung C: metadata without changing measurements.
 
 - Shows compact hardware, storage and engine-setting badges on Run and Results. Results exposes SSD/NVMe timings with workload/metric filters, matched-case speedups, individual repeats and per-query evidence. Documents the recorded 5060 Ti storage experiment.

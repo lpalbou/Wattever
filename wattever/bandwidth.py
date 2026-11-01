@@ -33,6 +33,101 @@ def latest():
     return copy.deepcopy(_latest)
 
 
+def _capture_hardware_key(machine):
+    """Conservative compatibility key, including clocks absent from hardware_class."""
+    if not isinstance(machine, dict):
+        return None
+    cpu = machine.get("cpu") or {}
+    memory = machine.get("memory") or {}
+    system = machine.get("system") or {}
+    if any(not isinstance(value, dict) for value in (cpu, memory, system)):
+        return None
+    clocks = memory.get("configured_clock_mhz_reported") or []
+    capacity = memory.get("installed_capacity_bytes") or system.get("memory_bytes")
+    cpu_fields = tuple(cpu.get(field) for field in ("name", "physical_cores", "logical_cores"))
+    cards = machine.get("gpus") or []
+    if (not all(cpu_fields) or not capacity or not isinstance(clocks, list) or not clocks or
+            not isinstance(cards, list) or not cards or any(not isinstance(card, dict) for card in cards)):
+        return None
+    if any(not isinstance(clock, (int, float)) or isinstance(clock, bool) or not math.isfinite(clock) or clock <= 0 for clock in clocks):
+        return None
+    gpu_fields = [tuple(card.get(field) for field in ("name", "memory_bytes", "driver")) for card in cards]
+    if any(not all(card) or not isinstance(card[0], str) or not isinstance(card[2], str) for card in gpu_fields):
+        return None
+    return (cpu_fields, capacity, memory.get("module_count"), tuple(sorted(set(clocks))), tuple(sorted(gpu_fields)))
+
+
+def saved_capture(machine, selected_gpu=None):
+    """Read a matching saved probe without measuring, caching, or changing any run.
+
+    An independent capture is preferred to a session capture, then newest wins
+    within that category. Missing RAM clocks cannot establish compatibility.
+    """
+    from . import store
+    from .validation import validate_transfer_bandwidth
+    current_key = _capture_hardware_key(machine)
+    if current_key is None:
+        return None
+    candidates = []
+
+    def consider(run, profile, snapshot, kind, session_id=None):
+        if (not isinstance(profile, dict) or profile.get("protocol") != "wattever-transfer-v1" or
+                _capture_hardware_key(snapshot) != current_key or validate_transfer_bandwidth(profile)):
+            return
+        paths = [profile.get(field) for field in ("storage_to_ram", "ram_to_vram", "ram_copy_single", "ram_copy_parallel")]
+        paths.extend(profile.get("storage_volumes") or [])
+        if not any(isinstance(path, dict) and path.get("status") == "ok" and
+                   isinstance(path.get("bytes_per_second"), (int, float)) and path["bytes_per_second"] > 0 for path in paths):
+            return
+        probed_gpu = (profile.get("ram_to_vram") or {}).get("gpu_name")
+        if selected_gpu and probed_gpu and probed_gpu != selected_gpu.get("name"):
+            return
+        try:
+            captured = datetime.fromisoformat(profile["captured_at"].replace("Z", "+00:00"))
+            if captured.tzinfo is None:
+                return
+            timestamp = captured.timestamp()
+        except (KeyError, TypeError, ValueError, OverflowError):
+            return
+        candidates.append(({"independent": 2, "session": 1, "benchmark": 0}[kind], timestamp,
+                           profile, run.get("id"), kind, session_id))
+
+    try:
+        paths = sorted(Path(store.RUNS_DIR).glob("*.json"))
+    except OSError:
+        return None
+    for path in paths:
+        try:
+            run = store.load(path.stem)
+        except (OSError, ValueError):
+            continue
+        if not run:
+            continue
+        for capture in run.get("hardware_measurement_history") or []:
+            if isinstance(capture, dict):
+                consider(run, capture.get("transfer_bandwidth"), capture.get("hardware_snapshot"), "independent")
+        for session in run.get("sessions") or []:
+            if isinstance(session, dict):
+                consider(run, session.get("transfer_bandwidth"), session.get("hardware"), "session", session.get("id"))
+        snapshot = run.get("hardware") or {}
+        if isinstance(snapshot, dict):
+            consider(run, snapshot.get("transfer_bandwidth"), snapshot, "benchmark")
+    if not candidates:
+        return None
+    _, _, original, run_id, kind, session_id = max(candidates, key=lambda item: item[:2])
+    profile = copy.deepcopy(original)
+    profile["source"] = "saved_capture"
+    profile["saved_capture"] = {
+        "source_run_id": run_id, "capture_kind": kind, "captured_at": original["captured_at"],
+        "measured_this_helper_session": False,
+        "matching_fields": ["cpu_name_and_core_counts", "ram_capacity_and_module_count",
+                            "reported_ram_clocks", "all_gpu_names_memory_and_drivers"],
+    }
+    if session_id is not None:
+        profile["saved_capture"]["source_session_id"] = session_id
+    return profile
+
+
 def _unavailable(reason):
     return {"status": "unavailable", "reason": reason}
 

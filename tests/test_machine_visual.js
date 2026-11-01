@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const context={window:{},Charts:{fmtNum:String},document:{querySelector(){},querySelectorAll(){return[];}},console};
+vm.createContext(context);vm.runInContext(fs.readFileSync('web/app.js','utf8').replace(/\ninit\(\);\s*$/,''),context);
+context.env={gpu:{name:'NVIDIA GeForce RTX 5060 Ti',vram_total_mb:16384},host:{cpu:'Intel(R) Core(TM) i7-5820K CPU @ 3.30GHz',ram_gb:64},hardware:{gpus:[{name:'NVIDIA GeForce RTX 5060 Ti',memory_bytes:16*1073741824},{name:'Other GPU',memory_bytes:8*1073741824}]}};
+let html=vm.runInContext('machineHeaderMarkup(env)',context);
+for(const text of ['CPU','GPU','RAM','VRAM','Intel Core i7-5820K','RTX 5060 Ti','64 GiB','16 GiB','+1 GPU'])assert(html.includes(text),text);
+assert(!html.includes('24 GiB'),'Separate VRAM must not be pooled');assert(html.includes('3.30GHz'),'Full CPU name stays accessible');
+html=vm.runInContext('machineHeaderMarkup({})',context);assert.match(html,/Unreported/);assert.doesNotMatch(html,/0 GiB/);
+context.env.gpu.memory_architecture='unified';assert.match(vm.runInContext('machineHeaderMarkup(env)',context),/Shared memory/);
+context.hw={cpu:{name:'CPU<script>',physical_cores:6,logical_cores:12},system:{memory_bytes:64*1073741824},memory:{module_count:4},gpus:[{name:'GPU',memory_bytes:16*1073741824}],storage:[{model:'Samsung SSD',media_type:'SSD',capacity_bytes:4e12},{model:'HDD',media_type:'HDD',capacity_bytes:10e12},{model:'HDD',media_type:'HDD',capacity_bytes:10e12},{model:'NVMe',bus_type:'NVMe',capacity_bytes:256e9}]};
+html=vm.runInContext('hardwareMarkup(hw)',context);
+for(const label of ['Compute &amp; memory','Storage inventory','Transfer measurements','Platform','hardware-tile','6 cores','12 threads','4 modules','2 devices','HDD','SSD','NVMe'])assert(html.includes(label),label);
+assert.match(html,/CPU&lt;script&gt;/);assert.doesNotMatch(html,/<script>/);assert.doesNotMatch(html,/PCIe snapshot:|CPU sockets:/);
+console.log('Visual machine header, grouped hardware tiles, accurate memory and unknown states passed');

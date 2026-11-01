@@ -17,6 +17,8 @@ See [Getting started](docs/getting-started.md) for both provider modes and [Meas
 
 **Results** has three views: **Summary** reports primary coverage, hardware and measured machine transfers; **Table** lists numerical results and raw repeats; **Compare** plots selected measurements. Table and Compare share model, metric, query-count and recorded-condition filters. The local helper supports **Add / rerun tests** for managed LM Studio and reconnected external endpoints. One JSON file stores each benchmark. Review it before publication; see [results guidance](results/README.md).
 
+The collapsed **This machine** header shows CPU, GPU, RAM and per-card VRAM. Expand it for grouped compute, storage, transfer and platform cards; full names and probe methods stay accessible. Compatible saved transfer captures retain their original date and are labeled **Saved capture**.
+
 GPU, memory, storage and engine-setting badges summarize recorded conditions. Storage types use **HDD**, **SSD** and **NVMe**; unknown types stay unclassified. If an experiment contains alternative storage observations, **Compare recorded storage** selects the measured variants. Installed drives and storage probes alone do not create inference variants. See the [RTX 5060 Ti Strata comparison](docs/5060-ti-storage-comparison.md) for the measured gains and conditions.
 
 The hosted Results view also includes a shared catalog that you can browse without connecting a model provider. See [sharing results](docs/sharing-results.md) to contribute your benchmark or add missing tests later.

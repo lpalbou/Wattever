@@ -534,6 +534,10 @@ class Handler(BaseHTTPRequestHandler):
         cli = lmstudio.LmsCli()
         server_up = cli.server_running()
         gpu = power.gpu_info(0)
+        machine = hardware.inventory()
+        profile = bandwidth.latest()
+        if profile is None:
+            profile = bandwidth.saved_capture(machine, gpu)
         return {
             "gpus": power.list_gpus(),
             "gpu": gpu,
@@ -546,7 +550,7 @@ class Handler(BaseHTTPRequestHandler):
                 "needs_sudo": platform_util.IS_MAC and not gpu.get("power_readable"),
             },
             "host": store.host_info(),
-            "hardware": dict(hardware.inventory(), transfer_bandwidth=bandwidth.latest()),
+            "hardware": dict(machine, transfer_bandwidth=profile),
             "lms": {"cli": cli.available, "exe": cli.exe,
                     "server": server_up, "version": cli.version()},
             "models": models,
