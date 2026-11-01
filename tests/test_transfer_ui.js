@@ -40,3 +40,11 @@ assert.doesNotMatch(csv,/other/);
 vm.runInContext('comparisonRun.storage_comparison.baseline_results=[{...comparisonRun.results[0]}];comparisonRun.results[0].wall_s=123',context);
 const frozenCsv=vm.runInContext('storageComparisonCsv(comparisonRun)',context);
 assert.doesNotMatch(frozenCsv,/123/);assert.match(frozenCsv,/"10"/);
+context.comparisonRun.storage_comparison.alternate_results[0].requests = [
+  {status:'ok',prompt_tokens:513,completion_tokens:128,ttft_s:1,decode_tps:64},
+  {status:'ok',prompt_tokens:514,completion_tokens:130,ttft_s:2,decode_tps:65}];
+const concurrentCsv=vm.runInContext('storageComparisonCsv(comparisonRun)',context);
+assert.match(concurrentCsv,/request_metrics_json/);
+assert.match(concurrentCsv,/""prompt_tokens"":513/);
+assert.match(concurrentCsv,/""prompt_tokens"":514/);
+assert.match(concurrentCsv,/""decode_tps"":65/);

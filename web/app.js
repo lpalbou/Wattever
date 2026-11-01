@@ -752,7 +752,7 @@ function storageComparisonCsv(run) {
   const comparison = run.storage_comparison || {}, alternatives = comparison.alternate_results || [];
   const key = row => JSON.stringify([row.model, !!row.mtp, row.concurrency || 1, row.target_tokens, row.repeat || 0]);
   const selected = new Set(alternatives.map(key));
-  const columns = ["condition", "model", "quantization", "quantization_method", "target_tokens", "concurrency", "repeat", "status", "prompt_tokens", "completion_tokens", "wall_s", "ttft_s", "prefill_tps", "decode_tps", "aggregate_completion_tps", "session_id"];
+  const columns = ["condition", "model", "quantization", "quantization_method", "target_tokens", "concurrency", "repeat", "status", "prompt_tokens", "completion_tokens", "wall_s", "ttft_s", "prefill_tps", "decode_tps", "aggregate_completion_tps", "session_id", "request_metrics_json"];
   const quote = value => {
     if (value == null) return "";
     let text = String(value);
@@ -761,7 +761,13 @@ function storageComparisonCsv(run) {
   };
   const rows = [[comparison.baseline_label || "primary", (comparison.baseline_results || run.results || []).filter(row => selected.has(key(row)))],
     [comparison.alternative_label || "alternative", alternatives]].flatMap(([condition, values]) => values.map(row =>
-      columns.map(column => quote(column === "condition" ? condition : column === "repeat" ? (row.repeat || 0) + 1 : row[column])).join(",")));
+      columns.map(column => {
+        if (column === "request_metrics_json") {
+          const metrics = ["status", "prompt_tokens", "completion_tokens", "cached_prompt_tokens", "wall_s", "ttft_s", "prefill_tps", "decode_tps", "completion_tokens_estimated", "reasoning_tokens", "decode_token_count"];
+          return quote(JSON.stringify((row.requests || [row]).map(request => Object.fromEntries(metrics.filter(key => request[key] != null).map(key => [key, request[key]])))));
+        }
+        return quote(column === "condition" ? condition : column === "repeat" ? (row.repeat || 0) + 1 : row[column]);
+      }).join(",")));
   return [columns.map(quote).join(","), ...rows].join("\r\n");
 }
 
