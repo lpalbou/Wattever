@@ -29,11 +29,15 @@ assert.doesNotMatch(taggedHtml, /<script>/);
 context.comparisonRun={id:'sample',results:[{model:'m',target_tokens:512,concurrency:1,repeat:0,wall_s:10,status:'ok'},
   {model:'other',target_tokens:512,wall_s:99,status:'ok'}],storage_comparison:{protocol:'wattever-storage-comparison-v1',
   baseline_label:'Samsung SATA',alternative_label:'NVMe',cache_policy:'OS cache uncontrolled',rows:[
-    {model:'m<script>',quantization:'IQ3_S',target_tokens:512,concurrency:1,paired_successes:2,baseline_wall_s:10,alternative_wall_s:5,wall_speedup:2}],
+    {model:'m<script>',quantization:'IQ3_S',target_tokens:512,concurrency:1,baseline_successes:2,alternative_successes:2,paired_successes:2,baseline_wall_s:10,alternative_wall_s:5,wall_speedup:2}],
   alternate_results:[{model:'m',target_tokens:512,concurrency:1,repeat:0,wall_s:5,status:'ok'}]}};
 const comparisonHtml=vm.runInContext('storageComparisonMarkup(comparisonRun)',context);
 assert.match(comparisonHtml,/2.00×/);assert.match(comparisonHtml,/OS cache uncontrolled/);
 assert.match(comparisonHtml,/m&lt;script&gt;/);assert.doesNotMatch(comparisonHtml,/<script>/);
+assert.match(comparisonHtml,/Passed \(primary \/ alt\)/);assert.match(comparisonHtml,/<td>2 \/ 2<\/td>/);
+vm.runInContext('comparisonRun.storage_comparison.rows[0]={model:"m",target_tokens:80000,concurrency:2,baseline_successes:0,alternative_successes:2,paired_successes:0}',context);
+const unpairedHtml=vm.runInContext('storageComparisonMarkup(comparisonRun)',context);
+assert.match(unpairedHtml,/<td>0 \/ 2<\/td>/);assert.doesNotMatch(unpairedHtml,/2.00\u00d7/);
 const csv=vm.runInContext('storageComparisonCsv(comparisonRun)',context);
 assert.equal(csv.split('\r\n').length,3);assert.match(csv,/Samsung SATA/);assert.match(csv,/NVMe/);
 assert.doesNotMatch(csv,/other/);
