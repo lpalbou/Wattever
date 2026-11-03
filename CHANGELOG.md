@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.5.0 - 2026-11-03
+## 2.5.1 - 2026-11-03
 
 - Connects the Python helper to OpenAI-compatible streaming Chat Completions endpoints, with model discovery, manual model IDs and environment-based authentication. LM Studio remains a managed provider; other engines control their own model loading and allocation.
 - Identifies endpoints automatically, discovers Results models from the current authenticated connection, and records model, quantization, reasoning and MTP provenance. Public exports omit connection addresses and credentials; unknown effective settings remain explicit.

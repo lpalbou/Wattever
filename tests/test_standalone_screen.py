@@ -203,11 +203,21 @@ class FakePsutil:
 class OwnedLifecycleTests(unittest.TestCase):
     def fake_command(self, port):
         # Harmless local HTTP process. No model, CUDA library or Strata import.
-        code = ("import http.server,sys;"
-                "H=type('H',(http.server.BaseHTTPRequestHandler,),{'do_GET':lambda s:"
-                "(s.send_response(200),s.end_headers(),s.wfile.write(b'{\"status\":\"ok\"}'))});"
-                "http.server.HTTPServer(('127.0.0.1',int(sys.argv[-1])),H).serve_forever()")
-        return [sys.executable, "-c", code, "--port", str(port)]
+        # Isolate framework/site startup hooks on macOS runners; the fixture
+        # needs only a minimal HTTP response, not http.server's import graph.
+        code = (
+            "import socket,sys\n"
+            "listener=socket.socket()\n"
+            "listener.bind(('127.0.0.1',int(sys.argv[-1])))\n"
+            "listener.listen(4)\n"
+            "body=b'{\"status\":\"ok\"}'\n"
+            "reply=b'HTTP/1.0 200 OK\\r\\nContent-Length: '+str(len(body)).encode()+b'\\r\\nConnection: close\\r\\n\\r\\n'+body\n"
+            "while True:\n"
+            " connection,address=listener.accept()\n"
+            " with connection:\n"
+            "  connection.recv(4096)\n"
+            "  connection.sendall(reply)\n")
+        return [sys.executable, "-I", "-S", "-c", code, "--port", str(port)]
 
     def test_owned_fake_child_is_stopped_and_other_listener_preserved(self):
         with tempfile.TemporaryDirectory() as directory, socket.socket() as other:
@@ -221,7 +231,11 @@ class OwnedLifecycleTests(unittest.TestCase):
             try:
                 server.start()
                 fake.pid = server.process.pid
-                server.ready(timeout=8)
+                try:
+                    server.ready(timeout=20)
+                except Exception as exc:
+                    details=server.log_path.read_text(encoding="utf-8",errors="replace")
+                    self.fail("Owned fake readiness failed: %r; child=%r; log=%s" % (exc,server.process.poll(),details))
                 self.assertIsNone(server.process.poll())
                 self.assertEqual(screen.http_json(server.base, "/health")["status"], "ok")
             finally:
