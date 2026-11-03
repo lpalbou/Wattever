@@ -430,8 +430,16 @@
         "captured_at": {"type": "string", "format": "date-time"},
         "scope": {"const": "benchmark_client"},
         "unit": {"const": "bytes_per_second"},
+        "gpu_path_fingerprint": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "storage_to_ram": {"$ref": "#/$defs/transferMeasurement"},
         "ram_to_vram": {"$ref": "#/$defs/transferMeasurement"},
+        "ram_to_vram_devices": {"type": "array", "maxItems": 32, "items": {"allOf": [
+          {"$ref": "#/$defs/transferMeasurement"},
+          {"type": "object", "required": ["gpu_sensor_index", "gpu_name"], "properties": {
+            "gpu_sensor_index": {"type": "integer", "minimum": 0, "maximum": 255},
+            "gpu_name": {"type": "string", "minLength": 1}
+          }}
+        ]}},
         "ram_copy_single": {"$ref": "#/$defs/transferMeasurement"},
         "ram_copy_parallel": {"$ref": "#/$defs/transferMeasurement"},
         "storage_volumes": {"type": "array", "maxItems": 8, "items": {"$ref": "#/$defs/transferMeasurement"}},

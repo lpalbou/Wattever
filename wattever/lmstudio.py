@@ -21,7 +21,7 @@ import urllib.request
 from .platform_util import popen_kwargs
 
 ANSI = re.compile(r"\x1b\[[0-9;?]*[a-zA-Z]|\x1b\[\?25[lh]|\[K")
-DEFAULT_BASE = os.environ.get("LMS_BASE_URL", "http://localhost:1234")
+DEFAULT_BASE = os.environ.get("LMS_BASE_URL", "http://127.0.0.1:1234")
 
 
 class Cancelled(Exception):

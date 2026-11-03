@@ -93,6 +93,8 @@ def _cap_telemetry_start(run, cfg):
     sampler = power.PowerSampler(interval_ms=cfg.get("power_interval_ms", 500),
                                  gpu_index=cfg.get("gpu_index", 0))
     sampler.start()
+    if hasattr(sampler, 'measurement_scope'):
+        run['measurement_scope'].update(sampler.measurement_scope())
     return sampler
 
 
@@ -356,6 +358,12 @@ class Handler(BaseHTTPRequestHandler):
             self.close_connection = True
             return self._error(403, denied)
         try:
+            if route == "/api/hardware/gpu-setup":
+                with WORK_LOCK:
+                    if _any_running():
+                        return self._error(409, "Wait for the benchmark to finish before changing GPU placement.")
+                    from . import gpu_setup
+                    return self._json(gpu_setup.stage(self._body()))
             if route == "/api/bench/consolidate":
                 with WORK_LOCK:
                     if _any_running():
@@ -548,7 +556,7 @@ class Handler(BaseHTTPRequestHandler):
                     "provider": endpoints.public_provider(cfg)}
 
     def env_payload(self):
-        from . import bandwidth, memory_topology
+        from . import bandwidth, memory_topology, gpu_setup
         models = self.models_payload()
         selected, missing = default_selection(models)
         cli = lmstudio.LmsCli()
@@ -556,11 +564,12 @@ class Handler(BaseHTTPRequestHandler):
         gpu = power.gpu_info(0)
         sensors = power.list_gpus()
         machine = hardware.inventory()
-        profile = bandwidth.latest()
+        profile = bandwidth.latest(machine, sensors=sensors)
         if profile is None:
-            profile = bandwidth.saved_capture(machine, gpu)
+            profile = bandwidth.saved_capture(machine, gpu, sensors=sensors)
         return {
             "gpus": sensors,
+            "gpu_setup": gpu_setup.status(),
             "gpu": gpu,
             "platform": platform_util.platform_label(),
             "power": {
@@ -581,6 +590,7 @@ class Handler(BaseHTTPRequestHandler):
             "corpus": corpus.master_stats(),
             "defaults": runner.DEFAULT_CONFIG,
             "capabilities": {"resume": True, "extend": True, "context_planning": True, "context_planner_version": 1,
+                             "multi_gpu_telemetry": True,
                              "providers": ["lmstudio", "openai"], "external_model_management": False,
                              "capability_benchmarks": True, "transfer_bandwidth": True,
                              "memory_topology": True},
@@ -675,6 +685,9 @@ def main():
         print("  GPU      : no supported accelerator detected (power unavailable)")
     print("  LM Studio: %s" % ("API up" if BENCH.cli.server_running() else
                                "not running (the app will start it)"))
+    sensors = power.list_gpus()
+    if len(sensors) > 1:
+        print("  Telemetry: all %d NVIDIA GPUs, per card and combined" % len(sensors))
     print("\n  Leave this window open. Press Ctrl+C to stop the server.\n")
     if os.environ.get("GPU_BENCH_NO_BROWSER") != "1":
         threading.Timer(0.6, lambda: webbrowser.open(url)).start()

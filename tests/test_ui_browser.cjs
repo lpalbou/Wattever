@@ -86,11 +86,34 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     }
     await check('!!document.querySelector("#run-detail h3")', 'UI boots');
     await check('document.querySelector("#panel-run").classList.contains("active")', 'Run is the default screen');
-    await check('document.querySelector("#app-version").textContent === "v2.4.1"', 'Version comes from the server');
+    await check('(async()=>{const info=await(await fetch("/api/version")).json();return document.querySelector("#app-version").textContent === "v"+info.version})()', 'Version comes from the server');
     await check('!document.querySelector("#machine-card").open && !document.querySelector("#advanced-settings").open', 'Details start collapsed');
     await check('!document.querySelector("#size-quick, #concurrency-quick, #cpu-tdp, #other-idle")', 'No duplicate shortcuts or power inputs');
     await check('document.querySelector("#run-label").value === "RTX 5060 Ti" && [...document.querySelectorAll("#machine-badges .machine-header-item small")].map(node=>node.textContent).join() === "CPU,GPU,RAM,VRAM" && [...document.querySelectorAll("#machine-badges .machine-header-item strong")].map(node=>node.textContent).join().includes("Smoke,RTX 5060 Ti,32 GiB,16 GiB")', 'Collapsed header contains structured CPU, GPU, RAM and VRAM values');
     await check('!document.querySelector("#machine-card").open && [...document.querySelectorAll("#machine-badges .machine-header-item")].every(node=>node.getBoundingClientRect().width>0 && node.getBoundingClientRect().height>0) && document.querySelector("#machine-badges .machine-header-item").title==="Smoke CPU" && document.querySelector("#machine-name").parentElement.title.includes("NVIDIA GeForce RTX 5060 Ti")', 'All four machine values are visible while collapsed and full processor/card names remain accessible');
+    await evaluate('state.env.hardware.gpus.push({name:"NVIDIA GeForce RTX 5070 Ti",sensor_index:1,memory_bytes:16*1073741824}); renderHardware()');
+    await check('document.querySelector("#machine-name").textContent.includes("RTX 5060 Ti") && document.querySelector("#machine-name").textContent.includes("RTX 5070 Ti") && document.querySelectorAll("#machine-name .machine-device").length===2 && document.querySelectorAll("#machine-memory .machine-device").length===2 && document.querySelector("#machine-memory").parentElement.textContent.includes("VRAM / card") && document.querySelectorAll("#gpu-index option").length===2', 'Both cards and separate memory rows are visible in the summary and power-sensor selector');
+    await evaluate('state.env.gpu_setup={strata:{available:true,choice:{mode:"auto"}}};renderHardware();document.querySelector("#machine-card").open=true;document.querySelector("#strata-gpu-choice").value="1";document.querySelector("#strata-gpu-choice").dispatchEvent(new Event("change"))');
+    for(let attempt=0;attempt<100;attempt++){if(await evaluate('document.querySelector("#gpu-setup-status").textContent.startsWith("Saved.")'))break;await delay(30)}
+    await check('state.env.gpu_setup.strata.choice.mode==="single" && state.env.gpu_setup.strata.choice.gpu_index===1 && !document.querySelector("#strata-gpu-choice").disabled && document.querySelector("#gpu-setup-status").textContent.includes("Strata Control")', 'Strata card selection saves a next-desktop-load choice without model lifecycle commands');
+    await evaluate('document.querySelector(".gpu-setup").scrollIntoView({block:"center"})');
+    await screenshot('strata-gpu-setup-desktop');
+    await evaluate('renderLive({running:true,live:{phase:"decode",done:1,total:2,telemetry:{gpu_w:190,gpu_util:45,vram_mb:18000,vram_percent:56,gpus:[{index:0,name:"NVIDIA GeForce RTX 5070 Ti",gpu_w:120,gpu_util:50,vram_mb:10000,vram_percent:62.5,temp_c:65,clock_mhz:2700},{index:1,name:"NVIDIA GeForce RTX 5060 Ti",gpu_w:70,gpu_util:40,vram_mb:8000,vram_percent:50,temp_c:59,clock_mhz:2400}]}}});document.querySelector("#live-card").classList.remove("hidden");document.querySelector("#live-card").scrollIntoView({block:"start"});window.scrollBy(0,-100)');
+    await check('document.querySelectorAll("#live-stats .gpu-live-card").length===2 && document.querySelector("#live-stats").textContent.includes("All GPUs power") && document.querySelectorAll("#live-stats .gpu-live-card")[1].textContent.includes("70 W")', 'Combined power and separate per-card power, utilization, VRAM, temperature and clock are visible');
+    await screenshot('two-gpu-live-desktop');
+    await send('Emulation.setDeviceMetricsOverride', {width:390,height:844,deviceScaleFactor:1,mobile:true});
+    await evaluate('document.querySelector("#live-stats .gpu-live-grid").scrollIntoView({block:"start"});window.scrollBy(0,-100)');
+    await check('document.documentElement.scrollWidth<=innerWidth', 'Per-card telemetry fits phone width');
+    await screenshot('two-gpu-live-phone');
+    await send('Emulation.setDeviceMetricsOverride', {width:1440,height:1000,deviceScaleFactor:1,mobile:false});
+    await evaluate('document.querySelector("#live-card").classList.add("hidden")');
+    await evaluate('delete state.env.gpu_setup;renderHardware();document.querySelector("#machine-card").open=false;window.scrollTo(0,0)');
+    await screenshot('run-two-gpus-desktop');
+    await send('Emulation.setDeviceMetricsOverride', {width:390,height:844,deviceScaleFactor:1,mobile:true});
+    await check('document.documentElement.scrollWidth<=innerWidth && [...document.querySelectorAll("#machine-name .machine-device, #machine-memory .machine-device")].every(node=>node.getBoundingClientRect().width>0 && node.getBoundingClientRect().height>0)', 'Both GPU names and capacities fit the collapsed phone header');
+    await screenshot('run-two-gpus-phone');
+    await send('Emulation.setDeviceMetricsOverride', {width:1440,height:1000,deviceScaleFactor:1,mobile:false});
+    await evaluate('state.env.hardware.gpus.pop(); renderHardware()');
     await check('document.querySelector("#run-notes").value.includes("Reasoning: off")', 'Settings notes are filled automatically');
     await clickValue('#concurrency-chips input', 5);
     await check('[...state.concurrencyLevels].join() === "1,2,3,4,5"', 'Five selects one through five');
@@ -401,6 +424,8 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     await evaluate('fetch("/test/finish",{method:"POST"}).then(response=>response.json())');
     for(let attempt=0;attempt<80 && !await evaluate('state.runCache.live.status==="completed" && state.poller===null');attempt++) await delay(50);
     await check('state.runCache.live.status==="completed" && !document.querySelector("#run-detail .live-result-notice") && !document.querySelector("#run-detail #delete-run").disabled', 'Completion refreshes final data and clears the Live state');
+    await check('document.querySelector("#live-card h3").textContent==="Benchmark finished" && document.querySelector("#live-phase").textContent.startsWith("Completed") && document.querySelector("#live-phase").classList.contains("st-ok")', 'The progress panel shows the completed job rather than the idle worker phase');
+    await check('document.querySelector("#live-deadline").hidden && !document.querySelector("#live-sample-note").hidden && document.querySelector("#live-sample-note").textContent.startsWith("Last recorded sample") && document.querySelector("#pill-power").hidden', 'Finished telemetry is a labelled snapshot with no running deadline or live power pill');
     await evaluate('showPanel("run");document.querySelector("#helper-provider").value="openai";document.querySelector("#helper-provider").dispatchEvent(new Event("change"))');
     await check('document.querySelector("#start-btn").disabled && document.querySelector("#offload").closest(".field").hidden', 'Provider change requires connection and hides managed model controls');
     await evaluate('document.querySelector("#helper-url").value="http://localhost:9000/v1";document.querySelector("#helper-model").value="manual/model";connectHelperEndpoint()');
@@ -562,7 +587,12 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     await evaluate('document.querySelector("#cap-runs input[value=\\"cap-ui-different\\"]").click()');
     for(let attempt=0;attempt<60 && !await evaluate('!!document.querySelector("#cap-comparison .cap-notice")');attempt++)await delay(50);
     await check('document.querySelector("#cap-comparison .cap-notice").textContent.includes("Different evaluation protocols") && [...document.querySelectorAll("#cap-comparison .cap-paired-table tbody tr")].some(row=>row.textContent.includes("org/different-protocol") && row.textContent.includes("Not comparable") && !row.querySelector(".cap-positive,.cap-negative"))', 'Different token budgets or protocols show a warning and no fabricated paired delta');
-    await evaluate('document.querySelector("#cap-comparison").scrollIntoView({block:"start"})');
+    // Async comparison rendering can replace the scrolled node; wait for its final layout.
+    for(let attempt=0;attempt<20;attempt++) {
+      await evaluate('document.querySelector("#cap-comparison").scrollIntoView({block:"start"})');
+      await delay(50);
+      if(await evaluate('document.querySelector("#cap-comparison > header").getBoundingClientRect().top>=document.querySelector(".topbar").getBoundingClientRect().bottom')) break;
+    }
     await check('document.querySelector("#cap-comparison > header").getBoundingClientRect().top>=document.querySelector(".topbar").getBoundingClientRect().bottom', 'Comparison heading stays visible below the fixed navigation');
     await screenshot('capabilities-comparison-desktop');
     await check('document.documentElement.scrollWidth<=innerWidth+1', 'Capability overview and comparisons fit desktop width');

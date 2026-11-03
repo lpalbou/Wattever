@@ -1,0 +1,41 @@
+{
+  "scope": "Post-run metadata HTTP and empty TCP connection probes only; no inference",
+  "python_version": "3.12.15",
+  "captured_at": "2026-11-02T19:49:14.398621+00:00",
+  "managed_base_kind": "default localhost",
+  "http_metadata_latency_s": {
+    "name_resolution_default": [
+      2.086852700000236,
+      2.0617901000005077,
+      2.0406646999999793
+    ],
+    "ipv4_loopback": [
+      0.014922800000931602,
+      0.0254531999999017,
+      0.022303899999315036
+    ]
+  },
+  "tcp_probes": [
+    {
+      "family": 23,
+      "elapsed_s": 2.033653200000117,
+      "error_code": 10061
+    },
+    {
+      "family": 23,
+      "elapsed_s": 2.0151962999989337,
+      "error_code": 10061
+    },
+    {
+      "family": 2,
+      "elapsed_s": 0.014978400000472902,
+      "error_code": 0
+    },
+    {
+      "family": 2,
+      "elapsed_s": 0.014829600000666687,
+      "error_code": 0
+    }
+  ],
+  "caveat": "Benchmarks used Python3.13; post-run probe used this recorded Python version. Socket refusal timing independently measures the Windows connection path. Do not subtract this diagnostic from archived TTFT."
+}

@@ -188,6 +188,10 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 /* ---------- progress / live ---------- */
 .progress { height: 6px; background: var(--surface-3); border-radius: 999px; overflow: hidden; }
 .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .3s ease; }
+#live-card[data-status="completed"] .progress > div { background: var(--status-good); }
+#live-card[data-status="error"] .progress > div { background: var(--status-critical); }
+#live-card[data-status="cancelled"] .progress > div { background: var(--status-warning); }
+#live-card[data-status="interrupted"] .progress > div { background: var(--status-serious); }
 .live-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin: 14px 0; }
 .stat { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 11px 13px; }
 .stat .k { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
@@ -958,6 +962,16 @@ tfoot td { white-space: normal; font-size: 11px; text-align: left; }
 .machine-header-item { display: grid; gap: 4px; min-width: 0; }
 .machine-header-item small { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); }
 .machine-header-item strong { font-size: 15px; font-weight: 550; color: var(--text-primary); overflow-wrap: anywhere; }
+.machine-header-item strong:has(.machine-device) { display: grid; gap: 4px; }
+.machine-device { display: block; }
+.gpu-setup { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+.gpu-live-grid { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,330px),1fr)); gap: 12px; }
+.gpu-live-card { padding: 16px; border: 1px solid var(--border); border-top: 2px solid var(--accent); border-radius: 12px; background: var(--surface-1); }
+.gpu-live-card header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.gpu-live-card dl { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px 10px; margin: 0; }
+.gpu-live-card dt { color: var(--text-muted); font-size: 11px; }
+.gpu-live-card dd { margin: 5px 0 0; font-size: 18px; font-variant-numeric: tabular-nums; }
+.gpu-live-card:nth-child(2n) { border-top-color: var(--series-2); }
 .machine-header-grid .machine-memory { margin: 0; }
 .machine-card > summary .disclosure-label { margin-left: 0; }
 .machine-status { margin: 0 0 18px; }

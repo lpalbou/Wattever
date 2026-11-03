@@ -5,6 +5,8 @@ identify every secret in arbitrary prose; labels and notes still need review.
 """
 import re
 import copy
+import json
+from functools import lru_cache
 from urllib.parse import urlsplit
 
 
@@ -23,13 +25,26 @@ PRIVATE_KEYS = {
 }
 
 
-def private_key(key):
+def _private_key_uncached(key):
     normalized = re.sub(r"[^a-z0-9]", "", key.lower())
     return (normalized in PRIVATE_KEYS or re.search(r"(?:^|_)(?:TOKEN|PASSWORD|SECRET|API_KEY)$", key, re.I) or
             any(normalized.endswith(suffix) for suffix in
                 ("apikey", "password", "passwd", "secret", "accesstoken", "refreshtoken",
                  "authorization", "serialnumber", "deviceuuid", "gpuuuid", "endpointurl", "baseurl",
                  "apitoken", "authtoken", "sessiontoken", "idtoken", "apikeyenv")))
+
+
+@lru_cache(maxsize=8192)
+def _private_key_cached(key):
+    return _private_key_uncached(key)
+
+
+def private_key(key):
+    # Exact strings avoid changing custom string-subclass/hash behavior. Cache
+    # field classification only; privacy values and policy remain unchanged.
+    if type(key) is str and len(key) <= 128:
+        return _private_key_cached(key)
+    return _private_key_uncached(key)
 
 
 def public_source(value):
@@ -66,6 +81,14 @@ def public_projection(value, _path=()):
         result = {}
         redacted = storage_access = False
         for key, item in value.items():
+            # In-memory hardware maps can use numeric GPU/layer indices. Match
+            # JSON's object-key conversion before applying the same privacy
+            # checks used for string-keyed API input.
+            if not isinstance(key, str):
+                if key is None or type(key) in (int, float, bool):
+                    key = next(iter(json.loads(json.dumps({key: None}, allow_nan=False))))
+                else:
+                    raise TypeError('Public metadata keys must be valid JSON object keys')
             if key in ("model", "response_model") and isinstance(item, str) and item.startswith(("/", "\\")):
                 result[key] = "private model identifier"
                 redacted = True

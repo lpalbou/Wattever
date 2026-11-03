@@ -4273,13 +4273,13 @@
      "nonce": "e68b9f216c25",
      "status": "failed",
      "fail_kind": "timeout",
-     "diagnostic_redacted": true
+     "message": "Request stopped during group deadline recovery."
     },
     {
      "nonce": "caa734ddc0b9",
      "status": "failed",
      "fail_kind": "timeout",
-     "diagnostic_redacted": true
+     "message": "Request stopped during group deadline recovery."
     }
    ],
    "completed_requests": 0,
@@ -4318,6 +4318,7 @@
     "raw_retention_truncated": false
    },
    "fail_kind": "timeout",
+   "message": "Group exceeded configured per-test timeout; managed model unload and request-worker exit were checked.",
    "timeout_trigger": "configured deadline",
    "timeout_elapsed_s": 300.00540909999995,
    "per_request_context_length": 84768,
@@ -4413,8 +4414,7 @@
      }
     ]
    },
-   "practical_limit_note": "Windows reported about 1.94 GB shared GPU memory with dedicated VRAM full; no Strata process or server running. One measured timeout at 300s; next repeat skipped by policy.",
-   "diagnostic_redacted": true
+   "practical_limit_note": "Windows reported about 1.94 GB shared GPU memory with dedicated VRAM full; no Strata process or server running. One measured timeout at 300s; next repeat skipped by policy."
   },
   {
    "model": "lfm2.5-24b-a2b",
@@ -4424,6 +4424,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped after an earlier repeat failed.",
    "quantization": "Q4_0",
    "quantization_source": "endpoint_reported",
    "quantization_method": "QAD",
@@ -4515,8 +4516,7 @@
      }
     ]
    },
-   "practical_limit_note": "Windows reported about 1.94 GB shared GPU memory with dedicated VRAM full; no Strata process or server running. One measured timeout at 300s; next repeat skipped by policy.",
-   "diagnostic_redacted": true
+   "practical_limit_note": "Windows reported about 1.94 GB shared GPU memory with dedicated VRAM full; no Strata process or server running. One measured timeout at 300s; next repeat skipped by policy."
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -4876,6 +4876,7 @@
    "timeout_reason": "configured per-test timeout",
    "status": "failed",
    "fail_kind": "timeout",
+   "message": "Request exceeded configured deadline; model unloaded before continuing.",
    "timeout_elapsed_s": 305.2913572,
    "timeout_trigger": "configured deadline",
    "per_request_context_length": 6018,
@@ -4951,8 +4952,7 @@
     "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd"
    },
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
-   "session_id": "0fa85d5ef48b",
-   "diagnostic_redacted": true
+   "session_id": "0fa85d5ef48b"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -4962,6 +4962,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped after an earlier repeat failed.",
    "quantization": "Q4_0",
    "quantization_source": "endpoint_reported",
    "quantization_method": "QAT",
@@ -5033,8 +5034,7 @@
     "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd"
    },
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
-   "session_id": "0fa85d5ef48b",
-   "diagnostic_redacted": true
+   "session_id": "0fa85d5ef48b"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -5044,6 +5044,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "quantization": "Q4_0",
    "quantization_source": "endpoint_reported",
    "quantization_method": "QAT",
@@ -5115,8 +5116,7 @@
     "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd"
    },
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
-   "session_id": "0fa85d5ef48b",
-   "diagnostic_redacted": true
+   "session_id": "0fa85d5ef48b"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -6450,13 +6450,13 @@
      "nonce": "1acb74cfcc3c",
      "status": "failed",
      "fail_kind": "timeout",
-     "diagnostic_redacted": true
+     "message": "Request stopped during group deadline recovery."
     },
     {
      "nonce": "49b2efc41ee4",
      "status": "failed",
      "fail_kind": "timeout",
-     "diagnostic_redacted": true
+     "message": "Request stopped during group deadline recovery."
     }
    ],
    "completed_requests": 0,
@@ -6495,6 +6495,7 @@
     "raw_retention_truncated": false
    },
    "fail_kind": "timeout",
+   "message": "Group exceeded configured per-test timeout; managed model unload and request-worker exit were checked.",
    "timeout_trigger": "configured deadline",
    "timeout_elapsed_s": 300.00519529999974,
    "per_request_context_length": 21768,
@@ -6570,8 +6571,7 @@
     "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd"
    },
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
-   "session_id": "0fa85d5ef48b",
-   "diagnostic_redacted": true
+   "session_id": "0fa85d5ef48b"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -6581,6 +6581,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped after an earlier repeat failed.",
    "quantization": "Q4_0",
    "quantization_source": "endpoint_reported",
    "quantization_method": "QAT",
@@ -6652,8 +6653,7 @@
     "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd"
    },
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
-   "session_id": "0fa85d5ef48b",
-   "diagnostic_redacted": true
+   "session_id": "0fa85d5ef48b"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -6663,6 +6663,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "quantization": "Q4_0",
    "quantization_source": "endpoint_reported",
    "quantization_method": "QAT",
@@ -6734,8 +6735,7 @@
     "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd"
    },
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
-   "session_id": "0fa85d5ef48b",
-   "diagnostic_redacted": true
+   "session_id": "0fa85d5ef48b"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -6745,6 +6745,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "quantization": "Q4_0",
    "quantization_source": "endpoint_reported",
    "quantization_method": "QAT",
@@ -6816,8 +6817,7 @@
     "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd"
    },
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
-   "session_id": "0fa85d5ef48b",
-   "diagnostic_redacted": true
+   "session_id": "0fa85d5ef48b"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -7343,6 +7343,7 @@
    "timeout_reason": "configured per-test timeout",
    "status": "failed",
    "fail_kind": "timeout",
+   "message": "Request exceeded configured deadline; model unloaded before continuing.",
    "timeout_elapsed_s": 303.3290530999998,
    "timeout_trigger": "configured deadline",
    "per_request_context_length": 84768,
@@ -7418,8 +7419,7 @@
     "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd"
    },
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
-   "session_id": "1d2c1a9d4ce0",
-   "diagnostic_redacted": true
+   "session_id": "1d2c1a9d4ce0"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -7451,13 +7451,13 @@
      "nonce": "18b503beaa2c",
      "status": "failed",
      "fail_kind": "timeout",
-     "diagnostic_redacted": true
+     "message": "Request stopped during group deadline recovery."
     },
     {
      "nonce": "6f9699e6860b",
      "status": "failed",
      "fail_kind": "timeout",
-     "diagnostic_redacted": true
+     "message": "Request stopped during group deadline recovery."
     }
    ],
    "completed_requests": 0,
@@ -7496,6 +7496,7 @@
     "raw_retention_truncated": false
    },
    "fail_kind": "timeout",
+   "message": "Group exceeded configured per-test timeout; managed model unload and request-worker exit were checked.",
    "timeout_trigger": "configured deadline",
    "timeout_elapsed_s": 300.0062831,
    "per_request_context_length": 42768,
@@ -7571,8 +7572,7 @@
     "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd"
    },
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
-   "session_id": "1d2c1a9d4ce0",
-   "diagnostic_redacted": true
+   "session_id": "1d2c1a9d4ce0"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -7604,13 +7604,13 @@
      "nonce": "37ddf30c97da",
      "status": "failed",
      "fail_kind": "timeout",
-     "diagnostic_redacted": true
+     "message": "Request stopped during group deadline recovery."
     },
     {
      "nonce": "3dd21e997cd1",
      "status": "failed",
      "fail_kind": "timeout",
-     "diagnostic_redacted": true
+     "message": "Request stopped during group deadline recovery."
     }
    ],
    "completed_requests": 0,
@@ -7649,6 +7649,7 @@
     "raw_retention_truncated": false
    },
    "fail_kind": "timeout",
+   "message": "Group exceeded configured per-test timeout; managed model unload and request-worker exit were checked.",
    "timeout_trigger": "configured deadline",
    "timeout_elapsed_s": 300.0100446000001,
    "per_request_context_length": 84768,
@@ -7724,8 +7725,7 @@
     "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd"
    },
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
-   "session_id": "1d2c1a9d4ce0",
-   "diagnostic_redacted": true
+   "session_id": "1d2c1a9d4ce0"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -7919,6 +7919,7 @@
    "timeout_reason": "configured per-test timeout",
    "status": "failed",
    "fail_kind": "timeout",
+   "message": "Request exceeded configured deadline; model unloaded before continuing.",
    "timeout_elapsed_s": 302.8306481999998,
    "timeout_trigger": "configured deadline",
    "per_request_context_length": 21768,
@@ -7994,8 +7995,7 @@
     "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd"
    },
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
-   "session_id": "a5a543c4a5e1",
-   "diagnostic_redacted": true
+   "session_id": "a5a543c4a5e1"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -28089,6 +28089,7 @@
    "timeout_reason": "configured per-test timeout",
    "status": "failed",
    "fail_kind": "timeout",
+   "message": "Request exceeded configured deadline; model unloaded before continuing.",
    "timeout_elapsed_s": 303.8767938000001,
    "timeout_trigger": "configured deadline",
    "per_request_context_length": 84768,
@@ -28191,8 +28192,7 @@
       "Property": "DedicatedUsage"
      }
     ]
-   },
-   "diagnostic_redacted": true
+   }
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -28202,6 +28202,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped after an earlier repeat failed.",
    "quantization": "Q3_K_XL",
    "quantization_source": "endpoint_reported",
    "quantization_method": "UD",
@@ -28273,8 +28274,7 @@
     "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1"
    },
    "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1",
-   "session_id": "98cc3b20c276",
-   "diagnostic_redacted": true
+   "session_id": "98cc3b20c276"
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -30042,13 +30042,13 @@
      "nonce": "a12faa6b9cca",
      "status": "failed",
      "fail_kind": "timeout",
-     "diagnostic_redacted": true
+     "message": "Request stopped during group deadline recovery."
     },
     {
      "nonce": "30e7caf66919",
      "status": "failed",
      "fail_kind": "timeout",
-     "diagnostic_redacted": true
+     "message": "Request stopped during group deadline recovery."
     }
    ],
    "completed_requests": 0,
@@ -30087,6 +30087,7 @@
     "raw_retention_truncated": false
    },
    "fail_kind": "timeout",
+   "message": "Group exceeded configured per-test timeout; managed model unload and request-worker exit were checked.",
    "timeout_trigger": "configured deadline",
    "timeout_elapsed_s": 300.0021992999991,
    "per_request_context_length": 42768,
@@ -30162,8 +30163,7 @@
     "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1"
    },
    "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1",
-   "session_id": "98cc3b20c276",
-   "diagnostic_redacted": true
+   "session_id": "98cc3b20c276"
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -30173,6 +30173,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped after an earlier repeat failed.",
    "quantization": "Q3_K_XL",
    "quantization_source": "endpoint_reported",
    "quantization_method": "UD",
@@ -30244,8 +30245,7 @@
     "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1"
    },
    "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1",
-   "session_id": "98cc3b20c276",
-   "diagnostic_redacted": true
+   "session_id": "98cc3b20c276"
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -30255,6 +30255,7 @@
    "repeat": 0,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "quantization": "Q3_K_XL",
    "quantization_source": "endpoint_reported",
    "quantization_method": "UD",
@@ -30326,8 +30327,7 @@
     "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1"
    },
    "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1",
-   "session_id": "98cc3b20c276",
-   "diagnostic_redacted": true
+   "session_id": "98cc3b20c276"
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -30337,6 +30337,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "quantization": "Q3_K_XL",
    "quantization_source": "endpoint_reported",
    "quantization_method": "UD",
@@ -30408,8 +30409,7 @@
     "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1"
    },
    "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1",
-   "session_id": "98cc3b20c276",
-   "diagnostic_redacted": true
+   "session_id": "98cc3b20c276"
   },
   {
    "model": "google/gemma-4-e4b",
@@ -48401,7 +48401,7 @@
      "nonce": "33f135bc3f7f",
      "status": "failed",
      "fail_kind": "timeout",
-     "diagnostic_redacted": true
+     "message": "Group timed out."
     }
    ],
    "completed_requests": 1,
@@ -48441,6 +48441,7 @@
    },
    "recovery_error": "External endpoint request timed out. Server-side cancellation cannot be verified; benchmark stopped. Check the inference server before starting again.",
    "fail_kind": "timeout",
+   "message": "Group exceeded configured per-test timeout; managed model unload and request-worker exit were checked.",
    "timeout_trigger": "configured deadline",
    "timeout_elapsed_s": 600.003471699998,
    "per_request_context_length": 84768,
@@ -48520,8 +48521,7 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "f4bf1ae00ad5",
-   "diagnostic_redacted": true
+   "session_id": "f4bf1ae00ad5"
   },
   {
    "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
@@ -48607,9 +48607,9 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Not attempted after the preceding repeat exceeded the 600s latency limit. Strata Control unloaded the external model; backend absence and no owned engine processes were verified. This is not a measured out-of-memory failure.",
    "skip_policy": "Not attempted after the preceding repeat exceeded the 600s latency limit. Strata Control unloaded the external model; backend absence and no owned engine processes were verified. This is not a measured out-of-memory failure.",
-   "timestamp": "2026-11-01T07:32:51.241982+00:00",
-   "diagnostic_redacted": true
+   "timestamp": "2026-11-01T07:32:51.241982+00:00"
   },
   {
    "model": "qwen3.8-flash-next-iq3_s",
@@ -63592,6 +63592,7 @@
    },
    "power_source": "nvidia-smi",
    "finished_at": "2026-11-01T07:31:15+00:00",
+   "error": "External endpoint request timed out. Server-side cancellation cannot be verified; benchmark stopped. Check the inference server before starting again.",
    "recovery_resolution": {
     "resolved_at": "2026-11-01T07:32:51.241982+00:00",
     "original_execution_status": "error",
@@ -63831,8 +63832,7 @@
     "mtp_state": "unknown; configured by endpoint operator",
     "hardware_attribution": "user_reported: inference runs on the measurement client",
     "inference_local_source": "user_reported"
-   },
-   "diagnostic_redacted": true
+   }
   },
   {
    "id": "d161e574388e",
@@ -71066,7 +71066,7 @@
      "nonce": "5dfe09c26f9c",
      "status": "failed",
      "fail_kind": "error",
-     "diagnostic_redacted": true
+     "message": "LM Studio stream error: {'message': 'Engine protocol predict request failed: fetch failed'}"
     }
    ],
    "completed_requests": 1,
@@ -71105,6 +71105,7 @@
     "raw_retention_truncated": false
    },
    "fail_kind": "error",
+   "message": "LM Studio stream error: {'message': 'Engine protocol predict request failed: fetch failed'}",
    "per_request_context_length": 42768,
    "requested_total_context": 85536,
    "load_parallel_capacity": 2,
@@ -71183,8 +71184,7 @@
    "quantization_method": "QAD",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T02:40:51+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "lfm2.5-24b-a2b",
@@ -71194,6 +71194,7 @@
    "repeat": 0,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -71267,8 +71268,7 @@
    "quantization_method": "QAD",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T02:40:51+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "lfm2.5-24b-a2b",
@@ -71278,6 +71278,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -71351,8 +71352,7 @@
    "quantization_method": "QAD",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T02:40:51+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -73057,6 +73057,7 @@
    "timeout_reason": "six times prior prefill estimate plus 120 seconds, capped by configured timeout",
    "status": "failed",
    "fail_kind": "timeout",
+   "message": "Request exceeded adaptive deadline; model unloaded before continuing.",
    "timeout_elapsed_s": 1804.3443461999996,
    "timeout_trigger": "adaptive deadline",
    "per_request_context_length": 84768,
@@ -73137,8 +73138,7 @@
    "quantization_method": "QAT",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T02:58:17+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -73148,6 +73148,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped after an earlier repeat failed.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -73221,8 +73222,7 @@
    "quantization_method": "QAT",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T02:58:17+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -75003,13 +75003,13 @@
      "nonce": "a5b6c4b3155a",
      "status": "failed",
      "fail_kind": "error",
-     "diagnostic_redacted": true
+     "message": "'NoneType' object has no attribute 'peek'"
     },
     {
      "nonce": "6c9f394d1318",
      "status": "failed",
      "fail_kind": "error",
-     "diagnostic_redacted": true
+     "message": "'NoneType' object has no attribute 'peek'"
     }
    ],
    "completed_requests": 0,
@@ -75048,6 +75048,7 @@
     "raw_retention_truncated": false
    },
    "fail_kind": "timeout",
+   "message": "'NoneType' object has no attribute 'peek'",
    "timeout_trigger": "adaptive deadline",
    "timeout_elapsed_s": 1800.0011903999984,
    "per_request_context_length": 42768,
@@ -75128,8 +75129,7 @@
    "quantization_method": "QAT",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T02:58:17+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -75139,6 +75139,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped after an earlier repeat failed.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -75212,8 +75213,7 @@
    "quantization_method": "QAT",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T02:58:17+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -75223,6 +75223,7 @@
    "repeat": 0,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -75296,8 +75297,7 @@
    "quantization_method": "QAT",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T02:58:17+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -75307,6 +75307,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -75380,8 +75381,7 @@
    "quantization_method": "QAT",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T02:58:17+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -75391,6 +75391,7 @@
    "repeat": 0,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "quantization": "Q4_0",
    "quantization_source": "endpoint_reported",
    "quantization_method": "QAT",
@@ -75464,8 +75465,7 @@
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
    "session_id": "0fa85d5ef48b",
    "archived_at": "2026-11-01T03:16:06+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -75475,6 +75475,7 @@
    "repeat": 0,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "quantization": "Q4_0",
    "quantization_source": "endpoint_reported",
    "quantization_method": "QAT",
@@ -75548,8 +75549,7 @@
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
    "session_id": "0fa85d5ef48b",
    "archived_at": "2026-11-01T03:16:06+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -75559,6 +75559,7 @@
    "repeat": 0,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "quantization": "Q4_0",
    "quantization_source": "endpoint_reported",
    "quantization_method": "QAT",
@@ -75632,8 +75633,7 @@
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
    "session_id": "0fa85d5ef48b",
    "archived_at": "2026-11-01T03:16:06+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -75643,6 +75643,7 @@
    "repeat": 0,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "quantization": "Q4_0",
    "quantization_source": "endpoint_reported",
    "quantization_method": "QAT",
@@ -75716,8 +75717,7 @@
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
    "session_id": "0fa85d5ef48b",
    "archived_at": "2026-11-01T03:16:06+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -75727,6 +75727,7 @@
    "repeat": 0,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "quantization": "Q4_0",
    "quantization_source": "endpoint_reported",
    "quantization_method": "QAT",
@@ -75800,8 +75801,7 @@
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
    "session_id": "0fa85d5ef48b",
    "archived_at": "2026-11-01T03:16:06+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -75811,6 +75811,7 @@
    "repeat": 0,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "quantization": "Q4_0",
    "quantization_source": "endpoint_reported",
    "quantization_method": "QAT",
@@ -75884,8 +75885,7 @@
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
    "session_id": "0fa85d5ef48b",
    "archived_at": "2026-11-01T03:16:06+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -75895,6 +75895,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "quantization": "Q4_0",
    "quantization_source": "endpoint_reported",
    "quantization_method": "QAT",
@@ -75968,8 +75969,7 @@
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
    "session_id": "0fa85d5ef48b",
    "archived_at": "2026-11-01T03:36:26+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -75979,6 +75979,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "quantization": "Q4_0",
    "quantization_source": "endpoint_reported",
    "quantization_method": "QAT",
@@ -76052,8 +76053,7 @@
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
    "session_id": "0fa85d5ef48b",
    "archived_at": "2026-11-01T03:36:26+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -76063,6 +76063,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "quantization": "Q4_0",
    "quantization_source": "endpoint_reported",
    "quantization_method": "QAT",
@@ -76136,8 +76137,7 @@
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
    "session_id": "0fa85d5ef48b",
    "archived_at": "2026-11-01T03:36:26+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "spark-x2.6-4b",
@@ -82418,6 +82418,7 @@
    "timeout_reason": "six times prior prefill estimate plus 120 seconds, capped by configured timeout",
    "status": "failed",
    "fail_kind": "timeout",
+   "message": "Request exceeded adaptive deadline; model unloaded before continuing.",
    "timeout_elapsed_s": 307.7156364000002,
    "timeout_trigger": "adaptive deadline",
    "per_request_context_length": 84768,
@@ -82496,8 +82497,7 @@
    "quantization_method": null,
    "quantization_method_source": "unknown",
    "archived_at": "2026-11-01T03:43:53+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "openai/gpt-oss-20b",
@@ -82507,6 +82507,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped after an earlier repeat failed.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -82578,8 +82579,7 @@
    "quantization_method": null,
    "quantization_method_source": "unknown",
    "archived_at": "2026-11-01T03:43:53+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "openai/gpt-oss-20b",
@@ -84344,13 +84344,13 @@
      "nonce": "26367ef01e65",
      "status": "failed",
      "fail_kind": "error",
-     "diagnostic_redacted": true
+     "message": "'NoneType' object has no attribute 'peek'"
     },
     {
      "nonce": "ff9b10ceb37d",
      "status": "failed",
      "fail_kind": "error",
-     "diagnostic_redacted": true
+     "message": "'NoneType' object has no attribute 'peek'"
     }
    ],
    "completed_requests": 0,
@@ -84389,6 +84389,7 @@
     "raw_retention_truncated": false
    },
    "fail_kind": "timeout",
+   "message": "'NoneType' object has no attribute 'peek'",
    "timeout_trigger": "adaptive deadline",
    "timeout_elapsed_s": 304.11991579999994,
    "per_request_context_length": 42768,
@@ -84467,8 +84468,7 @@
    "quantization_method": null,
    "quantization_method_source": "unknown",
    "archived_at": "2026-11-01T03:43:53+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "openai/gpt-oss-20b",
@@ -84478,6 +84478,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped after an earlier repeat failed.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -84549,8 +84550,7 @@
    "quantization_method": null,
    "quantization_method_source": "unknown",
    "archived_at": "2026-11-01T03:43:53+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "openai/gpt-oss-20b",
@@ -84560,6 +84560,7 @@
    "repeat": 0,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -84631,8 +84632,7 @@
    "quantization_method": null,
    "quantization_method_source": "unknown",
    "archived_at": "2026-11-01T03:43:53+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "openai/gpt-oss-20b",
@@ -84642,6 +84642,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -84713,8 +84714,7 @@
    "quantization_method": null,
    "quantization_method_source": "unknown",
    "archived_at": "2026-11-01T03:43:53+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-12b-qat",
@@ -95323,6 +95323,7 @@
    "timeout_reason": "six times prior prefill estimate plus 120 seconds, capped by configured timeout",
    "status": "failed",
    "fail_kind": "timeout",
+   "message": "Request exceeded adaptive deadline; model unloaded before continuing.",
    "timeout_elapsed_s": 420.6188949000025,
    "timeout_trigger": "adaptive deadline",
    "per_request_context_length": 42768,
@@ -95403,8 +95404,7 @@
    "quantization_method": "UD",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T03:43:53+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -95414,6 +95414,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped after an earlier repeat failed.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -95487,8 +95488,7 @@
    "quantization_method": "UD",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T03:43:53+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -95498,6 +95498,7 @@
    "repeat": 0,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -95571,8 +95572,7 @@
    "quantization_method": "UD",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T03:43:53+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -95582,6 +95582,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -95655,8 +95656,7 @@
    "quantization_method": "UD",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T03:43:53+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -97437,13 +97437,13 @@
      "nonce": "fb3edbd5199c",
      "status": "failed",
      "fail_kind": "error",
-     "diagnostic_redacted": true
+     "message": "'NoneType' object has no attribute 'peek'"
     },
     {
      "nonce": "573927d8483d",
      "status": "failed",
      "fail_kind": "error",
-     "diagnostic_redacted": true
+     "message": "LM Studio stream error: {'message': 'Engine protocol predict request failed: fetch failed'}"
     }
    ],
    "completed_requests": 0,
@@ -97482,6 +97482,7 @@
     "raw_retention_truncated": false
    },
    "fail_kind": "timeout",
+   "message": "'NoneType' object has no attribute 'peek'",
    "timeout_trigger": "adaptive deadline",
    "timeout_elapsed_s": 712.4802741000021,
    "per_request_context_length": 42768,
@@ -97562,8 +97563,7 @@
    "quantization_method": "UD",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T03:43:53+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -97573,6 +97573,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped after an earlier repeat failed.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -97646,8 +97647,7 @@
    "quantization_method": "UD",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T03:43:53+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -97657,6 +97657,7 @@
    "repeat": 0,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -97730,8 +97731,7 @@
    "quantization_method": "UD",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T03:43:53+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -97741,6 +97741,7 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
    "model_configuration": {
     "fingerprint_version": "wattever-model-configuration-v1",
     "model": {
@@ -97814,8 +97815,7 @@
    "quantization_method": "UD",
    "quantization_method_source": "lmstudio_catalog_backfill",
    "archived_at": "2026-11-01T03:43:53+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "google/gemma-4-e4b",
@@ -111635,13 +111635,13 @@
      "nonce": "0498d097300f",
      "status": "failed",
      "fail_kind": "timeout",
-     "diagnostic_redacted": true
+     "message": "Request stopped during group deadline recovery."
     },
     {
      "nonce": "59f65fa12086",
      "status": "failed",
      "fail_kind": "timeout",
-     "diagnostic_redacted": true
+     "message": "Request stopped during group deadline recovery."
     }
    ],
    "completed_requests": 0,
@@ -111680,6 +111680,7 @@
     "raw_retention_truncated": false
    },
    "fail_kind": "timeout",
+   "message": "Group exceeded configured per-test timeout; managed model unload and request-worker exit were checked.",
    "timeout_trigger": "configured deadline",
    "timeout_elapsed_s": 300.01320510000005,
    "per_request_context_length": 84768,
@@ -111755,8 +111756,7 @@
    "configuration_id": "03b2fdffb8ebc797e503544c28e889b01e114a1faae8d3f3f595eff9ffed7ce9",
    "session_id": "98cc3b20c276",
    "archived_at": "2026-11-01T05:59:56+00:00",
-   "archive_reason": "retry",
-   "diagnostic_redacted": true
+   "archive_reason": "retry"
   },
   {
    "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
@@ -116122,7 +116122,7 @@
      "nonce": "33f135bc3f7f",
      "status": "failed",
      "fail_kind": "timeout",
-     "diagnostic_redacted": true
+     "message": "Group timed out."
     }
    ],
    "completed_requests": 1,
@@ -116162,6 +116162,7 @@
    },
    "recovery_error": "External endpoint request timed out. Server-side cancellation cannot be verified; benchmark stopped. Check the inference server before starting again.",
    "fail_kind": "timeout",
+   "message": "Group exceeded configured per-test timeout; managed model unload and request-worker exit were checked.",
    "timeout_trigger": "configured deadline",
    "timeout_elapsed_s": 600.003471699998,
    "per_request_context_length": 84768,
@@ -116243,8 +116244,7 @@
    "context_budget_source": "client planning estimate; not a verified server allocation",
    "session_id": "f4bf1ae00ad5",
    "archived_at": "2026-11-01T09:33:55+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
@@ -116330,11 +116330,11 @@
    "repeat": 1,
    "status": "skipped",
    "fail_kind": "skipped_after_failure",
+   "message": "Not attempted after the preceding repeat exceeded the 600s latency limit. Strata Control unloaded the external model; backend absence and no owned engine processes were verified. This is not a measured out-of-memory failure.",
    "skip_policy": "Not attempted after the preceding repeat exceeded the 600s latency limit. Strata Control unloaded the external model; backend absence and no owned engine processes were verified. This is not a measured out-of-memory failure.",
    "timestamp": "2026-11-01T07:32:51.241982+00:00",
    "archived_at": "2026-11-01T09:33:55+00:00",
-   "archive_reason": "rerun",
-   "diagnostic_redacted": true
+   "archive_reason": "rerun"
   },
   {
    "model": "qwen3.8-flash-next-iq3_s",
@@ -214863,7 +214863,7 @@
       "nonce": "33f135bc3f7f",
       "status": "failed",
       "fail_kind": "timeout",
-      "diagnostic_redacted": true
+      "message": "Group timed out."
      }
     ],
     "completed_requests": 1,
@@ -214903,6 +214903,7 @@
     },
     "recovery_error": "External endpoint request timed out. Server-side cancellation cannot be verified; benchmark stopped. Check the inference server before starting again.",
     "fail_kind": "timeout",
+    "message": "Group exceeded configured per-test timeout; managed model unload and request-worker exit were checked.",
     "timeout_trigger": "configured deadline",
     "timeout_elapsed_s": 600.003471699998,
     "per_request_context_length": 84768,
@@ -214982,8 +214983,7 @@
     "context_control": "external",
     "reasoning_control": "effective setting unknown; explicit standard effort request only",
     "context_budget_source": "client planning estimate; not a verified server allocation",
-    "session_id": "f4bf1ae00ad5",
-    "diagnostic_redacted": true
+    "session_id": "f4bf1ae00ad5"
    },
    {
     "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
@@ -215069,9 +215069,9 @@
     "repeat": 1,
     "status": "skipped",
     "fail_kind": "skipped_after_failure",
+    "message": "Not attempted after the preceding repeat exceeded the 600s latency limit. Strata Control unloaded the external model; backend absence and no owned engine processes were verified. This is not a measured out-of-memory failure.",
     "skip_policy": "Not attempted after the preceding repeat exceeded the 600s latency limit. Strata Control unloaded the external model; backend absence and no owned engine processes were verified. This is not a measured out-of-memory failure.",
-    "timestamp": "2026-11-01T07:32:51.241982+00:00",
-    "diagnostic_redacted": true
+    "timestamp": "2026-11-01T07:32:51.241982+00:00"
    },
    {
     "model": "qwen3.8-flash-next-iq3_s",
@@ -239563,9 +239563,5 @@
    ],
    "requires_gpu_remeasurement": false
   }
- ],
- "public_export": {
-  "diagnostics": "omitted",
-  "source": "github"
- }
+ ]
 }

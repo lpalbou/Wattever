@@ -107,7 +107,9 @@ def _pcie(gen, width, max_gen=None, max_width=None, source=None):
             'bandwidth_kind': 'derived_one_direction_encoding_ceiling',
             'measured_host_to_device_bytes_per_second': None,
             'source': source,
-            'note': 'Snapshot may show an idle downshift. Reported maxima can reflect platform limits. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth.'}
+            'maximum_scope': 'driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified',
+            'physical_slot': None,
+            'note': 'Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth.'}
 
 
 def _nvidia_pcie(index):

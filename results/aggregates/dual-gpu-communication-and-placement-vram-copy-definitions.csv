@@ -1,0 +1,7 @@
+capture,gpu_index,bytes_per_copy,copies_per_sample,internal_samples,CUDA_event_payload_GB_s,joint_host_wall_payload_GB_s,nominal_read_plus_write_GB_s,rate_definition,validation_passed
+historical_compute_probe,0,268435456,110,15,375.08770113432246,,750.1754022686449,Payload=size*copies/CUDA-event interval; nominal read-plus-write separately2x,True
+communication_0_synchronized_group_latency,0,268435456,[1],15,383.61952559921144,304.5903279246567,,Joint host wall and route CUDA event are separate clocks/scopes; actual copy count retained,True
+communication_0_batched_throughput,0,268435456,[1],7,197.42081784944975,167.87708317698562,,Joint host wall and route CUDA event are separate clocks/scopes; actual copy count retained,True
+historical_compute_probe,1,268435456,58,15,192.31515217204623,,384.63030434409245,Payload=size*copies/CUDA-event interval; nominal read-plus-write separately2x,True
+communication_0_synchronized_group_latency,1,268435456,[1],15,98.96661292541728,92.42372125051645,,Joint host wall and route CUDA event are separate clocks/scopes; actual copy count retained,True
+communication_0_batched_throughput,1,268435456,[1],7,99.05425627989204,92.12555975015445,,Joint host wall and route CUDA event are separate clocks/scopes; actual copy count retained,True

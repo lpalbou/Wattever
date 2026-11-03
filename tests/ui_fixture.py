@@ -77,6 +77,9 @@ class Handler(server.Handler):
             return self._json(server.BENCH.last_extension)
         return super().do_GET()
     def do_POST(self):
+        if self.path == '/api/hardware/gpu-setup':
+            from wattever.gpu_setup import validate
+            return self._json({'saved':True,'choice':validate(self._body()),'model_started':False,'model_switched':False})
         if self.path == '/api/endpoint/check':
             self._body()
             return self._json({'ok': True, 'models': [{'id': 'external/model', 'type': 'llm', 'quantization': 'IQ3_S', 'quantization_source': 'endpoint_reported', 'max_context_length': 32768}]})

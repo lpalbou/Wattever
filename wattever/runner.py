@@ -335,6 +335,8 @@ class BenchRunner:
         self.live = {}
         self._responses = set()
         self._responses_lock = threading.Lock()
+        self._request_workers = set()
+        self._request_workers_lock = threading.Lock()
 
     # -- event plumbing ----------------------------------------------------
     def emit(self, kind, **payload):
@@ -354,10 +356,30 @@ class BenchRunner:
 
     @property
     def running(self):
-        return bool(self.thread and self.thread.is_alive())
+        workers = self._live_request_workers()
+        return bool(self.thread and self.thread.is_alive() or workers)
+
+    def _live_request_workers(self):
+        with self._request_workers_lock:
+            self._request_workers = {worker for worker in self._request_workers if worker.is_alive()}
+            return tuple(self._request_workers)
+
+    def _start_request_worker(self, thread):
+        # Register after start: pruning an unstarted thread could otherwise lose
+        # it before the request begins. The owner runner is still alive here.
+        thread.start()
+        with self._request_workers_lock:
+            self._request_workers = {worker for worker in self._request_workers if worker.is_alive()}
+            self._request_workers.add(thread)
 
     def status(self):
         live = dict(self.live)
+        workers = self._live_request_workers()
+        owner_running = bool(self.thread and self.thread.is_alive())
+        busy = bool(owner_running or workers)
+        if workers and not owner_running:
+            live.update(phase="waiting for request workers; endpoint cancellation unverified",
+                        pending_request_workers=len(workers))
         if live.get("timeout_started_at") and live.get("phase") in ("prefill", "decode"):
             live["timeout_elapsed_s"] = max(0.0, time.time() - live["timeout_started_at"])
         if self.sampler:
@@ -365,11 +387,11 @@ class BenchRunner:
             if telemetry:
                 live["telemetry"] = telemetry
         return {
-            "running": self.running,
+            "running": busy,
             "run_id": (self.run or {}).get("id"),
             "run": store.summarise(self.run) if self.run else None,
             "live": live,
-            "cancelling": self.cancel_event.is_set() and self.running,
+            "cancelling": self.cancel_event.is_set() and busy,
         }
 
     # -- lifecycle ---------------------------------------------------------
@@ -653,6 +675,10 @@ class BenchRunner:
                                      cpu_tdp_w=cfg["cpu_tdp_w"])
         self.sampler = sampler
         sampler.start()
+        if hasattr(sampler, 'measurement_scope'):
+            run.setdefault('measurement_scope', {}).update(sampler.measurement_scope())
+            if run.get('sessions'):
+                run['sessions'][-1].setdefault('measurement_scope', {}).update(sampler.measurement_scope())
         try:
             self.log("Run %s started on %s" % (run["id"], run["gpu"].get("name", "unknown GPU")))
             if cfg.get("provider") == "openai":
@@ -1023,7 +1049,7 @@ class BenchRunner:
                 except Exception as exc:
                     result["error"] = exc
             thread = threading.Thread(target=worker, daemon=True)
-            thread.start()
+            self._start_request_worker(thread)
             started = time.perf_counter()
             # A long concurrent prefill can pause another stream's decode.
             # Do not introduce a hidden deadline shorter than the whole case.
@@ -1122,8 +1148,12 @@ class BenchRunner:
                 v is not None for v in (prefill.get("vram_mb_max"),
                                         decode.get("vram_mb_max"), vram_loaded)) else None,
             "power": {
+                "scope": prefill.get('scope'),
+                "gpu_indices": prefill.get('gpu_indices'),
+                "prefill_gpu_power_complete": prefill.get('gpu_power_complete'),
+                "decode_gpu_power_complete": decode.get('gpu_power_complete'),
                 "available": bool(prefill.get("available") or decode.get("available")),
-                "low_confidence": bool(prefill.get("low_confidence")),
+                "low_confidence": bool(prefill.get("low_confidence") or decode.get("low_confidence")),
                 # which tool produced these watts: nvidia-smi reports board power
                 # for the card alone, powermetrics reports SoC rails. Recorded so
                 # a cross-platform comparison can say what it is comparing.
@@ -1141,13 +1171,13 @@ class BenchRunner:
                 "prefill_system_energy_j_est": prefill_sys_j,
                 "decode_system_energy_j_est": decode_sys_j,
                 "j_per_1k_prefill": (prefill_j / prompt_tokens * 1000.0)
-                                    if (prefill_j and prompt_tokens) else None,
+                                    if (prefill_j is not None and prompt_tokens) else None,
                 "j_per_1k_prefill_system_est": (prefill_sys_j / prompt_tokens * 1000.0)
-                                               if (prefill_sys_j and prompt_tokens) else None,
+                                               if (prefill_sys_j is not None and prompt_tokens) else None,
                 "j_per_token_decode": (decode_j / completion_tokens)
-                                      if (decode_j and completion_tokens) else None,
+                                      if (decode_j is not None and completion_tokens) else None,
                 "j_per_token_decode_system_est": (decode_sys_j / completion_tokens)
-                                                 if (decode_sys_j and completion_tokens) else None,
+                                                 if (decode_sys_j is not None and completion_tokens) else None,
                 "prefill_gpu_util": prefill.get("gpu_util_avg"),
                 "decode_gpu_util": decode.get("gpu_util_avg"),
                 "prefill_cpu_util": prefill.get("cpu_util_avg"),
@@ -1162,6 +1192,17 @@ class BenchRunner:
                 "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown",
             },
         })
+        if prefill.get('gpus') or decode.get('gpus'):
+            phases = {card['index']: {'index':card['index'],'name':card['name'],'prefill':card}
+                      for card in prefill.get('gpus', [])}
+            for card in decode.get('gpus', []):
+                phases.setdefault(card['index'], {'index':card['index'],'name':card['name']})['decode'] = card
+            for card in phases.values():
+                first, last = card.get('prefill',{}), card.get('decode',{})
+                card['j_per_1k_prefill'] = first['gpu_energy_j']/prompt_tokens*1000 if first.get('gpu_energy_j') is not None and prompt_tokens else None
+                card['j_per_token_decode'] = last['gpu_energy_j']/completion_tokens if last.get('gpu_energy_j') is not None and completion_tokens else None
+                card['vram_peak_mb'] = max([phase['vram_mb_max'] for phase in (first,last) if phase.get('vram_mb_max') is not None] or [None])
+            base['power']['gpus'] = list(phases.values())
         self.log("%s  prefill %s tk/s  decode %s tk/s  %s"
                  % (label,
                     "%.0f" % m["prefill_tps"] if m["prefill_tps"] else "n/a",
@@ -1217,7 +1258,7 @@ class BenchRunner:
         threads = [threading.Thread(target=worker, args=(i,), daemon=True)
                    for i in range(concurrency)]
         for thread in threads:
-            thread.start()
+            self._start_request_worker(thread)
         start = time.perf_counter()
         gate.set()
         deadline = start + float(budget or cfg["per_test_timeout_s"])
@@ -1263,6 +1304,7 @@ class BenchRunner:
                      "aggregate_completion_tps": (sum(r.get("completion_tokens") or 0 for r in successes) / wall) if wall and counts_available else None,
                      "aggregate_completion_tokens_estimated": any(r.get("completion_tokens_estimated") for r in successes),
                      "vram_after_load_mb": vram_loaded,
+                     "vram_peak_mb": max([v for v in (window.get('vram_mb_max'),vram_loaded) if v is not None] or [None]),
                      "group_power": window})
         if recovery_error:
             base["recovery_error"] = recovery_error

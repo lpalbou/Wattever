@@ -9,17 +9,21 @@ Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/), start an O
 ## Full local helper quick start
 
 1. Start your inference engine and load a model. For managed LM Studio operation, install LM Studio, download models and run `lms bootstrap` once. Other endpoints do not need LM Studio.
-2. Clone the repository for the endpoint helper features described here. The [v2.4.1 source archive](https://github.com/lpalbou/Wattever/releases/tag/v2.4.1) documents that historical release and predates these helper features.
+2. Download and extract the [Wattever 2.5.0 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.0/Wattever-2.5.0.zip), or clone the repository. Use the matching documentation and source version.
 3. On Windows run `Wattever.bat`; on macOS run `Wattever.command`; on Linux run `sh Wattever.sh`. Alternatively run `python -m wattever.server` from the repository.
-4. Open the displayed local URL. On **Run**, choose **OpenAI-compatible endpoint**, enter your API base URL and use **Connect / discover models**. Wattever identifies the endpoint where evidence is available and supplies its display name automatically; no manual label or ID is required. Enter a model ID manually if discovery is unavailable. Choose workloads and start. Leave the server running until the benchmark finishes.
+4. Open the displayed local URL. On **Run**, choose **OpenAI-compatible endpoint**, enter your API base URL and use **Connect**. Wattever identifies the endpoint where evidence is available and supplies its display name automatically; no manual label or ID is required. Enter a model ID manually if discovery is unavailable. Choose workloads and start. Leave the server running until the benchmark finishes.
 
-See [Getting started](docs/getting-started.md) for both provider modes and [Measurements and sessions](docs/measurements.md) for interpretation. The inference engine controls model quantization, context, KV cache and speculative decoding. GPU monitoring selects a sensor only. Generic endpoint power measurements require an explicit assertion that inference runs on the benchmark computer; remote inference power remains unavailable.
+See [Getting started](docs/getting-started.md) for both provider modes and [Measurements and sessions](docs/measurements.md) for interpretation. The external inference engine controls model loading, quantization, context, KV cache, GPU placement and speculative decoding. With Strata Control, start the server and load the model there; connecting Wattever does not start or switch Strata models. Generic endpoint power measurements require an explicit assertion that inference runs on the benchmark computer; remote inference power remains unavailable.
 
 **Results** has three views: **Summary** reports primary coverage, hardware and measured machine transfers; **Table** lists numerical results and raw repeats; **Compare** plots selected measurements. Table and Compare share model, metric, query-count and recorded-condition filters. The local helper supports **Add / rerun tests** for managed LM Studio and reconnected external endpoints. One JSON file stores each benchmark. Review it before publication; see [results guidance](results/README.md).
+
+Consolidation preserves engine/session settings and exact measurement rows. Conflicting known GPU board identities remain separate even when the GPU chip name matches; legacy unknown board metadata stays unknown.
 
 The collapsed **This machine** header shows CPU, GPU, RAM and per-card VRAM. Expand it for grouped compute, storage, transfer and platform cards; full names and probe methods stay accessible. Compatible saved transfer captures retain their original date and are labeled **Saved capture**.
 
 GPU, memory, storage and engine-setting badges summarize recorded conditions. Storage types use **HDD**, **SSD** and **NVMe**; unknown types stay unclassified. If an experiment contains alternative storage observations, **Compare recorded storage** selects the measured variants. Installed drives and storage probes alone do not create inference variants. See the [RTX 5060 Ti Strata comparison](docs/5060-ti-storage-comparison.md) for the measured gains and conditions.
+
+The [multi-GPU communication and placement study](docs/dual-gpu-communication-and-placement.md) examines execution strategies with separate diagnostic protocols. Transfer microbenchmarks and profiled inference captures stay separate from the normal benchmark library. Study tools have their own platform and dependency requirements.
 
 The hosted Results view also includes a shared catalog that you can browse without connecting a model provider. See [sharing results](docs/sharing-results.md) to contribute your benchmark or add missing tests later.
 
@@ -29,7 +33,9 @@ The helper's **Capabilities** tab runs original Core tasks, the pinned 1,319-que
 
 Its visual dashboard combines strict pass rate, correct/planned and coverage tiles with category bars, an outcome ring and repeat comparisons. Select a chart to filter the paginated question-by-repeat matrix, then open a cell to inspect the question, expected output, model response and rule explanation. Matching evaluation protocols support paired comparisons that exclude unscored requests. A format mismatch or request error is shown distinctly from a passed answer; inspect the evidence before drawing conclusions about reasoning.
 
-Local runs can display CPU/GPU utilization, RAM/VRAM usage, available temperatures, GPU clocks and power. Saved telemetry includes a bounded recent history and whole-run observed means/peaks/coverage; early/late changes are observations, not a throttling diagnosis. Results charts separate selected metrics into individual graphs. The hosted site can browse/export/compare shared capability results; launching tests and validating capability imports require the helper.
+Local runs can display CPU/GPU utilization, RAM/VRAM usage, available temperatures, GPU clocks and power. On supported NVIDIA systems, measurements cover all detected cards with individual readings and combined GPU board power. Concurrent requests share one group energy window, so overlapping request energy is not added together. CPU/system power estimates remain labeled separately from measured GPU power; they are not wall-meter readings.
+
+Saved telemetry includes a bounded recent history and whole-run observed means/peaks/coverage; early/late changes are observations, not a throttling diagnosis. Results charts separate selected metrics into individual graphs. The hosted site can browse/export/compare shared capability results; launching tests and validating capability imports require the helper.
 
 ## Documentation
 

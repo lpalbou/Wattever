@@ -13,6 +13,9 @@ def validate_transfer_bandwidth(profile):
         errors.append("transfer_bandwidth has an unsupported protocol")
     if profile.get("unit") != "bytes_per_second" or profile.get("scope") != "benchmark_client":
         errors.append("transfer_bandwidth needs explicit byte units and client scope")
+    if "gpu_path_fingerprint" in profile and (not isinstance(profile["gpu_path_fingerprint"], str) or
+            not re.fullmatch(r"[0-9a-f]{64}", profile["gpu_path_fingerprint"])):
+        errors.append("gpu_path_fingerprint must be a SHA256 configuration key")
     try:
         datetime.datetime.fromisoformat(profile.get("captured_at", "").replace("Z", "+00:00"))
     except (AttributeError, TypeError, ValueError):
@@ -24,6 +27,23 @@ def validate_transfer_bandwidth(profile):
         errors.append("storage_volumes must contain at most eight measurements")
     else:
         values += [("storage_volumes[%d]" % i, v) for i,v in enumerate(volumes)]
+    devices = profile.get("ram_to_vram_devices", [])
+    if not isinstance(devices, list) or len(devices) > 32:
+        errors.append("ram_to_vram_devices must contain at most 32 measurements")
+    else:
+        indices = set()
+        for i, device in enumerate(devices):
+            if not isinstance(device, dict):
+                errors.append("ram_to_vram_devices entries must be objects")
+                continue
+            index = device.get("gpu_sensor_index")
+            if type(index) is not int or not 0 <= index <= 255 or index in indices:
+                errors.append("ram_to_vram_devices needs unique valid GPU sensor indices")
+            else:
+                indices.add(index)
+            if not isinstance(device.get("gpu_name"), str) or not device["gpu_name"].strip():
+                errors.append("ram_to_vram_devices needs GPU names")
+            values.append(("ram_to_vram_devices[%d]" % i, device))
     for key, value in values:
         if not isinstance(value, dict) or value.get("status") not in ("ok", "unavailable"):
             errors.append("transfer_bandwidth.%s needs a supported status" % key)
@@ -44,6 +64,29 @@ def validate_transfer_bandwidth(profile):
             errors.append("Transfer rate must match the median of its samples")
         if not isinstance(value.get("method"), str) or value.get("statistic") != "median":
             errors.append("Successful transfers need an explicit method and median statistic")
+    return errors
+
+
+def validate_gpu_power(block):
+    """New all-card records must never present a partial sum as complete."""
+    if not isinstance(block, dict) or block.get('scope') != 'benchmark_client_all_nvidia_gpus':
+        return []
+    cards=block.get('gpus')
+    if not isinstance(cards,list) or not cards or len(cards)>256:
+        return ['All-GPU power needs a bounded per-card measurement array']
+    indices=[card.get('index') for card in cards if isinstance(card,dict)]
+    if len(indices)!=len(cards) or any(type(index) is not int or index<0 for index in indices) or len(set(indices))!=len(indices):
+        return ['All-GPU power needs unique valid device indices']
+    errors=[]
+    phases=[('prefill','prefill_energy_j'),('decode','decode_energy_j')] if 'prefill_energy_j' in block else [(None,'gpu_energy_j')]
+    for phase,total_key in phases:
+        values=[(card.get(phase) or {}).get('gpu_energy_j') if phase else card.get('gpu_energy_j') for card in cards]
+        total=block.get(total_key)
+        if total is not None:
+            if any(type(value) not in (int,float) or not math.isfinite(value) for value in values):
+                errors.append('Combined GPU energy requires energy for every card')
+            elif not math.isclose(total,sum(values),rel_tol=1e-6,abs_tol=1e-6):
+                errors.append('Combined GPU energy must equal the time-aligned per-card sum')
     return errors
 
 
@@ -197,6 +240,8 @@ def validate_run(run):
         if not isinstance(row, dict):
             errors.append(prefix + " must be an object")
             continue
+        for block in ('power','group_power'):
+            errors.extend(prefix+': '+error for error in validate_gpu_power(row.get(block)))
         if "model_configuration" in row:
             from .identity import verify_model_configuration
             try:

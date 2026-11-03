@@ -7,11 +7,13 @@ import copy
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import ExitStack
 import ctypes as ct
+import hashlib
 import json
 import math
 import mmap
 import os
 from pathlib import Path
+import re
 import statistics
 import subprocess
 import sys
@@ -20,20 +22,67 @@ import threading
 import time
 from datetime import datetime, timezone
 
-from . import platform_util as pu
+from . import platform_util as pu, power
 
 MIB = 1024 ** 2
 FILE_BYTES = 256 * MIB
 BLOCK_BYTES = 8 * MIB
 SAMPLES = 3
 _latest = None
+_latest_hardware_key = None
 
 
-def latest():
+def _gpu_path_fingerprint(sensors):
+    """Configuration key from private PCI paths; never retain raw bus addresses.
+
+    A matching fingerprint identifies the observed bus mapping, not motherboard
+    connector names or a device serial. Invalid/missing mappings fail closed.
+    """
+    paths = []
+    for sensor in sensors:
+        if not isinstance(sensor, dict) or not sensor.get('pci_bus_id'):
+            return None
+        index, name, address = sensor.get('index'), sensor.get('name'), sensor['pci_bus_id']
+        match = re.fullmatch(r'([0-9a-fA-F]{4,8}):([0-9a-fA-F]{2}):([0-9a-fA-F]{2})\.([0-7])', str(address))
+        if type(index) is not int or index < 0 or not isinstance(name, str) or not name or match is None:
+            return None
+        domain, bus, device, function = (int(part, 16) for part in match.groups())
+        paths.append((index, name, '%x:%02x:%02x.%x' % (domain, bus, device, function)))
+    if not paths or len({row[0] for row in paths}) != len(paths):
+        return None
+    return hashlib.sha256(json.dumps(sorted(paths), separators=(',', ':'), ensure_ascii=True).encode('utf-8')).hexdigest()
+
+
+def _current_gpu_path_fingerprint(sensors=None):
+    try:
+        return _gpu_path_fingerprint(power.list_gpus() if sensors is None else sensors)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return None
+
+
+def _mapped_gpu_signature(cards, captured=False):
+    fields = ('gpu_sensor_index', 'gpu_name', 'gpu_memory_bytes') if captured else ('sensor_index', 'name', 'memory_bytes')
+    return sorted((str(card.get(fields[0])), str(card.get(fields[1])), str(card.get(fields[2])))
+                  for card in cards if isinstance(card, dict) and card.get(fields[0]) is not None
+                  and (captured or card.get('memory_architecture') != 'unified'))
+
+
+def latest(machine=None, sensors=None):
+    if machine is not None:
+        if not _latest or 'ram_to_vram_devices' not in _latest:
+            return None
+        if _latest_hardware_key is None or _capture_hardware_key(machine, require_clocks=False) != _latest_hardware_key:
+            return None
+        if _mapped_gpu_signature(_latest['ram_to_vram_devices'], captured=True) != _mapped_gpu_signature(machine.get('gpus') or []):
+            return None
+        if _mapped_gpu_signature(machine.get('gpus') or []):
+            captured = _latest.get('gpu_path_fingerprint')
+            if not captured or captured != _current_gpu_path_fingerprint(sensors):
+                return None
     return copy.deepcopy(_latest)
 
 
-def _capture_hardware_key(machine):
+def _capture_hardware_key(machine, require_clocks=True):
     """Conservative compatibility key, including clocks absent from hardware_class."""
     if not isinstance(machine, dict):
         return None
@@ -46,18 +95,26 @@ def _capture_hardware_key(machine):
     capacity = memory.get("installed_capacity_bytes") or system.get("memory_bytes")
     cpu_fields = tuple(cpu.get(field) for field in ("name", "physical_cores", "logical_cores"))
     cards = machine.get("gpus") or []
-    if (not all(cpu_fields) or not capacity or not isinstance(clocks, list) or not clocks or
+    if (not all(cpu_fields) or not capacity or not isinstance(clocks, list) or (require_clocks and not clocks) or
             not isinstance(cards, list) or not cards or any(not isinstance(card, dict) for card in cards)):
         return None
     if any(not isinstance(clock, (int, float)) or isinstance(clock, bool) or not math.isfinite(clock) or clock <= 0 for clock in clocks):
         return None
     gpu_fields = [tuple(card.get(field) for field in ("name", "memory_bytes", "driver")) for card in cards]
-    if any(not all(card) or not isinstance(card[0], str) or not isinstance(card[2], str) for card in gpu_fields):
+    if any(not card[0] or not card[1] or not isinstance(card[0], str) or
+           (require_clocks and (not card[2] or not isinstance(card[2], str))) for card in gpu_fields):
         return None
+    gpu_fields = [(name, memory_bytes, str(driver or '')) for name, memory_bytes, driver in gpu_fields]
+    # Index and link width preserve the observed device/path association. A
+    # reported maximum still does not establish a physical motherboard slot.
+    gpu_fields = [base + (str(card.get('sensor_index')), str((card.get('pcie') or {}).get('width_current')),
+                         str((card.get('pcie') or {}).get('generation_max_reported')),
+                         str((card.get('pcie') or {}).get('width_max_reported')))
+                  for base, card in zip(gpu_fields, cards)]
     return (cpu_fields, capacity, memory.get("module_count"), tuple(sorted(set(clocks))), tuple(sorted(gpu_fields)))
 
 
-def saved_capture(machine, selected_gpu=None):
+def saved_capture(machine, selected_gpu=None, sensors=None):
     """Read a matching saved probe without measuring, caching, or changing any run.
 
     An independent capture is preferred to a session capture, then newest wins
@@ -69,10 +126,25 @@ def saved_capture(machine, selected_gpu=None):
     if current_key is None:
         return None
     candidates = []
+    current_path = []  # Lazy: legacy single-card history needs no driver calls.
+
+    def path_match(profile):
+        captured = profile.get('gpu_path_fingerprint')
+        if captured is not None:
+            if not isinstance(captured, str) or not re.fullmatch(r'[0-9a-f]{64}', captured):
+                return None
+            if not current_path:
+                current_path.append(_current_gpu_path_fingerprint(sensors))
+            return 'matched_gpu_bus_topology_fingerprint' if captured == current_path[0] else None
+        if len([card for card in machine.get('gpus') or [] if card.get('memory_architecture') != 'unified']) > 1:
+            return None
+        return 'unverified_legacy_single_gpu_capture'
 
     def consider(run, profile, snapshot, kind, session_id=None):
         if (not isinstance(profile, dict) or profile.get("protocol") != "wattever-transfer-v1" or
                 _capture_hardware_key(snapshot) != current_key or validate_transfer_bandwidth(profile)):
+            return
+        if path_match(profile) is None:
             return
         paths = [profile.get(field) for field in ("storage_to_ram", "ram_to_vram", "ram_copy_single", "ram_copy_parallel")]
         paths.extend(profile.get("storage_volumes") or [])
@@ -120,8 +192,13 @@ def saved_capture(machine, selected_gpu=None):
     profile["saved_capture"] = {
         "source_run_id": run_id, "capture_kind": kind, "captured_at": original["captured_at"],
         "measured_this_helper_session": False,
+        "gpu_path_match": path_match(original),
+        "gpu_path_match_note": ('The observed GPU index/name/PCI bus mapping matches; physical connector names remain unverified.'
+                                if original.get('gpu_path_fingerprint') else
+                                'Legacy capture has no PCI bus topology fingerprint; physical path and slot matching are unverified.'),
         "matching_fields": ["cpu_name_and_core_counts", "ram_capacity_and_module_count",
-                            "reported_ram_clocks", "all_gpu_names_memory_and_drivers"],
+                            "reported_ram_clocks", "all_gpu_names_memory_and_drivers",
+                            "gpu_sensor_mapping_and_reported_link_widths"],
     }
     if session_id is not None:
         profile["saved_capture"]["source_session_id"] = session_id
@@ -248,12 +325,24 @@ def storage_probe(directory):
         path.unlink(missing_ok=True)
 
 
+def _pcie_during_copies(gpu_index, transfer):
+    """Read the link while transfers run, outside the timed sample region."""
+    from . import hardware
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        reading = pool.submit(hardware._nvidia_pcie, gpu_index)
+        deadline = time.monotonic() + 6
+        while not reading.done() and time.monotonic() < deadline:
+            transfer()
+        return reading.result(timeout=1)
+
+
 def cuda_probe(gpu_index):
-    from . import power
+    from . import hardware
     sensors = power.list_gpus()
     selected = next((s for s in sensors if s.get("index") == gpu_index), None)
     if not selected or not selected.get("pci_bus_id"):
         return _unavailable("No NVIDIA sensor with a verified PCI bus mapping")
+    before = hardware._nvidia_pcie(gpu_index)
     # Do not create another CUDA context when an engine already fills VRAM.
     free_result = pu.run(["nvidia-smi", "--id=%d" % gpu_index,
                           "--query-gpu=memory.free", "--format=csv,noheader,nounits"], timeout=5)
@@ -299,6 +388,8 @@ def cuda_probe(gpu_index):
         for _ in range(4):
             check(copy_htod(target, host, size))
         check(sync())
+        during = _pcie_during_copies(gpu_index, lambda: check(copy_htod(target, host, size)))
+        check(sync())
         samples = []
         for _ in range(SAMPLES):
             start = time.perf_counter()
@@ -314,8 +405,13 @@ def cuda_probe(gpu_index):
         return _summary(samples, method="cuda_driver_synchronous_htod", host_memory="pinned",
                         buffer_bytes=size, copies_per_sample=copies, warmup_copies=4,
                         gpu_sensor_index=gpu_index, gpu_name=device_name.value.decode("utf-8"),
+                        gpu_memory_bytes=int(selected['vram_total_mb'] * MIB) if selected.get('vram_total_mb') is not None else None,
+                        pcie_before=before, pcie_during=during,
+                        measurement_scope="pinned_host_to_device_on_installed_gpu_path",
+                        physical_slot=None, physical_slot_source="unverified",
                         verified_readback=True,
-                        note="Pinned RAM to device memory; host wall time includes completed copies and synchronization. Separate microbenchmark, not observed inference traffic or VRAM internal bandwidth.")
+                        readback_verified_bytes=1,
+                        note="Pinned RAM to device memory on this installed GPU path; host wall time includes completed copies and synchronization. The during-transfer link snapshot is collected in untimed warmup. Device and slot both constrain this path; the physical slot is not identified. Separate microbenchmark, not observed inference traffic or VRAM internal bandwidth.")
     finally:
         if target.value:
             dev_free(target)
@@ -380,7 +476,6 @@ def _worker(directory, gpu_index, extra_directories=None):
               "scope": "benchmark_client", "unit": "bytes_per_second",
               "protocol": "wattever-transfer-v1"}
     for key, call in (("storage_to_ram", lambda: storage_probe(directory)),
-                      ("ram_to_vram", lambda: cuda_probe(gpu_index)),
                       ("ram_copy_single", lambda: memory_probe()),
                       ("ram_copy_parallel", lambda: memory_probe(min(8, max(1, (os.cpu_count() or 2) // 2))))):
         try:
@@ -388,6 +483,38 @@ def _worker(directory, gpu_index, extra_directories=None):
         except Exception as exc:
             # Public files never include driver diagnostics or local file paths.
             result[key] = _unavailable("Transfer probe could not complete (%s)" % type(exc).__name__)
+    result['ram_to_vram_devices'] = []
+    try:
+        sensors = [sensor for sensor in power.list_gpus() if sensor.get('pci_bus_id') and type(sensor.get('index')) is int]
+    except (OSError, ValueError, subprocess.SubprocessError):
+        sensors = []
+    fingerprint = _gpu_path_fingerprint(sensors)
+    if fingerprint is not None:
+        result['gpu_path_fingerprint'] = fingerprint
+        result['gpu_path_fingerprint_method'] = 'sha256 of ordered GPU sensor index, name and normalized PCI bus path; not unique device IDs'
+    # Probe sequentially so each context and all allocations are released before
+    # the next card. The outer worker deadline bounds the whole capture.
+    for sensor in sorted(sensors, key=lambda item: item['index']):
+        metadata = {'gpu_sensor_index': sensor['index'], 'gpu_name': sensor.get('name'),
+                    'gpu_memory_bytes': int(sensor['vram_total_mb'] * MIB) if sensor.get('vram_total_mb') is not None else None,
+                    'measurement_scope': 'pinned_host_to_device_on_installed_gpu_path',
+                    'pcie_before': None, 'pcie_during': None,
+                    'physical_slot': None, 'physical_slot_source': 'unverified'}
+        try:
+            measured = cuda_probe(sensor['index'])
+        except Exception as exc:
+            measured = _unavailable('Transfer probe could not complete (%s)' % type(exc).__name__)
+        result['ram_to_vram_devices'].append(dict(metadata, **measured))
+    selected = next((item for item in result['ram_to_vram_devices'] if item['gpu_sensor_index'] == gpu_index), None)
+    if selected is not None:
+        result['ram_to_vram'] = copy.deepcopy(selected)
+    elif sensors:
+        result['ram_to_vram'] = _unavailable('The selected NVIDIA sensor is absent from the GPU inventory')
+    else:
+        try:
+            result['ram_to_vram'] = cuda_probe(gpu_index)
+        except Exception as exc:
+            result['ram_to_vram'] = _unavailable('Transfer probe could not complete (%s)' % type(exc).__name__)
     if extra_directories:
         result["storage_volumes"] = []
         for folder in extra_directories:
@@ -401,7 +528,7 @@ def _worker(directory, gpu_index, extra_directories=None):
 
 def measure(gpu_index=0, directory=None, directories=None):
     """Run before inference; bounded child process releases its CUDA context on exit."""
-    global _latest
+    global _latest, _latest_hardware_key
     directory = str(Path(directory or Path(__file__).resolve().parents[1] / "results").resolve())
     try:
         Path(directory).mkdir(parents=True, exist_ok=True)
@@ -427,6 +554,13 @@ def measure(gpu_index=0, directory=None, directories=None):
         profile = json.loads(result.stdout)
         if profile.get("protocol") != "wattever-transfer-v1":
             raise ValueError("Invalid worker result")
+        # Keep compatibility state private. Reuse requires a fresh matching
+        # CPU/RAM/clock/driver inventory, not merely the same selected GPU.
+        from . import hardware
+        try:
+            _latest_hardware_key = _capture_hardware_key(hardware.inventory(), require_clocks=False)
+        except (OSError, ValueError, subprocess.SubprocessError):
+            _latest_hardware_key = None
         _latest = copy.deepcopy(profile)
         return profile
     except (OSError, ValueError, subprocess.SubprocessError):
@@ -453,11 +587,48 @@ def attach(run, profile, *, provenance="measured_before_session"):
     return profile
 
 
+def _reboot_memory_match(old, new):
+    """Verify a page-sized usable-RAM change against otherwise identical inventory."""
+    old_key, new_key = _capture_hardware_key(old), _capture_hardware_key(new)
+    if old_key is None or old_key != new_key:
+        return None
+    for key in ("motherboard", "os"):
+        if not old.get(key) or old[key] != new.get(key):
+            return None
+    old_system, new_system = old.get("system") or {}, new.get("system") or {}
+    before, after = old_system.get("memory_bytes"), new_system.get("memory_bytes")
+    if type(before) is not int or type(after) is not int or min(before, after) <= 0:
+        return None
+    delta = after - before
+    if not 0 < abs(delta) <= 65536 or delta % 4096:
+        return None
+    if {k:v for k,v in old_system.items() if k != "memory_bytes"} != {k:v for k,v in new_system.items() if k != "memory_bytes"}:
+        return None
+    # Require installed DIMM capacity, rather than the usable-RAM fallback in the key.
+    if not (old.get("memory") or {}).get("installed_capacity_bytes") or not (new.get("memory") or {}).get("installed_capacity_bytes"):
+        return None
+    return {"method": "stable_inventory_with_page_sized_usable_ram_change",
+            "usable_ram_delta_bytes": delta,
+            "matching_fields": ["cpu_name_and_core_counts", "motherboard", "os", "system_model",
+                                "installed_ram_capacity_and_module_count", "reported_ram_clocks",
+                                "all_gpu_names_memory_and_drivers"],
+            "note": "Usable physical RAM differs by at most 64 KiB; installed RAM and the listed inventory fields match. Historical inference conditions remain unverified."}
+
+
 def backfill(run, current, profile):
     """Attach a later measurement only when recorded hardware/driver match."""
-    if not (run.get("classification") or {}).get("hardware_class") or (
-            run["classification"]["hardware_class"] != (current.get("classification") or {}).get("hardware_class")):
+    old_inventory, new_inventory = run.get("hardware") or {}, current.get("hardware") or {}
+    old_key, new_key = _capture_hardware_key(old_inventory), _capture_hardware_key(new_inventory)
+    if old_key is not None and new_key is not None and old_key != new_key:
         raise ValueError("Hardware differs or cannot be verified; transfer metadata was not updated.")
+    old_class = (run.get("classification") or {}).get("hardware_class")
+    new_class = (current.get("classification") or {}).get("hardware_class")
+    evidence = None
+    if not old_class or not new_class or old_class != new_class:
+        if old_class and new_class:
+            evidence = _reboot_memory_match(old_inventory, new_inventory)
+        if evidence is None:
+            raise ValueError("Hardware differs or cannot be verified; transfer metadata was not updated.")
     if any((run.get("gpu") or {}).get(k) != (current.get("gpu") or {}).get(k)
            for k in ("name", "vram_total_mb", "driver")):
         raise ValueError("The selected GPU or driver differs; transfer metadata was not updated.")
@@ -465,6 +636,8 @@ def backfill(run, current, profile):
     value = copy.deepcopy(profile)
     value.update(provenance="measured_later_on_matching_hardware",
                  historical_inference_conditions_verified=False)
+    if evidence is not None:
+        value["hardware_match"] = evidence
     run.setdefault("hardware", {})["transfer_bandwidth"] = value
     run.setdefault("hardware_measurement_history", []).append({"captured_at": value["captured_at"],
         "kind": "transfer_bandwidth", "provenance": value["provenance"],

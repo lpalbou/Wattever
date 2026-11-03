@@ -87,7 +87,7 @@ function availableMeasurementRuns(runs) {
     }));
     const comparison = run.storage_comparison;
     if (!comparison || comparison.protocol !== "wattever-storage-comparison-v1" || !comparison.alternate_results?.length) return primary;
-    const alternates = [];
+    const alternates = [], baselines = [];
     for (const view of primary) {
       const rows = comparison.alternate_results.filter(row=>!view.parent_run_id || executionGroup(run,row)?.id === view.id.slice(run.id.length+2));
       if (!rows.length) continue;
@@ -95,11 +95,25 @@ function availableMeasurementRuns(runs) {
       const originalRows = comparison.baseline_results || [];
       const models = new Set(rows.map(row=>row.model));
       const baselineRows = originalRows.filter(row=>models.has(row.model) && (!view.parent_run_id || executionGroup(run,row)?.id === view.id.slice(run.id.length+2)));
+      let baselineId = view.id;
       if (baselineRows.length) {
         // Storage labels describe only the model cases present in this experiment.
         const selected = new Set(baselineRows.map(row=>JSON.stringify([row.model,!!row.mtp,row.concurrency||1,row.target_tokens,row.repeat||0])));
         const covered = view.results.filter(row=>selected.has(JSON.stringify([row.model,!!row.mtp,row.concurrency||1,row.target_tokens,row.repeat||0])));
-        if (covered.length === view.results.length) {
+        const signature = row=>JSON.stringify([row.model,!!row.mtp,row.concurrency||1,row.target_tokens,row.repeat||0,row.session_id,row.status,row.wall_s,row.prompt_tokens,row.completion_tokens,row.prefill_tps,row.decode_tps,row.ttft_s]);
+        const recorded = new Set(covered.map(signature));
+        const freshBaseline = baselineRows.some(row=>!recorded.has(signature(row)));
+        if (freshBaseline) {
+          const sessionIds = new Set(baselineRows.map(row=>row.session_id));
+          const sessions = (run.sessions || []).filter(session=>sessionIds.has(session.id));
+          const last = sessions[sessions.length-1];
+          baselineId = view.id+"::storage:baseline";
+          baselines.push({...view,id:baselineId,parent_run_id:run.id,
+            label:view.label+" · "+(comparison.baseline_label || "Baseline storage"),
+            storage_condition:comparison.baseline_label || "Baseline storage",storage_baseline:true,
+            config:last?.config || last?.execution_config || view.config,
+            hardware:last?.hardware || view.hardware,sessions,results:baselineRows});
+        } else if (covered.length === view.results.length) {
           view.label = view.label.replace(/\s*\|\s*Samsung SATA$/i,"") + " · " + (comparison.baseline_label || "Primary storage");
           view.storage_condition = comparison.baseline_label || "Primary storage";
         }
@@ -111,15 +125,16 @@ function availableMeasurementRuns(runs) {
       alternates.push({...view,id:view.id+"::storage:alternate",parent_run_id:run.id,
         label:view.label.replace(" · " + (comparison.baseline_label || "Primary storage"),"") + " · " + (comparison.alternative_label || "Alternative storage"),
         storage_condition:comparison.alternative_label || "Alternative storage",storage_alternative:true,
+        storage_baseline_id:baselineId,
         config:last?.config || last?.execution_config || view.config,
         hardware:last?.hardware || view.hardware,
         sessions:actualSessions,results:rows});
     }
-    return [...primary,...alternates];
+    return [...primary,...baselines,...alternates];
   });
 }
 function measurementRuns(runs) {
-  return availableMeasurementRuns(runs).filter(run=>state.conditions === null ? !run.storage_alternative : state.conditions.has(run.id));
+  return availableMeasurementRuns(runs).filter(run=>state.conditions === null ? !run.storage_alternative && !run.storage_baseline : state.conditions.has(run.id));
 }
 
 function renderRecordedConditions(runs) {
@@ -170,7 +185,7 @@ function compareRecordedStorage(runId) {
   if (!run?.storage_comparison?.alternate_results?.length) return;
   const models = new Set(run.storage_comparison.alternate_results.map(row=>row.model));
   const available = availableMeasurementRuns([run]), alternatives = available.filter(view=>view.storage_alternative);
-  const experimentIds = new Set(alternatives.flatMap(view=>[view.id,view.id.replace(/::storage:alternate$/,"")]));
+  const experimentIds = new Set(alternatives.flatMap(view=>[view.id,view.storage_baseline_id || view.id.replace(/::storage:alternate$/,"")]));
   const variants = available.filter(view=>experimentIds.has(view.id));
   state.compare = new Set([runId]); state.selected = runId;
   state.conditions = new Set(variants.map(view=>view.id)); state.visibleModels = models;
@@ -192,9 +207,14 @@ function renderBenchmarkSummary(runs) {
   const descriptors = [...storage].map(([id,sample])=>({label:`${storageKind(sample) || "Storage"}${sample.volume ? ` (${sample.volume})` : ""} to RAM`,
     note:sample.device_model || (storageKind(sample) ? "Sequential transfer probe" : "Storage type unreported"),
     values:samples.map(list=>list.find(item=>key(item)===id)?.bytes_per_second)}));
-  for (const [field,label] of [["ram_copy_single","RAM copy - 1 worker"],["ram_copy_parallel","RAM copy - parallel"],["ram_to_vram","RAM to VRAM"]]) {
+  for (const [field,label] of [["ram_copy_single","RAM copy - 1 worker"],["ram_copy_parallel","RAM copy - parallel"]]) {
     const values=profiles.map(profile=>profile?.[field]?.status === "ok" ? profile[field].bytes_per_second : null);
     if(values.some(value=>value>0)) descriptors.push({label,note:field.startsWith("ram_copy") ? "Copied payload, not peak DRAM bus bandwidth" : "Pinned host-to-device transfer",values});
+  }
+  const devicePaths=profiles.map(gpuTransferPaths);
+  for (const label of new Set(devicePaths.flatMap(paths=>paths.map(([label])=>label)))) {
+    const values=devicePaths.map(paths=>{const item=paths.find(([name])=>name===label)?.[1];return item?.status === "ok" ? item.bytes_per_second : null;});
+    descriptors.push({label,note:"Pinned RAM to the named installed GPU; physical slot wiring is unverified",values});
   }
   if (!descriptors.length) {container.innerHTML="";return;}
   const value=number=>number>0 ? (number/1e9).toFixed(2) : "Not measured";
@@ -613,6 +633,7 @@ async function init() {
   }
   const status = await api("/api/status");
   if (status.running) { enterRunningUi(); startPolling(); }
+  else if (status.run) renderLive(status);
   state.idleWatcher = setInterval(checkForActiveBenchmark, 3000);
 }
 
@@ -698,7 +719,7 @@ function renderAllMeasurements() {
   const runs = measurementRuns([...state.compare].map(id => state.runCache[id]).filter(Boolean));
   target.parentElement.hidden = !runs.length;
   target.innerHTML = target.parentElement.open
-    ? runs.map(run => `<h4>${esc(run.label || run.id)}</h4>${detailedResultsTable({...run,id:run.parent_run_id || run.id,community:run.community || run.storage_alternative, results: (run.results || []).filter(row => (state.visibleModels === null || state.visibleModels.has(row.model)) && (row.concurrency || 1) === state.comparisonConcurrency)})}`).join("") : "";
+    ? runs.map(run => `<h4>${esc(run.label || run.id)}</h4>${detailedResultsTable({...run,id:run.parent_run_id || run.id,community:run.community || run.storage_alternative || run.storage_baseline, results: (run.results || []).filter(row => (state.visibleModels === null || state.visibleModels.has(row.model)) && (row.concurrency || 1) === state.comparisonConcurrency)})}`).join("") : "";
   target.querySelectorAll("button[data-repair-case]").forEach(button => button.addEventListener("click", () => {
     const run = state.runCache[button.dataset.runId];
     const selectedCase = JSON.parse(button.dataset.repairCase);
@@ -839,16 +860,27 @@ function compactCpuName(name) {
   return String(name || "CPU unreported").replace(/\(R\)|\(TM\)/gi,"").replace(/\s+CPU\b/i,"").replace(/\s+@\s+.*$/,"").replace(/\s+/g," ").trim();
 }
 function machineHeaderMarkup(env) {
-  const hw=env.hardware || {}, host=env.host || {}, card=(hw.gpus || [])[0] || {};
+  const hw=env.hardware || {}, host=env.host || {};
   const cpu=hw.cpu?.name || host.cpu, gpu=env.gpu || {};
-  const gpuName=gpu.name || card.name || "GPU unreported";
+  const inventory=hw.gpus?.length ? hw.gpus : env.gpus?.length ? env.gpus : gpu.name ? [gpu] : [];
+  const cards=inventory.map(card=>{
+    const legacy=card.name===gpu.name ? gpu : {};
+    return {name:card.name || "GPU unreported", bytes:card.memory_bytes || (card.vram_total_mb || legacy.vram_total_mb)*1048576,
+      shared:(card.memory_architecture || legacy.memory_architecture)==="unified"};
+  });
   const ram=hw.memory?.installed_capacity_bytes || hw.system?.memory_bytes || host.ram_gb*1073741824;
-  const vram=gpu.vram_total_mb ? gpu.vram_total_mb/1024 : card.memory_bytes/1073741824;
   const size=value=>value>0 ? Number(value.toFixed(1))+" GiB" : "Unreported";
-  const shared=(gpu.memory_architecture || card.memory_architecture)==="unified";
-  return [["CPU",compactCpuName(cpu),cpu],["GPU",gpuName.replace(/^NVIDIA (?:GeForce\s+)?/,"")+(hw.gpus?.length>1 ? ` +${hw.gpus.length-1} GPU` : ""),gpuName],
-    ["RAM",size(ram/1073741824)+(hw.memory?.channel_count ? ` · ${hw.memory.channel_count} ch` : ""),memoryChannelBadges(hw.memory)[0].title],[shared ? "Shared memory" : "VRAM",size(vram),shared ? "Unified memory shared with CPU" : "Per-card GPU memory"]]
-    .map(([label,value,title])=>`<span class="machine-header-item" title="${esc(title || value)}"><small>${esc(label)}</small><strong${label==="GPU" ? ' id="machine-name"' : label==="VRAM" || label==="Shared memory" ? ' id="machine-memory"' : ""}>${esc(value)}</strong></span>`).join("");
+  const deviceRows=(values)=>values.map(value=>`<span class="machine-device">${esc(value)}</span>`).join("\n");
+  const allShared=cards.length>0 && cards.every(card=>card.shared), mixed=cards.some(card=>card.shared) && !allShared;
+  const memoryLabel=(allShared ? "Shared memory" : mixed ? "GPU memory" : "VRAM")+(cards.length>1 ? " / card" : "");
+  const fields=[
+    ["CPU",esc(compactCpuName(cpu)),cpu,""],
+    [cards.length>1 ? `GPUs (${cards.length})` : "GPU",deviceRows(cards.length ? cards.map(card=>card.name.replace(/^NVIDIA (?:GeForce\s+)?/,"")) : ["GPU unreported"]),cards.map(card=>card.name).join(" + "),"machine-name"],
+    ["RAM",esc(size(ram/1073741824)+(hw.memory?.channel_count ? ` · ${hw.memory.channel_count} ch` : "")),memoryChannelBadges(hw.memory)[0].title,""],
+    [memoryLabel,deviceRows(cards.length ? cards.map(card=>size(card.bytes/1073741824)+(mixed ? card.shared ? " shared" : " VRAM" : "")) : ["Unreported"]),
+      cards.length>1 ? cards.map(card=>`${card.name}: ${size(card.bytes/1073741824)}${card.shared ? " shared with CPU" : " dedicated"}`).join("; ")+". Separate per-card capacities, not a pooled allocation." : allShared ? "Unified memory shared with CPU" : "Per-card GPU memory","machine-memory"]
+  ];
+  return fields.map(([label,value,title,id])=>`<span class="machine-header-item" title="${esc(title || label)}"><small>${esc(label)}</small><strong${id ? ` id="${id}"` : ""}>${value}</strong></span>`).join("");
 }
 function memoryChannelBadges(memory={}) {
   memory=memory || {};
@@ -882,7 +914,7 @@ function hardwareMarkup(hw) {
     compute.push(hardwareTile(`GPU ${index+1}`,String(card.name || "GPU unreported").replace(/^NVIDIA (?:GeForce\s+)?/,""),[
       card.memory_bytes && `${gib(card.memory_bytes)} ${shared ? "shared" : "VRAM"}`,card.driver && `Driver ${card.driver}`,
       link.generation_current && {label:`PCIe ${link.generation_current} x${link.width_current ?? "?"} snapshot`,title:"May reflect an idle downshift; not a transfer measurement"},
-      link.generation_max_reported && {label:`Reported max Gen ${link.generation_max_reported} x${link.width_max_reported ?? "?"}`,title:"Reported platform/adapter limit, not observed transfer throughput"}],"gpu"));
+      link.generation_max_reported && {label:`Driver ceiling Gen ${link.generation_max_reported} x${link.width_max_reported ?? "?"}`,title:"Driver-reported platform/adapter ceiling. Does not establish the card's physical interface, motherboard slot wiring, or transfer throughput."}],"gpu"));
   }
   const clean=value=>value && !/to be filled|default string|system product name/i.test(value) ? value : null;
   const board=[clean(hw.motherboard?.manufacturer),clean(hw.motherboard?.model)].filter(Boolean).join(" ");
@@ -950,7 +982,7 @@ function engineBadgesMarkup(run) {
 function bandwidthBadgesMarkup(profile) {
   if (!profile) return "";
   const values = [["Storage → RAM",profile.storage_to_ram],...(profile.storage_volumes || []).map(item => [`${storageKind(item) || "Storage"} → RAM`,item]),
-    ["RAM copy · 1 worker",profile.ram_copy_single],["RAM copy · parallel",profile.ram_copy_parallel],["RAM → VRAM",profile.ram_to_vram]];
+    ["RAM copy · 1 worker",profile.ram_copy_single],["RAM copy · parallel",profile.ram_copy_parallel],...gpuTransferPaths(profile)];
   if (profile.storage_to_ram) values[0][0] = `${storageKind(profile.storage_to_ram) || "Storage"} → RAM`;
   return `<div class="condition-badges bandwidth-badges" aria-label="Measured bandwidth">${conditionBadge(profile.provenance === "measured_later_on_matching_hardware" ? "Independent probes" : "Transfer probes",`${profile.captured_at || "Unknown time"}; ${profile.provenance || "benchmark client"}. Separate microbenchmarks; not observed inference traffic.`)}${values.filter(([,item])=>item?.status === "ok" && item.bytes_per_second > 0).map(([label,item])=>conditionBadge(`${label}${item.volume ? ` (${item.volume})` : ""} · ${(item.bytes_per_second / 1e9).toFixed(2)} GB/s`,item.workers ? "Copied payload throughput; not peak DRAM bus bandwidth" : item.note || "Separate transfer microbenchmark")).join("")}</div>`;
 }
@@ -959,15 +991,24 @@ function displayBandwidthProfile(run) {
   return (run.hardware_measurement_history || []).filter(capture=>capture.transfer_bandwidth).slice(-1)[0]?.transfer_bandwidth || run.hardware?.transfer_bandwidth;
 }
 
+function gpuTransferPaths(profile) {
+  if (Array.isArray(profile?.ram_to_vram_devices) && profile.ram_to_vram_devices.length) {
+    return profile.ram_to_vram_devices.map(item=>[
+      `RAM → ${String(item.gpu_name || "GPU").replace(/^NVIDIA (?:GeForce\s+)?/,"")}${Number.isInteger(item.gpu_sensor_index) ? ` (GPU ${item.gpu_sensor_index+1})` : ""}`,item]);
+  }
+  return profile?.ram_to_vram ? [["RAM to VRAM",profile.ram_to_vram]] : [];
+}
+
 function transferBandwidthMarkup(profile) {
   if (!profile) return `<section class="hardware-section"><h4>Transfer measurements</h4><div class="probe-empty">${conditionBadge("No transfer capture attached")}<span class="hint">No transfer values were supplied for this snapshot.</span></div></section>`;
-  const paths=[["Storage to RAM",profile.storage_to_ram],...(profile.storage_volumes || []).map(value=>["Storage to RAM",value]),["RAM copy - 1 worker",profile.ram_copy_single],["RAM copy - parallel",profile.ram_copy_parallel],["RAM to VRAM",profile.ram_to_vram]].filter(([,value])=>value);
+  const paths=[["Storage to RAM",profile.storage_to_ram],...(profile.storage_volumes || []).map(value=>["Storage to RAM",value]),["RAM copy - 1 worker",profile.ram_copy_single],["RAM copy - parallel",profile.ram_copy_parallel],...gpuTransferPaths(profile)].filter(([,value])=>value);
   const tiles=paths.map(([label,value])=>{
     const ok=value.status === "ok" && Number.isFinite(value.bytes_per_second) && value.bytes_per_second>0;
     const name=label.startsWith("Storage") ? `${storageKind(value) || "Storage"}${value.volume ? ` (${value.volume})` : ""} to RAM` : label;
     return hardwareTile(name,ok ? (value.bytes_per_second/1e9).toFixed(2)+" GB/s" : "Unavailable",[
       ok && `${(value.bytes_per_second/1e6).toFixed(0)} MB/s`,value.device_model,value.host_memory && `${value.host_memory} host memory`,
       value.workers && `${value.workers} worker${value.workers===1 ? "" : "s"}`,value.workers && "Copied payload",
+      value.pcie_during?.generation_current && {label:`Gen ${value.pcie_during.generation_current} ×${value.pcie_during.width_current ?? "?"} during transfer`,title:"Driver link snapshot during a separate untimed transfer warmup; not a motherboard slot wiring measurement"},
       {label:`${value.samples?.length || 0} samples`,title:value.note || value.reason || "Separate transfer microbenchmark"},!ok && value.reason],"transfer");
   }).join("");
   const saved=profile.restored_from_saved_capture || profile.reused_saved_capture || profile.saved_capture || profile.provenance === "measured_later_on_matching_hardware";
@@ -1013,7 +1054,8 @@ function storageComparisonGroups(run, metric = "wall_s") {
     return {...group,primary,alternative,pairedCount,
       baselinePassed:raw ? group.baseline.filter(row=>row.status==="ok").length : group.baseline_successes,
       alternativePassed:raw ? group.alternate.filter(row=>row.status==="ok").length : group.alternative_successes,
-      speedup:pairedCount && primary > 0 && alternative > 0 ? (STORAGE_METRICS[metric].lower ? primary/alternative : alternative/primary) : null};
+      speedup:raw ? storageMedian(paired.map(([a,b])=>STORAGE_METRICS[metric].lower ? storageMetricValue(a,metric)/storageMetricValue(b,metric) : storageMetricValue(b,metric)/storageMetricValue(a,metric)))
+        : pairedCount && primary > 0 && alternative > 0 ? group.wall_speedup ?? (STORAGE_METRICS[metric].lower ? primary/alternative : alternative/primary) : null};
   });
 }
 function storageComparisonCsv(run) {
@@ -1040,7 +1082,7 @@ function storageComparisonCsv(run) {
 }
 
 function selectedResultsCsv(runs) {
-  const columns = ["benchmark","condition","model","quantization","quantization_method","target_tokens","concurrency","repeat","status","wall_s","ttft_s","prefill_tps","decode_tps","aggregate_completion_tps","prompt_tokens","completion_tokens","request_metrics_json"];
+  const columns = ["benchmark","condition","model","quantization","quantization_method","target_tokens","concurrency","repeat","status","wall_s","ttft_s","prefill_tps","decode_tps","aggregate_completion_tps","prompt_tokens","completion_tokens","request_metrics_json","gpu_power_scope","power_json","group_power_json","vram_peak_mb"];
   const quote = value=>{
     if (value == null) return "";
     let text=String(value);if(typeof value === "string" && /^[=+\-@\t\r]/.test(text)) text="'"+text;
@@ -1053,6 +1095,9 @@ function selectedResultsCsv(runs) {
       if(column === "benchmark") return quote(run.parent_run_id || run.id);
       if(column === "condition") return quote(run.label || run.id);
       if(column === "repeat") return quote((row.repeat || 0)+1);
+      if(column === "gpu_power_scope") return quote((row.power || row.group_power || {}).scope || "legacy selected sensor");
+      if(column === "power_json") return quote(JSON.stringify(row.power || {}));
+      if(column === "group_power_json") return quote(JSON.stringify(row.group_power || {}));
       if(column === "request_metrics_json") {
         const keys=["status","prompt_tokens","completion_tokens","wall_s","ttft_s","prefill_tps","decode_tps","completion_tokens_estimated"];
         return quote(JSON.stringify((row.requests || [row]).map(request=>Object.fromEntries(keys.filter(key=>request[key]!=null).map(key=>[key,request[key]])))));
@@ -1073,10 +1118,15 @@ function telemetryMarkup(run) {
   if(!keys.length) return "";
   const format=(value,divisor=1)=>Number.isFinite(value) ? fmt(value/divisor,1) : "—";
   const history=telemetry.history || {}, retention=history.retention || {};
-  return `<details class="adv telemetry-report"><summary>Run telemetry · ${esc(summary.observations ?? 0)} observations</summary><div><p class="hint">Benchmark client and selected GPU. Sample means and observed peaks; unrelated applications are included.</p><div class="table-wrap"><table><thead><tr><th>Metric</th><th>Mean</th><th>Peak</th><th>Final</th><th>Early 60 s</th><th>Late 60 s</th><th>Late − early</th><th>Coverage</th></tr></thead><tbody>${keys.map(key=>{
+  const boundary=summary.scope === "benchmark_client_all_nvidia_gpus" ? `All ${summary.gpu_count || summary.gpus?.length || ""} NVIDIA GPU boards · combined totals. GPU utilization is a mean; VRAM is a physical sum across separate cards.` : "Benchmark client and selected GPU/SoC sensor (legacy boundary).";
+  const devices=Array.isArray(summary.gpus) && summary.gpus.length ? `<h4>Per-card observations</h4><div class="table-wrap"><table><thead><tr><th>GPU</th><th>Mean / peak W</th><th>Peak VRAM</th><th>Mean load</th><th>Peak temperature</th><th>Mean clock</th><th>Covered energy</th></tr></thead><tbody>${summary.gpus.map(card=>{
+    const m=card.metrics || {};
+    return `<tr><td>GPU ${esc(card.index+1)} · ${esc(card.name)}</td><td>${format(m.gpu_w?.time_weighted_mean)} / ${format(m.gpu_w?.max)} W</td><td>${format(m.vram_mb?.max,1024)} GiB</td><td>${format(m.gpu_util?.time_weighted_mean)}%</td><td>${format(m.temp_c?.max)} °C</td><td>${format(m.clock_mhz?.time_weighted_mean)} MHz</td><td>${format(card.gpu_energy_sampled_j)} J</td></tr>`;
+  }).join("")}</tbody></table></div>` : "";
+  return `<details class="adv telemetry-report"><summary>Run telemetry · ${esc(summary.observations ?? 0)} observations</summary><div><p class="hint">${esc(boundary)} CPU/RAM cover the whole client; unrelated applications are included. System power remains estimated.</p>${devices}<div class="table-wrap"><table><thead><tr><th>Metric</th><th>Mean</th><th>Peak</th><th>Final</th><th>Early 60 s</th><th>Late 60 s</th><th>Late − early</th><th>Coverage</th></tr></thead><tbody>${keys.map(key=>{
     const metric=metrics[key], [label,unit,divisor]=TELEMETRY_METRICS[key];
     return `<tr><td>${esc(label)} <small>${esc(unit)}</small></td>${[metric.mean,metric.max,metric.last,metric.early_60s_mean,metric.late_60s_mean,metric.late_minus_early].map(value=>`<td>${format(value,divisor)}</td>`).join("")}<td>${Number.isFinite(metric.coverage_fraction)?format(metric.coverage_fraction*100)+"%":"—"}</td></tr>`;
-  }).join("")}</tbody></table></div><p class="hint">Early/late windows can overlap. Drift describes observations, not proof of throttling. Coverage excludes long sampling gaps.</p>${Array.isArray(history.points) && history.points.length ? `<p class="hint">History retains ${esc(retention.retained_points ?? history.points.length)} of ${esc(retention.total_observations ?? history.points.length)} observations (recent ring). Summary includes earlier observations. Plots reduce points for display.</p><div class="telemetry-history" data-telemetry-plot="usage"></div><div class="telemetry-history" data-telemetry-plot="temperature"></div>`:""}</div></details>`;
+  }).join("")}</tbody></table></div><p class="hint">Early/late windows can overlap. Drift describes observations, not proof of throttling. Coverage excludes long sampling gaps.</p>${Array.isArray(history.points) && history.points.length ? `<p class="hint">History retains ${esc(retention.retained_points ?? history.points.length)} of ${esc(retention.total_observations ?? history.points.length)} observations (recent ring). Summary includes earlier observations. Covered energy includes loading and idle; per-test phase energy is available in All measurements.</p><div class="telemetry-history" data-telemetry-plot="power"></div><div class="telemetry-history" data-telemetry-plot="usage"></div><div class="telemetry-history" data-telemetry-plot="temperature"></div>`:""}</div></details>`;
 }
 function bindTelemetry(container,run) {
   const raw=run.telemetry?.history?.points;
@@ -1084,9 +1134,14 @@ function bindTelemetry(container,run) {
   container.querySelectorAll(".telemetry-report").forEach(report=>{
     const draw=()=>{
       const stride=Math.max(1,Math.ceil(raw.length/300)), points=raw.filter((_,index)=>index%stride===0 || index===raw.length-1);
-      for(const [kind,keys,unit,title] of [["usage",["cpu_util_percent","gpu_util","system_memory_percent","vram_percent"],"%","CPU / GPU load and memory use"],["temperature",["cpu_temp_c","temp_c"],"°C","Observed temperatures"]]) {
+      for(const [kind,keys,unit,title] of [["power",["gpu_w","system_w_est"],"W","GPU board power and estimated system power"],["usage",["cpu_util_percent","gpu_util","system_memory_percent","vram_percent"],"%","CPU / GPU load and memory use"],["temperature",["cpu_temp_c","temp_c"],"°C","Observed temperatures"]]) {
         const target=report.querySelector(`[data-telemetry-plot="${kind}"]`); if(!target) continue;
         const series=keys.map((key,index)=>({id:key,name:TELEMETRY_METRICS[key][0],color:resolveColor(`var(--series-${index+1})`),points:points.filter(point=>Number.isFinite(point.elapsed_s) && Number.isFinite(point[key])).map(point=>({x:point.elapsed_s,y:point[key]}))})).filter(item=>item.points.length);
+        const perCardFields={power:["gpu_w"],usage:["gpu_util","vram_percent"],temperature:["temp_c"]}[kind];
+        for(const gpu of run.telemetry?.summary?.gpus || []) for(const field of perCardFields) {
+          const data=points.map(point=>({point,gpu:point.gpus?.find(card=>card.index===gpu.index)})).filter(item=>Number.isFinite(item.gpu?.[field]));
+          if(data.length)series.push({id:`gpu-${gpu.index}-${field}`,name:`GPU ${gpu.index+1} · ${gpu.name} · ${TELEMETRY_METRICS[field][0]}`,color:resolveColor(`var(--series-${series.length%12+1})`),points:data.map(({point,gpu})=>({x:point.elapsed_s,y:gpu[field]}))});
+        }
         target.hidden = !series.length;
         if(series.length) Charts.line(target,{unit,xLabel:"Elapsed seconds",yLabel:unit,height:240,xScale:"linear",yScale:"linear",ariaLabel:title,series});
       }
@@ -1148,6 +1203,24 @@ function renderHardware() {
   if ($("#storage-probe-field")) $("#storage-probe-field").hidden = browserMode();
   const sensors = gpus.filter((g) => g.sensor_index != null);
   $("#gpu-index").innerHTML = sensors.length ? sensors.map((g) => `<option value="${esc(g.sensor_index)}">${esc(g.sensor_index)}: ${esc(g.name)}</option>`).join("") : '<option value="0">0 (default sensor)</option>';
+  const setup=state.env.gpu_setup?.strata;
+  if (!browserMode() && setup?.available && sensors.length>1) {
+    $("#hardware-inventory").insertAdjacentHTML("beforeend", `<section class="hardware-section gpu-setup"><h4>GPU placement</h4><div class="row"><div class="field"><label for="strata-gpu-choice">Strata</label><select id="strata-gpu-choice"><option value="auto">Automatic · all supported cards</option>${sensors.map(card=>`<option value="${esc(card.sensor_index)}">GPU ${esc(card.sensor_index+1)} · ${esc(String(card.name || "GPU").replace(/^NVIDIA (?:GeForce\s+)?/,""))} only</option>`).join("")}</select></div></div><p class="hint" id="gpu-setup-status" role="status">${esc(setup.error || "Strata applies this at the next desktop model load. LM Studio uses its own GPU settings.")}</p></section>`);
+    const select=$("#strata-gpu-choice");
+    select.value=setup.choice?.mode === "single" ? String(setup.choice.gpu_index) : "auto";
+    select.addEventListener("change", async()=>{
+      select.disabled=true;
+      try {
+        const choice=select.value === "auto" ? {mode:"auto"} : {mode:"single",gpu_index:Number(select.value)};
+        const saved=await api("/api/hardware/gpu-setup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(choice)});
+        setup.choice=saved.choice;
+        $("#gpu-setup-status").textContent="Saved. Applies when you load a model in Strata Control.";
+      } catch(error) {
+        select.value=setup.choice?.mode === "single" ? String(setup.choice.gpu_index) : "auto";
+        $("#gpu-setup-status").textContent=error.message;
+      } finally { select.disabled=false; }
+    });
+  }
 }
 function memoryFollowUpMarkup(followUps=[]) {
   return followUps.length ? `<section class="hardware-section memory-follow-ups"><h4>Configuration check due</h4>${followUps.map(item=>`<div class="probe-empty">${conditionBadge(item.label)}<span>Matching GPU reconnected: update this benchmark's memory channel record.</span><button class="btn-sm" data-memory-follow-up="${esc(item.run_id)}" data-gpu-index="${esc(item.gpu_index ?? 0)}">Update memory topology</button></div>`).join("")}</section>` : "";
@@ -1327,7 +1400,7 @@ function generatedMetadata(env, cfg) {
       `Context allocation: ${cfg.context_policy === "fixed" ? "fixed largest context and query capacity" : "matched to each test"}`,
     ]),
   ];
-  if (cards.length > 1) notes.push(`Power sensor: ${cards.find((gpu) => gpu.sensor_index === cfg.gpu_index)?.name || cfg.gpu_index} (monitoring only)`);
+  if (cards.length > 1) notes.push("Power monitoring: all detected NVIDIA GPUs, per card and combined (monitoring only; model placement is engine controlled)");
   if (cfg.runtime_gpu_placement) notes.push(`Runtime GPU setup: ${cfg.runtime_gpu_placement}`);
   return {label, notes: notes.join("\n")};
 }
@@ -1448,6 +1521,7 @@ async function checkForActiveBenchmark() {
   try {
     const status = await api("/api/status");
     if (status.running) { enterRunningUi(); startPolling(); }
+    else if (status.run) renderLive(status);
   } catch (error) { /* The next check retries if the local server is unavailable. */ }
 }
 
@@ -1486,10 +1560,15 @@ async function poll() {
       if (event.kind === "log") appendLog(event.message, event.level);
     }
     const changed = data.events.some(event => event.kind === "result" || event.kind === "done");
-    await syncLiveBenchmark(data.status, changed);
     renderLive(data.status);
-    if (!data.status.running && state.poller) {
-      clearInterval(state.poller); state.poller = null; leaveRunningUi();
+    try {
+      await syncLiveBenchmark(data.status, changed);
+    } finally {
+      // Completion must remain visible even if the result was archived or
+      // its final fetch failed after the worker finished.
+      if (!data.status.running && state.poller) {
+        clearInterval(state.poller); state.poller = null; leaveRunningUi();
+      }
     }
   } catch (error) {
     // Do not stop polling after a transient fetch failure; the next tick retries.
@@ -1513,36 +1592,65 @@ function renderLive(status) {
   const live = status.live || {};
   const total = live.total || 0;
   const done = live.done || 0;
+  const outcomes = {
+    completed: {label:"Completed",heading:"Benchmark finished",style:"ok"},
+    cancelled: {label:"Stopped",heading:"Benchmark stopped",style:"cancelled"},
+    error: {label:"Failed",heading:"Benchmark failed",style:"failed"},
+    interrupted: {label:"Incomplete",heading:"Benchmark incomplete",style:"interrupted"},
+  };
+  const outcome = !status.running && outcomes[status.run?.status];
+  const finishing = status.running && !!outcomes[status.run?.status];
+  const card = $("#live-card");
+  card.dataset.status = outcome ? status.run.status : "running";
+  if (outcome) card.classList.remove("hidden");
+  $("#live-card h3").textContent = outcome?.heading || "Progress";
   $("#progress-bar").style.width = total ? (100 * done / total).toFixed(1) + "%" : "0%";
-  const phase = status.cancelling ? "stopping…" : (live.phase || "idle");
-  $("#live-phase").textContent = `${phase}${live.model ? " · " + live.model : ""}${live.size ? " @ " + fmtTokens(live.size) : ""}${total ? `  (${done}/${total})` : ""}`;
+  const phase = status.cancelling ? "Stopping…" : finishing ? "Finishing…" : (live.phase || "idle");
+  $("#live-phase").className = "st st-" + (outcome?.style || "running");
+  $("#live-phase").textContent = outcome
+    ? `${outcome.label}${total ? ` · ${done}/${total} tests` : ""}${status.run.n_failed ? ` · ${status.run.n_failed} failed` : ""}${status.run.n_skipped ? ` · ${status.run.n_skipped} skipped` : ""}`
+    : `${phase}${live.model ? " · " + live.model : ""}${live.size ? " @ " + fmtTokens(live.size) : ""}${total ? `  (${done}/${total})` : ""}`;
 
   const deadline = $("#live-deadline");
-  const hasDeadline = Number.isFinite(live.timeout_budget_s) && live.timeout_budget_s > 0;
+  const hasDeadline = status.running && !finishing && ["prefill","decode","inference"].includes(live.phase) && Number.isFinite(live.timeout_budget_s) && live.timeout_budget_s > 0;
   deadline.hidden = !hasDeadline;
   deadline.textContent = hasDeadline ? `Current test deadline: ${fmtDuration(live.timeout_elapsed_s ?? 0)} elapsed / ${fmtDuration(live.timeout_budget_s)} budget${live.timeout_reason ? " (" + live.timeout_reason + ")" : ""}. Adaptive timing is capped by the configured timeout; it is not a memory limit.` : "";
 
   const t = live.telemetry || {};
+  const sampleNote = $("#live-sample-note");
+  sampleNote.hidden = !outcome;
+  const sampleTime = t.timestamp ? new Date(t.timestamp) : null;
+  sampleNote.textContent = outcome ? "Last recorded sample" + (sampleTime && Number.isFinite(sampleTime.getTime()) ? " · " + sampleTime.toLocaleString() : "") : "";
   const present = value => Number.isFinite(value);
   const percent = value => present(value) ? fmt(value, 0) : "—";
-  if (t.gpu_w !== null && t.gpu_w !== undefined) {
-    $("#pill-power").hidden = false;
+  $("#pill-power").hidden = !status.running || !present(t.gpu_w);
+  if (status.running && present(t.gpu_w)) {
     $("#pill-power").innerHTML = `<span class="num">${Math.round(t.gpu_w)}</span> W GPU`;
   }
   $("#live-stats").innerHTML = [
-    stat("GPU power", t.gpu_w !== null && t.gpu_w !== undefined ? Math.round(t.gpu_w) : "—", "W measured"),
+    stat(t.gpus?.length>1 ? "All GPUs power" : "GPU power", t.gpu_w !== null && t.gpu_w !== undefined ? Math.round(t.gpu_w) : "—", t.gpus?.length>1 ? "W combined" : "W measured"),
     stat("System", t.system_w_est ? Math.round(t.system_w_est) : "—", "W estimated"),
-    stat("GPU load", t.gpu_util !== null && t.gpu_util !== undefined ? Math.round(t.gpu_util) : "—", "%"),
+    stat(t.gpus?.length>1 ? "GPU load · mean" : "GPU load", t.gpu_util !== null && t.gpu_util !== undefined ? Math.round(t.gpu_util) : "—", "%"),
     stat("VRAM", percent(t.vram_percent), "% used"),
-    stat("VRAM used", present(t.vram_mb) ? (t.vram_mb / 1024).toFixed(1) : "—", "GiB"),
+    stat(t.gpus?.length>1 ? "VRAM used · sum" : "VRAM used", present(t.vram_mb) ? (t.vram_mb / 1024).toFixed(1) : "—", "GiB"),
     stat("RAM", percent(t.system_memory_percent), "% used"),
     stat("RAM used", present(t.system_memory_used_bytes) ? (t.system_memory_used_bytes / 1073741824).toFixed(1) : "—", "GiB"),
     stat("CPU load", percent(t.cpu_util_percent ?? (present(t.cpu_util) ? t.cpu_util * 100 : null)), "%"),
-    stat("TTFT", live.ttft_s ? fmt(live.ttft_s, 2) : "—", "s this test"),
-    stat("Decoding", live.decode_tps_live ? fmt(live.decode_tps_live, 1) : "—", "tk/s live"),
-    stat("GPU temp", present(t.temp_c) ? Math.round(t.temp_c) : "—", "°C"),
+    stat("TTFT", live.ttft_s ? fmt(live.ttft_s, 2) : "—", outcome ? "s last test" : "s this test"),
+    stat("Decoding", live.decode_tps_live ? fmt(live.decode_tps_live, 1) : "—", outcome ? "tk/s last test" : "tk/s live"),
+    stat(t.gpus?.length>1 ? "GPU temp · max" : "GPU temp", present(t.temp_c) ? Math.round(t.temp_c) : "—", "°C reported"),
     stat("CPU temp", present(t.cpu_temp_c) ? Math.round(t.cpu_temp_c) : "—", "°C"),
-  ].join("");
+  ].join("") + liveGpuCards(t);
+}
+
+function liveGpuCards(telemetry) {
+  if (!Array.isArray(telemetry.gpus) || !telemetry.gpus.length) return "";
+  const value=(number,digits=0)=>Number.isFinite(number) ? fmt(number,digits) : "—";
+  return `<div class="gpu-live-grid">${telemetry.gpus.map(gpu=>`<article class="gpu-live-card"><header><strong>GPU ${esc(gpu.index+1)} · ${esc(String(gpu.name || "GPU").replace(/^NVIDIA (?:GeForce\s+)?/,""))}</strong><span class="badge">${gpu.gpu_w == null ? "Power unavailable" : "Measured"}</span></header><dl>${[
+    ["Power",value(gpu.gpu_w)+" W"],["GPU load",value(gpu.gpu_util)+"%"],
+    ["VRAM used",value(Number.isFinite(gpu.vram_mb)?gpu.vram_mb/1024:null,1)+" GiB"],
+    ["VRAM",value(gpu.vram_percent)+"%"],["Temperature",value(gpu.temp_c)+" °C"],["Clock",value(gpu.clock_mhz)+" MHz"]
+  ].map(([label,reading])=>`<div><dt>${esc(label)}</dt><dd>${esc(reading)}</dd></div>`).join("")}</dl></article>`).join("")}</div>`;
 }
 
 const STATUS_MARK = { ok: "✓", failed: "✕", skipped: "–", cancelled: "⊘" };
@@ -1635,7 +1743,7 @@ function renderRunsList() {
   $$("#runs-list [data-run-select]").forEach((input) => input.addEventListener("change", async () => {
     if (state.conditions !== null && input.checked) {
       await ensureRuns([input.dataset.runSelect]);
-      availableMeasurementRuns([state.runCache[input.dataset.runSelect]]).filter(run=>!run.storage_alternative).forEach(run=>state.conditions.add(run.id));
+      availableMeasurementRuns([state.runCache[input.dataset.runSelect]]).filter(run=>!run.storage_alternative && !run.storage_baseline).forEach(run=>state.conditions.add(run.id));
     }
     if (input.checked) state.compare.add(input.dataset.runSelect); else state.compare.delete(input.dataset.runSelect);
     if (!state.compare.has(state.selected)) state.selected = [...state.compare][0] || null;
@@ -1832,7 +1940,7 @@ function selectedModelRerun() {
   if (state.compare.size !== 1) return null;
   const run = state.runCache[[...state.compare][0]];
   if (!run || run.community) return null;
-  if (measurementRuns([run]).some(view=>view.storage_alternative)) return null;
+  if (measurementRuns([run]).some(view=>view.storage_alternative || view.storage_baseline)) return null;
   const action = resultsTestAction(run), models = shownModels(allModelsOf([run]));
   if (!action || action.newBenchmark || models.length !== 1) return null;
   const model = models[0], group = executionGroup(run, (run.results || []).find(row => row.model === model) || {});
@@ -2157,6 +2265,19 @@ function detailedResultsTable(run) {
     ["Speculative decoding", row => rowProviderManaged(run, row) ? `provider controlled; reported ${row.model_configuration?.mtp?.user_reported || "unknown"}` : row.mtp ? "on" : "off"],
     ["VRAM peak (MB)", row => row.vram_peak_mb], ["Failure", row => row.message || row.fail_kind],
   ];
+  const devices=new Map((run.results || []).flatMap(row=>(row.power || row.group_power || {}).gpus || []).map(card=>[card.index,card.name]));
+  for(const [index,name] of devices) {
+    const card=row=>(row.power || row.group_power || {}).gpus?.find(gpu=>gpu.index===index) || {};
+    for(const [label,get] of [
+      ["prefill power (W)",g=>g.prefill?.gpu_w_avg],["decode power (W)",g=>g.decode?.gpu_w_avg],
+      ["prefill energy (J)",g=>g.prefill?.gpu_energy_j],["decode energy (J)",g=>g.decode?.gpu_energy_j],
+      ["whole-case power (W)",g=>g.gpu_w_avg],["whole-case energy (J)",g=>g.gpu_energy_j],
+      ["peak VRAM (MiB)",g=>g.vram_peak_mb ?? g.vram_mb_max],
+      ["decode utilization (%)",g=>g.decode?.gpu_util_avg ?? g.gpu_util_avg],
+      ["peak temperature (°C)",g=>{const values=[g.prefill?.temp_c_max,g.decode?.temp_c_max,g.temp_c_max].filter(Number.isFinite);return values.length?Math.max(...values):null;}],
+      ["decode clock (MHz)",g=>g.decode?.clock_mhz_avg ?? g.clock_mhz_avg]
+    ]) fields.push([`GPU ${index+1} · ${name} · ${label}`,row=>get(card(row))]);
+  }
   const exactValue = (label,value) => typeof value === "number" ? (/tokens|repeat|context/i.test(label) ? String(value) : n(value)) : value;
   const rows = (run.results || []).flatMap(row => [...fields.map(([label, get]) => {
     const value = get(row);

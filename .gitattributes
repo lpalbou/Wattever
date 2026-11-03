@@ -11,3 +11,8 @@
 # Generated benchmark text: committed so every contributor sends the exact same
 # prompts, but it should not count towards the repo's language stats.
 corpora/** linguist-generated=true
+
+# Preserve archived captures and recorded study source checksums byte for byte.
+# These files can intentionally retain the measured platform's line endings.
+results/archives/** -text -whitespace
+results/studies/** -text -whitespace

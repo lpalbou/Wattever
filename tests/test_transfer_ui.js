@@ -21,6 +21,15 @@ context.profile.storage_volumes=[{status:'ok',bytes_per_second:1800000000,volume
 html=vm.runInContext('transferBandwidthMarkup(profile)',context);
 assert.match(html,/12.00 GB\/s/);assert.match(html,/6 workers/);
 assert.match(html,/1.80 GB\/s/);assert.match(html,/\(F:\)/);assert.match(html,/NVMe SSD/);
+context.profile.ram_to_vram_devices=[
+  {status:'ok',gpu_sensor_index:0,gpu_name:'NVIDIA GeForce RTX 5070 Ti',bytes_per_second:13500000000,samples:[{},{},{}],pcie_during:{generation_current:3,width_current:16}},
+  {status:'ok',gpu_sensor_index:1,gpu_name:'NVIDIA GeForce RTX 5060 Ti',bytes_per_second:6700000000,samples:[{},{},{}],pcie_during:{generation_current:3,width_current:8}}
+];
+html=vm.runInContext('transferBandwidthMarkup(profile)',context);
+for(const text of ['RTX 5070 Ti (GPU 1)','RTX 5060 Ti (GPU 2)','13.50 GB/s','6.70 GB/s','Gen 3 ×16 during transfer','Gen 3 ×8 during transfer'])assert(html.includes(text),text);
+assert.equal((html.match(/13.50 GB\/s/g)||[]).length,1,'Legacy selected-card alias is not a duplicate tile');
+context.profile.ram_to_vram_devices[1]={status:'unavailable',gpu_sensor_index:1,gpu_name:'NVIDIA GeForce RTX 5060 Ti',reason:'Busy GPU'};
+html=vm.runInContext('transferBandwidthMarkup(profile)',context);assert.match(html,/Busy GPU/);assert.match(html,/RTX 5060 Ti/);assert.doesNotMatch(html,/6.70 GB\/s/);
 console.log('Transfer bandwidth labels, units, unavailable state and historical provenance passed');
 context.taggedRun = {tags: ['RTX 5070 Ti', 'Strata', '<script>'], config: {}};
 const taggedHtml = vm.runInContext('scientificMetadata(taggedRun)', context);

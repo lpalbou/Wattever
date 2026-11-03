@@ -1,9 +1,83 @@
 """Consolidate machine results while retaining each engine's execution evidence."""
 import copy
+import math
 import re
 from datetime import datetime, timezone
 
 from . import store
+
+
+def _known_text(value):
+    if not isinstance(value, str):
+        return None
+    normalized = re.sub(r"[^a-z0-9]+", "", value.casefold())
+    return normalized if normalized not in ("", "unknown", "unreported", "unspecified", "notreported", "na", "none", "null") else None
+
+
+def _board_multiset(identity):
+    """Operator board identity only; sensor order and provenance prose are not identity."""
+    if isinstance(identity, dict):
+        cards = identity.get("gpus")
+        if cards is None and "manufacturer" in identity:
+            cards = [identity]
+    else:
+        cards = identity
+    if not isinstance(cards, list) or not cards:
+        return None
+    normalized = []
+    aliases = {"asustekcomputerinc": "asus", "asustekcomputer": "asus",
+               "pnytechnologiesinc": "pny", "pnytechnologies": "pny"}
+    for card in cards:
+        if not isinstance(card, dict):
+            return None
+        manufacturer, model = _known_text(card.get("manufacturer")), _known_text(card.get("model"))
+        memory = card.get("memory_gib_nominal")
+        if not manufacturer or not model or type(memory) not in (int, float):
+            return None  # Partial/legacy annotations do not establish a full multiset.
+        try:
+            memory = float(memory)
+        except (ValueError, OverflowError):
+            return None
+        if not math.isfinite(memory) or memory <= 0:
+            return None
+        normalized.append((aliases.get(manufacturer, manufacturer), model, memory))
+    return tuple(sorted(normalized))  # Preserve duplicate cards without using sensor indices.
+
+
+def _board_evidence(run):
+    identities, variants = set(), set()
+    pending, seen = [run], set()
+    while pending:
+        node = pending.pop()
+        if not isinstance(node, dict) or id(node) in seen:
+            continue
+        seen.add(id(node))
+        for identity in (node.get("gpu_board_identity"), (node.get("hardware") or {}).get("gpu_board_identity")):
+            signature = _board_multiset(identity)
+            if signature is not None:
+                identities.add(signature)
+        variant = _known_text((node.get("classification") or {}).get("board_variant"))
+        if variant:
+            variants.add(variant)
+        for key in ("sessions", "source_runs"):
+            pending.extend(node.get(key) or [])
+    if len(identities) > 1:
+        raise ValueError("Known GPU board identities conflict within a selected benchmark.")
+    if not identities and len(variants) > 1:
+        raise ValueError("Known GPU board variants conflict within a selected benchmark.")
+    return next(iter(identities), None), variants
+
+
+def _require_compatible_boards(runs):
+    evidence = [_board_evidence(run) for run in runs]
+    for index, (identity, variants) in enumerate(evidence):
+        for other_identity, other_variants in evidence[index + 1:]:
+            if identity is not None and other_identity is not None:
+                if identity != other_identity:
+                    raise ValueError("Known GPU board identities differ; keep these hardware setups separate.")
+                continue  # Matching strong identity takes priority over variant-label aliases.
+            if variants and other_variants and len(variants | other_variants) > 1:
+                raise ValueError("Known GPU board variants differ; keep these hardware setups separate.")
 
 
 def workload(configs):
@@ -55,6 +129,7 @@ def consolidate(run_ids, label):
     runs = [store.load(i) for i in run_ids]
     if any(r is None for r in runs):
         raise ValueError("A selected benchmark does not exist.")
+    _require_compatible_boards(runs)
     first = runs[0]
     hardware_class = (first.get("classification") or {}).get("hardware_class")
     if not hardware_class or hardware_class == "remote-unverified":

@@ -42,7 +42,7 @@ The sequential NVMe read probe is 5.23x faster. RAM copy payload throughput is n
 
 - Six targets: 512, 5k, 10k, 20k, 40k and 80k; one/two simultaneous clients; two repeats; 256 output-token limit; 600-second case limit. Actual input/output counts remain in the raw query records.
 - Same model files, quantizations, 98,304-token engine context and Strata 0.1.52. MTP is requested/reported on; effective execution remains unknown where native counters do not establish it. One backend slot queues the two clients.
-- Flash Next uses the same 40 GiB host expert-cache cap on both drives, with observed pageable fallback after Windows refused the pinned allocation. The 5070 Ti benchmark used automatic host residency, so its Strata memory policy differs.
+- Flash Next uses the same 40 GiB host expert-cache cap on both drives, with observed pageable fallback after Windows refused the pinned allocation. The historical 5070 Ti benchmark used automatic host residency. Its [new controlled storage follow-up](5070-ti-hardware-follow-up.md) separately measures both drives with a 40 GiB cap, preserving those older rows.
 - Native Qwen 3.6 matches 21 GPU experts per layer and 18.75 GiB pinned host residency. The requested GPU budget is 3 GiB on Samsung and 2.65 GiB on NVMe to preserve that effective placement.
 - OS standby caches were not forcibly flushed. Model-loading observations are not controlled cold-start timings. Two repeats describe these workloads; they do not establish universal speedup or statistical significance.
 

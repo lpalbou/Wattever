@@ -31,6 +31,9 @@ class InventoryTests(unittest.TestCase):
         self.assertIsNone(link['measured_host_to_device_bytes_per_second'])
         self.assertEqual(link['generation_max_reported'], 5)
         self.assertIn('idle', link['note'])
+        self.assertIn('physical slot', link['maximum_scope'])
+        self.assertIsNone(link['physical_slot'])
+        self.assertIn('do not prove', link['note'])
         self.assertIsNone(hardware._pcie(6, 16)['link_encoding_ceiling_bytes_per_second'])
         self.assertIsNone(hardware._pcie('[N/A]', 8)['link_encoding_ceiling_bytes_per_second'])
 

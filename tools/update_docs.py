@@ -9,6 +9,11 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCUMENTS = ["README.md", "docs/README.md", "docs/getting-started.md", "docs/browser.md", "docs/sharing-results.md", "docs/measurements.md",
              "docs/capabilities.md",
              "docs/5060-ti-storage-comparison.md",
+             "docs/5070-ti-hardware-follow-up.md",
+             "docs/pny-5070-ti-comparison.md",
+             "docs/5960x-cpu-comparison.md",
+             "docs/5070-plus-5060-comparison.md",
+             "docs/dual-gpu-communication-and-placement.md",
              "docs/architecture.md", "docs/api.md", "docs/faq.md", "docs/troubleshooting.md",
              "CONTRIBUTING.md", "SECURITY.md", "CODE_OF_CONDUCT.md", "CHANGELOG.md",
              "ACKNOWLEDGEMENTS.md", "LICENSE", "results/README.md"]

@@ -49,6 +49,8 @@ class BandwidthTests(unittest.TestCase):
             self.assertEqual(restored['saved_capture']['capture_kind'], 'independent')
             self.assertEqual(restored['saved_capture']['source_run_id'], 'saved')
             self.assertFalse(restored['saved_capture']['measured_this_helper_session'])
+            self.assertEqual(restored['saved_capture']['gpu_path_match'], 'unverified_legacy_single_gpu_capture')
+            self.assertIn('unverified', restored['saved_capture']['gpu_path_match_note'])
             restored['storage_to_ram']['bytes_per_second'] = 999
             self.assertEqual(path.read_bytes(), original)
             self.assertEqual(list(Path(directory).iterdir()), [path])
@@ -128,11 +130,166 @@ class BandwidthTests(unittest.TestCase):
     def test_worker_records_independent_failures_without_paths(self):
         with patch.object(bandwidth, "storage_probe", side_effect=OSError("C:/secret/weights")), \
              patch.object(bandwidth, "memory_probe", return_value={"status":"ok", "bytes_per_second":456}), \
+             patch.object(bandwidth.power, 'list_gpus', return_value=[]), \
              patch.object(bandwidth, "cuda_probe", return_value={"status":"ok", "bytes_per_second":123}):
             profile = bandwidth._worker("ignored", 0)
         self.assertEqual(profile["storage_to_ram"]["status"], "unavailable")
         self.assertEqual(profile["ram_to_vram"]["bytes_per_second"], 123)
         self.assertNotIn("secret", json.dumps(profile))
+
+    def test_each_gpu_is_measured_once_and_selected_failure_is_not_replaced(self):
+        sensors = [{'index': 5, 'name':'Second GPU', 'vram_total_mb':16384, 'pci_bus_id':'private-bus-2'},
+                   {'index': 0, 'name':'First GPU', 'vram_total_mb':16384, 'pci_bus_id':'private-bus-1'}]
+        measured = bandwidth._summary([{'bytes':1000,'elapsed_s':1}], method='fixture')
+        def probe(index):
+            return measured if index == 0 else bandwidth._unavailable('Insufficient free VRAM')
+        with patch.object(bandwidth.power, 'list_gpus', return_value=sensors), \
+             patch.object(bandwidth, 'cuda_probe', side_effect=probe) as cuda, \
+             patch.object(bandwidth, 'storage_probe', return_value=measured), \
+             patch.object(bandwidth, 'memory_probe', return_value=measured):
+            profile = bandwidth._worker('ignored', 5)
+        self.assertEqual([call.args[0] for call in cuda.call_args_list], [0, 5])
+        self.assertEqual([item['gpu_name'] for item in profile['ram_to_vram_devices']], ['First GPU','Second GPU'])
+        self.assertEqual(profile['ram_to_vram']['gpu_sensor_index'], 5)
+        self.assertEqual(profile['ram_to_vram']['status'], 'unavailable')
+        self.assertNotIn('bytes_per_second', profile['ram_to_vram'])
+        self.assertIsNone(profile['ram_to_vram']['physical_slot'])
+        self.assertNotIn('private-bus', json.dumps(profile))
+        profile['ram_to_vram']['reason'] = 'changed alias'
+        self.assertEqual(profile['ram_to_vram_devices'][1]['reason'], 'Insufficient free VRAM')
+
+    def test_fresh_cache_rejects_cpu_ram_gpu_or_path_changes(self):
+        machine, _ = self.matching_capture_fixture()
+        machine['gpus'][0].update(sensor_index=0, pcie={'width_current':8, 'generation_max_reported':3,'width_max_reported':16})
+        profile = {'ram_to_vram_devices':[{'gpu_sensor_index':0,'gpu_name':'RTX 5060 Ti','gpu_memory_bytes':16*1024**3}]}
+        sensors = [{'index':0,'name':'RTX 5060 Ti','pci_bus_id':'0000:01:00.0'}]
+        profile['gpu_path_fingerprint'] = bandwidth._gpu_path_fingerprint(sensors)
+        with patch.object(bandwidth, '_latest', profile), \
+             patch.object(bandwidth, '_latest_hardware_key', bandwidth._capture_hardware_key(machine)):
+            self.assertEqual(bandwidth.latest(machine, sensors=sensors), profile)
+            for change in ('cpu','ram','clock','gpu','path','index','driver'):
+                current = copy.deepcopy(machine)
+                if change == 'cpu': current['cpu']['name'] = 'Different CPU'
+                elif change == 'ram': current['memory']['installed_capacity_bytes'] //= 2
+                elif change == 'clock': current['memory']['configured_clock_mhz_reported'] = [3200]
+                elif change == 'gpu': current['gpus'].append(dict(current['gpus'][0],name='Additional GPU',sensor_index=1))
+                elif change == 'path': current['gpus'][0]['pcie']['width_current'] = 16
+                elif change == 'index': current['gpus'][0]['sensor_index'] = 2
+                elif change == 'driver': current['gpus'][0]['driver'] = '2'
+                with self.subTest(change=change): self.assertIsNone(bandwidth.latest(current, sensors=sensors))
+
+    def test_gpu_bus_change_invalidates_cache_even_when_indices_and_link_widths_match(self):
+        machine, _ = self.matching_capture_fixture()
+        machine['gpus'][0]['sensor_index'] = 0
+        machine['gpus'].append(dict(machine['gpus'][0], name='RTX 5070 Ti',sensor_index=1))
+        sensors = [{'index':0,'name':'RTX 5060 Ti','pci_bus_id':'00000000:01:00.0'},
+                   {'index':1,'name':'RTX 5070 Ti','pci_bus_id':'00000000:02:00.0'}]
+        profile = {'ram_to_vram_devices':[{'gpu_sensor_index':card['sensor_index'], 'gpu_name':card['name'],
+                    'gpu_memory_bytes':card['memory_bytes']} for card in machine['gpus']],
+                   'gpu_path_fingerprint':bandwidth._gpu_path_fingerprint(sensors)}
+        moved = copy.deepcopy(sensors); moved[1]['pci_bus_id'] = '00000000:04:00.0'
+        with patch.object(bandwidth, '_latest', profile), \
+             patch.object(bandwidth, '_latest_hardware_key', bandwidth._capture_hardware_key(machine)):
+            self.assertEqual(bandwidth.latest(machine,sensors=sensors), profile)
+            self.assertIsNone(bandwidth.latest(machine,sensors=moved))
+            self.assertIsNone(bandwidth.latest(machine,sensors=[]), 'A failed mapping check is unknown, not a match')
+            del profile['gpu_path_fingerprint']
+            self.assertIsNone(bandwidth.latest(machine,sensors=sensors), 'Old live captures cannot verify the PCI bus path')
+
+    def test_saved_multi_gpu_capture_requires_matching_topology_fingerprint(self):
+        from wattever import store
+        machine, run = self.matching_capture_fixture()
+        machine['gpus'].append(dict(machine['gpus'][0],name='RTX 5070 Ti'))
+        for snapshot in [run['hardware'],run['hardware_measurement_history'][0]['hardware_snapshot'],run['sessions'][0]['hardware']]:
+            snapshot['gpus'] = copy.deepcopy(machine['gpus'])
+        sensors = [{'index':0,'name':'RTX 5060 Ti','pci_bus_id':'0000:01:00.0'},
+                   {'index':1,'name':'RTX 5070 Ti','pci_bus_id':'0000:02:00.0'}]
+        fingerprint = bandwidth._gpu_path_fingerprint(sensors)
+        with tempfile.TemporaryDirectory() as directory, patch.object(store, 'RUNS_DIR', directory):
+            path = Path(directory) / 'saved.json'
+            path.write_text(json.dumps(run), encoding='utf-8')
+            self.assertIsNone(bandwidth.saved_capture(machine,sensors=sensors), 'Legacy multi-GPU topology was not captured')
+            for profile in [run['hardware']['transfer_bandwidth'],run['hardware_measurement_history'][0]['transfer_bandwidth'],run['sessions'][0]['transfer_bandwidth']]:
+                profile['gpu_path_fingerprint'] = fingerprint
+            path.write_text(json.dumps(run), encoding='utf-8')
+            restored = bandwidth.saved_capture(machine,sensors=sensors)
+            self.assertEqual(restored['saved_capture']['gpu_path_match'], 'matched_gpu_bus_topology_fingerprint')
+            moved = copy.deepcopy(sensors); moved[1]['pci_bus_id'] = '0000:03:00.0'
+            self.assertIsNone(bandwidth.saved_capture(machine,sensors=moved))
+            self.assertIsNone(bandwidth.saved_capture(machine,sensors=[]))
+
+    def test_topology_fingerprint_is_order_independent_normalized_and_nonidentifying(self):
+        sensors = [{'index':1,'name':'GPU B','pci_bus_id':'00000000:41:00.0'},
+                   {'index':0,'name':'GPU A','pci_bus_id':'00000000:01:00.0'}]
+        compact = [dict(item,pci_bus_id=item['pci_bus_id'][4:]) for item in reversed(sensors)]
+        fingerprint = bandwidth._gpu_path_fingerprint(sensors)
+        self.assertRegex(fingerprint,r'^[0-9a-f]{64}$')
+        self.assertEqual(fingerprint, bandwidth._gpu_path_fingerprint(compact))
+        self.assertIsNone(bandwidth._gpu_path_fingerprint([sensors[0],dict(sensors[1],pci_bus_id=None)]))
+        with patch.object(bandwidth.power,'list_gpus',return_value=sensors), \
+             patch.object(bandwidth,'cuda_probe',return_value=bandwidth._unavailable('fixture')), \
+             patch.object(bandwidth,'memory_probe',return_value=bandwidth._unavailable('fixture')), \
+             patch.object(bandwidth,'storage_probe',return_value=bandwidth._unavailable('fixture')):
+            profile = bandwidth._worker('ignored',0)
+        self.assertEqual(profile['gpu_path_fingerprint'],fingerprint)
+        text = json.dumps(profile)
+        self.assertNotIn('00000000:',text)
+        self.assertNotIn('41:00.0',text)
+
+    def test_fresh_unified_memory_capture_keeps_unknown_clocks_without_inventing_them(self):
+        machine, _ = self.matching_capture_fixture()
+        machine['memory']['configured_clock_mhz_reported'] = []
+        machine['gpus'] = [{'name':'Apple GPU','memory_bytes':16*1024**3,'driver':None,
+                            'memory_architecture':'unified','sensor_index':0}]
+        profile = {'ram_to_vram_devices':[]}
+        self.assertIsNone(bandwidth._capture_hardware_key(machine), 'Historical restoration still requires reported clocks and driver')
+        with patch.object(bandwidth, '_latest', profile), \
+             patch.object(bandwidth, '_latest_hardware_key', bandwidth._capture_hardware_key(machine, require_clocks=False)):
+            self.assertEqual(bandwidth.latest(machine), profile)
+
+    def test_cuda_probe_maps_sensor_by_bus_and_releases_fake_context(self):
+        import ctypes as ct
+        from types import SimpleNamespace
+        calls, allocations = [], {}
+        def allocate(output, size):
+            buffer = ct.create_string_buffer(size)
+            address = ct.addressof(buffer); allocations[address] = buffer
+            output._obj.value = address
+            return 0
+        def release(pointer):
+            allocations.pop(pointer.value); return 0
+        def by_bus(output, bus):
+            calls.append(('bus',bus)); output._obj.value=7; return 0
+        def create(output, flags, device):
+            calls.append(('context',device.value)); output._obj.value=99; return 0
+        def destroy(context): calls.append(('destroy',context.value)); return 0
+        def get_info(free, total): free._obj.value=2**30; total._obj.value=2**34; return 0
+        def name(buffer, length, device): ct.memmove(buffer,b'Fake CUDA GPU\0',14); return 0
+        def copy_to(target, source, size): ct.memmove(target.value,source.value,size); return 0
+        def copy_from(target, source, size): ct.memmove(target,source.value,size); return 0
+        driver = SimpleNamespace(cuInit=lambda flags:0, cuDeviceGetByPCIBusId=by_bus, cuDeviceGetName=name,
+            cuCtxCreate_v2=create, cuCtxDestroy_v2=destroy, cuMemGetInfo_v2=get_info,
+            cuMemAllocHost_v2=allocate, cuMemFreeHost=release, cuMemAlloc_v2=allocate, cuMemFree_v2=release,
+            cuMemcpyHtoD_v2=copy_to, cuMemcpyDtoH_v2=copy_from, cuCtxSynchronize=lambda:0)
+        sensor = {'index':5,'name':'Fake CUDA GPU','vram_total_mb':16384,'pci_bus_id':'0000:41:00.0'}
+        from wattever import hardware
+        before, during = hardware._pcie(1,8,3,16), hardware._pcie(3,8,3,16)
+        with patch.object(bandwidth.pu, 'IS_WINDOWS', True), \
+             patch.object(ct, 'WinDLL', return_value=driver, create=True), \
+             patch.object(bandwidth.pu, 'run', return_value=SimpleNamespace(returncode=0,stdout='1024')), \
+             patch.object(bandwidth.power, 'list_gpus', return_value=[sensor]), \
+             patch.object(hardware, '_nvidia_pcie', return_value=before), \
+             patch.object(bandwidth, '_pcie_during_copies', return_value=during), \
+             patch.object(bandwidth, 'MIB', 64):
+            measured = bandwidth.cuda_probe(5)
+        self.assertEqual(calls, [('bus',b'0000:41:00.0'),('context',7),('destroy',99)])
+        self.assertEqual(allocations, {}, 'All fake allocations must be released')
+        self.assertEqual(measured['gpu_sensor_index'], 5)
+        self.assertEqual(measured['pcie_during']['width_current'], 8)
+        self.assertEqual(measured['pcie_during']['generation_current'], 3)
+        self.assertEqual(len(measured['samples']), 3)
+        self.assertTrue(measured['verified_readback'])
+        self.assertNotIn('0000:41', json.dumps(measured))
 
     def test_timeout_cleans_worker_scratch_and_reports_unavailable(self):
         def timeout(args, **kwargs):
@@ -164,6 +321,40 @@ class BandwidthTests(unittest.TestCase):
         different["classification"]["hardware_class"] = "other"
         with self.assertRaisesRegex(ValueError, "Hardware differs"):
             bandwidth.backfill(run, different, profile)
+
+    def test_reboot_page_change_requires_matching_installed_hardware(self):
+        machine, _ = self.matching_capture_fixture()
+        machine.update(motherboard={'manufacturer':'Test','model':'Board'}, os={'name':'Windows','release':'10'})
+        run={'classification':{'hardware_class':'old'},'hardware':copy.deepcopy(machine),
+             'gpu':{'name':'RTX 5060 Ti','driver':'1','vram_total_mb':16000},'results':[{'decode_tps':42}],
+             'sessions':[{'id':'original','hardware':copy.deepcopy(machine)}]}
+        current={'classification':{'hardware_class':'new'},'hardware':copy.deepcopy(machine),'gpu':copy.deepcopy(run['gpu'])}
+        current['hardware']['system']['memory_bytes']-=4096
+        original=copy.deepcopy(run)
+        bandwidth.backfill(run,current,{'captured_at':'2026-11-01T19:00:00Z'})
+        self.assertEqual(run['hardware']['transfer_bandwidth']['hardware_match']['usable_ram_delta_bytes'],-4096)
+        self.assertEqual(run['classification'],original['classification'])
+        self.assertEqual(run['results'],original['results'])
+        self.assertEqual(run['sessions'],original['sessions'])
+        same_class=copy.deepcopy(current)
+        same_class['classification']=copy.deepcopy(original['classification'])
+        same_class['hardware']['memory']['configured_clock_mhz_reported']=[3200]
+        with self.assertRaisesRegex(ValueError,'Hardware differs'):
+            bandwidth.backfill(copy.deepcopy(original),same_class,{'captured_at':'2026-11-01T19:00:00Z'})
+        for change in ('board','os','ram','clock','gpu','driver','cpu','large_delta','not_page_aligned','missing_installed_ram'):
+            changed=copy.deepcopy(current)
+            if change=='board':changed['hardware']['motherboard']['model']='Other'
+            if change=='os':changed['hardware']['os']['release']='11'
+            if change=='ram':changed['hardware']['memory']['installed_capacity_bytes']//=2
+            if change=='clock':changed['hardware']['memory']['configured_clock_mhz_reported']=[3200]
+            if change=='gpu':changed['hardware']['gpus'][0]['name']='RTX 5070 Ti'
+            if change=='driver':changed['hardware']['gpus'][0]['driver']='2'
+            if change=='cpu':changed['hardware']['cpu']['name']='Other'
+            if change=='large_delta':changed['hardware']['system']['memory_bytes']-=1024**2
+            if change=='not_page_aligned':changed['hardware']['system']['memory_bytes']+=1
+            if change=='missing_installed_ram':del changed['hardware']['memory']['installed_capacity_bytes']
+            with self.subTest(change=change),self.assertRaisesRegex(ValueError,'Hardware differs'):
+                bandwidth.backfill(copy.deepcopy(original),changed,{'captured_at':'2026-11-01T19:00:00Z'})
 
     def test_validation_rejects_inconsistent_rates_and_unavailable_numbers(self):
         from wattever.validation import validate_transfer_bandwidth

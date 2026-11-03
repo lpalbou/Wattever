@@ -408,6 +408,12 @@ CSV_COLUMNS = [
     ("engine_provider", lambda r, run: _session_config(r, run).get("provider", "lmstudio")),
     ("engine_group_id", lambda r, run: next((s.get("engine_group_id") for s in run.get("sessions", []) if s.get("id") == r.get("session_id")), None)),
     ("source_run_id", lambda r, run: next((s.get("source_run_id") for s in run.get("sessions", []) if s.get("id") == r.get("session_id")), run.get("id"))),
+    ("power_boundary", lambda r, run: (r.get('power') or r.get('group_power') or {}).get('scope') or (run.get('measurement_scope') or {}).get('power_boundary')),
+    ("per_gpu_power_json", lambda r, run: json.dumps((r.get('power') or r.get('group_power') or {}).get('gpus', []))),
+    ("whole_case_gpu_w", lambda r, run: (r.get('group_power') or {}).get('gpu_w_avg')),
+    ("whole_case_gpu_energy_j", lambda r, run: (r.get('group_power') or {}).get('gpu_energy_j')),
+    ("prefill_gpu_energy_j", lambda r, run: (r.get('power') or {}).get('prefill_energy_j')),
+    ("decode_gpu_energy_j", lambda r, run: (r.get('power') or {}).get('decode_energy_j')),
 ]
 
 
@@ -435,10 +441,25 @@ def _session_hardware(row, run):
 def to_csv(runs):
     import csv
     import io
+    runs=list(runs)
     buf = io.StringIO()
     writer = csv.writer(buf, lineterminator="\n")
-    writer.writerow([name for name, _ in CSV_COLUMNS])
+    indices=sorted({card['index'] for run in runs for row in run.get('results',[])
+                    for card in (row.get('power') or row.get('group_power') or {}).get('gpus',[])
+                    if type(card.get('index')) is int})
+    device_fields=('name','prefill_w','decode_w','prefill_energy_j','decode_energy_j',
+                   'whole_case_w','whole_case_energy_j','vram_peak_mib','temp_peak_c','clock_decode_mhz',
+                   'prefill_util_percent','decode_util_percent')
+    writer.writerow([name for name, _ in CSV_COLUMNS]+['gpu_%d_%s'%(i,field) for i in indices for field in device_fields])
     for run in runs:
         for r in run.get("results") or []:
-            writer.writerow([fn(r, run) for _, fn in CSV_COLUMNS])
+            extra=[]
+            for index in indices:
+                card=next((g for g in (r.get('power') or r.get('group_power') or {}).get('gpus',[]) if g.get('index')==index),{})
+                pre,dec=card.get('prefill',{}),card.get('decode',{})
+                temperatures=[p['temp_c_max'] for p in (pre,dec,card) if p.get('temp_c_max') is not None]
+                extra += [card.get('name'),pre.get('gpu_w_avg'),dec.get('gpu_w_avg'),pre.get('gpu_energy_j'),dec.get('gpu_energy_j'),
+                          card.get('gpu_w_avg'),card.get('gpu_energy_j'),card.get('vram_peak_mb',card.get('vram_mb_max')),
+                          max(temperatures) if temperatures else None,dec.get('clock_mhz_avg'),pre.get('gpu_util_avg'),dec.get('gpu_util_avg')]
+            writer.writerow([fn(r, run) for _, fn in CSV_COLUMNS]+extra)
     return buf.getvalue()

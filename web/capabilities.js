@@ -128,7 +128,7 @@
         if(!state.timer)state.timer=setInterval(poll,1000);
       }
       const telemetry=live.telemetry || {};
-      $('#cap-telemetry').innerHTML=[['CPU',telemetry.cpu_util_percent,'%'],['GPU',telemetry.gpu_util,'%'],['RAM',telemetry.system_memory_percent,'%'],['VRAM',telemetry.vram_percent,'%'],['CPU temp',telemetry.cpu_temp_c,'°C'],['GPU temp',telemetry.temp_c,'°C']].filter(item=>Number.isFinite(item[1])).map(([label,value,unit])=>`<div class="stat"><div class="k">${label}</div><div class="v">${number(value)} <span class="u">${unit}</span></div></div>`).join('');
+      $('#cap-telemetry').innerHTML=[['CPU',telemetry.cpu_util_percent,'%'],['GPU mean',telemetry.gpu_util,'%'],['All GPUs power',telemetry.gpu_w,'W'],['RAM',telemetry.system_memory_percent,'%'],['VRAM sum',telemetry.vram_percent,'%'],['CPU temp',telemetry.cpu_temp_c,'°C'],['GPU max temp',telemetry.temp_c,'°C']].filter(item=>Number.isFinite(item[1])).map(([label,value,unit])=>`<div class="stat"><div class="k">${label}</div><div class="v">${number(value)} <span class="u">${unit}</span></div></div>`).join('')+(typeof liveGpuCards === 'function' ? liveGpuCards(telemetry) : '');
       if (!status.running && state.timer) {
         clearInterval(state.timer); state.timer=null; message('Test finished.');
         const following=!state.focus || state.focus===status.run_id;state.cache.clear();await refresh();

@@ -6,6 +6,23 @@ from wattever.privacy import public_projection
 
 
 class PublicPrivacyTests(unittest.TestCase):
+    def test_numeric_hardware_indices_keep_nested_redaction(self):
+        original = {7: {'gpu_index': 1, 'base_url': 'http://private-host/v1',
+                        'layers': {13: 'CUDA0', 14: 'CUDA1'}}}
+        before = copy.deepcopy(original)
+        public = public_projection(original)
+        self.assertEqual(public['7']['layers'], {'13': 'CUDA0', '14': 'CUDA1'})
+        self.assertNotIn('base_url', public['7'])
+        self.assertNotIn('private-host', json.dumps(public))
+        self.assertEqual(original, before)
+        self.assertEqual(public_projection(public), public)
+
+    def test_scalar_keys_follow_json_and_invalid_keys_fail(self):
+        source = {None: 1, False: 2, 2.5: 3}
+        self.assertEqual(public_projection(source), json.loads(json.dumps(source)))
+        with self.assertRaises(TypeError):
+            public_projection({('layer', 1): 'unsupported'})
+
     def test_recursive_secrets_identifiers_and_network_details(self):
         original = {
             "id": "91cda523-9a77-40a5-9125-f1c8562dce11",

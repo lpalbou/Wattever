@@ -327,6 +327,75 @@ class PowerSampler:
         self._previous_point = None
         self._first_point = None
         self._latest_point = None
+        self._gpu_meters = {}
+        self._sensor_rows = {}
+        self._device_name = None
+        self._scope = 'benchmark_client_selected_gpu'
+        self._inventory_complete = False
+
+    def _configure_gpus(self, sensors):
+        """Freeze the monitored NVIDIA inventory; child meters never start tools."""
+        indices=[sensor.get('index') for sensor in sensors]
+        if any(type(index) is not int or not 0 <= index <= 255 for index in indices) or len(set(indices)) != len(indices):
+            raise ValueError('Invalid GPU sensor inventory')
+        self._scope = 'benchmark_client_all_nvidia_gpus'
+        self._inventory_complete = bool(sensors)
+        for sensor in sensors:
+            index = sensor.get('index')
+            if type(index) is not int or index in self._gpu_meters:
+                raise ValueError('Invalid GPU sensor inventory')
+            meter = PowerSampler(self.interval_ms, index)
+            meter.source = SRC_NVIDIA
+            meter._scope = 'benchmark_client_gpu'
+            meter._device_name = sensor.get('name') or 'GPU %d' % index
+            meter._vram_total_mb = sensor.get('vram_total_mb')
+            meter._started_perf, meter._started_utc = self._started_perf, self._started_utc
+            self._gpu_meters[index] = meter
+        capacities = [meter._vram_total_mb for meter in self._gpu_meters.values()]
+        self._vram_total_mb = sum(capacities) if capacities and all(value and value > 0 for value in capacities) else None
+
+    def scope_metadata(self):
+        return {'scope': self._scope, 'gpu_indices': sorted(self._gpu_meters) or [self.gpu_index],
+                'gpu_count': len(self._gpu_meters) or 1, 'inventory_complete': self._inventory_complete,
+                'gpu_power_aggregation': 'sum of all monitored GPU board power; missing readings make the total unavailable',
+                'vram_aggregation': 'sum of physical used/capacity readings; separate per-card allocations',
+                'gpu_util_aggregation': 'unweighted mean of per-card utilization percentages',
+                'temperature_aggregation': 'maximum reported GPU temperature',
+                'system_power_boundary': 'GPU board power plus CPU and other-system estimates; not a wall-meter measurement'}
+
+    def measurement_scope(self):
+        metadata = self.scope_metadata()
+        return {'power_gpu_sensor_index': self.gpu_index,
+                'power_gpu_sensor_indices': metadata['gpu_indices'],
+                'power_boundary': 'all detected NVIDIA GPU boards; CPU/RAM are whole-client observations' if self._gpu_meters
+                                  else 'selected GPU/SoC sensor; CPU/RAM are whole-client observations',
+                'gpu_telemetry_scope': self._scope,
+                'gpu_inventory_complete': self._inventory_complete,
+                'system_power_boundary': metadata['system_power_boundary']}
+
+    def _gpu_rows_at(self, now):
+        with self._lock:
+            snapshots = dict(self._sensor_rows)
+        rows = {}
+        for index in self._gpu_meters:
+            snapshot = snapshots.get(index)
+            fresh = snapshot is not None and 0 <= now - snapshot[T] <= max(1.0, self.interval_ms / 1000.0 * 4)
+            rows[index] = (now,) + tuple(snapshot[1:] if fresh else (None,) * 7)
+        return rows
+
+    @staticmethod
+    def _combined_gpu_row(now, rows):
+        devices = list(rows.values())
+        def complete(index):
+            values = [row[index] for row in devices]
+            return values if values and all(value is not None for value in values) else None
+        watts, memory, utilization = complete(GPU_W), complete(MEM_MB), complete(GPU_UTIL)
+        temperatures = [row[TEMP] for row in devices if row[TEMP] is not None]
+        return (now, sum(watts) if watts else None,
+                sum(utilization)/len(utilization) if utilization else None,
+                sum(memory) if memory else None,
+                devices[0][CLOCK] if len(devices) == 1 else None,
+                max(temperatures) if temperatures else None, None, None)
 
     # -- lifecycle ---------------------------------------------------------
     def start(self):
@@ -344,6 +413,15 @@ class PowerSampler:
         elif info.get("vendor") == "nvidia" or not IS_MAC:
             target = self._loop_nvidia
             self.source = SRC_NVIDIA
+            if info.get('vendor') == 'nvidia':
+                try:
+                    sensors = list_gpus()
+                except (OSError, ValueError, subprocess.SubprocessError):
+                    sensors = []
+                if sensors:
+                    self._configure_gpus(sensors)
+                else:
+                    self.error = 'GPU inventory unavailable; complete multi-GPU totals cannot be verified.'
         else:
             # macOS without usable powermetrics: no wattage, speed still measured
             self.error = info.get("power_note") or "power measurement unavailable"
@@ -360,24 +438,34 @@ class PowerSampler:
         cpu.sample()
         while not self._stop.is_set():
             now = time.perf_counter()
-            with self._lock:
-                sensor = self._sensor_row
-            fresh = sensor is not None and now - sensor[T] <= max(2.0, self.interval_ms / 1000.0 * 4)
-            values = sensor[1:] if fresh else (None,) * 7
+            gpu_rows = self._gpu_rows_at(now) if self._gpu_meters else None
+            if gpu_rows is not None:
+                values = self._combined_gpu_row(now, gpu_rows)[1:]
+            else:
+                with self._lock:
+                    sensor = self._sensor_row
+                fresh = sensor is not None and now - sensor[T] <= max(2.0, self.interval_ms / 1000.0 * 4)
+                values = sensor[1:] if fresh else (None,) * 7
             row = (now,) + tuple(values[:5]) + (cpu.sample(), values[6])
             memory = system_memory() or {}
-            self._append(row, memory, temperature.sample(), temperature.source)
+            if gpu_rows is None:
+                self._append(row, memory, temperature.sample(), temperature.source)
+            else:
+                self._append(row, memory, temperature.sample(), temperature.source, gpu_rows=gpu_rows)
             self._stop.wait(self.interval_ms / 1000.0)
 
-    def _record_sensor(self, row):
+    def _record_sensor(self, row, gpu_index=None):
         with self._lock:
-            self._sensor_row = row
+            if gpu_index is None:
+                self._sensor_row = row
+            elif gpu_index in self._gpu_meters:
+                self._sensor_rows[gpu_index] = row
 
     def _point(self, row, memory=None, cpu_temp=None, cpu_temp_source=None):
         memory = memory or {}
         elapsed = max(0.0, row[T] - self._started_perf)
         vram_pct = 100.0 * row[MEM_MB] / self._vram_total_mb if row[MEM_MB] is not None and self._vram_total_mb else None
-        return {'elapsed_s': elapsed,
+        point = {'elapsed_s': elapsed,
                 'timestamp': (self._started_utc + datetime.timedelta(seconds=elapsed)).isoformat(),
                 'gpu_w': row[GPU_W], 'gpu_util': row[GPU_UTIL], 'vram_mb': row[MEM_MB],
                 'vram_total_mb': self._vram_total_mb, 'vram_percent': vram_pct,
@@ -389,10 +477,21 @@ class PowerSampler:
                 'system_memory_percent': memory.get('percent'),
                 'system_memory_source': memory.get('source'),
                 'system_w_est': self._system_w(row[GPU_W], row[CPU_UTIL], row[CPU_W]),
-                'source': self.source, 'scope': 'benchmark_client_selected_gpu'}
+                'source': self.source, 'scope': self._scope}
+        if self._device_name is not None:
+            point.update(index=self.gpu_index, name=self._device_name)
+        return point
 
-    def _append(self, row, memory=None, cpu_temp=None, cpu_temp_source=None):
+    def _append(self, row, memory=None, cpu_temp=None, cpu_temp_source=None, gpu_rows=None):
+        if gpu_rows is not None:
+            for index, values in gpu_rows.items():
+                self._gpu_meters[index]._append(values)
         point = self._point(row, memory, cpu_temp, cpu_temp_source)
+        if self._gpu_meters:
+            point['gpus'] = [meter.now() for meter in self._gpu_meters.values()]
+            point['gpu_power_complete'] = self._inventory_complete and all(gpu and gpu['gpu_w'] is not None for gpu in point['gpus'])
+            point['gpu_memory_complete'] = self._inventory_complete and all(gpu and gpu['vram_mb'] is not None for gpu in point['gpus'])
+            point['gpu_count'] = len(self._gpu_meters)
         fields = ('gpu_w', 'gpu_util', 'vram_mb', 'vram_percent', 'clock_mhz', 'temp_c',
                   'cpu_util_percent', 'cpu_w', 'cpu_temp_c', 'system_memory_used_bytes',
                   'system_memory_percent', 'system_w_est')
@@ -427,8 +526,9 @@ class PowerSampler:
             self._previous_point = self._latest_point = point
 
     def _loop_nvidia(self):
-        args = ["nvidia-smi", "--id=%d" % self.gpu_index,
-                "--query-gpu=" + ",".join(SMI_FIELDS),
+        indices = sorted(self._gpu_meters) or [self.gpu_index]
+        args = ["nvidia-smi", "--id=" + ','.join(str(index) for index in indices),
+                "--query-gpu=" + ",".join(['index'] + SMI_FIELDS),
                 "--format=csv,noheader,nounits", "-lms=%d" % self.interval_ms]
         try:
             self._proc = popen(args, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
@@ -445,10 +545,14 @@ class PowerSampler:
                 if self._stop.is_set():
                     break
                 parts = [x.strip() for x in line.split(",")]
-                if len(parts) < 5:
+                if len(parts) != 6:
                     continue
-                self._record_sensor((time.perf_counter(), _f(parts[0]), _f(parts[1]), _f(parts[2]),
-                                     _f(parts[3]), _f(parts[4]), None, None))
+                try:
+                    index = int(parts[0])
+                except ValueError:
+                    continue
+                row = (time.perf_counter(), *(_f(value) for value in parts[1:]), None, None)
+                self._record_sensor(row, gpu_index=index if self._gpu_meters else None)
         except (OSError, ValueError):
             pass
 
@@ -535,6 +639,8 @@ class PowerSampler:
             if worker and worker is not threading.current_thread():
                 worker.join(timeout=1.0)
         self._ended_perf = time.perf_counter()
+        for meter in self._gpu_meters.values():
+            meter._ended_perf = self._ended_perf
         self._proc = None
         self._thread = None
         self._backend_thread = None
@@ -554,7 +660,7 @@ class PowerSampler:
         with self._lock:
             points = [dict(point) for point in self._history]
             observations = self._observations
-        return {'schema_version': 1, 'available': bool(points), 'scope': 'benchmark_client_selected_gpu',
+        return {'schema_version': 1, 'available': bool(points), **self.scope_metadata(),
                 'started_at': self._started_utc.isoformat(), 'sampling_interval_ms': self.interval_ms,
                 'gpu_sensor_index': self.gpu_index, 'source': self.source,
                 'retention': {'policy': 'most_recent_ring', 'capacity_points': 3600,
@@ -563,7 +669,7 @@ class PowerSampler:
                               'retained_start_elapsed_s': points[0]['elapsed_s'] if points else None,
                               'retained_end_elapsed_s': points[-1]['elapsed_s'] if points else None,
                               'phase_raw_capacity_points': 72000},
-                'note': 'Whole-client CPU/RAM and selected GPU; not inference-process isolation. GPU values hold the last driver snapshot only while fresh. CPU temperature is absent without a supported actual sensor. Means/peaks in summary preserve all observations despite ring eviction.',
+                'note': 'Whole-client CPU/RAM and the declared GPU boundary; not inference-process isolation. All-card totals require every card reading. Driver snapshots are held only while fresh. CPU temperature needs an actual sensor. Summary preserves all observations despite ring eviction.',
                 'points': points}
 
     def summary(self):
@@ -588,11 +694,20 @@ class PowerSampler:
                             'coverage_s': span, 'coverage_fraction': min(1.0, span / duration) if duration else None,
                             'early_60s_mean': early_mean, 'late_60s_mean': late_mean,
                             'late_minus_early': late_mean - early_mean if early_mean is not None and late_mean is not None else None}
-        return {'schema_version': 1, 'available': bool(observations), 'scope': 'benchmark_client_selected_gpu',
+        result = {'schema_version': 1, 'available': bool(observations), **self.scope_metadata(),
                 'duration_s': duration, 'observations': observations, 'source': self.source,
                 'start': first, 'end': last, 'metrics': metrics,
                 'drift_note': 'Early/late windows can overlap on runs shorter than 120 seconds. Differences describe observed workloads/environment; they do not establish thermal throttling, sustained model speed or hardware capability.',
                 'coverage_note': 'Time-weighted coverage excludes gaps longer than four sampling intervals or one second, whichever is larger. Peaks are maxima of observed samples, not guaranteed physical peaks. Ring eviction does not change all-run aggregates.'}
+        energy = stats.get('gpu_w') or {}
+        result.update(gpu_energy_sampled_j=energy.get('integral') if energy.get('coverage_s',0)>0 else None,
+                      gpu_energy_coverage_s=energy.get('coverage_s',0),
+                      energy_scope='Covered intervals of the whole run including idle, loading and requests; phase energy is recorded per result.')
+        if self._device_name is not None:
+            result.update(index=self.gpu_index, name=self._device_name)
+        if self._gpu_meters:
+            result['gpus'] = [meter.summary() for meter in self._gpu_meters.values()]
+        return result
 
     def _system_w(self, gpu_w, cpu_util, cpu_w=None):
         """Estimated whole-machine draw.
@@ -630,6 +745,11 @@ class PowerSampler:
         if truncated:
             result['low_confidence'] = True
             result['retention_note'] = 'Requested phase begins before retained raw samples; phase statistics are incomplete and energy extrapolation is uncertain.'
+        result.update(scope=self._scope)
+        if self._gpu_meters:
+            result.update(gpu_indices=sorted(self._gpu_meters), inventory_complete=self._inventory_complete,
+                          gpus=[dict(meter.window(t0,t1), index=index, name=meter._device_name)
+                                for index,meter in self._gpu_meters.items()])
         return result
 
     def _power_window(self, t0, t1):
@@ -649,10 +769,13 @@ class PowerSampler:
         if len(inside) < 2:
             mid = (t0 + t1) / 2.0
             near = min(rows, key=lambda r: abs(r[T] - mid))
+            if abs(near[T] - mid) > max(1.0, self.interval_ms / 1000.0 * 4):
+                return {'available': False, 'source': self.source, 'low_confidence': True, 'gpu_power_complete': False}
             gw = near[GPU_W]
             sw = self._system_w(gw, near[CPU_UTIL], near[CPU_W])
             return {
                 "available": gw is not None,
+                "gpu_power_complete": gw is not None,
                 "low_confidence": True, "samples": len(inside), "source": self.source,
                 "gpu_w_avg": gw, "gpu_w_max": gw,
                 "gpu_energy_j": None if gw is None else gw * dur,
@@ -672,6 +795,8 @@ class PowerSampler:
                 if va is None or vb is None:
                     continue
                 dt = b[T] - a[T]
+                if dt <= 0 or dt > max(1.0, self.interval_ms / 1000.0 * 4):
+                    continue
                 energy += (va + vb) / 2.0 * dt
                 span += dt
             return (energy, span) if span > 0 else (None, 0.0)
@@ -688,21 +813,24 @@ class PowerSampler:
             return max(vals) if vals else None
 
         watts = [r[GPU_W] for r in inside if r[GPU_W] is not None]
+        complete = bool(inside) and all(row[GPU_W] is not None for row in inside)
+        strict = bool(self._gpu_meters) or self._device_name is not None
         return {
             "available": bool(watts) or sys_j is not None,
-            "low_confidence": len(inside) < 4,
+            "low_confidence": len(inside) < 4 or not complete or gpu_span < dur * .8,
+            "gpu_power_complete": complete,
             "samples": len(inside),
             "source": self.source,
             "duration_s": dur,
-            "gpu_w_avg": (gpu_j / gpu_span) if gpu_j is not None else None,
+            "gpu_w_avg": (gpu_j / gpu_span) if gpu_j is not None and (complete or not strict) else None,
             "gpu_sampled_coverage_s": gpu_span,
             "gpu_sampled_coverage_fraction": min(1.0, gpu_span / dur),
             "gpu_w_max": max(watts) if watts else None,
             # scale the sampled span up to the full window so energy is not
             # under-reported when samples do not land on the exact edges
-            "gpu_energy_j": (gpu_j / gpu_span * dur) if gpu_j is not None else None,
-            "system_w_est": (sys_j / sys_span) if sys_j is not None else None,
-            "system_energy_j_est": (sys_j / sys_span * dur) if sys_j is not None else None,
+            "gpu_energy_j": (gpu_j / gpu_span * dur) if gpu_j is not None and (complete or not strict) else None,
+            "system_w_est": (sys_j / sys_span) if sys_j is not None and (complete or not strict) else None,
+            "system_energy_j_est": (sys_j / sys_span * dur) if sys_j is not None and (complete or not strict) else None,
             "gpu_util_avg": avg(GPU_UTIL),
             "vram_mb_max": peak(MEM_MB),
             "clock_mhz_avg": avg(CLOCK),

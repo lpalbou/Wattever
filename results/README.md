@@ -10,6 +10,31 @@ prompt size, concurrency level, repeat and failure measured for one machine
 configuration. Changing cards or runtime GPU placement means starting a new
 session. Historical unversioned files remain readable without rewriting them.
 
+Recorded storage experiments may add frozen `storage_comparison.baseline_results`
+and `alternate_results` to the same machine file. A fresh control stays separate
+from older measurements that used different residency settings. The derived
+[5070 Ti aggregate CSV](aggregates/rtx-5070-ti-storage.csv) summarizes 36 workload
+groups; its [experiment report](../docs/5070-ti-hardware-follow-up.md) explains
+client timing, queueing, cache controls and the retained timeout. Raw measurements
+and provenance remain in the benchmark JSON.
+
+The [PNY/ASUS/5060 Ti comparison](../docs/pny-5070-ti-comparison.md) adds a
+one-repeat PNY primary matrix of 156 cases and a
+[three-card aggregate CSV](aggregates/pny-asus-5070-ti-5060-ti.csv). Its cancelled
+storage follow-up is preserved separately and excluded from primary statistics.
+
+The [5960X CPU comparison](../docs/5960x-cpu-comparison.md) records 156 cases
+across the 13 established models, all matched to the previous PNY/5820K run. Its
+[case CSV](aggregates/pny-5820k-vs-5960x.csv) retains both outcomes, token-size
+qualifications, measured GPU energy and separate system estimates.
+
+The [5070 Ti plus 5060 Ti report](../docs/5070-plus-5060-comparison.md) compares
+matched and supplemental LM Studio configurations with individual and combined
+board energy. Its [case CSV](aggregates/5070-plus-5060-comparison.csv) and
+[five-configuration catalog](aggregates/5070-plus-5060-all-configurations.csv)
+preserve outcomes, token-matching qualifications and the declared power boundaries.
+The report states which native Strata grids remain unmeasured.
+
 ## Run and contribute
 
 1. Launch Wattever, select a provider and connect. Generic endpoints support
@@ -19,8 +44,8 @@ session. Historical unversioned files remain readable without rewriting them.
    sizes and concurrent request counts. Default concurrency is one; click **10**
    to select all levels from one through ten. Prompt-length badges work the same way. Review the total request count.
 3. With multiple cards, configure placement in the inference engine and describe it in the
-   **Runtime GPU placement** field. The sensor selector controls power readings
-   only. It does not change where the engine executes the model. For generic
+   **Runtime GPU placement** field. **Primary GPU** identifies the benchmark and
+   does not select inference placement or restrict all-card NVIDIA monitoring. For generic
    endpoints, explicitly assert local inference before attributing client power.
 4. Run the benchmark. Failures and partial sessions remain useful data.
 5. Download **JSON** in Results, or take the matching file from `results/runs/`.
@@ -46,7 +71,7 @@ without it remain readable. Unknown data is not inferred from a model or GPU nam
 | `hardware.gpus` | Separate entries for every discoverable adapter; name, vendor, memory in bytes, driver and optional sensor index |
 | `hardware.motherboard`, `hardware.firmware`, `hardware.storage` | Best-effort board model, firmware vendor/version and physical disk models/capacity/interface |
 | `classification` | Hardware configuration grouping hash, GPU names and platform; not a unique machine identity |
-| `measurement_scope` | Which GPU sensor supplies power and user-reported runtime placement |
+| `measurement_scope` | Declared power boundary, monitored sensor indices and runtime placement |
 | `provider` | Public provider label, managed/external model lifecycle and control boundaries |
 | `measurement_client` | Client inventory kept separate when remote inference hardware is unverified |
 | `reproducibility` | User-reported engine/version, model revision, quantization, actual context/KV and MTP draft settings |
@@ -95,9 +120,11 @@ Missing `cached_prompt_tokens` means unknown cache usage, not zero.
 reasoning is excluded; ambiguous hidden work can leave decode unavailable.
 
 `group_power` covers the group interval. Concurrent phases overlap, so they do
-not get invented prefill/decode energy splits. Power is for the selected GPU
-sensor, never the sum of all connected cards. Whole-system power remains an
-estimate and omits other GPUs' load; do not treat it as a wall-meter measurement.
+not get invented prefill/decode energy splits. New NVIDIA helper runs record
+every detected card in `gpus` and combine simultaneous readings when complete.
+Historical selected-card measurements retain their recorded boundary; missing
+cards are not reconstructed. Whole-system power adds CPU and other-system
+estimates once to the declared GPU total; it is not a wall-meter measurement.
 Compare equivalent model/quantization, context, concurrency, offload, reasoning,
 MTP, output budget, protocol and corpus before attributing differences to hardware.
 
@@ -113,8 +140,10 @@ the upstream copy; include only your new session file in a result contribution.
 
 ## Add, continue or rerun tests
 
-These operations require managed LM Studio. Generic endpoint experiments require
-reconnection and a new run; their public JSON does not persist connection details.
+Managed LM Studio controls model loading for additions and repairs. External
+endpoint additions and repairs require a fresh matching connection and operator
+model loading; public JSON does not persist connection details. Separate-file
+resume remains managed-only. See [sharing results](../docs/sharing-results.md).
 
 In Results, select a benchmark and choose **Add / rerun tests**. Select models and
 their Standard/MTP techniques, prompt sizes and query counts. Choose an action:

@@ -2,15 +2,15 @@
 
 ## Can I run without installing Wattever?
 
-Yes. The hosted [browser mode](browser.md) connects directly to an OpenAI-compatible endpoint. The endpoint and browser must allow the connection. The Python helper also supports generic endpoints without LM Studio; managed model control and same-file extensions are specific to its LM Studio provider.
+Yes. The hosted [browser mode](browser.md) connects directly to an OpenAI-compatible endpoint. The endpoint and browser must allow the connection. The Python helper supports generic endpoints without LM Studio, including same-file additions and repairs after reconnecting. Automatic model loading and separate-file resume are specific to managed LM Studio.
 
 ## Does the selected GPU determine where inference runs?
 
-No. It selects a telemetry sensor. Configure placement in the inference engine and record the setup in notes. Generic endpoints require an explicit local-inference assertion before attributing client power to inference. See [measurements](measurements.md).
+No. Primary GPU identifies the benchmark; NVIDIA helper telemetry monitors every detected NVIDIA card independently and in combination. Configure placement in the inference engine and record the setup in notes. Generic endpoints require an explicit local-inference assertion before attributing client power to inference. See [measurements](measurements.md).
 
 ## Are power numbers comparable?
 
-GPU board and SoC rail measurements have different boundaries; estimated whole-system power is not a wall meter and only includes the selected GPU. Compare like sources and settings.
+GPU board and SoC rail measurements have different boundaries. New NVIDIA runs include all detected NVIDIA boards, while historical selected-card runs retain their original boundary. Estimated whole-system power adds CPU and other-system estimates once and is not a wall meter. Compare like sources and settings.
 
 ## Can I compare old and new files?
 
@@ -22,7 +22,7 @@ No. Failures and skipped cases are recorded and can be retried. See [troubleshoo
 
 ## Must a benchmark be complete before I share it?
 
-No. Partial sessions are useful contributions. Managed LM Studio runs can add missing cases to the same file later, subject to compatibility checks. Generic endpoint and browser experiments use new runs. See [sharing results](sharing-results.md).
+No. Partial sessions are useful contributions. Helper runs can add missing cases to the same file later, subject to compatibility checks. External engines require reconnecting the saved endpoint and operator model loading; browser experiments use new runs. See [sharing results](sharing-results.md).
 
 ## Does any OpenAI-compatible API work?
 
@@ -34,7 +34,7 @@ The displayed metric divides prompt tokens by client TTFT, which includes fixed 
 
 ## Does Wattever measure bandwidth and TFLOPS?
 
-Hardware metadata includes reported memory clocks and PCIe link state where available. Its encoding-based PCIe ceiling is theoretical, and idle links can downshift. It does not benchmark DMA or memory bandwidth or derive compute peaks from GPU names. Optional sourced, precision-specific compute claims are user-reported and stay separate from detected fields. See [measurements](measurements.md).
+The helper measures RAM-copy payload throughput, sequential storage reads and pinned RAM → VRAM transfers for each detected NVIDIA card. The device paths are measured sequentially; adding their individual rates does not establish simultaneous throughput. PCIe snapshots can downshift while idle, and the encoding-based PCIe ceiling remains theoretical. These probes do not establish peak DRAM bandwidth, GPU-to-GPU bandwidth or arithmetic TFLOPS. Optional sourced, precision-specific compute claims are user-reported and stay separate from detected fields; quantized weight storage does not establish arithmetic precision. See [measurements](measurements.md).
 
 ## Are GSM8K and ARC scores official benchmark results?
 
