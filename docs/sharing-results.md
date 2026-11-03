@@ -15,6 +15,14 @@ For a linked machine comparison, contribute every member listed in `comparison_g
 
 To keep one entry per machine configuration, use the helper's [consolidation route](api.md) before contributing. Publish the resulting single JSON file and remove the superseded source entries from the active catalog. Engine-specific results, settings and provenance remain inside the benchmark's sessions, `engine_groups` and source metadata. Consolidation preserves measurement rows and does not change the backend's concurrency behavior.
 
+## Open a model comparison
+
+Use `?compare=<benchmark-id>,<benchmark-id>#results` on a source-checkout helper or the hosted site to open two to eight catalog entries together. The link selects their shared model IDs, one concurrent client, both speculative-decoding modes, and separate prefill/decode charts for each model. Choose other metrics or query counts in Results. All referenced benchmark IDs must exist in that catalog; a link containing unknown IDs is ignored without fetching arbitrary resources.
+
+For example, [compare the single and dual RTX 5070 Ti configurations](https://lpalbou.github.io/Wattever/?compare=20261102-041639_rtx-5070-ti_6b6060174b,20261103-100532_rtx-5070-ti_0a91ddc850#results). Shared model IDs do not establish identical weights or settings: review quantization, engine, reasoning, MTP, token counts and timing definitions. The dual-card dataset contains 168 successful cases; its 12 native Qwen35 cases and separate standalone diagnostics were not measured. Historical LM Studio localhost timings and explicit-IPv4 timings remain separate observations, without a guessed latency correction.
+
+Selected primary conditions remain selected when consolidation creates engine-specific views. Explicitly cleared selections and engine or storage subsets retain their choices. Partial experiment metadata identifies planned cases that have no observations.
+
 ## Add missing tests later
 
 Same-file additions and repairs support managed LM Studio and generic helper endpoints. Reconnect the matching external endpoint in Run before using Results; connection details are not stored in public files, and model loading stays with the engine operator. Browser experiments require a new run. Separate-file resume is managed-only.

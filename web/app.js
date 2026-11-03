@@ -134,7 +134,21 @@ function availableMeasurementRuns(runs) {
   });
 }
 function measurementRuns(runs) {
-  return availableMeasurementRuns(runs).filter(run=>state.conditions === null ? !run.storage_alternative && !run.storage_baseline : state.conditions.has(run.id));
+  const variants = availableMeasurementRuns(runs);
+  // A live single-engine benchmark initially has its root ID as its condition.
+  // Consolidation keeps that benchmark ID but replaces its primary view with
+  // engine-specific views. Preserve the explicitly selected whole benchmark.
+  // Empty selections and already selected engine/storage subsets stay intact.
+  if (state.conditions?.size) {
+    for (const run of runs) {
+      if (run._measurement_view || !state.conditions.has(run.id) || variants.some(view=>view.id === run.id)) continue;
+      const replacements = variants.filter(view=>view.parent_run_id === run.id && !view.storage_alternative && !view.storage_baseline);
+      if (!replacements.length) continue;
+      state.conditions.delete(run.id);
+      replacements.forEach(view=>state.conditions.add(view.id));
+    }
+  }
+  return variants.filter(run=>state.conditions === null ? !run.storage_alternative && !run.storage_baseline : state.conditions.has(run.id));
 }
 
 function renderRecordedConditions(runs) {
@@ -631,6 +645,7 @@ async function init() {
   if (["summary", "run", "results", "compare", "capabilities"].includes(hash)) {
     showPanel(hash, false);
   }
+  await openComparisonLink(location.search);
   const status = await api("/api/status");
   if (status.running) { enterRunningUi(); startPolling(); }
   else if (status.run) renderLive(status);
@@ -1819,13 +1834,18 @@ function sharedDisplayRun(run) {
   return copy;
 }
 function benchmarkIncompleteNotice(run) {
-  if (run.community) return run.shared_partial || run.error || Number(run.remaining_tests) > 0 || run.source_status === "running"
-    ? `<div class="banner warn"><div><b>Partial shared benchmark</b>${Number(run.remaining_tests) > 0 ? ` - ${esc(run.remaining_tests)} unrecorded cases` : ""}</div></div>` : "";
-  if (run.status === "running" || !(run.error || Number(run.remaining_tests) > 0 || run.source_status === "running")) return "";
+  const scope = run.experiment_scope || {};
+  const remaining = Math.max(Number(run.remaining_tests) || 0, (Number(scope.planned_cases) || 0) - (Number(scope.recorded_cases) || 0));
+  const scopePartial = scope.partial === true || String(scope.status || "").startsWith("partial") || (Number(scope.planned_cases) || 0) > (Number(scope.recorded_cases) || 0);
+  const partial = scopePartial || remaining > 0;
+  if (run.community) return run.shared_partial || partial || run.error || run.source_status === "running"
+    ? `<div class="banner warn"><div><b>Partial shared benchmark</b>${remaining > 0 ? ` - ${esc(remaining)} unrecorded cases` : ""}</div></div>` : "";
+  if (run.status === "running" || !(partial || run.error || run.source_status === "running")) return "";
   const error = String(run.error || "");
   const reason = error ? (/WinError 5|PermissionError|Permission denied|Access is denied/i.test(error)
     ? "A file access error stopped this benchmark." : "The benchmark stopped before finishing.") : "";
-  return `<div class="banner warn"><div><b>${run.source_status === "running" ? "Shared checkpoint" : "Benchmark incomplete"}</b>${reason ? ` - ${reason}` : ""}${Number(run.remaining_tests) > 0 ? ` ${esc(run.remaining_tests)} tests remaining.` : ""} ${browserMode() ? 'Download the JSON and use the desktop app to continue where supported.' : 'Use Add / rerun tests to continue where supported.'}${error ? `<details class="benchmark-error-details"><summary>Technical details</summary><pre>${esc(error)}</pre></details>` : ""}</div></div>`;
+  const pendingModels = [...new Set((scope.pending_stages || []).map(stage=>stage.model).filter(Boolean))];
+  return `<div class="banner warn"><div><b>${run.source_status === "running" ? "Shared checkpoint" : "Benchmark incomplete"}</b>${reason ? ` - ${reason}` : ""}${remaining > 0 ? scopePartial ? ` ${esc(remaining)} planned tests not recorded.` : ` ${esc(remaining)} tests remaining.` : ""}${pendingModels.length ? ` Pending: ${pendingModels.map(esc).join(", ")}.` : ""} ${browserMode() ? 'Download the JSON and use the desktop app to continue where supported.' : 'Use Add / rerun tests to continue where supported.'}${error ? `<details class="benchmark-error-details"><summary>Technical details</summary><pre>${esc(error)}</pre></details>` : ""}</div></div>`;
 }
 
 function renderRunDetail(run) {
@@ -2552,6 +2572,30 @@ async function ensureRuns(ids) {
   }));
 }
 
+function comparisonLinkIds(search, runs) {
+  const raw = new URLSearchParams(search || "").get("compare");
+  if (!raw || raw.length > 4096) return null;
+  const ids = [...new Set(raw.split(",").map(id=>id.trim()).filter(Boolean))];
+  return ids.length >= 2 && ids.length <= 8 && ids.every(id=>runs.some(run=>run.id === id)) ? ids : null;
+}
+
+async function openComparisonLink(search) {
+  const ids = comparisonLinkIds(search, state.runs);
+  if (!ids) return false;
+  await ensureRuns(ids);
+  const models = ids.map(id=>allModelsOf([state.runCache[id]]));
+  state.compare = new Set(ids); state.selected = ids[0]; state.conditions = null;
+  state.visibleModels = new Set(models[0].filter(model=>models.every(list=>list.includes(model))));
+  state.mtpFilter = "all"; state.comparisonConcurrency = 1; state.comparisonLayout = "models";
+  state.metrics = new Set(["prefill_tps", "decode_tps"]);
+  if ($("#mtp-filter")) $("#mtp-filter").value = "all";
+  if ($("#comparison-layout")) $("#comparison-layout").value = "models";
+  $$(".comparison-concurrency").forEach(select=>{select.value="1";});
+  renderMetricSeg(); renderRunsList(); showPanel("results", false); showResultsView("compare");
+  await renderResultsView();
+  return true;
+}
+
 async function renderCompare() {
   const generation = state.resultsRender;
   const body = $("#compare-body");
@@ -2575,7 +2619,8 @@ async function renderCompare() {
   const sources = [...new Set(runs.map(run => run.power_source).filter(Boolean))];
   const mixedPower = keys.some(key => ["j_per_1k_prefill", "j_per_token_decode", "prefill_gpu_w"].includes(key)) && sources.length > 1;
   const note = mixedPower ? banner("warn", "Different power sensors", "These readings have different measurement boundaries. Compare them with care.") : "";
-  body.innerHTML = `<div class="card"><header><h3>${esc(keys.map(key => METRICS[key].label).join(" + "))}</h3></header>${note}<div class="facets" id="facet-grid"></div></div>`;
+  const incompleteNotes = ids.map(id=>state.runCache[id]).filter(Boolean).map(benchmarkIncompleteNotice).join("");
+  body.innerHTML = `${incompleteNotes}<div class="card"><header><h3>${esc(keys.map(key => METRICS[key].label).join(" + "))}</h3></header>${note}<div class="facets" id="facet-grid"></div></div>`;
   const grid = $("#facet-grid");
   for (const group of metricGroups(keys)) {
     for (const model of shown) {

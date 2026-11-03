@@ -215,6 +215,14 @@ For a linked machine comparison, contribute every member listed in `comparison_g
 
 To keep one entry per machine configuration, use the helper's [consolidation route](docs/api.md) before contributing. Publish the resulting single JSON file and remove the superseded source entries from the active catalog. Engine-specific results, settings and provenance remain inside the benchmark's sessions, `engine_groups` and source metadata. Consolidation preserves measurement rows and does not change the backend's concurrency behavior.
 
+## Open a model comparison
+
+Use `?compare=<benchmark-id>,<benchmark-id>#results` on a source-checkout helper or the hosted site to open two to eight catalog entries together. The link selects their shared model IDs, one concurrent client, both speculative-decoding modes, and separate prefill/decode charts for each model. Choose other metrics or query counts in Results. All referenced benchmark IDs must exist in that catalog; a link containing unknown IDs is ignored without fetching arbitrary resources.
+
+For example, [compare the single and dual RTX 5070 Ti configurations](https://lpalbou.github.io/Wattever/?compare=20261102-041639_rtx-5070-ti_6b6060174b,20261103-100532_rtx-5070-ti_0a91ddc850#results). Shared model IDs do not establish identical weights or settings: review quantization, engine, reasoning, MTP, token counts and timing definitions. The dual-card dataset contains 168 successful cases; its 12 native Qwen35 cases and separate standalone diagnostics were not measured. Historical LM Studio localhost timings and explicit-IPv4 timings remain separate observations, without a guessed latency correction.
+
+Selected primary conditions remain selected when consolidation creates engine-specific views. Explicitly cleared selections and engine or storage subsets retain their choices. Partial experiment metadata identifies planned cases that have no observations.
+
 ## Add missing tests later
 
 Same-file additions and repairs support managed LM Studio and generic helper endpoints. Reconnect the matching external endpoint in Run before using Results; connection details are not stored in public files, and model loading stays with the engine operator. Browser experiments require a new run. Separate-file resume is managed-only.
@@ -2240,6 +2248,12 @@ Canonical source: [CHANGELOG.md](CHANGELOG.md)
 
 # Changelog
 
+## Unreleased
+
+- Publishes the PNY and ASUS Prime dual RTX 5070 Ti dataset: 168 completed cases, with the 12 unmeasured native Qwen35 cases explicitly identified.
+- Preserves selected Results conditions when consolidation splits a benchmark into engine views. Comparison links can select two to eight benchmarks and their shared models, with separate prefill and decode charts.
+- Displays planned but unrecorded cases in consolidated comparison views.
+
 ## 2.5.1 - 2026-11-03
 
 - Connects the Python helper to OpenAI-compatible streaming Chat Completions endpoints, with model discovery, manual model IDs and environment-based authentication. LM Studio remains a managed provider; other engines control their own model loading and allocation.
@@ -2358,6 +2372,17 @@ board energy. Its [case CSV](results/aggregates/5070-plus-5060-comparison.csv) a
 [five-configuration catalog](results/aggregates/5070-plus-5060-all-configurations.csv)
 preserve outcomes, token-matching qualifications and the declared power boundaries.
 The report states which native Strata grids remain unmeasured.
+
+The [dual RTX 5070 Ti dataset](results/runs/20261103-100532_rtx-5070-ti_0a91ddc850.json)
+contains 144 LM Studio and 24 native Strata Flash-Next cases, all successful,
+with one measured repeat per condition. Native Qwen35's 12 planned cases and
+the separate standalone diagnostic suite were not measured. Both boards were
+monitored; continuous GPU-core peaks were 77°C for PNY and 63°C for ASUS Prime,
+with no thermal-throttle flags observed. One-Hz sampling can miss shorter peaks;
+memory and hotspot temperatures were unavailable. Use the
+[single-versus-dual comparison](docs/sharing-results.md#open-a-model-comparison)
+to explore the 12 shared model/quant variants. The first five configuration
+datasets retain their historical measurements.
 
 ## Run and contribute
 

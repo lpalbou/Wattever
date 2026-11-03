@@ -35,6 +35,17 @@ board energy. Its [case CSV](aggregates/5070-plus-5060-comparison.csv) and
 preserve outcomes, token-matching qualifications and the declared power boundaries.
 The report states which native Strata grids remain unmeasured.
 
+The [dual RTX 5070 Ti dataset](runs/20261103-100532_rtx-5070-ti_0a91ddc850.json)
+contains 144 LM Studio and 24 native Strata Flash-Next cases, all successful,
+with one measured repeat per condition. Native Qwen35's 12 planned cases and
+the separate standalone diagnostic suite were not measured. Both boards were
+monitored; continuous GPU-core peaks were 77°C for PNY and 63°C for ASUS Prime,
+with no thermal-throttle flags observed. One-Hz sampling can miss shorter peaks;
+memory and hotspot temperatures were unavailable. Use the
+[single-versus-dual comparison](../docs/sharing-results.md#open-a-model-comparison)
+to explore the 12 shared model/quant variants. The first five configuration
+datasets retain their historical measurements.
+
 ## Run and contribute
 
 1. Launch Wattever, select a provider and connect. Generic endpoints support

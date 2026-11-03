@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Publishes the PNY and ASUS Prime dual RTX 5070 Ti dataset: 168 completed cases, with the 12 unmeasured native Qwen35 cases explicitly identified.
+- Preserves selected Results conditions when consolidation splits a benchmark into engine views. Comparison links can select two to eight benchmarks and their shared models, with separate prefill and decode charts.
+- Displays planned but unrecorded cases in consolidated comparison views.
+
 ## 2.5.1 - 2026-11-03
 
 - Connects the Python helper to OpenAI-compatible streaming Chat Completions endpoints, with model discovery, manual model IDs and environment-based authentication. LM Studio remains a managed provider; other engines control their own model loading and allocation.

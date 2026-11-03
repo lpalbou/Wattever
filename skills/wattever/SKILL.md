@@ -4,7 +4,7 @@ description: Operate Wattever throughput and rule-scored capability benchmarks a
 license: MIT
 compatibility: Python 3.9+ and local Wattever server; streaming Chat Completions endpoint or managed LM Studio; Windows, Linux, or macOS.
 metadata:
-  package-version: "2.5.1"
+  package-version: "unreleased"
 ---
 
 # Wattever
@@ -57,6 +57,7 @@ except (urllib.error.URLError, OSError, ValueError) as exc:
 - Hosted browser mode: open `https://lpalbou.github.io/Wattever/`, connect explicitly to an OpenAI-compatible endpoint, and use browser storage and JSON import/export. It requires CORS and may require browser local-network permission. No helper install is needed. The optional key is memory-only; do not put it in conversation or result files.
 - The hosted Results catalog is read-only and needs no provider connection. Hiding a shared entry is browser-local. To contribute, submit its JSON in a GitHub pull request; the hosted site does not write to GitHub.
 - Read version, environment, models, status, events and runs via GET endpoints in the API reference. `GET /api/bench/extend-plan?run_id=<id>` returns extension options.
+- In a source checkout or the hosted Results view, `?compare=<id>,<id>#results` opens two to eight existing benchmarks with shared model IDs and separate prefill/decode charts. It runs no inference. A link containing unknown IDs is ignored. Review model/quant, engine, reasoning, MTP, actual counts and timing provenance before interpreting the paired curves; shared IDs do not authenticate identical settings. Partial experiment metadata can identify unrecorded cases even when the completed source sessions have finished.
 - Start/cancel through `/api/bench/*`. Managed LM Studio supports resume. The helper supports same-file extension for managed and reconnected external runs: add missing, retry failed/skipped or rerun selected cases. External extensions require fresh matching connection fields and remain scoped to the selected engine.
 - Edit metadata, delete to local trash, export JSON/CSV, start or unload LM Studio, and stop Wattever through the local API. Results and snapshots are written under `results/`.
 - GPU sensor selection does not control LM Studio placement. Local NVIDIA telemetry records each detected card and simultaneous combined power, energy, VRAM and utilization, with explicit completeness and sampling coverage. Missing card measurements make combined energy unavailable. Hardware discovery and power availability are best effort.
