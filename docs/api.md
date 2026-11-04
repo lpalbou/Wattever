@@ -54,6 +54,13 @@ All-card history uses scope `benchmark_client_all_nvidia_gpus`, with individual 
 
 Use `provider: "openai"` for an externally managed streaming Chat Completions endpoint, including LM Studio used without CLI management. This integration uses an OpenAI-compatible transport subset; it does not implement the complete OpenAI API.
 
+`requested_mtp` records external-engine intent as `on`, `off` or `unknown`.
+It is metadata only: it neither configures the engine nor adds a parameter to
+Chat Completions. Check `GET /api/version` for
+`features.external_requested_mtp_metadata: true` before depending on its
+retention. Effective MTP remains unknown without control-plane evidence;
+per-request draft counters are recorded separately when supplied by the server.
+
 ```json
 {
   "provider": "openai",

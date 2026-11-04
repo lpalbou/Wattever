@@ -19,7 +19,7 @@
     "suite_digest": {"$ref": "#/$defs/digest"},
     "evaluation_key": {"$ref": "#/$defs/digest"},
     "suite": {"type": "object", "required": ["id", "name", "version", "source", "scoring_version", "digest", "tasks"], "properties": {
-      "tasks": {"type": "array", "minItems": 1, "maxItems": 10000, "items": {"type": "object", "required": ["id", "category", "prompt", "scorer"], "properties": {
+      "tasks": {"type": "array", "minItems": 1, "maxItems": 20000, "items": {"type": "object", "required": ["id", "category", "prompt", "scorer"], "properties": {
         "scorer": {"type": "object", "required": ["kind", "expected"], "properties": {"kind": {"enum": ["exact_text", "json_exact", "numeric_final", "multiple_choice"]}}}
       }}}
     }},

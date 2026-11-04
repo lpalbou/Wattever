@@ -18,7 +18,7 @@
 - [Multi-GPU communication and placement study](docs/dual-gpu-communication-and-placement.md): communication paths, transfer measurements, GPU execution strategies, profiling evidence and diagnostic protocol boundaries.
 - [Two RTX 5070 Ti cards](docs/two-5070-ti-comparison.md): 180 normal cases, matched single/mixed-card throughput and energy, native drafting and per-card temperatures.
 - [Two RTX 5070 Ti placement strategies](docs/two-5070-ti-placement.md): measured communication paths, standalone prefill/decode, independent instances, energy and profiling limits.
-- [Capability evaluation](docs/capabilities.md): visual score/coverage dashboard, question-by-repeat evidence explorer, pinned Core/GSM8K/ARC suites and paired-comparison limits.
+- [Capability evaluation](docs/capabilities.md): visual score/coverage dashboard, question-by-repeat evidence explorer, pinned Core/GSM8K/ARC/MMLU-Pro suites and paired-comparison limits.
 - [Architecture](docs/architecture.md): components and boundaries.
 - [API](docs/api.md): automatic naming/opaque route identity, private registry boundaries, environment-based authentication, local routes and managed-only extensions.
 - [FAQ](docs/faq.md): common questions and limits.
@@ -58,7 +58,7 @@ Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/), start an O
 ## Full local helper quick start
 
 1. Start your inference engine and load a model. For managed LM Studio operation, install LM Studio, download models and run `lms bootstrap` once. Other endpoints do not need LM Studio.
-2. Download and extract the [Wattever 2.5.2 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.2/Wattever-2.5.2.zip), or clone the repository. Use the matching documentation and source version.
+2. Download and extract the [Wattever 2.5.3 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.3/Wattever-2.5.3.zip), or clone the repository. Use the matching documentation and source version.
 3. On Windows run `Wattever.bat`; on macOS run `Wattever.command`; on Linux run `sh Wattever.sh`. Alternatively run `python -m wattever.server` from the repository.
 4. Open the displayed local URL. On **Run**, choose **OpenAI-compatible endpoint**, enter your API base URL and use **Connect**. Wattever identifies the endpoint where evidence is available and supplies its display name automatically; no manual label or ID is required. Enter a model ID manually if discovery is unavailable. Choose workloads and start. Leave the server running until the benchmark finishes.
 
@@ -80,7 +80,7 @@ The hosted Results view also includes a shared catalog that you can browse witho
 
 ## Capability tests and live telemetry
 
-The helper's **Capabilities** tab runs original Core tasks, the pinned 1,319-question GSM8K test split, or the 1,172-question ARC-Challenge test split. Choose a deterministic subset or the full suite and compare auditable rule-scored answers. These are zero-shot chat adaptations, not official leaderboard scores or intelligence rankings. Requested reasoning, reported MTP/quantization and unknown effective settings remain distinct in public model/endpoint configuration fingerprints. See [capability evaluation](docs/capabilities.md) for scoring, dataset licenses and uncertainty.
+The helper's **Capabilities** tab runs original Core tasks and pinned GSM8K, ARC-Challenge and MMLU-Pro test questions. MMLU-Pro offers its full 12,032-question split or a fixed 64-question sample balanced across 14 subjects. Choose a deterministic subset or the full suite and compare auditable rule-scored answers. These are zero-shot chat adaptations, separate from official leaderboard scores and intelligence rankings. Requested reasoning, reported MTP/quantization and unknown effective settings remain distinct in public model/endpoint configuration fingerprints. See [capability evaluation](docs/capabilities.md) for scoring, dataset licenses and uncertainty.
 
 Its visual dashboard combines strict pass rate, correct/planned and coverage tiles with category bars, an outcome ring and repeat comparisons. Select a chart to filter the paginated question-by-repeat matrix, then open a cell to inspect the question, expected output, model response and rule explanation. Matching evaluation protocols support paired comparisons that exclude unscored requests. A format mismatch or request error is shown distinctly from a passed answer; inspect the evidence before drawing conclusions about reasoning.
 
@@ -142,7 +142,7 @@ Install Python 3.9 or newer. Wattever does not need Python packages or a JavaScr
 - **OpenAI-compatible endpoint:** start an inference engine such as Strata, llama.cpp or LM Studio and load your model there. Wattever needs streaming Chat Completions; model discovery is optional. Other OpenAI API surfaces are not required or implemented by this integration.
 - **LM Studio (managed):** install [LM Studio](https://lmstudio.ai/), download models and run `lms bootstrap`. Wattever can load/unload models and schedule context and MTP settings through its CLI. The API defaults to `http://127.0.0.1:1234`; `LMS_BASE_URL` changes that managed connection. Explicit configured URLs and saved measurements keep their original addresses and timing provenance.
 
-Download and extract the [Wattever 2.5.2 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.2/Wattever-2.5.2.zip), or clone the repository. Use documentation matching that source version. Start `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux. You can also run `python -m wattever.server` in the extracted folder or repository. The server listens on loopback and prints its URL; keep its window open. `GPU_BENCH_PORT` sets the starting port (default 8713); `GPU_BENCH_NO_BROWSER=1` suppresses automatic browser opening.
+Download and extract the [Wattever 2.5.3 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.3/Wattever-2.5.3.zip), or clone the repository. Use documentation matching that source version. Start `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux. You can also run `python -m wattever.server` in the extracted folder or repository. The server listens on loopback and prints its URL; keep its window open. `GPU_BENCH_PORT` sets the starting port (default 8713); `GPU_BENCH_NO_BROWSER=1` suppresses automatic browser opening.
 
 On **Run**, choose your provider. For a generic endpoint, enter your engine's API base URL, such as `http://127.0.0.1:8000/v1` (a root URL also works), and optionally the name of an API-key environment variable. Set the variable before starting the helper; enter its name, never its secret value, in Wattever. Click **Connect**. Wattever supplies a display name and an opaque route identity automatically; no label or ID is required. Model discovery lists the IDs exposed by the connected endpoint. If the provider does not expose `/models`, supply its exact served model ID manually. The Python helper connects directly, so browser CORS permission is only needed in hosted browser mode.
 
@@ -374,8 +374,14 @@ Use **Capabilities** to compare rule-scored task accuracy separately from throug
 | `wattever-core-v1` | 24 | Original arithmetic, logic, typed JSON, instruction, retrieval and code-output tasks; four per category |
 | `gsm8k-test-chat-v1` | 1,319 | GSM8K test split; zero-shot chat with final numeric-answer matching |
 | `arc-challenge-test-chat-v1` | 1,172 | ARC-Challenge test split; zero-shot chat with generated answer-letter matching |
+| `mmlu-pro-test-chat-v1` | 12,032 | MMLU-Pro test split, 14 subjects and up to ten choices; zero-shot generated letters |
+| `mmlu-pro-balanced64-chat-v1` | 64 | Fixed category-balanced MMLU-Pro subset, four or five questions per subject; zero-shot generated letters |
 
 The external test splits are bundled for offline use. GSM8K is pinned to upstream revision `3101c7d5072418e28b9008a6636bde82a006892c` under MIT. ARC uses the `ARC-V1-Feb2018` archive's Challenge test member under CC BY-SA 4.0. The loader checks each extracted file's exact SHA-256 and item count before registering a suite. Source links, hashes, archive member, attribution and licenses are in [dataset provenance](corpora/capabilities/README.md). The archive ETag records source provenance; it is not the extracted file's cryptographic checksum.
+
+MMLU-Pro is pinned to dataset revision `b189ec765aa7ed75c8acfea42df31fdae71f97be`, whose dataset card declares MIT. Its bundled JSONL preserves question text, options, keys and subjects while excluding gold chain-of-thought explanations. The separate balanced 64 suite selects questions by stable ID and subject using seed `73129`; no answer or model result determines selection. It defaults to **Full suite**, which tests all 64 questions. Its subject weighting differs from the full 12,032-question test split. Subsampling that 64-question suite again does not preserve its guaranteed four-to-five questions per subject.
+
+Both MMLU-Pro suites use zero-shot chat and generated final answer letters. They are separate from the official five-shot chain-of-thought protocol and its leaderboard scores. Full suites can be expensive: imports and suite registration allow at most 20,000 questions, with existing limits of 200,000 characters per prompt and 20 million total prompt characters.
 
 **AI2 ARC-Challenge** contains grade-school multiple-choice science questions. It is distinct from the [ARC-AGI grid-reasoning benchmark](https://arcprize.org/arc-agi/1). The dashboard identifies its task type explicitly. A high score on this science-question suite is not an ARC-AGI score or a general intelligence rating. See the [AI2 dataset description](https://huggingface.co/datasets/allenai/ai2_arc).
 
@@ -413,6 +419,8 @@ Select a chart segment, category bar or repeat point to filter the **Question ex
 Select a cell to open its evidence inspector. The question appears above expected and actual output, followed by a human-readable explanation of the recorded rule. Copy controls and previous/next navigation help review matching attempts. **Grading evidence & request metadata** contains the raw grading, normalization, usage and timing fields in a collapsed panel. Model responses remain inert text; inspecting them executes no generated code.
 
 An exact-rule mismatch can be a format failure. For example, if the task requires only `528`, the response `The answer is 528.` fails the exact-text rule despite containing the expected number. Inspect the required output and grading explanation before concluding that the model failed the arithmetic. The dashboard presents the recorded decision; it does not relax the rule or add a model judge.
+
+Completed answers are saved atomically. Transient permission failures during file replacement use bounded retries without repeating model requests. A persistent save failure stops the run; completed, missing and failed observations remain distinct.
 
 Live results update as attempts finish while preserving question filters and input focus. You can inspect another saved result without being redirected to the active run. Older files that contain only aggregate scores are labeled **Reported summary only**; question evidence is not reconstructed from their totals.
 
@@ -2648,6 +2656,13 @@ All-card history uses scope `benchmark_client_all_nvidia_gpus`, with individual 
 
 Use `provider: "openai"` for an externally managed streaming Chat Completions endpoint, including LM Studio used without CLI management. This integration uses an OpenAI-compatible transport subset; it does not implement the complete OpenAI API.
 
+`requested_mtp` records external-engine intent as `on`, `off` or `unknown`.
+It is metadata only: it neither configures the engine nor adds a parameter to
+Chat Completions. Check `GET /api/version` for
+`features.external_requested_mtp_metadata: true` before depending on its
+retention. Effective MTP remains unknown without control-plane evidence;
+per-request draft counters are recorded separately when supplied by the server.
+
 ```json
 {
   "provider": "openai",
@@ -2936,6 +2951,13 @@ Canonical source: [CHANGELOG.md](CHANGELOG.md)
 
 ## Unreleased
 
+## 2.5.3 - 2026-11-04
+
+- Adds the pinned 12,032-question MMLU-Pro test split and a fixed 64-question sample balanced across 14 subjects. Both use auditable zero-shot generated-answer chat protocols; the balanced sample defaults to all 64 questions.
+- Supports capability suites and audited imports of up to 20,000 questions while retaining bounded prompt sizes. Preserves Unicode separators inside JSONL question text.
+- Retains requested MTP metadata for external endpoints, separately from effective settings and observed per-request draft counts. This annotation does not configure the inference server.
+- Retries transient permission failures during atomic capability-result saves, preserving completed answers without repeating model requests. Other persistence failures retain a non-sensitive error type.
+
 ## 2.5.2 - 2026-11-04
 
 - Publishes the PNY and ASUS Prime dual RTX 5070 Ti dataset: 180 attempted cases across LM Studio and native Strata, with 179 successes and one retained native Qwen35 timeout.
@@ -2993,6 +3015,12 @@ Canonical source: [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md)
 # Acknowledgements
 
 Wattever uses [LM Studio](https://lmstudio.ai/) for local model execution and the Python standard library for its server. Thanks to everyone who contributes code, documentation and benchmark results. See [contributing](CONTRIBUTING.md).
+
+Bundled capability datasets credit OpenAI's GSM8K authors, the Allen Institute
+for AI ARC authors, and TIGER-Lab's Yubo Wang and colleagues for
+[MMLU-Pro](https://arxiv.org/abs/2406.01574). Dataset-specific licenses,
+attribution, pinned sources and chat adaptations are described in
+[dataset provenance](corpora/capabilities/README.md).
 
 ---
 

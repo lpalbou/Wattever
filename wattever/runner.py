@@ -504,9 +504,10 @@ class BenchRunner:
         if self.running:
             raise RuntimeError("A benchmark is already running.")
         cfg = dict(DEFAULT_CONFIG)
+        # External requested_mtp records operator intent; it is never an inference parameter.
         allowed = set(DEFAULT_CONFIG) | {"endpoint_base_url", "endpoint_api_key_env", "endpoint_id", "canonical_model_id", "model_modes",
                                         "runtime_gpu_placement", "reproducibility", "performance_claims",
-                                        "reported_mtp", "reported_reasoning", "model_source", "temperature", "token_limit_field",
+                                        "requested_mtp", "reported_mtp", "reported_reasoning", "model_source", "temperature", "token_limit_field",
                                         "endpoint_identity", "endpoint_name_override", "selected_cases", "storage_probe_directory", "storage_probe_directories", "engine_group_id"}
         cfg.update({k: v for k, v in (config or {}).items() if k in allowed})
         cfg["hardware_probe_policy"] = _hardware_probe_policy(cfg["hardware_probe_policy"])

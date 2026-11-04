@@ -276,6 +276,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"application": "Wattever", "version": __version__, "build_id": BUILD_ID,
                                    "api_schema_version": 3,
                                    "features": {"atomic_expected_run_id_cancel": True,
+                                                "external_requested_mtp_metadata": True,
                                                 "capability_start_transfer_probes": False,
                                                 "hardware_probe_policy": ["auto", "defer"]}})
             if route == "/api/capabilities/suites":

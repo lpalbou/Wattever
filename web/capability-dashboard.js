@@ -23,11 +23,15 @@
     if(kind==='bundled_original' || id==='wattever-core-v1')return{kind:'custom',label:'Custom diagnostic',description:'Original Wattever questions with strict output rules; not an established benchmark.'};
     if(id==='arc-challenge-test-chat-v1')return{kind:'published',label:'Published dataset: school science',description:'AI2 multiple-choice science questions, not ARC-AGI grid puzzles. Wattever grades generated final-answer letters.'};
     if(id==='gsm8k-test-chat-v1')return{kind:'published',label:'Published dataset: grade-school math',description:'Math word problems, graded by the generated final numeric answer. Wattever chat adaptation.'};
+    if(id==='mmlu-pro-balanced64-chat-v1')return{kind:'published',label:'Published dataset: MMLU-Pro balanced sample',description:'64 fixed questions across 14 subjects, four or five per subject. Zero-shot generated letters; subject weighting differs from the full test split and the official five-shot CoT protocol.'};
+    if(id==='mmlu-pro-test-chat-v1')return{kind:'published',label:'Published dataset: MMLU-Pro',description:'12,032 test questions across 14 subjects with up to ten choices. Wattever uses zero-shot generated letters, separate from the official five-shot CoT protocol.'};
     if(kind==='bundled_dataset' || ['gsm8k-test-chat-v1','arc-challenge-test-chat-v1'].includes(id))return{kind:'published',label:'Published dataset',description:'Wattever chat adaptation; scores use this application\u2019s prompting and grading protocol.'};
     return{kind:'unknown',label:'Suite origin unverified',description:'Inspect the suite source and evaluation protocol before comparing published scores.'};
   }
   function suiteTitle(suite={}){
     const id=suite.id || suite.suite_id;
+    if(id==='mmlu-pro-balanced64-chat-v1')return 'MMLU-Pro · balanced 64';
+    if(id==='mmlu-pro-test-chat-v1')return 'MMLU-Pro · test';
     return id==='arc-challenge-test-chat-v1'?'AI2 ARC-Challenge · science MCQ':id==='gsm8k-test-chat-v1'?'GSM8K · math word problems':suite.name || id || 'Capability suite';
   }
   function scopeMarkup(run,stats){

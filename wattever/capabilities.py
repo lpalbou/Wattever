@@ -27,6 +27,7 @@ PROTOCOL_VERSION = "wattever-capability-v1"
 COMPLETION_POLICY = "finished-stream-visible-answer-v2"
 TERMINAL_FINISH_REASONS = ("stop","length","tool_calls","content_filter","function_call")
 SELECTION_ALGORITHM = "sha256-ranked-items-v1"
+MAX_SUITE_TASKS = 20000
 DEFAULT_CONFIG = {"provider":"openai", "suite_id":"wattever-core-v1", "sample_size":24,
                   "repeats":1, "max_tokens":32768, "timeout_s":0, "seed":0,
                   "temperature":0.0, "top_p":None, "send_seed":False, "token_limit_field":"max_tokens", "endpoint_reasoning_effort":"none",
@@ -173,7 +174,7 @@ def register_suite(manifest,register=True):
         if isinstance(value,str) and (LOCAL_DETAIL.search(value) or NETWORK_DETAIL.search(value)) and not public_source(value):
             raise ValueError("Suite source must not contain private addresses, credentials or paths.")
     tasks = manifest.get("tasks")
-    if not isinstance(tasks, list) or not 1 <= len(tasks) <= 10000: raise ValueError("Suite must contain 1..10000 tasks.")
+    if not isinstance(tasks, list) or not 1 <= len(tasks) <= MAX_SUITE_TASKS: raise ValueError("Suite must contain 1..%d tasks." % MAX_SUITE_TASKS)
     seen = set()
     total_prompt_chars = 0
     for task in tasks:
@@ -298,11 +299,21 @@ def _save(run):
         with tempfile.NamedTemporaryFile(mode="w",encoding="utf-8",dir=RUNS_DIR,prefix=".capability-",suffix=".tmp",delete=False) as fh:
             name = fh.name
             json.dump(run,fh,ensure_ascii=False,indent=1,allow_nan=False)
-        os.replace(name,destination)
+        delays = (0.025, 0.05, 0.1, 0.2, 0.4, 0.8)
+        for attempt in range(len(delays) + 1):
+            try:
+                os.replace(name,destination)
+                break
+            except PermissionError:
+                if attempt == len(delays):
+                    raise
+                time.sleep(delays[attempt])
     finally:
         if name:
             try: os.unlink(name)
-            except FileNotFoundError: pass
+            except OSError:
+                # Cleanup must not hide the original serialization/replace error.
+                pass
 
 
 def _public_run(run):
@@ -337,7 +348,7 @@ def _validate_config(config):
     elif cfg["provider"] == "openai":
         endpoints.validate(cfg)
     else: raise ValueError("Unsupported provider.")
-    for key, minimum, maximum in (("repeats",1,20),("max_tokens",1,131072),("timeout_s",0,86400),("seed",0,2147483627),("sample_size",0,10000)):
+    for key, minimum, maximum in (("repeats",1,20),("max_tokens",1,131072),("timeout_s",0,86400),("seed",0,2147483627),("sample_size",0,MAX_SUITE_TASKS)):
         if type(cfg[key]) is not int or not minimum <= cfg[key] <= maximum: raise ValueError("%s must be an integer in %d..%d." % (key,minimum,maximum))
     for key, minimum, maximum in (("temperature",0,2),("top_p",0.00001,1)):
         if cfg[key] is None: continue
@@ -533,7 +544,8 @@ class CapabilityRunner:
                 if self.cancel_event.is_set(): break
             run["status"] = "error" if failed_deadline else "cancelled" if self.cancel_event.is_set() else "completed"
         except Exception as exc:
-            run.update(status="error",diagnostic=public_projection(endpoints.sanitize_error(exc,cfg)))
+            run.update(status="error",diagnostic=public_projection(endpoints.sanitize_error(exc,cfg)),
+                       diagnostic_error_type=type(exc).__name__)
         finally:
             run["finished_at"] = _now()
             if self.on_run_finish:
@@ -631,7 +643,7 @@ def validate_import(value):
     if protocol.get("selected_item_digest") != identity.canonical_digest(selected): raise ValueError("Selected item digest mismatch.")
     sample_size = protocol.get("sample_size_requested")
     seed = (protocol.get("sampling") or {}).get("seed")
-    if type(sample_size) is not int or not 0<=sample_size<=10000 or type(seed) is not int or not 0<=seed<=2147483627: raise ValueError("Invalid deterministic subset configuration.")
+    if type(sample_size) is not int or not 0<=sample_size<=MAX_SUITE_TASKS or type(seed) is not int or not 0<=seed<=2147483627: raise ValueError("Invalid deterministic subset configuration.")
     deterministic=select_item_ids(tasks,sample_size,seed,protocol.get("selection_algorithm"))
     if selected!=deterministic: raise ValueError("Selected tasks do not match the declared deterministic subset.")
     repeats = protocol.get("repeats")

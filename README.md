@@ -9,7 +9,7 @@ Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/), start an O
 ## Full local helper quick start
 
 1. Start your inference engine and load a model. For managed LM Studio operation, install LM Studio, download models and run `lms bootstrap` once. Other endpoints do not need LM Studio.
-2. Download and extract the [Wattever 2.5.2 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.2/Wattever-2.5.2.zip), or clone the repository. Use the matching documentation and source version.
+2. Download and extract the [Wattever 2.5.3 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.3/Wattever-2.5.3.zip), or clone the repository. Use the matching documentation and source version.
 3. On Windows run `Wattever.bat`; on macOS run `Wattever.command`; on Linux run `sh Wattever.sh`. Alternatively run `python -m wattever.server` from the repository.
 4. Open the displayed local URL. On **Run**, choose **OpenAI-compatible endpoint**, enter your API base URL and use **Connect**. Wattever identifies the endpoint where evidence is available and supplies its display name automatically; no manual label or ID is required. Enter a model ID manually if discovery is unavailable. Choose workloads and start. Leave the server running until the benchmark finishes.
 
@@ -31,7 +31,7 @@ The hosted Results view also includes a shared catalog that you can browse witho
 
 ## Capability tests and live telemetry
 
-The helper's **Capabilities** tab runs original Core tasks, the pinned 1,319-question GSM8K test split, or the 1,172-question ARC-Challenge test split. Choose a deterministic subset or the full suite and compare auditable rule-scored answers. These are zero-shot chat adaptations, not official leaderboard scores or intelligence rankings. Requested reasoning, reported MTP/quantization and unknown effective settings remain distinct in public model/endpoint configuration fingerprints. See [capability evaluation](docs/capabilities.md) for scoring, dataset licenses and uncertainty.
+The helper's **Capabilities** tab runs original Core tasks and pinned GSM8K, ARC-Challenge and MMLU-Pro test questions. MMLU-Pro offers its full 12,032-question split or a fixed 64-question sample balanced across 14 subjects. Choose a deterministic subset or the full suite and compare auditable rule-scored answers. These are zero-shot chat adaptations, separate from official leaderboard scores and intelligence rankings. Requested reasoning, reported MTP/quantization and unknown effective settings remain distinct in public model/endpoint configuration fingerprints. See [capability evaluation](docs/capabilities.md) for scoring, dataset licenses and uncertainty.
 
 Its visual dashboard combines strict pass rate, correct/planned and coverage tiles with category bars, an outcome ring and repeat comparisons. Select a chart to filter the paginated question-by-repeat matrix, then open a cell to inspect the question, expected output, model response and rule explanation. Matching evaluation protocols support paired comparisons that exclude unscored requests. A format mismatch or request error is shown distinctly from a passed answer; inspect the evidence before drawing conclusions about reasoning.
 

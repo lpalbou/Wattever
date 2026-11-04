@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 2.5.3 - 2026-11-04
+
+- Adds the pinned 12,032-question MMLU-Pro test split and a fixed 64-question sample balanced across 14 subjects. Both use auditable zero-shot generated-answer chat protocols; the balanced sample defaults to all 64 questions.
+- Supports capability suites and audited imports of up to 20,000 questions while retaining bounded prompt sizes. Preserves Unicode separators inside JSONL question text.
+- Retains requested MTP metadata for external endpoints, separately from effective settings and observed per-request draft counts. This annotation does not configure the inference server.
+- Retries transient permission failures during atomic capability-result saves, preserving completed answers without repeating model requests. Other persistence failures retain a non-sensitive error type.
+
 ## 2.5.2 - 2026-11-04
 
 - Publishes the PNY and ASUS Prime dual RTX 5070 Ti dataset: 180 attempted cases across LM Studio and native Strata, with 179 successes and one retained native Qwen35 timeout.

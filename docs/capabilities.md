@@ -11,8 +11,14 @@ Use **Capabilities** to compare rule-scored task accuracy separately from throug
 | `wattever-core-v1` | 24 | Original arithmetic, logic, typed JSON, instruction, retrieval and code-output tasks; four per category |
 | `gsm8k-test-chat-v1` | 1,319 | GSM8K test split; zero-shot chat with final numeric-answer matching |
 | `arc-challenge-test-chat-v1` | 1,172 | ARC-Challenge test split; zero-shot chat with generated answer-letter matching |
+| `mmlu-pro-test-chat-v1` | 12,032 | MMLU-Pro test split, 14 subjects and up to ten choices; zero-shot generated letters |
+| `mmlu-pro-balanced64-chat-v1` | 64 | Fixed category-balanced MMLU-Pro subset, four or five questions per subject; zero-shot generated letters |
 
 The external test splits are bundled for offline use. GSM8K is pinned to upstream revision `3101c7d5072418e28b9008a6636bde82a006892c` under MIT. ARC uses the `ARC-V1-Feb2018` archive's Challenge test member under CC BY-SA 4.0. The loader checks each extracted file's exact SHA-256 and item count before registering a suite. Source links, hashes, archive member, attribution and licenses are in [dataset provenance](../corpora/capabilities/README.md). The archive ETag records source provenance; it is not the extracted file's cryptographic checksum.
+
+MMLU-Pro is pinned to dataset revision `b189ec765aa7ed75c8acfea42df31fdae71f97be`, whose dataset card declares MIT. Its bundled JSONL preserves question text, options, keys and subjects while excluding gold chain-of-thought explanations. The separate balanced 64 suite selects questions by stable ID and subject using seed `73129`; no answer or model result determines selection. It defaults to **Full suite**, which tests all 64 questions. Its subject weighting differs from the full 12,032-question test split. Subsampling that 64-question suite again does not preserve its guaranteed four-to-five questions per subject.
+
+Both MMLU-Pro suites use zero-shot chat and generated final answer letters. They are separate from the official five-shot chain-of-thought protocol and its leaderboard scores. Full suites can be expensive: imports and suite registration allow at most 20,000 questions, with existing limits of 200,000 characters per prompt and 20 million total prompt characters.
 
 **AI2 ARC-Challenge** contains grade-school multiple-choice science questions. It is distinct from the [ARC-AGI grid-reasoning benchmark](https://arcprize.org/arc-agi/1). The dashboard identifies its task type explicitly. A high score on this science-question suite is not an ARC-AGI score or a general intelligence rating. See the [AI2 dataset description](https://huggingface.co/datasets/allenai/ai2_arc).
 
@@ -50,6 +56,8 @@ Select a chart segment, category bar or repeat point to filter the **Question ex
 Select a cell to open its evidence inspector. The question appears above expected and actual output, followed by a human-readable explanation of the recorded rule. Copy controls and previous/next navigation help review matching attempts. **Grading evidence & request metadata** contains the raw grading, normalization, usage and timing fields in a collapsed panel. Model responses remain inert text; inspecting them executes no generated code.
 
 An exact-rule mismatch can be a format failure. For example, if the task requires only `528`, the response `The answer is 528.` fails the exact-text rule despite containing the expected number. Inspect the required output and grading explanation before concluding that the model failed the arithmetic. The dashboard presents the recorded decision; it does not relax the rule or add a model judge.
+
+Completed answers are saved atomically. Transient permission failures during file replacement use bounded retries without repeating model requests. A persistent save failure stops the run; completed, missing and failed observations remain distinct.
 
 Live results update as attempts finish while preserving question filters and input focus. You can inspect another saved result without being redirected to the active run. Older files that contain only aggregate scores are labeled **Reported summary only**; question evidence is not reconstructed from their totals.
 

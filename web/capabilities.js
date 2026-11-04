@@ -36,7 +36,7 @@
     const count = suite.item_count ?? suite.task_count ?? (Array.isArray(suite.tasks) ? suite.tasks.length : null);
     const selection = $('#cap-samples'), previous=selection.value, choices=[24,50,100,300].filter(value=>count == null || value<=count);
     selection.innerHTML=choices.map(value=>`<option value="${value}">${value}</option>`).join('')+`<option value="0">Full suite${count != null ? ' ('+count+')' : ''}</option>`;
-    const next = state.previousSuite === $('#cap-suite').value && [...choices,0].includes(Number(previous)) ? Number(previous) : (String(suite.id || suite.suite_id).includes('core') && choices.includes(24) ? 24 : choices.includes(50) ? 50 : 0);
+    const next = state.previousSuite === $('#cap-suite').value && [...choices,0].includes(Number(previous)) ? Number(previous) : (suite.source?.subset_algorithm ? 0 : String(suite.id || suite.suite_id).includes('core') && choices.includes(24) ? 24 : choices.includes(50) ? 50 : 0);
     selection.value=String(next); state.previousSuite=$('#cap-suite').value;
     const origin=root.WatteverCapabilityDashboard?.suiteOrigin(suite);
     $('#cap-suite-info').textContent = [origin?.label,origin?.description,count != null ? count+' questions' : '',suite.version ? 'version '+suite.version : '',

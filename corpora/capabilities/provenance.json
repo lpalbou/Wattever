@@ -14,5 +14,19 @@
     "sha256": "9fa8ffb3e3a1f88cb302d53dd95aae81e39209ad9bcf974376b319d8fd35717c",
     "license": "CC-BY-SA-4.0",
     "dataset_card": "https://huggingface.co/datasets/allenai/ai2_arc"
+  },
+  "mmlu-pro": {
+    "repository": "https://huggingface.co/datasets/TIGER-Lab/MMLU-Pro",
+    "revision": "b189ec765aa7ed75c8acfea42df31fdae71f97be",
+    "upstream_file": "data/test-00000-of-00001.parquet",
+    "upstream_sha256": "0e24a191921c2f453518a537a8b2117bd137e7714d4ef1565e9ba06c1ecb9ad8",
+    "file": "mmlu-pro-test.jsonl",
+    "sha256": "df41a2413bb510d4d25834e760ac744866bf6e190c9e89d8df008f778bc67a3d",
+    "items": 12032,
+    "license": "MIT",
+    "normalization": "Question/options/answer/category/src only; gold cot_content excluded; exact source text retained; sorted by question_id",
+    "balanced_subset_algorithm": "category-round-robin-sha256-v1",
+    "balanced_subset_seed": 73129,
+    "balanced_subset_count": 64
   }
 }
