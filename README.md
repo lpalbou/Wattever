@@ -35,6 +35,8 @@ The helper's **Capabilities** tab runs original Core tasks and pinned GSM8K, ARC
 
 The [Flash-Next accuracy collection](docs/flash-next-quality.md) compares UD-IQ4_XS and IQ3_S on the same ARC64, GSM64 and MMLU-Pro64 samples, with inspectable answers and complete question coverage, separately from throughput measurements.
 
+The [experiment checkpoint](docs/experiment-status.md) brings together the completed dual-5070 results and distinguishes them from GLM-5.3-Flash preparation, which has no inference measurements yet.
+
 Its visual dashboard combines strict pass rate, correct/planned and coverage tiles with category bars, an outcome ring and repeat comparisons. Select a chart to filter the paginated question-by-repeat matrix, then open a cell to inspect the question, expected output, model response and rule explanation. Matching evaluation protocols support paired comparisons that exclude unscored requests. A format mismatch or request error is shown distinctly from a passed answer; inspect the evidence before drawing conclusions about reasoning.
 
 Local runs can display CPU/GPU utilization, RAM/VRAM usage, available temperatures, GPU clocks and power. On supported NVIDIA systems, measurements cover all detected cards with individual readings and combined GPU board power. Concurrent requests share one group energy window, so overlapping request energy is not added together. CPU/system power estimates remain labeled separately from measured GPU power; they are not wall-meter readings.

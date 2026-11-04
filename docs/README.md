@@ -1,5 +1,7 @@
 # Documentation
 
+- [Experiment checkpoint](experiment-status.md): completed dual-5070 performance and quality results, communication measurements, and the explicitly unmeasured GLM preparation state.
+
 - [Browser mode](browser.md): hosted setup, privacy, storage and measurement limits.
 - [Sharing results](sharing-results.md): shared catalog, contributions and completing a benchmark later.
 - [Getting started](getting-started.md): managed LM Studio or generic endpoint setup, authentication, manual model IDs and first benchmark.

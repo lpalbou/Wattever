@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Adds an experiment checkpoint linking the completed dual-5070 performance, communication and Flash-Next quality studies, with GLM preparation clearly separated from measured results.
+
 ## 2.5.5 - 2026-11-04
 
 - Speeds up privacy filtering for large benchmark exports by reusing field-name classifications while continuing to check every value.
