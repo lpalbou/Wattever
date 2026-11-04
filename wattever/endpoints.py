@@ -361,11 +361,11 @@ _QUANT_PATTERN=r"(?:UD[-_])?(?:"+(r"IQ(?:1_[SM]|2_(?:XXS|XS|S|M)|3_(?:XXS|XS|S|M
 
 
 def _safe_model_text(value):
-    from .privacy import LOCAL_DETAIL,NETWORK_DETAIL
+    from .privacy import LOCAL_DETAIL,network_detail
     if not isinstance(value,str):return None
     value=value.strip()
     if not value or len(value)>80 or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_ .+()-]*",value):return None
-    if LOCAL_DETAIL.search(value) or NETWORK_DETAIL.search(value):return None
+    if LOCAL_DETAIL.search(value) or network_detail(value):return None
     return value
 
 

@@ -13,7 +13,7 @@
 - [Two RTX 5070 Ti cards](two-5070-ti-comparison.md): 180 normal cases, matched single/mixed-card comparisons, native drafting, energy and thermal measurements.
 - [Two RTX 5070 Ti placement strategies](two-5070-ti-placement.md): host/cross-card transfers, 153 screening conditions, three profiles, Gemma layout and workload-specific recommendations.
 - [Capability evaluation](capabilities.md): visual score/coverage dashboard, question-by-repeat explorer, compatible paired comparisons, offline pinned suites and audit imports.
-- [Flash-Next task accuracy](flash-next-quality.md): fixed ARC64 and GSM64 samples with full answer evidence, coverage, generation controls and source lineage.
+- [Flash-Next task accuracy](flash-next-quality.md): fixed ARC64, GSM64 and MMLU-Pro64 samples with full answer evidence, coverage, generation controls and source lineage.
 - [Architecture](architecture.md): components and data flow.
 - [API](api.md): local HTTP interface and side effects.
 - [FAQ](faq.md): common interpretation questions.

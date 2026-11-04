@@ -4,6 +4,8 @@ This reference describes the local Python helper. Hosted [browser mode](browser.
 
 JSON errors have an `error` field. Invalid input and runtime conflicts generally return 400, missing runs 404, active-run edits or deletion 409, and unexpected failures 500.
 
+JSON request bodies are limited to 32 MiB. This includes capability imports; a suite's supported question count does not guarantee that its completed audit fits in one HTTP request.
+
 State-changing requests must come from the helper's own browser origin, or an Origin-free local API client. Send JSON bodies with `Content-Type: application/json`; rejected cross-origin or non-JSON changes return 403. Authenticated model discovery must use POST; GET query parameters cannot select a credential environment variable. See [security](../SECURITY.md).
 
 ## Read and control routes

@@ -6,12 +6,34 @@ identify every secret in arbitrary prose; labels and notes still need review.
 import re
 import copy
 import json
+import base64
+import binascii
 from functools import lru_cache
 from urllib.parse import urlsplit
 
 
 LOCAL_DETAIL = re.compile(r"(?:\b[A-Za-z]:[\\/]|\\\\[^\\\s]+\\|/(?:Users|home|root|tmp|private|mnt|media|var|opt)/|(?:^|\s)/(?:[^\s/]+/)+[^\s]+|file://|\bWinError\s*\d+)", re.I)
-NETWORK_DETAIL = re.compile(r"(?:https?://[^\s<>\"']+|\b(?:\d{1,3}\.){3}\d{1,3}\b|\[[0-9a-f:]*:[0-9a-f:]*\]|(?<![0-9a-z])(?:[0-9a-f]{0,4}:){3,}[0-9a-f]{0,4}(?:%[\w.-]+)?|\b[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}\b|\b(?:Bearer|Basic)\s+[A-Za-z0-9._~+/=-]+|\bsk-[A-Za-z0-9_-]{12,})", re.I)
+NETWORK_DETAIL = re.compile(r"(?:https?://[^\s<>\"']+|\b(?:\d{1,3}\.){3}\d{1,3}\b|\[[0-9a-f:]*:[0-9a-f:]*\]|(?<![0-9a-z])(?:[0-9a-f]{0,4}:){3,}[0-9a-f]{0,4}(?:%[\w.-]+)?|\b[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}\b|\bBearer\s+[A-Za-z0-9._~+/=-]+|\bsk-[A-Za-z0-9_-]{12,})", re.I)
+_BASIC_TOKEN = re.compile(r"\bBasic\s+([A-Za-z0-9+/]+={0,2})(?![A-Za-z0-9+/=])", re.I)
+_BASIC_HEADER = re.compile(r"\b(?:Proxy-)?Authorization[\"']?\s*[:=]\s*[\"']?\s*Basic\b", re.I)
+
+
+def network_detail(value):
+    """Recognize connection details without treating ordinary 'basic' prose as auth.
+
+    Bare Basic credentials must decode as RFC 7617's user-id:password form.
+    Explicit authorization headers are private even with malformed credentials.
+    """
+    if NETWORK_DETAIL.search(value) or _BASIC_HEADER.search(value):
+        return True
+    for match in _BASIC_TOKEN.finditer(value):
+        try:
+            decoded = base64.b64decode(match.group(1), validate=True)
+        except (ValueError, binascii.Error):
+            continue
+        if b":" in decoded:
+            return True
+    return False
 DIAGNOSTIC_KEYS = {"error", "message", "log", "traceback", "exception", "stderr", "stdout"}
 PRIVATE_KEYS = {
     "authorization", "proxyauthorization", "auth", "authentication", "bearer", "apikey", "accesstoken", "refreshtoken", "key", "accesskey", "privatekey",
@@ -93,7 +115,7 @@ def public_projection(value, _path=()):
                 result[key] = "private model identifier"
                 redacted = True
                 continue
-            if (LOCAL_DETAIL.search(key) or NETWORK_DETAIL.search(key) or private_key(key) or
+            if (LOCAL_DETAIL.search(key) or network_detail(key) or private_key(key) or
                     (key.lower() == "host" and isinstance(item, str))):
                 redacted = True
                 continue
@@ -110,7 +132,7 @@ def public_projection(value, _path=()):
                 redacted = True
                 if re.search(r"\bWinError\s*5\b", item, re.I):
                     storage_access = True
-            elif isinstance(item, str) and NETWORK_DETAIL.search(item):
+            elif isinstance(item, str) and network_detail(item):
                 result[key] = "[network or credential detail redacted]"
                 redacted = True
             else:
@@ -123,6 +145,6 @@ def public_projection(value, _path=()):
     if isinstance(value, str):
         if LOCAL_DETAIL.search(value):
             return "[local detail redacted]"
-        if NETWORK_DETAIL.search(value):
+        if network_detail(value):
             return "[network or credential detail redacted]"
     return value

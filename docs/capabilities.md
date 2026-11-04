@@ -95,4 +95,6 @@ Capability files use `benchmark_kind: "capability"`, `schema_version: 1`, and a 
 
 Import accepts one capability run or an object containing `capability_runs`. It validates public configuration/suite/protocol fingerprints, deterministic item selection and observation uniqueness, then independently re-scores visible audit answers and recomputes statistics. A completed result requires all planned observations. A response redacted for privacy cannot be independently re-scored and is rejected as a full audit import. Preserve the reviewed original locally if you need that audit.
 
+HTTP import bodies are limited to 32 MiB, independently of the question-count limit. Large full-suite results can exceed that size. You can validate an individual result file with `python tools/validate_results.py <file.json>` and contribute it as a file using the [sharing workflow](sharing-results.md); running or exporting a local suite does not require re-importing it.
+
 Public suite prompts, expected answers and source citations must remain exact for their digest and audit. Review them, generated answers and all annotations before sharing. Connection credentials and URLs are excluded as connection metadata; arbitrary task text can still contain information you do not want to publish. See [sharing results](sharing-results.md) and [security](../SECURITY.md).

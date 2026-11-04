@@ -10,9 +10,11 @@ leaderboard results.
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | Unsloth UD-IQ4_XS | ARC-Challenge, science multiple choice | 63 / 64 | 64 / 64 | 98.4% | 91.7–99.7% | 0 / 0 |
 | Unsloth UD-IQ4_XS | GSM8K, math word problems | 63 / 64 | 64 / 64 | 98.4% | 91.7–99.7% | 0 / 0 |
+| Unsloth UD-IQ4_XS | MMLU-Pro, 14 subjects | 54 / 64 | 64 / 64 | 84.4% | 73.6–91.3% | 0 / 0 |
 
-Both samples are close to the ceiling. They establish auditable performance
-on these selected questions, with limited ability to resolve small differences
+ARC and GSM8K are close to the ceiling; the MMLU-Pro sample produces more
+answer-key mismatches. These results establish auditable performance
+on the selected questions, with limited ability to resolve small differences
 between configurations. Public benchmark questions may have appeared in
 training. The interval is a descriptive Wilson approximation over distinct
 first-repeat questions, rather than a model-ranking significance test or an
@@ -31,7 +33,7 @@ intelligence rating.
 | MTP | Configured on, requested four draft tokens; activity observed in native engine logs. Public API configuration keeps requested, reported and unknown effective state separate |
 | Expert policy | All selected experts participate; route-tail skipping disabled |
 | Sampling | Temperature 0, top-p 1; one generation per selected question |
-| Selection | 64 SHA-256-ranked IDs per full test split; seed 73,129, independent of answers or model results |
+| Selection | ARC/GSM: 64 SHA-256-ranked IDs per split. MMLU-Pro: four or five questions per each of 14 subjects. Seed 73,129; selection is independent of answers or model results |
 | Generation | 32,768-token total ceiling; no client wall-clock deadline; selection seed is not sent as an API generation seed |
 | Grading | ARC generated final letter; GSM8K final numeric answer; visible content only |
 
@@ -44,10 +46,13 @@ suffix drafting. The totals do not isolate mechanisms or establish an MTP
 speed or quality benefit. They exclude the five-question continuation and
 other suites.
 
-The full source splits contain 1,172 ARC-Challenge and 1,319 GSM8K questions.
+The full source splits contain 1,172 ARC-Challenge, 1,319 GSM8K and 12,032
+MMLU-Pro questions. The fixed MMLU-Pro sample has a different subject weighting
+from its full test split; it uses all 64 questions in the balanced suite.
 These runs use the versioned zero-shot Wattever chat adaptations described in
 [capability evaluation](capabilities.md). AI2 ARC-Challenge is a school-science
-multiple-choice dataset, distinct from ARC-AGI grid reasoning.
+multiple-choice dataset, distinct from ARC-AGI grid reasoning. MMLU-Pro uses
+zero-shot generated letters, separate from its official five-shot CoT protocol.
 
 Background model downloading overlapped accuracy collection. **Do not use these
 quality runs for speed or energy comparisons.** Per-question timings and
@@ -57,18 +62,26 @@ and energy comparison conditions.
 
 ## Inspect the answers
 
-Both incorrect answers completed naturally, with a valid final output. The ARC
+All answers marked incorrect completed naturally, with a valid final output. The ARC
 answer selected fertilization where the source key selects maturation in a
 plant-life-cycle question. The GSM8K answer split a dinner bill including its
 tip, where the source key assigns the full tip to one payer. The recorded
 decisions are answer-key mismatches, rather than truncated output or parser
 failures. The source keys remain unchanged.
 
+MMLU-Pro used 73,772 output tokens across 64 questions. Its longest response,
+engineering item `mmlu-pro-test-11438`, used 10,522 tokens and ended naturally;
+it was not truncated. The published question has compressed spacing and an
+undefined variable `y`. Its recorded final answer disagrees with the source
+key. The prompt and key remain unchanged: source ambiguity can limit the
+interpretation of an individual answer-key mismatch.
+
 Open **Capabilities** in the helper or hosted application to inspect published
 question evidence. The raw files are independently importable:
 
 - [ARC64 completed run](../results/capabilities/cap-20261104-011521-b0148a48af.json).
 - [GSM64 derived coverage record](../results/capabilities/cap-derived-20261104-ud4-gsm64-21b02ce673c2.json).
+- [MMLU-Pro balanced64 completed run](../results/capabilities/cap-20261104-021604-96f2560798.json).
 - [Summary CSV](../results/aggregates/flash-next-quality/summary.csv).
 
 The GSM64 record is the exact union of two disjoint collection segments from

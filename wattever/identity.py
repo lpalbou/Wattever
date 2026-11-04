@@ -3,7 +3,7 @@ import hashlib
 import json
 import re
 
-from .privacy import LOCAL_DETAIL, NETWORK_DETAIL, public_source
+from .privacy import LOCAL_DETAIL, network_detail, public_source
 
 FINGERPRINT_VERSION = "wattever-model-configuration-v1"
 UNKNOWN = "unknown"
@@ -21,7 +21,7 @@ def public_text(value, field, maximum=250, required=False):
     if not isinstance(value, str) or len(value) > maximum or any(ord(c) < 32 for c in value):
         raise ValueError("%s must be bounded, public text." % field)
     value = value.strip()
-    if not value or LOCAL_DETAIL.search(value) or NETWORK_DETAIL.search(value):
+    if not value or LOCAL_DETAIL.search(value) or network_detail(value):
         raise ValueError("%s must not contain private URLs, addresses, credentials or local paths." % field)
     return value
 
@@ -36,7 +36,7 @@ def public_request_model(model):
     """A transport model ID may be a private path; retain only a public alias."""
     if not isinstance(model,str) or not model.strip() or len(model)>2000:
         raise ValueError("Provide a bounded model identifier.")
-    if (model.startswith(("/","\\")) or LOCAL_DETAIL.search(model) or NETWORK_DETAIL.search(model)):
+    if (model.startswith(("/","\\")) or LOCAL_DETAIL.search(model) or network_detail(model)):
         return {"value":"private model identifier","source":"redacted_transport_identifier"}
     return {"value":public_text(model,"model identifier",required=True),"source":"requested_model_identifier"}
 

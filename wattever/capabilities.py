@@ -18,7 +18,7 @@ import time
 import uuid
 
 from . import __version__, endpoints, identity, lmstudio
-from .privacy import LOCAL_DETAIL, NETWORK_DETAIL, private_key, public_projection, public_source
+from .privacy import LOCAL_DETAIL, network_detail, private_key, public_projection, public_source
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUNS_DIR = os.path.join(ROOT, "results", "capabilities")
@@ -171,7 +171,7 @@ def register_suite(manifest,register=True):
         if not isinstance(key,str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{0,79}",key) or private_key(key): raise ValueError("Suite source contains a private or invalid metadata field.")
         if not isinstance(value,(str,int,float,bool)) or isinstance(value,str) and len(value)>3000:
             raise ValueError("Suite source values must be bounded public scalars.")
-        if isinstance(value,str) and (LOCAL_DETAIL.search(value) or NETWORK_DETAIL.search(value)) and not public_source(value):
+        if isinstance(value,str) and (LOCAL_DETAIL.search(value) or network_detail(value)) and not public_source(value):
             raise ValueError("Suite source must not contain private addresses, credentials or paths.")
     tasks = manifest.get("tasks")
     if not isinstance(tasks, list) or not 1 <= len(tasks) <= MAX_SUITE_TASKS: raise ValueError("Suite must contain 1..%d tasks." % MAX_SUITE_TASKS)

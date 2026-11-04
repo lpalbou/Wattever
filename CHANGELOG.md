@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-- Publishes Flash-Next UD-IQ4_XS ARC64 and GSM64 accuracy samples with full answer audits, coverage, source lineage and explicit performance-comparison limits.
+## 2.5.4 - 2026-11-04
+
+- Preserves ordinary phrases such as "basic math" in capability audit answers while continuing to redact encoded HTTP Basic credentials and explicit authentication headers. Exports retain independently scorable answers.
+- Publishes all 192 Flash-Next UD-IQ4_XS ARC64, GSM64 and MMLU-Pro64 accuracy observations with full answer audits, coverage, source lineage and explicit performance-comparison limits.
+- Documents the 32 MiB HTTP import limit separately from suite question-count limits, with file validation and contribution guidance for larger audits.
 
 ## 2.5.3 - 2026-11-04
 
