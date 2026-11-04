@@ -4,7 +4,6 @@ import hashlib
 from http.server import BaseHTTPRequestHandler, SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
-import subprocess
 import sys
 import tempfile
 import threading
@@ -114,12 +113,29 @@ class Static(SimpleHTTPRequestHandler):
         self.send_error(404, "This fixture has no Python helper API")
 
 
+def build_site(site, builder=None):
+    """Build in this owned fixture process so fixture shutdown stops build CPU."""
+    if builder is None:
+        sys.path.insert(0, str(ROOT))
+        from tools.build_pages import build
+        builder = build
+    started = time.monotonic()
+    print("Static fixture: Pages build started", file=sys.stderr, flush=True)
+    try:
+        result = builder(site)
+    except BaseException:
+        print("Static fixture: Pages build failed after %.1f s" % (time.monotonic() - started),
+              file=sys.stderr, flush=True)
+        raise
+    print("Static fixture: Pages build completed in %.1f s" % (time.monotonic() - started),
+          file=sys.stderr, flush=True)
+    return result
+
+
 def main():
     with tempfile.TemporaryDirectory(prefix="wattever-static-") as directory:
         site = Path(directory) / "Wattever"
-        subprocess.run([sys.executable, str(ROOT / "tools" / "build_pages.py"),
-                        "--output-dir", str(site)], cwd=ROOT, check=True,
-                       stdout=subprocess.DEVNULL)
+        build_site(site)
         # A saved producer error is inert JSON, never a URL or a browser I/O command.
         # Inject only into this temporary built fixture, never the repository/site.
         folder = site / "benchmarks"

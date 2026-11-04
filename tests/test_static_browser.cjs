@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const assert = require('node:assert/strict');
+const {withDeadline, pendingCommand, rejectPending, cleanupOwned} = require('./browser_deadlines.cjs');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 (async () => {
@@ -18,8 +19,9 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
   const fixture = spawn(process.env.PYTHON || 'python', ['-u', path.join(__dirname, 'static_fixture.py')], {windowsHide:true});
   fixture.stderr.on('data', data => process.stderr.write(data));
   let browser, ws;
+  const pending = new Map();
   try {
-    const config = await new Promise((resolve,reject) => {
+    const config = await withDeadline(new Promise((resolve,reject) => {
       let output = '';
       fixture.stdout.on('data', data => {
         output += data;
@@ -29,7 +31,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
       });
       fixture.once('error',reject);
       fixture.once('exit',code => reject(Error('Static fixture exited: ' + code)));
-    });
+    }), 900000, 'Static fixture startup / Pages build');
     const publicSite = process.env.WATTEVER_PUBLIC_SITE_URL;
     const requestedSite = new URL(publicSite || config.site);
     if (publicSite) assert.equal(requestedSite.protocol,'https:','Public-site check requires an HTTPS URL');
@@ -55,9 +57,15 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     if(!debugPort) throw Error('Browser did not expose its debugging port: '+browserErrors);
     const pages = await (await fetch(`http://127.0.0.1:${debugPort}/json/list`)).json();
     ws = new WebSocket(pages.find(page => page.type === 'page').webSocketDebuggerUrl);
-    await new Promise((resolve,reject) => { ws.addEventListener('open',resolve,{once:true}); ws.addEventListener('error',reject,{once:true}); });
+    await withDeadline(new Promise((resolve,reject) => {
+      ws.addEventListener('open',resolve,{once:true});
+      ws.addEventListener('error',reject,{once:true});
+      ws.addEventListener('close',()=>reject(Error('Owned browser socket closed before opening')),{once:true});
+    }), 30000, 'Owned browser WebSocket open');
     let next=0;
-    const pending = new Map(), errors=[], requests=[], loadingFailures=[];
+    const errors=[], requests=[], loadingFailures=[];
+    ws.addEventListener('close',()=>rejectPending(pending, Error('Owned browser socket closed')));
+    ws.addEventListener('error',()=>rejectPending(pending, Error('Owned browser socket failed')));
     const requestTargets = new Map();
     const safeTarget = value => { try { const url=new URL(value);return url.origin+url.pathname; } catch (_) { return '[invalid URL]'; } };
     ws.addEventListener('message',event => {
@@ -78,9 +86,10 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
           corsErrorStatus:failure.corsErrorStatus,blockedReason:failure.blockedReason,canceled:failure.canceled});
       }
     });
-    const send=(method,params={})=>new Promise((resolve,reject)=>{
-      const id=++next; pending.set(id,{resolve,reject}); ws.send(JSON.stringify({id,method,params}));
-    });
+    const send=(method,params={})=>{
+      const id=++next;
+      return pendingCommand(pending,id,method,()=>ws.send(JSON.stringify({id,method,params})),60000);
+    };
     const evaluate=async expression=>{
       const result=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});
       if(result.exceptionDetails) throw Error(JSON.stringify(result.exceptionDetails));
@@ -229,6 +238,13 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     console.log((publicSite?'Public HTTPS':'Built static')+' browser checks passed: subpath assets, explicit CORS connection, mock SSE, credentials, manual hardware, JSON export/import and no helper requests.');
     await send('Browser.close').catch(()=>{});
   } finally {
-    if(ws) ws.close(); if(browser) browser.kill(); fixture.kill();
+    const cleanupErrors = cleanupOwned([
+      ()=>rejectPending(pending, Error('Owned browser fixture cleanup')),
+      ()=>{if(ws) ws.close();}, ()=>{if(browser) browser.kill();}, ()=>fixture.kill(),
+    ]);
+    if(cleanupErrors.length) {
+      cleanupErrors.forEach(error=>console.error('Owned browser cleanup failed:',error));
+      process.exitCode=1;
+    }
   }
 })().catch(error=>{console.error(error);process.exitCode=1;});

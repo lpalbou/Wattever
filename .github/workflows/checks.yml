@@ -46,6 +46,7 @@ jobs:
 
   browser:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -55,4 +56,5 @@ jobs:
         with:
           node-version: '22'
       - run: node tests/test_ui_browser.cjs
+      - run: node tests/test_browser_deadlines.cjs
       - run: node tests/test_static_browser.cjs
