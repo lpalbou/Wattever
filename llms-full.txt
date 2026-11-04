@@ -16,6 +16,8 @@
 - [i7-5820K versus i7-5960X](docs/5960x-cpu-comparison.md): same PNY RTX 5070 Ti, 156 matched CPU cases across the 13 established models, measured transfer/compute probes and uncertainty limits.
 - [PNY RTX 5070 Ti plus ASUS RTX 5060 Ti](docs/5070-plus-5060-comparison.md): matched and supplemental LM Studio measurements, per-card/combined energy, transfer/compute probes, connection diagnostics and Strata coverage status.
 - [Multi-GPU communication and placement study](docs/dual-gpu-communication-and-placement.md): communication paths, transfer measurements, GPU execution strategies, profiling evidence and diagnostic protocol boundaries.
+- [Two RTX 5070 Ti cards](docs/two-5070-ti-comparison.md): 180 normal cases, matched single/mixed-card throughput and energy, native drafting and per-card temperatures.
+- [Two RTX 5070 Ti placement strategies](docs/two-5070-ti-placement.md): measured communication paths, standalone prefill/decode, independent instances, energy and profiling limits.
 - [Capability evaluation](docs/capabilities.md): visual score/coverage dashboard, question-by-repeat evidence explorer, pinned Core/GSM8K/ARC suites and paired-comparison limits.
 - [Architecture](docs/architecture.md): components and boundaries.
 - [API](docs/api.md): automatic naming/opaque route identity, private registry boundaries, environment-based authentication, local routes and managed-only extensions.
@@ -56,7 +58,7 @@ Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/), start an O
 ## Full local helper quick start
 
 1. Start your inference engine and load a model. For managed LM Studio operation, install LM Studio, download models and run `lms bootstrap` once. Other endpoints do not need LM Studio.
-2. Download and extract the [Wattever 2.5.1 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.1/Wattever-2.5.1.zip), or clone the repository. Use the matching documentation and source version.
+2. Download and extract the [Wattever 2.5.2 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.2/Wattever-2.5.2.zip), or clone the repository. Use the matching documentation and source version.
 3. On Windows run `Wattever.bat`; on macOS run `Wattever.command`; on Linux run `sh Wattever.sh`. Alternatively run `python -m wattever.server` from the repository.
 4. Open the displayed local URL. On **Run**, choose **OpenAI-compatible endpoint**, enter your API base URL and use **Connect**. Wattever identifies the endpoint where evidence is available and supplies its display name automatically; no manual label or ID is required. Enter a model ID manually if discovery is unavailable. Choose workloads and start. Leave the server running until the benchmark finishes.
 
@@ -69,6 +71,8 @@ Consolidation preserves engine/session settings and exact measurement rows. Conf
 The collapsed **This machine** header shows CPU, GPU, RAM and per-card VRAM. Expand it for grouped compute, storage, transfer and platform cards; full names and probe methods stay accessible. Compatible saved transfer captures retain their original date and are labeled **Saved capture**.
 
 GPU, memory, storage and engine-setting badges summarize recorded conditions. Storage types use **HDD**, **SSD** and **NVMe**; unknown types stay unclassified. If an experiment contains alternative storage observations, **Compare recorded storage** selects the measured variants. Installed drives and storage probes alone do not create inference variants. See the [RTX 5060 Ti Strata comparison](docs/5060-ti-storage-comparison.md) for the measured gains and conditions.
+
+The [two RTX 5070 Ti comparison](docs/two-5070-ti-comparison.md) records 180 normal cases across LM Studio and native Strata, with matched throughput, energy, drafting and per-card thermal observations.
 
 The [multi-GPU communication and placement study](docs/dual-gpu-communication-and-placement.md) examines execution strategies with separate diagnostic protocols. Transfer microbenchmarks and profiled inference captures stay separate from the normal benchmark library. Study tools have their own platform and dependency requirements.
 
@@ -112,6 +116,8 @@ Canonical source: [docs/README.md](docs/README.md)
 - [i7-5820K versus i7-5960X with the PNY RTX 5070 Ti](docs/5960x-cpu-comparison.md): 156 one-repeat inference cases across the 13 established models, matched CPU comparisons, RAM/PCIe/VRAM copy probes and measured GPU arithmetic.
 - [PNY RTX 5070 Ti plus ASUS RTX 5060 Ti](docs/5070-plus-5060-comparison.md): matched and supplemental LM Studio results, per-card and combined energy, transfer/compute probes, connection diagnostics and native Strata coverage status.
 - [Multi-GPU communication and placement study](docs/dual-gpu-communication-and-placement.md): communication paths, transfer measurements, placement strategies, profiling evidence and separate diagnostic protocols.
+- [Two RTX 5070 Ti cards](docs/two-5070-ti-comparison.md): 180 normal cases, matched single/mixed-card comparisons, native drafting, energy and thermal measurements.
+- [Two RTX 5070 Ti placement strategies](docs/two-5070-ti-placement.md): host/cross-card transfers, 153 screening conditions, three profiles, Gemma layout and workload-specific recommendations.
 - [Capability evaluation](docs/capabilities.md): visual score/coverage dashboard, question-by-repeat explorer, compatible paired comparisons, offline pinned suites and audit imports.
 - [Architecture](docs/architecture.md): components and data flow.
 - [API](docs/api.md): local HTTP interface and side effects.
@@ -136,7 +142,7 @@ Install Python 3.9 or newer. Wattever does not need Python packages or a JavaScr
 - **OpenAI-compatible endpoint:** start an inference engine such as Strata, llama.cpp or LM Studio and load your model there. Wattever needs streaming Chat Completions; model discovery is optional. Other OpenAI API surfaces are not required or implemented by this integration.
 - **LM Studio (managed):** install [LM Studio](https://lmstudio.ai/), download models and run `lms bootstrap`. Wattever can load/unload models and schedule context and MTP settings through its CLI. The API defaults to `http://127.0.0.1:1234`; `LMS_BASE_URL` changes that managed connection. Explicit configured URLs and saved measurements keep their original addresses and timing provenance.
 
-Download and extract the [Wattever 2.5.1 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.1/Wattever-2.5.1.zip), or clone the repository. Use documentation matching that source version. Start `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux. You can also run `python -m wattever.server` in the extracted folder or repository. The server listens on loopback and prints its URL; keep its window open. `GPU_BENCH_PORT` sets the starting port (default 8713); `GPU_BENCH_NO_BROWSER=1` suppresses automatic browser opening.
+Download and extract the [Wattever 2.5.2 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.2/Wattever-2.5.2.zip), or clone the repository. Use documentation matching that source version. Start `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux. You can also run `python -m wattever.server` in the extracted folder or repository. The server listens on loopback and prints its URL; keep its window open. `GPU_BENCH_PORT` sets the starting port (default 8713); `GPU_BENCH_NO_BROWSER=1` suppresses automatic browser opening.
 
 On **Run**, choose your provider. For a generic endpoint, enter your engine's API base URL, such as `http://127.0.0.1:8000/v1` (a root URL also works), and optionally the name of an API-key environment variable. Set the variable before starting the helper; enter its name, never its secret value, in Wattever. Click **Connect**. Wattever supplies a display name and an opaque route identity automatically; no label or ID is required. Model discovery lists the IDs exposed by the connected endpoint. If the provider does not expose `/models`, supply its exact served model ID manually. The Python helper connects directly, so browser CORS permission is only needed in hosted browser mode.
 
@@ -219,7 +225,7 @@ To keep one entry per machine configuration, use the helper's [consolidation rou
 
 Use `?compare=<benchmark-id>,<benchmark-id>#results` on a source-checkout helper or the hosted site to open two to eight catalog entries together. The link selects their shared model IDs, one concurrent client, both speculative-decoding modes, and separate prefill/decode charts for each model. Choose other metrics or query counts in Results. All referenced benchmark IDs must exist in that catalog; a link containing unknown IDs is ignored without fetching arbitrary resources.
 
-For example, [compare the single and dual RTX 5070 Ti configurations](https://lpalbou.github.io/Wattever/?compare=20261102-041639_rtx-5070-ti_6b6060174b,20261103-100532_rtx-5070-ti_0a91ddc850#results). Shared model IDs do not establish identical weights or settings: review quantization, engine, reasoning, MTP, token counts and timing definitions. The dual-card dataset contains 168 successful cases; its 12 native Qwen35 cases and separate standalone diagnostics were not measured. Historical LM Studio localhost timings and explicit-IPv4 timings remain separate observations, without a guessed latency correction.
+For example, [compare the single and dual RTX 5070 Ti configurations](https://lpalbou.github.io/Wattever/?compare=20261102-041639_rtx-5070-ti_6b6060174b,20261103-100532_rtx-5070-ti_0a91ddc850#results). Shared model IDs do not establish identical weights or settings: review quantization, engine, reasoning, MTP, token counts and timing definitions. The [dual-card report](docs/two-5070-ti-comparison.md) covers 180 attempted normal cases, with 179 successes and one native Qwen35 timeout, and 13 shared model IDs against the single-PNY benchmark. Standalone diagnostics and profiled captures remain separate. Historical LM Studio localhost timings and explicit-IPv4 timings retain their observations, without a guessed latency correction.
 
 Selected primary conditions remain selected when consolidation creates engine-specific views. Explicitly cleared selections and engine or storage subsets retain their choices. Partial experiment metadata identifies planned cases that have no observations.
 
@@ -261,6 +267,11 @@ The local helper supports managed LM Studio and generic OpenAI-compatible endpoi
 
 A case combines a model, technique, prompt size, simultaneous query count and repeat. Successful, failed and skipped cases are recorded; inability to load or fit a workload is useful capacity information. The library reports successful, failed, skipped and cancelled counts separately; an unattempted skipped repeat is not counted as a measured failure. Managed LM Studio can schedule Standard/MTP modes when a supported bundled MTP head exists, and disables reasoning by default. Generic endpoint technique, reasoning, context allocation, KV cache and quantization are controlled by the inference engine. Their effective state is unknown unless documented separately by the operator; a scheduler technique label does not prove the server's MTP state.
 
+When a provider supplies per-request `draft_n` and `draft_n_accepted` timing
+counters, Wattever retains validated nonnegative integer counts. Missing
+counters remain unknown. Acceptance cannot exceed the offered count; requested
+drafting and observed proposals remain separate evidence.
+
 `prefill_tps` is prompt tokens divided by client-observed time to first output (TTFT). It includes queueing, network, tokenization and any unobserved reasoning before streamed content arrives. It is not an isolated engine prefill compute measurement. Decode throughput uses output tokens attributable to the observed stream interval, excluding its first-token estimate, divided by that client interval through stream completion. A stream chunk can contain multiple tokens. Generic endpoint throughput remains unavailable when server usage counts are missing; it is not estimated by counting chunks. Legacy managed results may carry explicitly marked chunk-based estimates. Inspect `metric_sources` and estimated-token flags.
 
 `timing_scope` records whether first output is content or reasoning, the output kinds observed, empty deltas before output, reasoning-token provenance and the decode token scope. `decode_token_count` records the numerator actually used. Reported hidden reasoning tokens are excluded from decode when they were not streamed. When empty pre-output deltas suggest hidden reasoning and its token count is unknown, decode throughput remains unavailable. Even without that signal, an endpoint that does not report reasoning may leave hidden work unverified. Compare equivalent timing boundaries rather than assuming completion usage always measures visible text. Decode energy per token uses the same scoped numerator.
@@ -287,7 +298,7 @@ Memory topology is collected automatically without installing utilities. Windows
 
 **This machine** and result badges distinguish firmware layout, OS reports and controller detection. **Refresh memory topology** runs the built-in probe. A later annotation on matching GPU, CPU, motherboard, RAM capacity and reported clocks retains its capture time and marks historical inference conditions unverified; original sessions and inference rows stay unchanged. Pending configuration checks prompt when their benchmark's GPU is reconnected. Channel counts and provenance are included in helper CSV exports.
 
-Helper throughput and capability benchmarks also run separate transfer microbenchmarks before inference. **Measure transfer bandwidth** in the machine panel runs them independently. Choose **Storage test folder** on the drive holding your weights, or leave it blank to test the results volume; the folder path is excluded from saved public configuration. Storage → RAM reads a flushed 256 MiB temporary file three times in 8 MiB blocks at queue depth one, bypassing the OS page cache with Windows unbuffered I/O, Linux `O_DIRECT` or macOS `F_NOCACHE`. Device/controller caches may still contribute. File creation is excluded from read timing, and the temporary file is removed. This is sequential read throughput on the selected filesystem, not random expert-fetch performance or a measurement of other drives.
+Helper throughput benchmarks run separate transfer microbenchmarks before inference by default. The API's `hardware_probe_policy: "defer"` skips fresh probes and reuses only a verified matching saved capture, or records that the measurement is deferred. Reused captures retain their original timestamp and are not presented as measured in the new session. Capability evaluations always use this separate-probe policy, keeping RAM, storage and CUDA microbenchmarks outside accuracy collection. **Measure transfer bandwidth** in the machine panel runs them independently. Choose **Storage test folder** on the drive holding your weights, or leave it blank to test the results volume; the folder path is excluded from saved public configuration. Storage → RAM reads a flushed 256 MiB temporary file three times in 8 MiB blocks at queue depth one, bypassing the OS page cache with Windows unbuffered I/O, Linux `O_DIRECT` or macOS `F_NOCACHE`. Device/controller caches may still contribute. File creation is excluded from read timing, and the temporary file is removed. This is sequential read throughput on the selected filesystem, not random expert-fetch performance or a measurement of other drives.
 
 RAM → VRAM probes each detected NVIDIA adapter sequentially, mapped by PCI bus through the CUDA driver. Each device result retains its identity, raw samples and PCIe snapshots before and during untimed transfer warmup in `ram_to_vram_devices`. The selected primary adapter's result also appears in the compatibility field `ram_to_vram`; selecting it does not restrict the device sweep. The probe times completed copies from a 64 MiB pinned host buffer, with warmup, three 2 GiB samples, synchronization and a readback check. It describes host-to-device transfers, not internal VRAM bandwidth or pageable-memory performance. Separate device rates are not measured simultaneous throughput, and physical slot labels/wiring remain unverified. The probe avoids starting when reported free VRAM is below 512 MiB. Unsupported hardware, insufficient resources and failed probes are recorded as unavailable rather than estimated. No inference models are loaded or unloaded by the probes. An isolated worker has a 75-second limit.
 
@@ -1130,6 +1141,10 @@ Canonical source: [docs/dual-gpu-communication-and-placement.md](docs/dual-gpu-c
 
 # Dual-GPU communication and placement investigation
 
+This study records the PNY RTX 5070 Ti plus ASUS RTX 5060 Ti configuration.
+For two RTX 5070 Ti cards, see the separate
+[communication and placement comparison](docs/two-5070-ti-placement.md).
+
 **Completed supplied diagnostic matrices.** These captures are separate from normal Wattever benchmark aggregates. Existing historical measurements remain unchanged.
 
 Recorded conditions: 153 unprofiled screening and 3 profiled. Screening outcomes: {"allocation_failed":1,"failed":3,"ok":143,"unsupported_configuration":6}. Eligible timing conditions: 143. Required but absent case IDs: 0; unobserved required representative model/strategy/prompt/client combinations: 0. All entries in the supplied capture manifests were attempted. Full transfer capture available: True. Each measured inference condition has one repeat; internal CUDA-copy samples are not inference repeats.
@@ -1868,6 +1883,661 @@ The fixed256 Gemma single5070 anchor completed with hash-bound effective ignore_
 
 ---
 
+## docs/two-5070-ti-comparison.md
+
+Canonical source: [docs/two-5070-ti-comparison.md](docs/two-5070-ti-comparison.md)
+
+# Two RTX 5070 Ti 16 GB cards: performance, energy and temperature
+
+This benchmark compares a PNY RTX 5070 Ti plus an ASUS Prime RTX 5070 Ti with
+the same PNY card alone and with a PNY RTX 5070 Ti plus ASUS RTX 5060 Ti. All
+three configurations use an Intel Core i7-5960X and 64 GiB of RAM. The two-5070
+configuration records **180 cases: 179 successful and one timeout**, with one
+measured inference repeat per condition.
+
+Native Strata Flash-Next IQ3_S showed higher observed throughput on two 5070 Ti
+cards. Most LM Studio models had decode rates closer to the single-card rates,
+while Gemma E2B retained a large regression. These are comparisons of complete
+observed configurations: endpoint transport, automatic placement and host-memory
+registration also affect their interpretation.
+
+[Two-card raw measurements](results/runs/20261103-100532_rtx-5070-ti_0a91ddc850.json)
+· [Single-PNY baseline](results/runs/20261102-041639_rtx-5070-ti_6b6060174b.json)
+· [Mixed-card baseline](results/runs/20261102-175334_rtx-5070-ti_9116ad932f.json)
+· [Every paired case and eligibility gate](results/aggregates/two-5070-ti-paired-cases.csv)
+· [Per-model summaries](results/aggregates/two-5070-ti-model-summary.csv)
+· [Absolute case measurements](results/aggregates/two-5070-ti-absolute-cases.csv)
+
+## Hardware and protocol
+
+| Setting | Recorded condition |
+|---|---|
+| CPU and memory | Intel Core i7-5960X, 8 cores / 16 threads, 64 GiB RAM |
+| GPU0 / GPU1 | PNY RTX 5070 Ti 16 GB / ASUS Prime RTX 5070 Ti 16 GB |
+| GPU driver | NVIDIA 617.42 |
+| Backend versions | LM Studio 0.4.24+1; native Strata engine 0.1.52 |
+| Prompt targets | 512, 5k, 10k, 20k, 40k and 80k tokens |
+| Simultaneous clients | One and two |
+| Generation settings | 256-token maximum output budget, temperature 0, requested reasoning none |
+| Inference repeats | One per model / target / client-count condition |
+| Case deadline | 300 seconds |
+| Outcome | 179 successful; native Qwen35 at 80k / two clients timed out |
+
+The 15 model variants comprise **144 LM Studio and 36 native Strata cases**.
+Against the single-PNY baseline, **13 shared model IDs cover 156 common
+model/target/client cells**. Two additional LM Studio Qwen Q4_K_M variants
+contribute 24 supplemental cells. They remain separate from native Strata and
+other-quantization variants. The mixed-card baseline contains all 15 variants.
+
+The final native Qwen35 cases were measured in a separate session after a reboot.
+Two partial LM Studio attempts from monitoring interruptions remain archived
+outside the 180 primary observations. Successful observations were preserved;
+the final native timeout was recorded without a retry.
+
+LM Studio uses its recorded managed context and allocation settings. Native
+Strata uses a 98,304-token context and one serving slot; submitting two clients
+therefore includes queueing at that server. Two installed cards do not establish
+that a backend executes across both. Runtime evidence below distinguishes them.
+
+## How to interpret the measurements
+
+### Hardware probe references
+
+The normal JSON also retains fresh hardware probes, outside inference timing.
+Four 16 GiB DIMMs report A1/B1/C1/D1 placement at 2133 MT/s: four populated
+firmware channels are inferred; active controller mode is not independently
+verified. Native RAM-copy throughput counts copied payload once, not physical
+DRAM bus traffic.
+
+| Probe | Observed result |
+|---|---:|
+| Single-worker native RAM copy | 8.30 GB/s |
+| Eight-worker native RAM copy | 22.86 GB/s |
+| Matched six-worker native RAM copy | 23.41 GB/s |
+| Samsung 870 EVO sequential read, queue depth 1, OS cache bypassed | 0.539 GB/s |
+| Pinned RAM to PNY / ASUS GPU, fresh automatic probe | 13.51 / 13.56 GB/s |
+
+That storage reading measures the SATA probe volume, not the separate NVMe.
+The [communication study](docs/two-5070-ti-placement.md) retains later transfer
+controls with a distinct protocol and verifies both loaded GPU links at Gen3 x16.
+
+At 8192-square dense GEMM, the measured medians below use CUDA-event batches,
+five warmups and 15 internal samples with analytical readback checks. They are
+observed arithmetic throughput, not advertised peak specifications or inference
+predictions. The actual library algorithm is retained; its instruction path was
+not independently profiled.
+
+| Arithmetic | PNY 5070 Ti | ASUS Prime 5070 Ti |
+|---|---:|---:|
+| FP32, TF32 disabled | 36.41 TFLOP/s | 36.25 TFLOP/s |
+| FP16-input GEMM | 101.15 TFLOP/s | 96.57 TFLOP/s |
+| INT8-input GEMM | 347.97 TOPS | 346.63 TOPS |
+
+Integer throughput uses TOPS. No INT4 arithmetic measurement was made, and
+GGUF weight bit-width is not the precision of every inference operation.
+
+### Timing, matching and energy boundaries
+
+**Client prefill is actual prompt tokens divided by client-observed TTFT.** It
+includes transport, queueing and other work before observable output. Backend
+prompt-evaluation counters, where available, remain separate. See the
+[measurement definitions](docs/measurements.md).
+
+Managed LM Studio requests in the two-5070 pass use explicit IPv4; the historical
+normal baselines used `localhost`. A separate metadata-GET diagnostic observed
+approximately 2.06 seconds through `localhost` versus 22 milliseconds through
+IPv4. That does not measure a fixed chat-request delay. Historical timings are
+unchanged, and no guessed delay is subtracted. **LM Studio prefill and TTFT
+changes cannot be attributed wholly to the extra GPU.** Native Strata used IPv4
+in both cohorts.
+
+Ratios below are unweighted medians of eligible per-case ratios. Each metric has
+its own eligible-pair count, **N**; N counts workload cells, not independent
+repeats. Input/output proximity gates allow up to the larger of eight tokens or
+2%; TTFT input gates allow four tokens or 0.5%. Whole-case comparisons also
+require output-count proximity. The CSVs retain a separate strict exact-count
+subset. Equal counts do not prove equal generated text or token sequences.
+
+GPU energy covers both installed boards, including an idle secondary card.
+Concurrent case energy is integrated once over the shared group interval; it
+is not the sum of overlapping request energies. Decode J/token covers the
+observed generation interval after first output, whereas whole-case energy
+includes the group's prompt and generation work.
+CPU/system power is estimated, not measured at a wall socket. Historical
+physically single-card energy keeps its original one-board boundary.
+
+## Matched performance and energy
+
+Each cell reports median percentage change and eligible N. Positive throughput
+and negative energy changes are favorable. LM Studio and native Strata remain
+separate cohorts.
+
+| Reference | Backend | Clients | Client prefill change (N) | Decode change (N) | Decode GPU J/token change (N) | Whole-case GPU energy change (N) |
+|---|---|---:|---:|---:|---:|---:|
+| Single PNY 5070 Ti | LM Studio | 1 | +108.4% (57) | −5.1% (57) | +31.4% (40) | Unavailable (0) |
+| Single PNY 5070 Ti | LM Studio | 2 | +91.1% (55) | −2.8% (55) | Unavailable (0) | +11.0% (27) |
+| Single PNY 5070 Ti | Native Strata | 1 | +7.9% (12) | +45.6% (12) | +15.4% (12) | Unavailable (0) |
+| Single PNY 5070 Ti | Native Strata | 2 | +19.0% (12) | +67.3% (12) | Unavailable (0) | +30.0% (6) |
+| 5070 Ti + 5060 Ti | LM Studio | 1 | +106.2% (72) | +29.3% (72) | +0.2% (53) | Unavailable (0) |
+| 5070 Ti + 5060 Ti | LM Studio | 2 | +79.7% (72) | +28.4% (72) | Unavailable (0) | −7.3% (40) |
+| 5070 Ti + 5060 Ti | Native Strata | 1 | +9.1% (18) | +21.8% (18) | +9.1% (18) | Unavailable (0) |
+| 5070 Ti + 5060 Ti | Native Strata | 2 | +13.3% (17) | +50.3% (17) | Unavailable (0) | +7.5% (9) |
+
+Native Strata versus the single-PNY baseline includes the two Flash-Next
+variants. Native Qwen35 is excluded because its host allocation differs, as
+explained below. The mixed-card native comparison includes Qwen35 where both
+conditions have compatible evidence. These different eligible populations are
+not interchangeable.
+
+### Native Flash-Next by quantization
+
+These single-client medians span the six prompt targets. Registration policy
+and expert-cache placement are part of the observed configuration treatment.
+
+| Quantization | Reference | Client prefill change (N) | Decode change (N) | GPU decode J/token change (N) |
+|---|---|---:|---:|---:|
+| IQ3_S | Single PNY 5070 Ti | +24.9% (6) | +74.8% (6) | −7.2% (6) |
+| UD-IQ4_XS | Single PNY 5070 Ti | +5.4% (6) | +23.5% (6) | +31.4% (6) |
+| IQ3_S | 5070 Ti + 5060 Ti | +12.6% (6) | +83.5% (6) | −22.6% (6) |
+| UD-IQ4_XS | 5070 Ti + 5060 Ti | +34.5% (6) | +21.8% (6) | +16.4% (6) |
+
+## Absolute single-client throughput
+
+Values are **client prefill / decode, in tokens per second**. Prompt lengths
+label target groups; actual token counts and output lengths are retained in the
+raw measurements. Each row is a separate engine/quantization condition.
+
+| Model / quantization | Backend | 20k target | 80k target |
+|---|---|---:|---:|
+| Gemma 4 12B QAT / Q4_0 | LM Studio | 5,258.79 / 73.90 | 3,934.48 / 66.42 |
+| Gemma 4 26B-A4B QAT / Q4_0 | LM Studio | 5,738.35 / 116.68 | 4,885.77 / 99.67 |
+| Gemma 4 E2B / Q4_K_M | LM Studio | 8,801.83 / 29.90 | 5,456.91 / 10.08 |
+| Gemma 4 E4B / Q4_K_M | LM Studio | 7,348.75 / 82.22 | 5,913.20 / 66.06 |
+| LFM2.5-24B-A2B / Q4_0, QAD | LM Studio | 8,034.16 / 175.28 | 7,228.24 / 128.68 |
+| GPT-OSS-20B / MXFP4 | LM Studio | 8,077.44 / 124.58 | 5,735.17 / 100.77 |
+| Bonsai-27B / Q1_0 | LM Studio | 3,168.79 / 71.26 | 2,157.14 / 51.72 |
+| Qwen3.5-9B / Q4_K_M | LM Studio | 7,316.71 / 82.08 | 5,356.02 / 64.41 |
+| Qwen3.8-27B / Q3_K_XL, UD | LM Studio | 2,795.28 / 41.60 | 1,976.39 / 33.77 |
+| Spark-X2.6-4B / Q4_K_M | LM Studio | 8,956.42 / 115.06 | 6,166.78 / 83.05 |
+| Qwen3.6-35B-A3B / Q4_K_M | LM Studio, supplemental | 5,797.96 / 130.13 | 4,902.14 / 105.96 |
+| Qwen3.8-27B / Q4_K_M | LM Studio, supplemental | 2,810.55 / 37.76 | 1,977.97 / 31.51 |
+| Flash-Next / UD-IQ4_XS | Native Strata | 1,062.01 / 18.18 | 1,971.69 / 17.55 |
+| Flash-Next / IQ3_S | Native Strata | 1,089.00 / 73.26 | 2,359.37 / 69.58 |
+| Qwen3.6-35B-A3B / UD-Q4_K_XL | Native Strata | 493.06 / 33.09 | 460.58 / 11.59 |
+
+For example, the native IQ3_S 80k case used 80,996 prompt tokens and generated
+195 tokens. The UD-IQ4_XS case used 81,008 / 196; native Qwen35 used 80,999 / 229.
+These stopping lengths differ. Speed does not establish model-quality or
+quantization-quality equivalence.
+
+Gemma E2B's LM Studio single-client decode median was 72.9% below the
+single-PNY baseline across six eligible cells. The normal cohort establishes
+the observed regression; communication and placement causality require the
+separate diagnostic study.
+
+## Native execution and speculative decoding
+
+Qwen's model card distinguishes a **125B language model with 6B activated**,
+plus **51B n-gram embeddings and a 4B MTP component**. Approximately 180B across
+those components is different from the activated language-model count; quant
+file size is not a parameter-count measurement. [Publisher model overview](https://huggingface.co/Qwen/Qwen3.8-Flash-Next/raw/main/README.md).
+
+| Model / quantization | Selected GPUs | Serving slots | Expert memory evidence | Draft configuration | Observed offered / accepted |
+|---|---|---:|---|---|---:|
+| Flash-Next / UD-IQ4_XS | GPU1 then GPU0 | 1 | 55.44 GiB resident arena; 5,311 GPU-cached experts | Four drafts requested | 3,569 / 2,019 |
+| Flash-Next / IQ3_S | GPU1 then GPU0 | 1 | 46.84 GiB resident arena; 7,196 GPU-cached experts | Four drafts requested | 3,426 / 2,027 |
+| Qwen3.6-35B / UD-Q4_K_XL | GPU0 only | 1 | 18.75 GiB pageable host experts; 19 per layer cached on GPU | MTP requested; head loaded | 0 / 0 |
+
+The draft counters cover each loaded engine's lifetime, including warmups;
+they are not per-case acceptance measurements. GPU order does not by itself
+verify every tensor or KV-cache placement. Flash-Next records INT8 KV and a
+96k allocation. Native Qwen35's actual KV dtype is unreported.
+
+Native Qwen35 executes on **one GPU** despite two installed cards. Its
+single-PNY baseline reported pinned host experts, while this pass used pageable
+host experts. Those single-to-dual ratios are excluded (N=0). Against the
+pageable mixed-card condition, six single-client and five two-client cells are
+eligible. Pageable allocation alone is not evidence of pagefile traffic.
+
+## Resident RAM is not the same as CUDA registration
+
+Startup logs account for resident Flash expert arenas using a combination of
+CUDA-registered slices and Windows VirtualLock. VirtualLock keeps pages resident
+but does not register those pages with CUDA. Reported CUDA-registered GiB below
+are **integer floors**, not exact byte counts.
+
+| Quant / arena | Setup | VirtualLock MiB | Registered slices | Registered GiB floor |
+|---|---|---:|---:|---:|
+| UD-IQ4_XS / 55.44 GiB | Single PNY 5070 Ti | 27,365 | 25 | 28 |
+| UD-IQ4_XS / 55.44 GiB | 5070 Ti + 5060 Ti | 48,978 | 6 | 7 |
+| UD-IQ4_XS / 55.44 GiB | Two 5070 Ti | 48,978 | 6 | 7 |
+| IQ3_S / 46.84 GiB | Single PNY 5070 Ti | 17,977 | 31 | 29 |
+| IQ3_S / 46.84 GiB | 5070 Ti + 5060 Ti | 40,290 | 8 | 7 |
+| IQ3_S / 46.84 GiB | Two 5070 Ti | 40,290 | 8 | 7 |
+
+Both dual-card captures log the engine's 8 GiB registration cap for multi-GPU
+Windows/WDDM execution. The version-pinned upstream documentation describes a
+pinned staging ring for the remainder. This is an engine policy rather than a
+universal hardware limit. The exposed registration override was not tested in
+this study. [Strata 0.1.52 source documentation](https://github.com/Niko1221/Strata/blob/a42cc3d7df70/docs/MULTI_GPU.md#L133-L138).
+
+Single-to-dual native comparisons change registration composition alongside
+GPU/cache placement. Their performance differences are complete-configuration
+outcomes, not isolated GPU-compute or DMA effects. For each quant, the
+mixed-card and two-5070 captures have identical reported pin/lock composition;
+that difference does not distinguish those two dual-card configurations.
+
+## Temperature, fans and measurement coverage
+
+The continuous 1 Hz observer spans idle periods, loading, hardware probes and
+inference. Its recorded peaks are distinct from the helper's per-case phase
+readings, which can catch shorter events.
+
+| Measurement boundary | PNY 5070 Ti | ASUS Prime 5070 Ti |
+|---|---:|---:|
+| Continuous observer: peak GPU-core temperature | 77°C | 63°C |
+| Continuous observer: peak intended fan duty | 65% | 42% |
+| Continuous observer: peak reported board power | 300.87 W | 287.48 W |
+| Recorded case/phase GPU-core maximum | 77°C | 64°C |
+| Observed hardware/software thermal-throttle samples | 0 / 0 | 0 / 0 |
+
+The observer used 78°C warning and 83°C pause thresholds. No sampled warning or
+thermal-throttle event occurred in the normal-run capture segments. Power-limit
+activity is reported separately and is not thermal throttling. Driver fan duty
+does not verify physical fan RPM. GPU memory and hotspot temperatures are
+unavailable.
+
+Sampling gaps and the reboot interval remain explicit; no temperatures are
+interpolated across them. Monitoring interruptions are separate from
+overtemperature events. One-Hz samples can miss shorter peaks, and this workload
+does not establish cooling capability at uninterrupted maximum board power.
+Different card positions and uncontrolled ambient conditions prevent treating
+the temperature difference as an isolated board-design comparison.
+
+The single-PNY baseline lacks the newer structured per-GPU breakdown, but its
+legacy one-board fields retain 76 single-client case readings with a 65°C
+maximum and 78 whole-case readings with a 68°C maximum. These historical
+boundaries remain separate from the dual-card channels.
+
+## Figures and detailed evidence
+
+The client-prefill and TTFT figures retain the transport qualification above.
+Temperature and clock traces retain their recorded sampling gaps.
+
+![Client-prefill throughput by recorded configuration](results/aggregates/two-5070-ti-prefill.png)
+
+![Decode throughput by recorded configuration](results/aggregates/two-5070-ti-decode.png)
+
+![Client-observed time to first output](results/aggregates/two-5070-ti-ttft.png)
+
+![Combined GPU decode energy per token](results/aggregates/two-5070-ti-decode-energy.png)
+
+![Combined GPU prefill energy per thousand prompt tokens](results/aggregates/two-5070-ti-prefill-energy.png)
+
+![Per-card sampled GPU-core temperature](results/aggregates/two-5070-ti-temperature.png)
+
+![Per-card intended fan duty](results/aggregates/two-5070-ti-fan.png)
+
+![Per-card recorded GPU clocks](results/aggregates/two-5070-ti-clocks.png)
+
+[Thermal observations](results/aggregates/two-5070-ti-thermal-observations.csv)
+and [segment/coverage summary](results/aggregates/two-5070-ti-thermal-summary.json)
+retain the thermal sampling scope.
+
+## Standalone communication and placement study
+
+The [two-card communication and placement study](docs/two-5070-ti-placement.md)
+records 153 unprofiled inference conditions, three separate traces, transfer
+samples and workload-specific recommendations. Those diagnostic observations
+remain separate from this normal benchmark cohort. Conditions overlapping
+background activity retain an explicit confound flag.
+
+## Limits and related reports
+
+These are one-pass engineering observations. Automatic clocks, ambient
+conditions, filesystem caches, natural stopping lengths, endpoint transport and
+runtime allocation policies limit causal and statistical conclusions. A shared
+model ID or public configuration fingerprint does not authenticate identical
+weight bytes or effective server behavior. Failures remain part of the dataset;
+unavailable readings are not zeros. No intelligence or model-quality benchmark
+was performed as part of this hardware comparison.
+
+See [measurements and sessions](docs/measurements.md), the
+[mixed-card comparison](docs/5070-plus-5060-comparison.md), and
+[sharing results](docs/sharing-results.md) for metric boundaries, recorded-condition
+selection and public exports. The
+[multi-GPU communication study](docs/dual-gpu-communication-and-placement.md)
+describes the separate diagnostic methodology and its measured coverage.
+
+## Complete campaign thermal boundary
+
+A separate frozen capture through 2026-11-04 00:24 UTC includes the normal
+cohort, standalone diagnostics, loading and idle periods. Adjacent valid samples
+cover approximately 7.077 hours per card across four segments; the reboot and
+sensor gaps are excluded. Later GLM work is outside this boundary.
+
+| Observation | PNY 5070 Ti | ASUS Prime 5070 Ti |
+|---|---:|---:|
+| Valid temperature samples | 25,196 | 25,195 |
+| Sampled GPU-core maximum | 77°C | 67°C |
+| Maximum intended fan duty | 65% | 42% |
+| Peak reported board power | 302.04 W | 287.48 W |
+| Samples at or above 78°C / 83°C | 0 / 0 | 0 / 0 |
+| Hardware / software thermal-active samples | 0 / 0 | 0 / 0 |
+| Software power-cap-active samples | 1,667 | 133 |
+
+Power-cap activity is distinct from thermal throttling. These sampled maxima do
+not bound unsampled peaks, memory or hotspot temperature. No heat value is
+interpolated across gaps, and case energy is not recalculated from these samples.
+The 83°C interlock also limits what this experiment can establish about
+unrestricted continuous operation.
+
+![Complete campaign GPU-core temperatures](results/aggregates/two-5070-ti-campaign-temperature.png)
+
+![Complete campaign intended fan duty](results/aggregates/two-5070-ti-campaign-fan.png)
+
+![Complete campaign GPU clocks](results/aggregates/two-5070-ti-campaign-clocks.png)
+
+[All thermal samples](results/aggregates/two-5070-ti-campaign-thermal.csv)
+and [coverage summary](results/aggregates/two-5070-ti-campaign-thermal-summary.json)
+retain the recorded segment boundary.
+
+---
+
+## docs/two-5070-ti-placement.md
+
+Canonical source: [docs/two-5070-ti-placement.md](docs/two-5070-ti-placement.md)
+
+# Two RTX 5070 Ti cards: communication and execution strategies
+
+Two equal-capacity GPUs benefit different workloads differently. On this
+i7-5960X / 64 GiB Windows machine, balanced layer placement substantially
+improves long-context LFM and Qwen inference. Gemma E2B's equal split instead
+causes a severe decode regression. Independent instances improve concurrent
+job throughput when each instance fits comfortably on one card.
+
+These standalone llama.cpp diagnostics are separate from the
+[180-case LM Studio/native Strata comparison](docs/two-5070-ti-comparison.md).
+They do not replace historical measurements or enter normal Wattever aggregates.
+
+## Protocol and coverage
+
+The hardware is a PNY RTX 5070 Ti and ASUS Prime RTX 5070 Ti, both 16 GB,
+with NVIDIA driver 617.42. The standalone build is llama.cpp b12058,
+commit `3f8af15a7`, executable SHA256
+`ff552b19fe6038bd45a00ead5e4a8d49422e3d6735cfc9672acc34b0c9767115`.
+Nsight Systems is 2026.3.2.476.
+
+| Measurement family | Recorded coverage |
+|---|---|
+| Transfer microbenchmarks | 280 conditions: 14 routes, 10 sizes from 4 B to 256 MiB, two timing modes |
+| Inference screening | 153 unprofiled conditions |
+| Instrumented inference | Three separate Gemma traces |
+| Inference outcomes, including profiles | 146 successful, six unsupported, three failed, one allocation failure |
+| Background-activity overlap | 19 conditions retained with an explicit confound flag |
+| Measured inference repeats | One per measured condition; unsupported/failed attempts remain separate |
+
+The main inference matrix uses the same existing GGUF files, F16 K/V,
+Flash Attention, reasoning off, MTP off, temperature 0, top-p 1 and seed 73129.
+Prompt targets are 512, 20k and 80k, with one or two clients and a 256-token
+maximum output budget. Actual counts and natural EOS remain recorded.
+Per-slot context is target plus 5%, 512 headroom and the output budget, rounded
+up to a multiple of 256. Batch/ubatch sizes are 2048/512, with eight CPU and
+batch threads. Each fresh engine has an excluded short warmup.
+
+All requests use explicit IPv4 with prompt caching, idle-slot caching and
+context shifting disabled. Historical localhost timings are unchanged.
+Backend prompt-evaluation timings remain separate from client prompt tokens
+divided by TTFT. Filesystem-cache equality and complete mapped-weight residency
+are unverified. Q8 K/V and fixed-output closeouts are separate treatments.
+
+Socket/inactivity timeout is 900 seconds per request, with a 920-second wait
+per awaited concurrent future, then cancellation and worker cleanup. This is
+not a hard 900-second whole-condition deadline. Unsupported or failed attempts
+remain in the evidence; their token rates are not treated as successful runs.
+
+Two-card power is integrated once over the shared client-group interval.
+Single-card execution includes the installed idle second board. Whole-case
+GPU joules per output token include prompt processing; decode-phase joules
+per token have a different boundary. Neither measures wall-socket system power.
+
+## PCIe paths and transfer measurements
+
+Both GPUs negotiate **PCIe Gen 3 x16 under load**. The 256 GB NVMe remains
+installed. OS device/parent relationships are recorded, but physical motherboard
+slot labels and undocumented NVMe lane sharing are unverified. An idle lower
+generation is not reported as the loaded link.
+
+CUDA peer access is **false in both directions**. The cross-card probe below
+explicitly stages through portable-pinned host RAM. A CUDA peer-copy API name
+does not establish direct physical P2P transport.
+
+Rates are median validated joint payload GB/s at 256 MiB per route. Simultaneous
+rates use an actual shared barrier-to-completion interval; independent rates
+are never added and presented as simultaneous throughput.
+
+| Route | Mixed 5070 Ti + 5060 Ti | Two 5070 Ti |
+|---|---:|---:|
+| Pinned RAM to GPU0 | 13.57 | 13.58 |
+| Pinned RAM to GPU1 | 6.88 | 13.56 |
+| GPU0 to pinned RAM | 10.42 | 10.39 |
+| GPU1 to pinned RAM | 7.08 | 10.42 |
+| Explicit staged GPU0 to GPU1 | 2.37 | 1.77 |
+| Explicit staged GPU1 to GPU0 | 4.66 | 2.37 |
+| Simultaneous equal RAM-to-GPU routes | 13.77 | 13.96 |
+| Simultaneous 2:1 RAM-to-GPU routes | 19.69 | 19.47 |
+| Simultaneous GPU-to-RAM routes | 14.12 | 20.42 |
+| Bidirectional staged cross-card routes | 7.68 | 11.31 |
+
+The second card's host link improves, while these particular one-way staged
+microcopies do not. This is evidence against treating link width alone as a
+complete predictor of cross-card performance. Dispatch, context handling,
+synchronization and the unpipelined DtoH-then-HtoD route are included.
+Small-transfer host latency likewise is not intrinsic PCIe hardware latency.
+The raw samples retain sizes, copy counts, direction, validation and timing mode.
+
+Sustained sequential local-VRAM controls measured **375.66 / 384.24 GB/s** of
+copied payload by CUDA events on PNY/ASUS, with approximately 80 ms batches.
+Short host-timed microcopies measured 162.03 / 17.15 GB/s under a different
+protocol. Those short figures do not establish degraded ASUS memory bandwidth.
+Payload bytes are counted once; a separate read-plus-write traffic convention
+would double the accounting, not the measured payload rate.
+
+Monolithic host-pinning and concurrently held pooled allocations are separate
+controls. The pooled 8 + 8 + 2.75 GiB sequence succeeded and was released.
+This does not prove identical behavior for a production Runtime API allocation
+inside an already loaded model process.
+
+## Single-request prefill and decode
+
+Values below are observed **prefill / decode tok/s**, using client timing.
+All rows use one client and F16 K/V. Balanced means a 1:1 layer split.
+The output-count column makes stopping differences explicit.
+
+| Model / quant | Prompt target | PNY only | Balanced two-card | Actual output tokens, PNY / balanced |
+|---|---:|---:|---:|---:|
+| LFM2.5-24B, QAD-Q4_0 | 20k | 6,934 / 183.39 | 8,965 / 173.72 | 256 / 256 |
+| LFM2.5-24B, QAD-Q4_0 | 80k | 1,792 / 83.69 | 7,405 / 129.38 | 256 / 256 |
+| Qwen3.8-27B, UD-Q3_K_XL | 20k | 1,853 / 45.54 | 2,853 / 45.31 | 250 / 250 |
+| Qwen3.8-27B, UD-Q3_K_XL | 80k | 449 / 1.41 | 2,010 / 36.42 | 221 / 221 |
+| Qwen3.6-35B-A3B, Q4_K_M | 20k | 456 / 59.45 | 5,697 / 138.59 | 244 / 215 |
+| Qwen3.6-35B-A3B, Q4_K_M | 80k | 386 / 50.20 | 4,882 / 113.22 | 234 / 233 |
+| Gemma 4 E2B, Q4_K_M | 20k | 11,049 / 190.66 | 9,703 / 31.93 | 256 / 256 |
+| Gemma 4 E2B, Q4_K_M | 80k | 7,304 / 152.66 | 5,645 / 10.60 | 246 / 246 |
+
+LFM's 80k case improves prefill 4.13 times and decode 1.55 times, with equal
+actual output counts. Qwen27 improves prefill 4.47 times and decode 25.82 times,
+also with equal counts. Qwen35's differing EOS lengths require descriptive
+interpretation: its table is not an exact-output paired latency or energy claim.
+The CSVs retain strict comparisons separately from common-budget observations.
+
+The final allocation logs also change materially at 80k/one client:
+
+| Model | PNY-only CPU_Mapped weights, GiB | Balanced CPU_Mapped weights, GiB | Additional evidence |
+|---|---:|---:|---|
+| LFM | 1.571 | 0.200 | Logged host-expert policy in the single-card condition, absent in balanced |
+| Qwen27 | 3.283 | 0.509 | Single-card CPU KV buffer 1.297 GiB; balanced KV 2.594 GiB on each GPU |
+| Qwen35 | 8.509 | 0.266 | Logged host-expert policy in the single-card condition, absent in balanced |
+
+These observed allocations support a capacity/placement explanation for the
+long-context gains. They do not isolate a doubling of GPU compute. CPU_Mapped
+bytes alone do not establish which pages were physically resident, how much
+CPU work occurred, or whether the pagefile was accessed.
+
+## Gemma placement and communication
+
+Gemma's equal split is slow despite ample combined VRAM. A reverse 1:2 split
+with physical device order ASUS then PNY places more of the shared-tail weights
+on PNY. It changes several placement variables, so this is an intervention on
+the whole layout, not an isolated KV-cache experiment.
+
+| Gemma condition | 20k prefill / decode | 80k prefill / decode |
+|---|---:|---:|
+| PNY only | 11,049 / 190.66 | 7,304 / 152.66 |
+| Equal layer split | 9,703 / 31.93 | 5,645 / 10.60 |
+| Reverse ASUS:PNY 1:2 | 11,989 / 141.27 | 9,507 / 111.66 |
+
+At 80k, the reverse layout's whole-request wall time is 10.68 seconds for 246
+output tokens. It improves total latency despite slower decoding than PNY
+alone. For sustained generation, the single-card decode rate remains higher.
+Its GPU energy is a separate objective: ASUS alone records 11.15 J/output token
+including prefill, versus 13.06 for the reverse layout at that workload.
+
+The three whole-workload traces record approximately 1.86 GB, 102.80 GB and
+3.53 GB of logical/requested CUDA copy bytes for single, equal and reverse
+placement. These are **not measured physical PCIe bytes**. Profiles overlap
+background download activity, have unquantified instrumentation overhead and
+are excluded from ordinary rankings. Summed API wait durations are not wall
+idle percentages; client/trace phase clock alignment is unverified.
+
+Final positive allocations, rather than dry-fit logs, govern placement claims.
+The recovered profiled console records have the same observed final allocation
+shapes as their corresponding plain runs. Equal aggregate buffers do not prove
+identical placement for every individual tensor.
+A CPU_Mapped buffer does not prove CPU computation, pagefile traffic or physical
+residency. Shared weight placement alone does not verify every KV tensor's
+locality. The trace and layout evidence support a communication/waiting
+explanation, but do not isolate a single causal mechanism or quantify phase
+idle time. Gemma's six tensor-mode cases failed an actual split-axis assertion;
+the classic-row closeout reported unsupported split buffers.
+
+## Concurrent throughput and energy
+
+Aggregate output is total actual output tokens divided by one shared group
+interval, including prefill. Independent instances run one request on each GPU.
+They are not a sum of standalone token rates.
+
+| Model / prompt | PNY with two clients | Shared balanced model | Independent instances | Output-count qualification |
+|---|---:|---:|---:|---|
+| LFM, 20k | 45.99 | 69.79 | 117.77 | 256 + 256 for all three |
+| LFM, 80k | 2.43 | 13.65 | 9.84 | 256 + 256 for all three |
+| Qwen27, 20k | 4.26 | 20.83 | 30.21 | Different EOS lengths; descriptive |
+| Qwen27, 80k | Timed out | 3.23 | 1.03 | Different EOS lengths; descriptive |
+| Gemma E2B, 20k | 67.96 | 23.95 | 143.03 | Different EOS lengths; descriptive |
+| Gemma E2B, 80k | 11.47 | 4.62 | 34.85 | Different EOS lengths; descriptive |
+
+LFM at 20k illustrates independent-instance throughput: 2.56 times the PNY
+two-client rate with equal output counts. At 80k, sharing one model across both
+GPUs is faster than duplicating it. Capacity and context change the best choice.
+
+| Objective | Supported setting / limit |
+|---|---|
+| Lowest total request latency | Balanced LFM/Qwen at long context; Gemma reverse layout at 80k. Consult exact-output buckets. |
+| Highest concurrent job throughput | Independent instances for LFM at 20k; balanced LFM at 80k. Gemma favors independent instances under the common-budget observations. |
+| Largest tested model/context | Successful 80k screens are recorded, not true maxima. Qwen27 single-card two-client 80k timed out; balanced two-card execution succeeded. |
+| Lowest measured GPU energy | Workload-specific: LFM80k balanced 17.63 versus PNY 26.82 J/output; Qwen27 80k balanced 93.42 versus 165.79, both including prefill and with matched output counts. |
+
+Equal, unequal and experimental tensor execution were tested on the Qwen/LFM
+models. Architecture, recurrent state, KV layout and backend restrictions mean
+support is not interchangeable across models. A clean, successful case is
+required before recommending a mode. The background-confounded Qwen35 tensor
+and independent conditions remain observable but have no clean recommendation.
+
+## Counters, limits and reproduction
+
+Per-card power, energy, VRAM, utilization, clocks and core temperature were
+captured. Sampled driver PCIe RX/TX and WDDM dedicated/shared allocations are
+available. The Nsight collection did not request CPU stack/context-switch
+sampling, PCIe hardware-byte counters or WDDM residency/page-fault traces.
+Memory/hotspot temperature is unavailable. Driver rate samples and global
+paging counters cannot establish per-model spill or physical PCIe bytes.
+
+No usable Linux CUDA/vLLM environment was established, and no OS or driver
+change was made. The named GGUF files were reused; bounded header/directory
+hashes and sizes are recorded, while full-file byte identity is unknown for
+some historical files. One-pass results, cache state, natural stopping and
+clock variation limit causal and statistical interpretation.
+
+For a new standalone balanced one-client 80k condition, a representative
+PowerShell recipe is below. Choose a free port and your own model path; stop
+other model engines through their owning applications first. The command is a
+standalone llama.cpp recipe, not a Strata lifecycle command.
+
+```powershell
+$env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID'
+$env:CUDA_VISIBLE_DEVICES = '0,1'
+& .\llama-server.exe --model $model --host 127.0.0.1 --port $freePort `
+  --ctx-size 84992 --parallel 1 --kv-unified-per-slot 84992 --kv-unified `
+  --cache-ram 0 --no-cache-idle-slots --device CUDA0,CUDA1 --main-gpu 0 `
+  --split-mode layer --tensor-split 1,1 --gpu-layers auto --fit on `
+  --fit-target 1500 --flash-attn on --cache-type-k f16 --cache-type-v f16 `
+  --spec-type none --reasoning off --no-cache-prompt --no-context-shift `
+  --slots --offline --batch-size 2048 --ubatch-size 512 --threads 8 `
+  --threads-batch 8 --log-colors off --log-timestamps --verbose --perf
+```
+
+The JSON/CSV artifacts linked below preserve actual arguments, counts, samples,
+validation, timing methods and comparison exclusions. Private paths and
+persistent device identifiers are omitted in public derivatives.
+
+## Data and figures
+
+[Public captured JSON](results/aggregates/two-5070-ti-diagnostic-raw.json.gz),
+[all inference conditions](results/aggregates/two-5070-ti-diagnostic-conditions.csv),
+[strict and descriptive strategy ratios](results/aggregates/two-5070-ti-diagnostic-within-setup-strategy-ratios.csv),
+[mixed-card comparisons](results/aggregates/two-5070-ti-diagnostic-mixed-versus-two5070.csv)
+and [recommendations](results/aggregates/two-5070-ti-diagnostic-recommendations.csv)
+retain outcomes, counts and comparison exclusions.
+
+[Transfer summaries](results/aggregates/two-5070-ti-diagnostic-micro-summary.csv),
+[all internal copy samples](results/aggregates/two-5070-ti-diagnostic-micro-samples.csv),
+[peer access](results/aggregates/two-5070-ti-diagnostic-peer-access.csv),
+[sustained local copies](results/aggregates/two-5070-ti-diagnostic-sustained-vram.csv)
+and [host allocation controls](results/aggregates/two-5070-ti-diagnostic-host-pin.csv)
+use their own sampling and timing protocols.
+
+[Final plain-run allocations](results/aggregates/two-5070-ti-diagnostic-actual-placement.csv),
+[recovered profiled allocations](results/aggregates/two-5070-ti-diagnostic-profile-actual-placement-recovered.csv),
+[profile/plain allocation comparison](results/aggregates/two-5070-ti-diagnostic-profile-placement-comparison-recovered.csv),
+[whole-trace summaries](results/aggregates/two-5070-ti-diagnostic-profiles.csv),
+[backend timings](results/aggregates/two-5070-ti-diagnostic-backend-timings.csv)
+and [per-card telemetry](results/aggregates/two-5070-ti-diagnostic-telemetry.csv)
+retain execution evidence. Full Nsight binary traces are retained separately
+from the public summary and normal benchmark library.
+
+[Counter availability](results/aggregates/two-5070-ti-diagnostic-counter-availability.csv),
+[software provenance](results/aggregates/two-5070-ti-diagnostic-software-comparison.json)
+and [background-activity intervals](results/aggregates/two-5070-ti-diagnostic-external-activity.json)
+make missing observations and the 19 flagged conditions explicit.
+The [thermal report](docs/two-5070-ti-comparison.md#complete-campaign-thermal-boundary)
+covers the complete campaign and its sampling gaps.
+
+![Transfer bandwidth by route and size](results/aggregates/two-5070-ti-diagnostic-communication-paths.png)
+
+![Standalone prefill by strategy](results/aggregates/two-5070-ti-diagnostic-prefill_tps.png)
+
+![Standalone decode by strategy](results/aggregates/two-5070-ti-diagnostic-decode_tps.png)
+
+![Standalone TTFT by strategy](results/aggregates/two-5070-ti-diagnostic-ttft_s.png)
+
+![Actual aggregate job throughput](results/aggregates/two-5070-ti-diagnostic-aggregate_output_tps.png)
+
+![Whole-case GPU joules per output token](results/aggregates/two-5070-ti-diagnostic-gpu_energy_per_output_token_including_prefill_j.png)
+
+![Decode-phase GPU joules per token](results/aggregates/two-5070-ti-diagnostic-single_request_decode_gpu_energy_per_token_j.png)
+
+---
+
 ## docs/architecture.md
 
 Canonical source: [docs/architecture.md](docs/architecture.md)
@@ -1935,6 +2605,22 @@ State-changing requests must come from the helper's own browser origin, or an Or
 Read endpoints are `GET /api/version`, `/api/env`, `/api/models`, `/api/status`, `/api/events?cursor=0`, `/api/runs`, `/api/runs/<id>`, `/api/runs/<id>/download`, `/api/preview?tokens=512`, `/api/export.json` and `/api/export.csv`. Pass the returned event cursor to subsequent polls. Exports accept comma-separated `ids`; without them they include all runs.
 
 `POST /api/bench/start` accepts benchmark configuration and starts inference. `/api/bench/cancel` requests cancellation. `POST /api/runs/<id>/meta` changes label and notes; `DELETE /api/runs/<id>` moves a run to local trash; `POST /api/shutdown` stops Wattever. An active run cannot be edited or deleted. Benchmark runs write results.
+
+Both `POST /api/bench/cancel` and `POST /api/capabilities/cancel` accept optional
+`{"expected_run_id":"<owned-run-id>"}`. The helper checks that ID and requests
+cancellation atomically against new starts. An empty/non-string ID returns 400;
+a different active ID returns 409 without cancelling it. Omitting the field
+retains unscoped cancellation. Automated operators can check
+`GET /api/version` for `features.atomic_expected_run_id_cancel: true` before
+relying on this guarantee. Client cancellation does not establish that an
+external model engine has stopped.
+
+Speed configurations accept `hardware_probe_policy: "auto"` (default) or
+`"defer"`. Deferred collection launches no fresh transfer probes; a compatible
+saved profile may be reused with its original capture timestamp. Otherwise the
+run records deferred/unavailable evidence. Capability evaluations use this
+policy independently of their generation settings. The version response lists
+supported policies in `features.hardware_probe_policy`.
 
 Managed LM Studio additionally supports `POST /api/lmstudio/start` and `/api/lmstudio/unload`. Generic endpoints never use the LM Studio CLI to load or unload their models.
 
@@ -2250,7 +2936,13 @@ Canonical source: [CHANGELOG.md](CHANGELOG.md)
 
 ## Unreleased
 
-- Publishes the PNY and ASUS Prime dual RTX 5070 Ti dataset: 168 completed cases, with the 12 unmeasured native Qwen35 cases explicitly identified.
+## 2.5.2 - 2026-11-04
+
+- Publishes the PNY and ASUS Prime dual RTX 5070 Ti dataset: 180 attempted cases across LM Studio and native Strata, with 179 successes and one retained native Qwen35 timeout.
+- Adds matched single/mixed/dual-card performance and energy tables, per-card thermal observations, and a separate communication, placement and profiling study. Background-activity conditions and profiled captures remain separate from clean inference comparisons.
+- Supports atomic cancellation of an owned speed or capability run using an expected run ID, and identifies endpoints that explicitly report Project Maya.
+- Keeps capability collection separate from fresh RAM, storage and CUDA transfer probes; unavailable or reused hardware evidence retains its provenance.
+- Retains validated per-request speculative draft counts when a backend supplies them, separately from requested MTP settings.
 - Preserves selected Results conditions when consolidation splits a benchmark into engine views. Comparison links can select two to eight benchmarks and their shared models, with separate prefill and decode charts.
 - Displays planned but unrecorded cases in consolidated comparison views.
 
@@ -2374,15 +3066,13 @@ preserve outcomes, token-matching qualifications and the declared power boundari
 The report states which native Strata grids remain unmeasured.
 
 The [dual RTX 5070 Ti dataset](results/runs/20261103-100532_rtx-5070-ti_0a91ddc850.json)
-contains 144 LM Studio and 24 native Strata Flash-Next cases, all successful,
-with one measured repeat per condition. Native Qwen35's 12 planned cases and
-the separate standalone diagnostic suite were not measured. Both boards were
-monitored; continuous GPU-core peaks were 77°C for PNY and 63°C for ASUS Prime,
-with no thermal-throttle flags observed. One-Hz sampling can miss shorter peaks;
-memory and hotspot temperatures were unavailable. Use the
-[single-versus-dual comparison](docs/sharing-results.md#open-a-model-comparison)
-to explore the 12 shared model/quant variants. The first five configuration
-datasets retain their historical measurements.
+contains 144 LM Studio and 36 native Strata cases, with 179 successes and one
+native Qwen35 timeout. One measured repeat per condition is retained. The
+[two-card report](docs/two-5070-ti-comparison.md) provides paired tables,
+per-model prefill/decode/energy graphs and explicit timing and residency limits.
+There are 13 shared model IDs against the single-PNY setup. The first five
+configuration files retain their historical measurements. Transfer probes,
+execution-strategy tests and profiled captures use separate diagnostic datasets.
 
 ## Run and contribute
 

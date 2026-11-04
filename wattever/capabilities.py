@@ -440,6 +440,20 @@ class CapabilityRunner:
             return run["id"]
 
     def cancel(self):
+        with self._start_lock:
+            self._cancel_current()
+
+    def cancel_if_current(self, expected_run_id):
+        """Use the start mutex so a stale client can never cancel a new run."""
+        if not isinstance(expected_run_id, str) or not expected_run_id.strip():
+            raise ValueError("expected_run_id must be a non-empty string.")
+        with self._start_lock:
+            if (self.run or {}).get("id") != expected_run_id:
+                return False
+            self._cancel_current()
+            return True
+
+    def _cancel_current(self):
         self.cancel_event.set()
         with self._response_lock: responses = list(self._responses)
         for response in responses: threading.Thread(target=response.close,daemon=True).start()

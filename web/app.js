@@ -1201,7 +1201,7 @@ function renderHardware() {
       $("#hardware-inventory").insertAdjacentHTML("beforeend", '<button class="btn-sm" id="detect-memory-topology">Refresh memory topology</button><span class="hint" id="memory-topology-status"> Built-in OS / firmware probe; no install needed.</span>');
       $("#detect-memory-topology").addEventListener("click",event=>refreshMemoryTopology(null,event.target));
     } else $("#hardware-inventory").insertAdjacentHTML("beforeend", '<p class="hint">Relaunch the desktop helper to enable built-in memory topology detection.</p>');
-    $("#hardware-inventory").insertAdjacentHTML("beforeend", '<button class="btn-sm" id="measure-transfers">Measure transfer bandwidth</button><span class="hint" id="transfer-status"> Auto-measured before benchmarks.</span>');
+    $("#hardware-inventory").insertAdjacentHTML("beforeend", '<button class="btn-sm" id="measure-transfers">Measure transfer bandwidth</button><span class="hint" id="transfer-status"> Separate from capability tests.</span>');
     $("#measure-transfers").addEventListener("click", async (event) => {
       event.target.disabled = true;
       $("#transfer-status").textContent = " Measuring storage and GPU transfers…";

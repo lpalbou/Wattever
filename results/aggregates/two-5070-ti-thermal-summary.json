@@ -1,0 +1,154 @@
+{
+  "scope": "Continuous observer spans idle, hardware probes, loading and inference; not inference-only",
+  "segments": [
+    {
+      "source_segment": "thermal-20261103T110312",
+      "rows": 746,
+      "first_utc": "2026-11-03T10:03:13.320550+00:00",
+      "last_utc": "2026-11-03T10:09:29.370318+00:00",
+      "captured_source_bytes": 206503,
+      "complete_csv_prefix_bytes": 206503,
+      "incomplete_suffix_bytes_excluded": 0,
+      "snapshot": "thermal-source-snapshots/20261103T194453926753Z/thermal-20261103T110312.csv",
+      "snapshot_sha256": "22cd9becf565e70773f199f974d682a7e25a483b1b1e41878b7d4cf2fc4e73c7",
+      "source_may_continue_growing": true
+    },
+    {
+      "source_segment": "thermal-20261103T111044",
+      "rows": 13804,
+      "first_utc": "2026-11-03T10:10:45.123690+00:00",
+      "last_utc": "2026-11-03T12:07:05.536793+00:00",
+      "captured_source_bytes": 3812075,
+      "complete_csv_prefix_bytes": 3812075,
+      "incomplete_suffix_bytes_excluded": 0,
+      "snapshot": "thermal-source-snapshots/20261103T194453926753Z/thermal-20261103T111044.csv",
+      "snapshot_sha256": "eba78c1b6a0e186848eaba70e52de8144b5597086e085587048e40518efb88e8",
+      "source_may_continue_growing": true
+    },
+    {
+      "source_segment": "thermal-20261103T191553Z",
+      "rows": 3442,
+      "first_utc": "2026-11-03T19:15:54.987490+00:00",
+      "last_utc": "2026-11-03T19:44:53.567865+00:00",
+      "captured_source_bytes": 940897,
+      "complete_csv_prefix_bytes": 940897,
+      "incomplete_suffix_bytes_excluded": 0,
+      "snapshot": "thermal-source-snapshots/20261103T194453926753Z/thermal-20261103T191553Z.csv",
+      "snapshot_sha256": "9250fe341f48946d8007169cbd96910399fe1e0cc72f005387514b33284807a3",
+      "source_may_continue_growing": true
+    }
+  ],
+  "segment_gaps": [
+    {
+      "previous_segment": "thermal-20261103T110312",
+      "next_segment": "thermal-20261103T111044",
+      "between_observed_rows_s": 75.753372,
+      "interpolated": false
+    },
+    {
+      "previous_segment": "thermal-20261103T111044",
+      "next_segment": "thermal-20261103T191553Z",
+      "between_observed_rows_s": 25729.450697,
+      "interpolated": false
+    }
+  ],
+  "cards": {
+    "0": {
+      "samples": 8996,
+      "max_gpu_temp_c": 77.0,
+      "max_fan_target_percent": 65.0,
+      "max_power_w": 300.87,
+      "hw_thermal_active_samples": 0,
+      "sw_thermal_active_samples": 0,
+      "sw_power_cap_active_samples": 839,
+      "temperature_valid_samples": 8996,
+      "temperature_warning_samples": 0,
+      "temperature_pause_threshold_samples": 0,
+      "temperature_observed_coverage_s": 9095.038412332535,
+      "warning_sample_hold_estimated_s": 0.0,
+      "pause_threshold_sample_hold_estimated_s": 0.0
+    },
+    "1": {
+      "samples": 8996,
+      "max_gpu_temp_c": 63.0,
+      "max_fan_target_percent": 42.0,
+      "max_power_w": 287.48,
+      "hw_thermal_active_samples": 0,
+      "sw_thermal_active_samples": 0,
+      "sw_power_cap_active_samples": 48,
+      "temperature_valid_samples": 8996,
+      "temperature_warning_samples": 0,
+      "temperature_pause_threshold_samples": 0,
+      "temperature_observed_coverage_s": 9095.031371593475,
+      "warning_sample_hold_estimated_s": 0.0,
+      "pause_threshold_sample_hold_estimated_s": 0.0
+    }
+  },
+  "interlock_events": [
+    {
+      "event": "pause_requested",
+      "reasons": [
+        "thermal observer inactive",
+        "thermal observer requests cooling",
+        "thermal observer error: PermissionError(13, 'Access is denied')"
+      ],
+      "utc": "2026-11-03T10:09:29.907801+00:00"
+    },
+    {
+      "action": "cancel_requested",
+      "run_id": "20261103-100532_rtx-5070-ti_0a91ddc850",
+      "response": {
+        "ok": true
+      },
+      "qualification": "Two status checks; API cancellation is not atomically conditioned on expected_run_id. Single root-owned orchestration accepted this residual race. No model lifecycle action.",
+      "event": "benchmark_guard",
+      "utc": "2026-11-03T10:09:29.987514+00:00"
+    },
+    {
+      "action": "owned_benchmark_already_cancelling",
+      "run_id": "20261103-100532_rtx-5070-ti_0a91ddc850",
+      "event": "benchmark_guard",
+      "utc": "2026-11-03T10:09:32.099126+00:00"
+    },
+    {
+      "action": "no_active_benchmark",
+      "run_id": "20261103-100532_rtx-5070-ti_0a91ddc850",
+      "event": "benchmark_guard",
+      "utc": "2026-11-03T10:09:40.890265+00:00"
+    },
+    {
+      "event": "cooling_complete",
+      "note": "Flags cleared. No cancelled benchmark resumed automatically.",
+      "utc": "2026-11-03T10:10:45.333768+00:00"
+    },
+    {
+      "event": "pause_requested",
+      "reasons": [
+        "thermal observer state unreadable: PermissionError(13, 'Permission denied')"
+      ],
+      "utc": "2026-11-03T10:13:22.767390+00:00"
+    },
+    {
+      "action": "cancel_requested",
+      "run_id": "20261103-100532_rtx-5070-ti_0a91ddc850",
+      "response": {
+        "ok": true
+      },
+      "qualification": "Two status checks; API cancellation is not atomically conditioned on expected_run_id. Single root-owned orchestration accepted this residual race. No model lifecycle action.",
+      "event": "benchmark_guard",
+      "utc": "2026-11-03T10:13:22.830685+00:00"
+    },
+    {
+      "event": "cooling_complete",
+      "note": "Flags cleared. No cancelled benchmark resumed automatically.",
+      "utc": "2026-11-03T10:13:23.356184+00:00"
+    }
+  ],
+  "memory_temperature": "unavailable",
+  "hotspot_temperature": "unavailable",
+  "fan_note": "Driver target duty percentage, not tachometer RPM",
+  "throttle_note": "SW power cap is separate from thermal throttle; no inferred throttle from temperature alone",
+  "peak_qualification": "1Hz sampled maxima are not guaranteed physical peaks. No temperature or fan value is interpolated across gaps.",
+  "warning_method": "78C warning and83C pause thresholds. Counts are actual sampled observations. Duration estimates hold each preceding valid sample over the next interval only when0<dt<=4s within one capture segment; gaps excluded. Not exact measured thermal residence time.",
+  "snapshot_method": "Each segment read once; complete newline-terminated CSV prefix retained and hashed. Live source may grow later."
+}

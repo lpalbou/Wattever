@@ -1,5 +1,9 @@
 # Dual-GPU communication and placement investigation
 
+This study records the PNY RTX 5070 Ti plus ASUS RTX 5060 Ti configuration.
+For two RTX 5070 Ti cards, see the separate
+[communication and placement comparison](two-5070-ti-placement.md).
+
 **Completed supplied diagnostic matrices.** These captures are separate from normal Wattever benchmark aggregates. Existing historical measurements remain unchanged.
 
 Recorded conditions: 153 unprofiled screening and 3 profiled. Screening outcomes: {"allocation_failed":1,"failed":3,"ok":143,"unsupported_configuration":6}. Eligible timing conditions: 143. Required but absent case IDs: 0; unobserved required representative model/strategy/prompt/client combinations: 0. All entries in the supplied capture manifests were attempted. Full transfer capture available: True. Each measured inference condition has one repeat; internal CUDA-copy samples are not inference repeats.

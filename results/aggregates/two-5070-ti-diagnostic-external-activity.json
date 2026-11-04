@@ -1,0 +1,166 @@
+[
+  {
+    "event": "request_recorded",
+    "activity_id": "glm53-flash-user-request-20261103T2337Z",
+    "recorded_at": "2026-11-03T23:37:31Z",
+    "requested_activity": "User requested parallel GLM5.3Flash research/download while the unchanged diagnostic matrix finishes",
+    "source": "root instruction; strata_plan owns research/download",
+    "actual_download_started": false,
+    "qualification": "This request timestamp is not an invented download-start time. Await exact process start/end evidence; preserve completed conditions and do not repeat them."
+  },
+  {
+    "event": "start",
+    "activity_id": "glm53-flash-download-20261103T233925Z",
+    "started_at": "2026-11-03T23:39:25.857235Z",
+    "pid": 4272,
+    "launcher_pid": 16564,
+    "activity": "HTTPS download, incremental SHA256 and partial-file writes",
+    "destination": "[local detail redacted]",
+    "destination_device": "C: Samsung SSD870 EVO4TB SATA Disk0",
+    "nvme_volume_F_touched": false,
+    "expected_total_bytes": 73411389088,
+    "revision": "6728cf78a5b198a6a6f84b7fb88956a17ec56521",
+    "source": "strata_plan exact worker-start evidence",
+    "source_event_log": "glm53-flash/download-events.jsonl",
+    "qualification": "User explicitly requested this concurrent download; overlapping first-attempt diagnostics remain preserved and environmentally confounded. Tiny partition inventory around23:39:24–23:39:26UTC was also reported; no existing model bytes/full-file prehash.",
+    "diagnostic_redacted": true
+  },
+  {
+    "event": "additional_activity",
+    "activity_id": "glm53-flash-download-20261103T233925Z",
+    "source": "strata_plan exact follow-up evidence",
+    "activities": [
+      {
+        "started_at": "2026-11-03T23:40:50.057Z",
+        "finished_at": "2026-11-03T23:40:54.074Z",
+        "activity": "Fetched approximately1.17MB upstream source/docs/API plus SHA snapshots; no build/test"
+      },
+      {
+        "started_at": "2026-11-03T23:41:17.706Z",
+        "finished_at": "2026-11-03T23:41:17.864Z",
+        "activity": "F:NVMe metadata inventory of78 filenames/sizes only; no file-data reads, hashing or moves"
+      }
+    ],
+    "download_continuously_active": true,
+    "qualification": "F has metadata-only access after the original start event; model download data continues writing only C:SATA. These activities lie within the already flagged continuous download interval."
+  },
+  {
+    "event": "additional_activity",
+    "activity_id": "glm53-flash-download-20261103T233925Z",
+    "source": "strata_plan exact fake-test evidence",
+    "started_at": "2026-11-03T23:51:55.515078Z",
+    "finished_at": "2026-11-03T23:52:01.264680Z",
+    "activity": "58 pytest fake-object/pure-configuration/native-widget tests passed; no real weights, CUDA or API service starts",
+    "source_log": "glm53-flash/control-fake-tests.*",
+    "qualification": "Parent explicitly authorized this CPU-only activity; only flash-next controller sources edited, no frozen measuring sources changed. Falls inside continuous download interval already excluded from clean comparisons."
+  },
+  {
+    "event": "additional_activity",
+    "activity_id": "glm53-flash-download-20261103T233925Z",
+    "source": "strata_plan exact final fake-test evidence",
+    "started_at": "2026-11-04T00:04:07.593254Z",
+    "finished_at": "2026-11-04T00:04:11.964202Z",
+    "activity": "75 fake lifecycle/configuration/widget tests passed; pytest reported3.39s; no GPU, real weights or API services"
+  },
+  {
+    "event": "end",
+    "activity_id": "glm53-flash-download-20261103T233925Z",
+    "finished_at": "2026-11-04T00:04:12.010177Z",
+    "bytes_completed": 7428112384,
+    "pid": 4272,
+    "process_exit_confirmed": true,
+    "reason": "Sequential worker paused before authorized switch to two-shard parallel download",
+    "source": "strata_plan exact worker-exit evidence"
+  },
+  {
+    "event": "start",
+    "activity_id": "glm53-flash-parallel-download-20261104T000541Z",
+    "started_at": "2026-11-04T00:05:41.575525Z",
+    "pid": 21152,
+    "launcher_pid": 21680,
+    "activity": "Two-shard parallel HTTPS download plus resumable-file SHA256 prehash, incremental hashing and C:SATA writes",
+    "destination": "[local detail redacted]",
+    "destination_device": "C: Samsung SSD870 EVO4TB SATA Disk0",
+    "source_event_log": "glm53-flash/download-events.jsonl",
+    "source": "strata_plan exact parallel-worker evidence",
+    "qualification": "Confirmed prior worker exited. No download I/O during00:04:12.010177–00:05:41.575525UTC. Existing model/measurement captures unchanged.",
+    "diagnostic_redacted": true
+  },
+  {
+    "event": "additional_activity",
+    "activity_id": "glm53-flash-parallel-download-20261104T000541Z",
+    "source": "strata_plan exact shard events",
+    "activities": [
+      {
+        "started_at": "2026-11-04T00:05:41.589516Z",
+        "activity": "Resume SHA256 prehash of7,428,112,384 existing partial bytes on C:SATA; end pending"
+      },
+      {
+        "started_at": "2026-11-04T00:05:42.644072Z",
+        "activity": "Second fresh shard began HTTP200 download"
+      }
+    ]
+  },
+  {
+    "event": "additional_activity",
+    "activity_id": "glm53-flash-parallel-download-20261104T000541Z",
+    "source": "strata_plan exact prehash/resume evidence",
+    "activities": [
+      {
+        "started_at": "2026-11-04T00:05:41.589516Z",
+        "finished_at": "2026-11-04T00:06:04.800538Z",
+        "activity": "Completed C:SATA SHA256 prehash of7,428,112,384 partial bytes"
+      },
+      {
+        "started_at": "2026-11-04T00:06:05.860234Z",
+        "activity": "First shard resumed with verified HTTP206 range7428112384..47584640959"
+      }
+    ],
+    "download_continuously_active": true,
+    "qualification": "Parallel worker21152 remains active; subsequent toolchain checks were metadata/file-existence only, no compiler or GPU."
+  },
+  {
+    "event": "start",
+    "activity_id": "cuda-toolchain-download-20261104T000953Z",
+    "started_at": "2026-11-04T00:09:53.625249Z",
+    "pid": 21236,
+    "launcher_pid": 21560,
+    "activity": "Official NVIDIA CUDA13.4.3 minimal ZIP redistributions download and SHA verification, expected approximately522.6MB",
+    "destination": "untracked/dual-5070-investigation/glm53-flash/cuda-13.4.3-archives",
+    "destination_device": "C:SATA",
+    "source_event_log": "glm53-flash/toolchain-download-events.jsonl",
+    "source": "strata_plan exact toolchain downloader start",
+    "qualification": "Authorized by parent; no installer, compiler, executable or GPU invoked. MainGLM worker21152 remains active. File downloads do not install/change OS or drivers."
+  },
+  {
+    "event": "end",
+    "activity_id": "cuda-toolchain-download-20261104T000953Z",
+    "finished_at": "2026-11-04T00:14:54.456884Z",
+    "pid": 21236,
+    "process_exit_confirmed": true,
+    "bytes_completed": 522587623,
+    "verified_archives": 8,
+    "source": "strata_plan exact toolchain downloader completion",
+    "qualification": "All eight official NVIDIA ZIPs verified by incremental SHA256; no extraction, compiler, installer or GPU invocation. MainGLM worker21152 remains ongoing."
+  },
+  {
+    "event": "additional_activity",
+    "activity_id": "glm53-flash-parallel-download-20261104T000541Z",
+    "source": "strata_plan exact source-only follow-up evidence",
+    "activities": [
+      {
+        "started_at": "2026-11-04T00:17:43.062826Z",
+        "finished_at": "2026-11-04T00:17:43.985107Z",
+        "activity": "20 fake-backend tests passed, pytest0.11s; no GPU, real weights or services"
+      },
+      {
+        "started_at": "2026-11-04T00:18:15.199331Z",
+        "finished_at": "2026-11-04T00:18:38.228001Z",
+        "activity": "[local detail redacted]",
+        "diagnostic_redacted": true
+      }
+    ],
+    "source_log": "glm53-flash/source-clone-state.json",
+    "qualification": "Source-only CPU/network/disk activity within already flagged parallel download interval; SDK assembly, largeF backup hashing/reclaim and any real model engine remain deferred until appropriate root GPU/publication gates."
+  }
+]

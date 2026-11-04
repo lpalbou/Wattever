@@ -12,6 +12,22 @@ Read endpoints are `GET /api/version`, `/api/env`, `/api/models`, `/api/status`,
 
 `POST /api/bench/start` accepts benchmark configuration and starts inference. `/api/bench/cancel` requests cancellation. `POST /api/runs/<id>/meta` changes label and notes; `DELETE /api/runs/<id>` moves a run to local trash; `POST /api/shutdown` stops Wattever. An active run cannot be edited or deleted. Benchmark runs write results.
 
+Both `POST /api/bench/cancel` and `POST /api/capabilities/cancel` accept optional
+`{"expected_run_id":"<owned-run-id>"}`. The helper checks that ID and requests
+cancellation atomically against new starts. An empty/non-string ID returns 400;
+a different active ID returns 409 without cancelling it. Omitting the field
+retains unscoped cancellation. Automated operators can check
+`GET /api/version` for `features.atomic_expected_run_id_cancel: true` before
+relying on this guarantee. Client cancellation does not establish that an
+external model engine has stopped.
+
+Speed configurations accept `hardware_probe_policy: "auto"` (default) or
+`"defer"`. Deferred collection launches no fresh transfer probes; a compatible
+saved profile may be reused with its original capture timestamp. Otherwise the
+run records deferred/unavailable evidence. Capability evaluations use this
+policy independently of their generation settings. The version response lists
+supported policies in `features.hardware_probe_policy`.
+
 Managed LM Studio additionally supports `POST /api/lmstudio/start` and `/api/lmstudio/unload`. Generic endpoints never use the LM Studio CLI to load or unload their models.
 
 `POST /api/hardware/memory` with `{}` refreshes the built-in OS/firmware memory topology, returning `memory` with `channel_topology`. It requires no installed hardware utility and does not run a bandwidth test. Optional `gpu_index` selects a sensor. With `run_id`, the helper checks matching GPU/driver, CPU, motherboard, RAM capacity/modules and reported clocks, backs up the benchmark, and attaches a timestamped later annotation. Original inference rows and session snapshots remain unchanged. An unavailable probe preserves saved metadata. The route rejects active benchmarks with 409. `GET /api/env` includes `hardware_follow_ups` for pending checks whose GPU is present; successfully annotating that benchmark completes its memory check. See [topology provenance](measurements.md).

@@ -36,15 +36,13 @@ preserve outcomes, token-matching qualifications and the declared power boundari
 The report states which native Strata grids remain unmeasured.
 
 The [dual RTX 5070 Ti dataset](runs/20261103-100532_rtx-5070-ti_0a91ddc850.json)
-contains 144 LM Studio and 24 native Strata Flash-Next cases, all successful,
-with one measured repeat per condition. Native Qwen35's 12 planned cases and
-the separate standalone diagnostic suite were not measured. Both boards were
-monitored; continuous GPU-core peaks were 77°C for PNY and 63°C for ASUS Prime,
-with no thermal-throttle flags observed. One-Hz sampling can miss shorter peaks;
-memory and hotspot temperatures were unavailable. Use the
-[single-versus-dual comparison](../docs/sharing-results.md#open-a-model-comparison)
-to explore the 12 shared model/quant variants. The first five configuration
-datasets retain their historical measurements.
+contains 144 LM Studio and 36 native Strata cases, with 179 successes and one
+native Qwen35 timeout. One measured repeat per condition is retained. The
+[two-card report](../docs/two-5070-ti-comparison.md) provides paired tables,
+per-model prefill/decode/energy graphs and explicit timing and residency limits.
+There are 13 shared model IDs against the single-PNY setup. The first five
+configuration files retain their historical measurements. Transfer probes,
+execution-strategy tests and profiled captures use separate diagnostic datasets.
 
 ## Run and contribute
 

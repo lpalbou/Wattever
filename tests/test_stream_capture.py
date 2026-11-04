@@ -34,6 +34,26 @@ class StreamCaptureTests(unittest.TestCase):
                                                 capture_output=kwargs.pop("capture_output", True), **kwargs)
             return value, request.call_args
 
+    def test_speculative_counters_preserve_actual_zero_or_activity_without_inference(self):
+        for offered, accepted in ((0, 0), (37, 21)):
+            with self.subTest(offered=offered, accepted=accepted):
+                value, _ = self.measure([choice({"content": "answer"}), choice(finish_reason="stop"),
+                                        usage(4, 0, timings={"draft_n": offered, "draft_n_accepted": accepted})])
+                self.assertEqual(value["reported_timings"], {"draft_n": offered, "draft_n_accepted": accepted})
+        value, _ = self.measure([choice({"content": "answer"}), choice(finish_reason="stop"), usage(4, 0)])
+        self.assertNotIn("draft_n", value["reported_timings"])
+        self.assertNotIn("draft_n_accepted", value["reported_timings"])
+
+    def test_invalid_speculative_counters_are_not_recast_as_zero(self):
+        for field in ("draft_n", "draft_n_accepted"):
+            for bad in (-1, True, 1.5, float("nan"), float("inf"), "3"):
+                with self.subTest(field=field, value=bad), self.assertRaises(RuntimeError):
+                    self.measure([choice({"content": "answer"}), choice(finish_reason="stop"),
+                                  usage(4, 0, timings={field: bad})])
+        with self.assertRaisesRegex(RuntimeError, "more speculative"):
+            self.measure([choice({"content": "answer"}), choice(finish_reason="stop"),
+                          usage(4, 0, timings={"draft_n": 3, "draft_n_accepted": 4})])
+
     def test_hidden_reasoning_output_limit_preserves_terminal_evidence_without_timings(self):
         chunks = [choice({"role": "assistant", "content": ""}), choice(),
                   choice(finish_reason="length"),

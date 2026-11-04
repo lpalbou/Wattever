@@ -2,7 +2,13 @@
 
 ## Unreleased
 
-- Publishes the PNY and ASUS Prime dual RTX 5070 Ti dataset: 168 completed cases, with the 12 unmeasured native Qwen35 cases explicitly identified.
+## 2.5.2 - 2026-11-04
+
+- Publishes the PNY and ASUS Prime dual RTX 5070 Ti dataset: 180 attempted cases across LM Studio and native Strata, with 179 successes and one retained native Qwen35 timeout.
+- Adds matched single/mixed/dual-card performance and energy tables, per-card thermal observations, and a separate communication, placement and profiling study. Background-activity conditions and profiled captures remain separate from clean inference comparisons.
+- Supports atomic cancellation of an owned speed or capability run using an expected run ID, and identifies endpoints that explicitly report Project Maya.
+- Keeps capability collection separate from fresh RAM, storage and CUDA transfer probes; unavailable or reused hardware evidence retains its provenance.
+- Retains validated per-request speculative draft counts when a backend supplies them, separately from requested MTP settings.
 - Preserves selected Results conditions when consolidation splits a benchmark into engine views. Comparison links can select two to eight benchmarks and their shared models, with separate prefill and decode charts.
 - Displays planned but unrecorded cases in consolidated comparison views.
 

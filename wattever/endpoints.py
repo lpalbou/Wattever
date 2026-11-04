@@ -33,6 +33,7 @@ _CLOUD_PATHS={"api.openai.com":"/v1","api.anthropic.com":"/v1","openrouter.ai":"
               "api.together.xyz":"/v1","api.fireworks.ai":"/inference/v1",
               "api.deepinfra.com":"/v1/openai","generativelanguage.googleapis.com":"/v1beta/openai"}
 _SERVICES = {"strata":"Strata","strata-server":"Strata","strata-engine":"Strata","strata-qwen":"Strata",
+             "maya":"Maya",
              "llama.cpp":"llama.cpp","llama-cpp":"llama.cpp","llamacpp":"llama.cpp","llama-server":"llama.cpp",
              "lm studio":"LM Studio","lmstudio":"LM Studio","lm-studio":"LM Studio",
              "vllm":"vLLM","sglang":"SGLang","ollama":"Ollama","mlx-lm":"MLX LM","mlx_lm":"MLX LM",

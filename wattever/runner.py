@@ -69,6 +69,7 @@ DEFAULT_CONFIG = {
     # means; ["off", "on"] measures both in one session.
     "mtp_modes": ["off"],
     "power_interval_ms": 150,
+    "hardware_probe_policy": "auto",
     # Everything that is not the GPU. On macOS the CPU rail is measured
     # directly, so this covers only display, storage, fans and DRAM; on a
     # desktop PC it has to stand in for the idle CPU and board as well.
@@ -309,6 +310,40 @@ def _now_iso():
     return datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat()
 
 
+def _hardware_probe_policy(value):
+    if not isinstance(value, str) or value not in ("auto", "defer"):
+        raise ValueError("hardware_probe_policy must be auto or defer.")
+    return value
+
+
+def _attach_transfer_profile(run, cfg):
+    """Attach a measured or verified saved capture without inventing freshness."""
+    from . import bandwidth
+    policy = _hardware_probe_policy(cfg.get("hardware_probe_policy", "auto"))
+    if policy == "defer":
+        active = next((s for s in run.get("sessions", []) if s.get("id") == run.get("active_session_id")), None)
+        current_hardware = (active or {}).get("hardware") or run.get("hardware") or {}
+        profile = bandwidth.saved_capture(current_hardware, run.get("gpu"))
+        run["hardware_probe"] = {
+            "policy": policy, "status": "reused_saved_capture" if profile is not None else "deferred",
+            "source": "saved_capture" if profile is not None else "not_measured",
+            "measured_this_session": False,
+            "reason": "Transfer microbenchmarks deferred; only a verified matching saved capture may be reused.",
+        }
+        if profile is not None:
+            run["hardware_probe"]["captured_at"] = profile.get("captured_at")
+            bandwidth.attach(run, profile, provenance="reused_compatible_saved_capture")
+        if active is not None:
+            active["hardware_probe"] = copy.deepcopy(run["hardware_probe"])
+        return profile
+    profile = bandwidth.measure(cfg["gpu_index"], directory=cfg.get("storage_probe_directory") or None,
+                                **({"directories": cfg["storage_probe_directories"]} if cfg.get("storage_probe_directories") else {}))
+    bandwidth.attach(run, profile)
+    run["hardware_probe"] = {"policy": policy, "status": "measured", "source": "new_capture",
+                             "measured_this_session": True, "captured_at": profile.get("captured_at")}
+    return profile
+
+
 def _classify(message):
     low = (message or "").lower()
     if "context" in low and ("exceed" in low or "larger" in low or "overflow" in low
@@ -474,6 +509,7 @@ class BenchRunner:
                                         "reported_mtp", "reported_reasoning", "model_source", "temperature", "token_limit_field",
                                         "endpoint_identity", "endpoint_name_override", "selected_cases", "storage_probe_directory", "storage_probe_directories", "engine_group_id"}
         cfg.update({k: v for k, v in (config or {}).items() if k in allowed})
+        cfg["hardware_probe_policy"] = _hardware_probe_policy(cfg["hardware_probe_policy"])
         if "selected_cases" in cfg and resume_source is None:
             raise ValueError("Individual test selection requires an existing benchmark. Use Add / rerun tests.")
         endpoints.validate(cfg)
@@ -660,6 +696,20 @@ class BenchRunner:
         return run["id"]
 
     def cancel(self):
+        with self._start_lock:
+            self._cancel_current()
+
+    def cancel_if_current(self, expected_run_id):
+        """Cancel only this run, atomically with respect to start/resume/extend."""
+        if not isinstance(expected_run_id, str) or not expected_run_id.strip():
+            raise ValueError("expected_run_id must be a non-empty string.")
+        with self._start_lock:
+            if (self.run or {}).get("id") != expected_run_id:
+                return False
+            self._cancel_current()
+            return True
+
+    def _cancel_current(self):
         self.cancel_event.set()
         with self._responses_lock:
             responses = list(self._responses)
@@ -695,17 +745,14 @@ class BenchRunner:
             self.live["phase"] = "idle baseline"
             self.emit("phase", phase="idle baseline")
             self.cli.unload_all()
-            self.live["phase"] = "measuring transfer bandwidth"
+            self.live["phase"] = "using saved transfer capture or deferring probes" if cfg.get("hardware_probe_policy") == "defer" else "measuring transfer bandwidth"
             self.emit("phase", phase=self.live["phase"])
-            from . import bandwidth
-            profile = bandwidth.measure(cfg["gpu_index"], directory=cfg.get("storage_probe_directory") or None,
-                                        **({"directories": cfg["storage_probe_directories"]} if cfg.get("storage_probe_directories") else {}))
-            bandwidth.attach(run, profile)
+            profile = _attach_transfer_profile(run, cfg)
             for name in ("storage_to_ram", "ram_to_vram"):
-                value = profile.get(name, {})
+                value = (profile or {}).get(name, {})
                 self.log("%s: %s" % (name.replace("_", " "),
                     "%.2f GB/s" % (value["bytes_per_second"] / 1e9) if value.get("status") == "ok"
-                    else value.get("reason", "unavailable")))
+                    else value.get("reason", "deferred; no compatible saved capture" if profile is None else "unavailable")))
             self.live["phase"] = "idle baseline"
             idle = sampler.measure_idle(2.5)
             run["idle"] = {

@@ -79,9 +79,11 @@ def _cap_bench():
 
 def _cap_telemetry_start(run, cfg):
     client = hardware.inventory()
-    from . import bandwidth
-    client["transfer_bandwidth"] = bandwidth.measure(cfg.get("gpu_index", 0), directory=cfg.get("storage_probe_directory") or None,
-        **({"directories": cfg["storage_probe_directories"]} if cfg.get("storage_probe_directories") else {}))
+    selected = next((g for g in client.get("gpus", []) if g.get("sensor_index") == cfg.get("gpu_index", 0)), None)
+    metadata = {"hardware": client, "gpu": selected}
+    runner._attach_transfer_profile(metadata, dict(cfg, hardware_probe_policy="defer"))
+    run["hardware_probe"] = metadata["hardware_probe"]
+    run["hardware_probe"]["reason"] = "Capability evaluations never launch RAM/storage/CUDA transfer microbenchmarks beside a loaded model."
     run["measurement_client"] = {"hardware": client, "scope": "load-generating benchmark client"}
     run["measurement_scope"] = {"inference_hardware_source": "user_reported_local" if cfg.get("endpoint_inference_local") else "unknown",
                                 "inference_hardware_verified": False,
@@ -272,7 +274,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(BENCH.extension_options((query.get("run_id") or [None])[0]))
             if route == "/api/version":
                 return self._json({"application": "Wattever", "version": __version__, "build_id": BUILD_ID,
-                                   "api_schema_version": 3})
+                                   "api_schema_version": 3,
+                                   "features": {"atomic_expected_run_id_cancel": True,
+                                                "capability_start_transfer_probes": False,
+                                                "hardware_probe_policy": ["auto", "defer"]}})
             if route == "/api/capabilities/suites":
                 from . import capabilities
                 _cap_bench()
@@ -433,7 +438,12 @@ class Handler(BaseHTTPRequestHandler):
                     if conflict: return self._error(409, conflict)
                     return self._json({"run_id": _cap_bench().start(self._body())})
             if route == "/api/capabilities/cancel":
-                _cap_bench().cancel()
+                body = self._body()
+                if "expected_run_id" in body:
+                    if not _cap_bench().cancel_if_current(body["expected_run_id"]):
+                        return self._error(409, "The requested capability run is no longer current.")
+                else:
+                    _cap_bench().cancel()
                 return self._json({"ok": True})
             if route == "/api/capabilities/import":
                 with WORK_LOCK:
@@ -448,7 +458,12 @@ class Handler(BaseHTTPRequestHandler):
             if route == "/api/endpoint/check":
                 return self._json(self.endpoint_payload(self._body()))
             if route == "/api/bench/cancel":
-                BENCH.cancel()
+                body = self._body()
+                if "expected_run_id" in body:
+                    if not BENCH.cancel_if_current(body["expected_run_id"]):
+                        return self._error(409, "The requested benchmark run is no longer current.")
+                else:
+                    BENCH.cancel()
                 return self._json({"ok": True})
             if route == "/api/bench/resume":
                 with WORK_LOCK:

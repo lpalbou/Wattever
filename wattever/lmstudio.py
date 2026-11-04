@@ -357,6 +357,10 @@ def measure_completion(model, prompt, max_tokens, base=DEFAULT_BASE, timeout=180
             timings = chunk.get("timings") or {}
             if not isinstance(timings, dict): raise RuntimeError("Invalid provider timing object.")
             for key, value in timings.items():
+                if key in ("draft_n", "draft_n_accepted"):
+                    if type(value) is not int or value < 0:
+                        raise RuntimeError("Invalid provider speculative-token counter.")
+                    reported_timings[key] = value
                 if key in ("prompt_n", "prompt_ms", "prompt_per_second", "predicted_n", "predicted_ms", "predicted_per_second", "cache_n"):
                     if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
                         raise RuntimeError("Invalid provider timing value.")
@@ -404,6 +408,9 @@ def measure_completion(model, prompt, max_tokens, base=DEFAULT_BASE, timeout=180
     t_end = time.perf_counter()
     if not stream_complete:
         raise RuntimeError("%s stream ended before [DONE]." % provider_name)
+    if ("draft_n" in reported_timings and "draft_n_accepted" in reported_timings
+            and reported_timings["draft_n_accepted"] > reported_timings["draft_n"]):
+        raise RuntimeError("Provider accepted more speculative tokens than it offered.")
     if capture_output and finish_reason is None:
         raise RuntimeError("%s stream ended without a terminal choice finish_reason." % provider_name)
     if t_first is None and not capture_output:

@@ -10,6 +10,8 @@
 - [i7-5820K versus i7-5960X with the PNY RTX 5070 Ti](5960x-cpu-comparison.md): 156 one-repeat inference cases across the 13 established models, matched CPU comparisons, RAM/PCIe/VRAM copy probes and measured GPU arithmetic.
 - [PNY RTX 5070 Ti plus ASUS RTX 5060 Ti](5070-plus-5060-comparison.md): matched and supplemental LM Studio results, per-card and combined energy, transfer/compute probes, connection diagnostics and native Strata coverage status.
 - [Multi-GPU communication and placement study](dual-gpu-communication-and-placement.md): communication paths, transfer measurements, placement strategies, profiling evidence and separate diagnostic protocols.
+- [Two RTX 5070 Ti cards](two-5070-ti-comparison.md): 180 normal cases, matched single/mixed-card comparisons, native drafting, energy and thermal measurements.
+- [Two RTX 5070 Ti placement strategies](two-5070-ti-placement.md): host/cross-card transfers, 153 screening conditions, three profiles, Gemma layout and workload-specific recommendations.
 - [Capability evaluation](capabilities.md): visual score/coverage dashboard, question-by-repeat explorer, compatible paired comparisons, offline pinned suites and audit imports.
 - [Architecture](architecture.md): components and data flow.
 - [API](api.md): local HTTP interface and side effects.

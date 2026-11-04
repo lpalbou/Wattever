@@ -1,0 +1,415 @@
+{
+  "setup": "PNY RTX5070Ti + ASUS Prime RTX5070Ti / i7-5960X",
+  "generated_at": "2026-11-04T00:30:57.335092+00:00",
+  "unprofiled_attempts": 153,
+  "profiled_attempts": 3,
+  "outcomes": {
+    "ok": 146,
+    "unsupported_configuration": 6,
+    "failed": 3,
+    "allocation_failed": 1
+  },
+  "historical_data_mutated": false,
+  "source_provenance": [
+    {
+      "source": "screening-gemma",
+      "capture_kind": "screening",
+      "recorded_conditions": 42,
+      "planned_conditions": 42,
+      "finished_conditions": 42,
+      "runtime": {
+        "software_version": "expected pinned llama.cpp b12058 commit3f8af15a7 CUDA13.4; see actual_version",
+        "actual_version": {
+          "diagnostic_redacted": true
+        },
+        "executable_sha256": "ff552b19fe6038bd45a00ead5e4a8d49422e3d6735cfc9672acc34b0c9767115",
+        "source_sha256": {
+          "tools/standalone_screen.py": "5cc1d9eae3af458dc65fe5148bcd085ec05750fd641a66c4cf695b006f439a6a",
+          "tools/diagnostic_telemetry.py": "a767283e7d00abf9351dea8837b7f6f47c11b00ea6c842d1fcacb0cf4a063113",
+          "wattever/lmstudio.py": "f0cf2481a0fc536a4f41722f93a8d44cad10d85f5dc7f81053354cd7cb944248",
+          "wattever/power.py": "fd7d52593b2af5c30ba330ab9440a767394370442b73170f4324e924d96bc43c",
+          "untracked/dual-5070-investigation/dual5070_screen.py": "f7725d53ce6a00ffce8b4f3475ba19cef59ed47da37ff0b4f9fee626989be416"
+        },
+        "gpu_mapping": [
+          {
+            "physical_sensor_index": 0,
+            "name": "NVIDIA GeForce RTX 5070 Ti",
+            "pci_bus_id": "00000000:01:00.0",
+            "memory_mib": 16303.0,
+            "driver_version": "617.42",
+            "board_identity": "PNY RTX 5070 Ti 16GB",
+            "diagnostic_redacted": true
+          },
+          {
+            "physical_sensor_index": 1,
+            "name": "NVIDIA GeForce RTX 5070 Ti",
+            "pci_bus_id": "00000000:02:00.0",
+            "memory_mib": 16303.0,
+            "driver_version": "617.42",
+            "board_identity": "ASUS Prime RTX 5070 Ti 16GB",
+            "diagnostic_redacted": true
+          }
+        ],
+        "model_files": {
+          "gemmae2b": {
+            "file_name": "gemma-4-E2B-it-Q4_K_M.gguf",
+            "file_bytes": 3427880384,
+            "header_bytes": 15819076,
+            "header_sha256": "2166a695e15e6e09ca2cf6dd17d59fbcacf25aaee5cf7d035f423fe57379adbe",
+            "full_file_sha256": null
+          }
+        },
+        "host_hardware": {
+          "cpu_name": "Intel(R) Core(TM) i7-5960X CPU @ 3.00GHz",
+          "logical_cpu_count": 16,
+          "physical_cpu_count": 8,
+          "ram_total_bytes": 68636971008,
+          "operating_system": "Windows",
+          "operating_system_release": "10",
+          "architecture": "AMD64",
+          "python_version": "3.12.15"
+        },
+        "loopback_http_proxy_bypassed": true,
+        "cuda_overrides": {}
+      }
+    },
+    {
+      "source": "screening-remaining",
+      "capture_kind": "screening",
+      "recorded_conditions": 108,
+      "planned_conditions": 108,
+      "finished_conditions": 108,
+      "runtime": {
+        "software_version": "expected pinned llama.cpp b12058 commit3f8af15a7 CUDA13.4; see actual_version",
+        "actual_version": {
+          "diagnostic_redacted": true
+        },
+        "executable_sha256": "ff552b19fe6038bd45a00ead5e4a8d49422e3d6735cfc9672acc34b0c9767115",
+        "source_sha256": {
+          "tools/standalone_screen.py": "5cc1d9eae3af458dc65fe5148bcd085ec05750fd641a66c4cf695b006f439a6a",
+          "tools/diagnostic_telemetry.py": "a767283e7d00abf9351dea8837b7f6f47c11b00ea6c842d1fcacb0cf4a063113",
+          "wattever/lmstudio.py": "f0cf2481a0fc536a4f41722f93a8d44cad10d85f5dc7f81053354cd7cb944248",
+          "wattever/power.py": "fd7d52593b2af5c30ba330ab9440a767394370442b73170f4324e924d96bc43c",
+          "untracked/dual-5070-investigation/dual5070_screen.py": "f7725d53ce6a00ffce8b4f3475ba19cef59ed47da37ff0b4f9fee626989be416"
+        },
+        "gpu_mapping": [
+          {
+            "physical_sensor_index": 0,
+            "name": "NVIDIA GeForce RTX 5070 Ti",
+            "pci_bus_id": "00000000:01:00.0",
+            "memory_mib": 16303.0,
+            "driver_version": "617.42",
+            "board_identity": "PNY RTX 5070 Ti 16GB",
+            "diagnostic_redacted": true
+          },
+          {
+            "physical_sensor_index": 1,
+            "name": "NVIDIA GeForce RTX 5070 Ti",
+            "pci_bus_id": "00000000:02:00.0",
+            "memory_mib": 16303.0,
+            "driver_version": "617.42",
+            "board_identity": "ASUS Prime RTX 5070 Ti 16GB",
+            "diagnostic_redacted": true
+          }
+        ],
+        "model_files": {
+          "lfm25": {
+            "file_name": "LFM2.5-24B-A2B-QAD-Q4_0.gguf",
+            "file_bytes": 13578190880,
+            "header_bytes": 8250910,
+            "header_sha256": "3f6a85b69ee5655fd6401582511655aa220c531dd1713b0103d9a69a3580653a",
+            "full_file_sha256": null
+          },
+          "qwen27": {
+            "file_name": "Qwen3.8-27B-UD-Q3_K_XL.gguf",
+            "file_bytes": 13146393504,
+            "header_bytes": 10996621,
+            "header_sha256": "93693a3a27deaefde32edc90037d5b68d647a90f8d5e09aaac8cc25c5bc63419",
+            "full_file_sha256": null
+          },
+          "qwen35": {
+            "file_name": "Qwen3.6-35B-A3B-Q4_K_M.gguf",
+            "file_bytes": 21166757728,
+            "header_bytes": 10988887,
+            "header_sha256": "d3dfcf03ccefdf98f1ba731c4afc455aa09563a2023d43b6a836243cb42f8ec1",
+            "full_file_sha256": null
+          }
+        },
+        "host_hardware": {
+          "cpu_name": "Intel(R) Core(TM) i7-5960X CPU @ 3.00GHz",
+          "logical_cpu_count": 16,
+          "physical_cpu_count": 8,
+          "ram_total_bytes": 68636971008,
+          "operating_system": "Windows",
+          "operating_system_release": "10",
+          "architecture": "AMD64",
+          "python_version": "3.12.15"
+        },
+        "loopback_http_proxy_bypassed": true,
+        "cuda_overrides": {}
+      }
+    },
+    {
+      "source": "screening-kv-q8-closeout",
+      "capture_kind": "screening",
+      "recorded_conditions": 1,
+      "planned_conditions": 1,
+      "finished_conditions": 1,
+      "runtime": {
+        "software_version": "expected pinned llama.cpp b12058 commit3f8af15a7 CUDA13.4; see actual_version",
+        "actual_version": {
+          "diagnostic_redacted": true
+        },
+        "executable_sha256": "ff552b19fe6038bd45a00ead5e4a8d49422e3d6735cfc9672acc34b0c9767115",
+        "source_sha256": {
+          "tools/standalone_screen.py": "5cc1d9eae3af458dc65fe5148bcd085ec05750fd641a66c4cf695b006f439a6a",
+          "tools/diagnostic_telemetry.py": "a767283e7d00abf9351dea8837b7f6f47c11b00ea6c842d1fcacb0cf4a063113",
+          "wattever/lmstudio.py": "f0cf2481a0fc536a4f41722f93a8d44cad10d85f5dc7f81053354cd7cb944248",
+          "wattever/power.py": "fd7d52593b2af5c30ba330ab9440a767394370442b73170f4324e924d96bc43c",
+          "untracked/dual-5070-investigation/dual5070_screen.py": "f7725d53ce6a00ffce8b4f3475ba19cef59ed47da37ff0b4f9fee626989be416"
+        },
+        "gpu_mapping": [
+          {
+            "physical_sensor_index": 0,
+            "name": "NVIDIA GeForce RTX 5070 Ti",
+            "pci_bus_id": "00000000:01:00.0",
+            "memory_mib": 16303.0,
+            "driver_version": "617.42",
+            "board_identity": "PNY RTX 5070 Ti 16GB",
+            "diagnostic_redacted": true
+          },
+          {
+            "physical_sensor_index": 1,
+            "name": "NVIDIA GeForce RTX 5070 Ti",
+            "pci_bus_id": "00000000:02:00.0",
+            "memory_mib": 16303.0,
+            "driver_version": "617.42",
+            "board_identity": "ASUS Prime RTX 5070 Ti 16GB",
+            "diagnostic_redacted": true
+          }
+        ],
+        "model_files": {
+          "qwen27": {
+            "file_name": "Qwen3.8-27B-UD-Q3_K_XL.gguf",
+            "file_bytes": 13146393504,
+            "header_bytes": 10996621,
+            "header_sha256": "93693a3a27deaefde32edc90037d5b68d647a90f8d5e09aaac8cc25c5bc63419",
+            "full_file_sha256": null
+          }
+        },
+        "host_hardware": {
+          "cpu_name": "Intel(R) Core(TM) i7-5960X CPU @ 3.00GHz",
+          "logical_cpu_count": 16,
+          "physical_cpu_count": 8,
+          "ram_total_bytes": 68636971008,
+          "operating_system": "Windows",
+          "operating_system_release": "10",
+          "architecture": "AMD64",
+          "python_version": "3.12.15"
+        },
+        "loopback_http_proxy_bypassed": true,
+        "cuda_overrides": {}
+      }
+    },
+    {
+      "source": "screening-fixed-row-closeout",
+      "capture_kind": "screening",
+      "recorded_conditions": 2,
+      "planned_conditions": 2,
+      "finished_conditions": 2,
+      "runtime": {
+        "software_version": "expected pinned llama.cpp b12058 commit3f8af15a7 CUDA13.4; see actual_version",
+        "actual_version": {
+          "diagnostic_redacted": true
+        },
+        "executable_sha256": "ff552b19fe6038bd45a00ead5e4a8d49422e3d6735cfc9672acc34b0c9767115",
+        "source_sha256": {
+          "tools/standalone_screen.py": "5cc1d9eae3af458dc65fe5148bcd085ec05750fd641a66c4cf695b006f439a6a",
+          "tools/diagnostic_telemetry.py": "a767283e7d00abf9351dea8837b7f6f47c11b00ea6c842d1fcacb0cf4a063113",
+          "wattever/lmstudio.py": "f0cf2481a0fc536a4f41722f93a8d44cad10d85f5dc7f81053354cd7cb944248",
+          "wattever/power.py": "fd7d52593b2af5c30ba330ab9440a767394370442b73170f4324e924d96bc43c",
+          "untracked/dual-5070-investigation/dual5070_screen.py": "f7725d53ce6a00ffce8b4f3475ba19cef59ed47da37ff0b4f9fee626989be416"
+        },
+        "gpu_mapping": [
+          {
+            "physical_sensor_index": 0,
+            "name": "NVIDIA GeForce RTX 5070 Ti",
+            "pci_bus_id": "00000000:01:00.0",
+            "memory_mib": 16303.0,
+            "driver_version": "617.42",
+            "board_identity": "PNY RTX 5070 Ti 16GB",
+            "diagnostic_redacted": true
+          },
+          {
+            "physical_sensor_index": 1,
+            "name": "NVIDIA GeForce RTX 5070 Ti",
+            "pci_bus_id": "00000000:02:00.0",
+            "memory_mib": 16303.0,
+            "driver_version": "617.42",
+            "board_identity": "ASUS Prime RTX 5070 Ti 16GB",
+            "diagnostic_redacted": true
+          }
+        ],
+        "model_files": {
+          "gemmae2b": {
+            "file_name": "gemma-4-E2B-it-Q4_K_M.gguf",
+            "file_bytes": 3427880384,
+            "header_bytes": 15819076,
+            "header_sha256": "2166a695e15e6e09ca2cf6dd17d59fbcacf25aaee5cf7d035f423fe57379adbe",
+            "full_file_sha256": null
+          }
+        },
+        "host_hardware": {
+          "cpu_name": "Intel(R) Core(TM) i7-5960X CPU @ 3.00GHz",
+          "logical_cpu_count": 16,
+          "physical_cpu_count": 8,
+          "ram_total_bytes": 68636971008,
+          "operating_system": "Windows",
+          "operating_system_release": "10",
+          "architecture": "AMD64",
+          "python_version": "3.12.15"
+        },
+        "loopback_http_proxy_bypassed": true,
+        "cuda_overrides": {}
+      }
+    },
+    {
+      "source": "profiled-screening-gemma",
+      "capture_kind": "profiling",
+      "recorded_conditions": 3,
+      "planned_conditions": 3,
+      "finished_conditions": 3,
+      "runtime": {
+        "software_version": "expected pinned llama.cpp b12058 commit3f8af15a7 CUDA13.4; see actual_version",
+        "actual_version": {
+          "diagnostic_redacted": true
+        },
+        "executable_sha256": "ff552b19fe6038bd45a00ead5e4a8d49422e3d6735cfc9672acc34b0c9767115",
+        "source_sha256": {
+          "tools/standalone_screen.py": "5cc1d9eae3af458dc65fe5148bcd085ec05750fd641a66c4cf695b006f439a6a",
+          "tools/diagnostic_telemetry.py": "a767283e7d00abf9351dea8837b7f6f47c11b00ea6c842d1fcacb0cf4a063113",
+          "wattever/lmstudio.py": "f0cf2481a0fc536a4f41722f93a8d44cad10d85f5dc7f81053354cd7cb944248",
+          "wattever/power.py": "fd7d52593b2af5c30ba330ab9440a767394370442b73170f4324e924d96bc43c",
+          "tools/nsight_capture.py": "05ef559db7652eb3391cbf514ded41a6b3b71d91c559ba41ce1f89d6aa6fa24b",
+          "untracked/dual-5070-investigation/dual5070_screen.py": "f7725d53ce6a00ffce8b4f3475ba19cef59ed47da37ff0b4f9fee626989be416"
+        },
+        "gpu_mapping": [
+          {
+            "physical_sensor_index": 0,
+            "name": "NVIDIA GeForce RTX 5070 Ti",
+            "pci_bus_id": "00000000:01:00.0",
+            "memory_mib": 16303.0,
+            "driver_version": "617.42",
+            "board_identity": "PNY RTX 5070 Ti 16GB",
+            "diagnostic_redacted": true
+          },
+          {
+            "physical_sensor_index": 1,
+            "name": "NVIDIA GeForce RTX 5070 Ti",
+            "pci_bus_id": "00000000:02:00.0",
+            "memory_mib": 16303.0,
+            "driver_version": "617.42",
+            "board_identity": "ASUS Prime RTX 5070 Ti 16GB",
+            "diagnostic_redacted": true
+          }
+        ],
+        "model_files": {
+          "gemmae2b": {
+            "file_name": "gemma-4-E2B-it-Q4_K_M.gguf",
+            "file_bytes": 3427880384,
+            "header_bytes": 15819076,
+            "header_sha256": "2166a695e15e6e09ca2cf6dd17d59fbcacf25aaee5cf7d035f423fe57379adbe",
+            "full_file_sha256": null
+          }
+        },
+        "host_hardware": {
+          "cpu_name": "Intel(R) Core(TM) i7-5960X CPU @ 3.00GHz",
+          "logical_cpu_count": 16,
+          "physical_cpu_count": 8,
+          "ram_total_bytes": 68636971008,
+          "operating_system": "Windows",
+          "operating_system_release": "10",
+          "architecture": "AMD64",
+          "python_version": "3.12.15"
+        },
+        "loopback_http_proxy_bypassed": true,
+        "cuda_overrides": {}
+      }
+    }
+  ],
+  "derived_analysis_source_sha256": {
+    "analyze_diagnostics.py": "abf320fc29e0b6df6db4caa61f827fab0ee621045886dc202945d6fd4311c50c",
+    "nsight_capture.py": "05ef559db7652eb3391cbf514ded41a6b3b71d91c559ba41ce1f89d6aa6fa24b",
+    "report_communication_investigation.py": "ebcdfa1c5b5c70aafe9a89a29f5493e804516255216e00c7ced2d164201f5868"
+  },
+  "recorded_conditions_with_external_activity_overlap": 19,
+  "external_activity_intervals": [
+    {
+      "event": "start",
+      "activity_id": "glm53-flash-download-20261103T233925Z",
+      "started_at": "2026-11-03T23:39:25.857235Z",
+      "pid": 4272,
+      "launcher_pid": 16564,
+      "activity": "HTTPS download, incremental SHA256 and partial-file writes",
+      "destination": "[local detail redacted]",
+      "destination_device": "C: Samsung SSD870 EVO4TB SATA Disk0",
+      "nvme_volume_F_touched": false,
+      "expected_total_bytes": 73411389088,
+      "revision": "6728cf78a5b198a6a6f84b7fb88956a17ec56521",
+      "source": "strata_plan exact worker-start evidence",
+      "source_event_log": "glm53-flash/download-events.jsonl",
+      "qualification": "User explicitly requested this concurrent download; overlapping first-attempt diagnostics remain preserved and environmentally confounded. Tiny partition inventory around23:39:24–23:39:26UTC was also reported; no existing model bytes/full-file prehash.",
+      "finished_at": "2026-11-04T00:04:12.010177Z",
+      "diagnostic_redacted": true
+    },
+    {
+      "event": "start",
+      "activity_id": "glm53-flash-parallel-download-20261104T000541Z",
+      "started_at": "2026-11-04T00:05:41.575525Z",
+      "pid": 21152,
+      "launcher_pid": 21680,
+      "activity": "Two-shard parallel HTTPS download plus resumable-file SHA256 prehash, incremental hashing and C:SATA writes",
+      "destination": "[local detail redacted]",
+      "destination_device": "C: Samsung SSD870 EVO4TB SATA Disk0",
+      "source_event_log": "glm53-flash/download-events.jsonl",
+      "source": "strata_plan exact parallel-worker evidence",
+      "qualification": "Confirmed prior worker exited. No download I/O during00:04:12.010177–00:05:41.575525UTC. Existing model/measurement captures unchanged.",
+      "diagnostic_redacted": true
+    },
+    {
+      "event": "start",
+      "activity_id": "cuda-toolchain-download-20261104T000953Z",
+      "started_at": "2026-11-04T00:09:53.625249Z",
+      "pid": 21236,
+      "launcher_pid": 21560,
+      "activity": "Official NVIDIA CUDA13.4.3 minimal ZIP redistributions download and SHA verification, expected approximately522.6MB",
+      "destination": "untracked/dual-5070-investigation/glm53-flash/cuda-13.4.3-archives",
+      "destination_device": "C:SATA",
+      "source_event_log": "glm53-flash/toolchain-download-events.jsonl",
+      "source": "strata_plan exact toolchain downloader start",
+      "qualification": "Authorized by parent; no installer, compiler, executable or GPU invoked. MainGLM worker21152 remains active. File downloads do not install/change OS or drivers.",
+      "finished_at": "2026-11-04T00:14:54.456884Z"
+    }
+  ],
+  "recovery_provenance_file": "recovery-provenance.json",
+  "communication_captures": [
+    {
+      "status": "completed",
+      "measurements": 280
+    }
+  ],
+  "clean_comparison_qualification": "User requested parallel downloads/related CPU and disk activity; whole-condition lifecycle overlaps retained and excluded from clean ratios, recommendations and figures without repeats",
+  "placement_qualification": "Final positive actual allocation epochs, not preliminary startup heuristics; KV locality remains unverified",
+  "energy_scope": "Both installed boards, including idle nonparticipating board; overlapping client intervals integrated once",
+  "profiling_qualification": {
+    "overhead": "Present, unquantified; profiles excluded from normal performance aggregates",
+    "phase_scope": "Whole-request trace only; CUDA/client clock transform unverified",
+    "copy_bytes": "Logical/requested CUDA bytes, not physical PCIe traffic; no physical GB/s derived",
+    "waits": "API durations can overlap and are not wall-idle fractions; event gaps do not prove hardware idle",
+    "transport": "Native PtoP API/event names do not prove physical direct peer transport",
+    "enums": "Actual SQLite ENUM_CUDA_MEM_KIND symbols retained in profile-memory-enum-verification.csv",
+    "external_activity": "All profile attempts are checked for explicit download/CPU/disk activity overlap"
+  },
+  "limitations": "One pass; actual EOS lengths vary; bounded model inventory identity is not full weight-byte proof; cache equality across reboot unknown; no quality/statistical-significance claim",
+  "rendering_recovery": "First numeric generator used flash-next venv and stopped at missing matplotlib after preserving all CSV/raw derivatives. This stage only loads existing CSV/raw-derived data under the existing system Python with matplotlib; no captured-log reparse or inference repeat."
+}
