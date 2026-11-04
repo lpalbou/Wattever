@@ -1,0 +1,52 @@
+{
+  "schema": "native-request-draft-evidence-v1",
+  "condition": "iq3",
+  "model": "Qwen3.8-Flash-Next",
+  "engine": "Native Strata 0.1.52",
+  "quantization": "ISTA-DASLab IQ3_S",
+  "source_log_sha256": "1044a97d9a42f90a4adffd683b42c89e4a0fef72f5cf8f5bdc6354e39b398547",
+  "source_status_receipt_sha256": "5d00e321bcb1fb28ec43d0c6c5779738d58b3e22f8a55f848162362acd1d8f6e",
+  "extract_file": "iq3-native-draft-full193-rows.txt",
+  "extract_sha256": "0d592c88cc70b6740cd9e21c4a79b43d5baf3dcc21225db9e43c5476e0ca12dc",
+  "request_rows": 193,
+  "drafts_offered": 102931,
+  "drafts_accepted": 73098,
+  "zero_offered_request_rows": 0,
+  "scope": "Complete loaded-engine lifetime: one non-suite budget smoke then192 scheduled capability questions. Internal draft counts are not inference repeats.",
+  "request_order": [
+    {
+      "ordinals_inclusive": [
+        1,
+        1
+      ],
+      "kind": "non-suite 32768-token budget smoke"
+    },
+    {
+      "ordinals_inclusive": [
+        2,
+        65
+      ],
+      "run_id": "cap-20261104-031500-dd84d8fedb",
+      "questions": 64
+    },
+    {
+      "ordinals_inclusive": [
+        66,
+        129
+      ],
+      "run_id": "cap-20261104-032720-214f9e86df",
+      "questions": 64
+    },
+    {
+      "ordinals_inclusive": [
+        130,
+        193
+      ],
+      "run_id": "cap-20261104-034240-e076a5af10",
+      "questions": 64
+    }
+  ],
+  "ordering_validation": "Every one of192 engine summaries matches the corresponding saved question prompt-token and completion-token counts in suite order; final explicit engine activity count193 and in_flight0.",
+  "suffix_drafting_observed": true,
+  "qualification": "Configured MTP on with requested four drafts. These are native engine-reported request draft totals; suffix drafting is also logged. Totals do not isolate mechanisms or establish an MTP speed or quality benefit. These accuracy runs are ineligible for performance and energy comparisons."
+}

@@ -33,7 +33,7 @@ The hosted Results view also includes a shared catalog that you can browse witho
 
 The helper's **Capabilities** tab runs original Core tasks and pinned GSM8K, ARC-Challenge and MMLU-Pro test questions. MMLU-Pro offers its full 12,032-question split or a fixed 64-question sample balanced across 14 subjects. Choose a deterministic subset or the full suite and compare auditable rule-scored answers. These are zero-shot chat adaptations, separate from official leaderboard scores and intelligence rankings. Requested reasoning, reported MTP/quantization and unknown effective settings remain distinct in public model/endpoint configuration fingerprints. See [capability evaluation](docs/capabilities.md) for scoring, dataset licenses and uncertainty.
 
-The [Flash-Next accuracy collection](docs/flash-next-quality.md) publishes fixed ARC64, GSM64 and MMLU-Pro64 samples with inspectable answers and complete question coverage, separately from throughput measurements.
+The [Flash-Next accuracy collection](docs/flash-next-quality.md) compares UD-IQ4_XS and IQ3_S on the same ARC64, GSM64 and MMLU-Pro64 samples, with inspectable answers and complete question coverage, separately from throughput measurements.
 
 Its visual dashboard combines strict pass rate, correct/planned and coverage tiles with category bars, an outcome ring and repeat comparisons. Select a chart to filter the paginated question-by-repeat matrix, then open a cell to inspect the question, expected output, model response and rule explanation. Matching evaluation protocols support paired comparisons that exclude unscored requests. A format mismatch or request error is shown distinctly from a passed answer; inspect the evidence before drawing conclusions about reasoning.
 

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Publishes 192 Flash-Next IQ3_S accuracy observations alongside the UD-IQ4_XS series, with matched question-level comparisons, complete answer audits and explicit sample-size limits.
+
 ## 2.5.4 - 2026-11-04
 
 - Preserves ordinary phrases such as "basic math" in capability audit answers while continuing to redact encoded HTTP Basic credentials and explicit authentication headers. Exports retain independently scorable answers.

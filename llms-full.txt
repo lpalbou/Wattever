@@ -19,7 +19,7 @@
 - [Two RTX 5070 Ti cards](docs/two-5070-ti-comparison.md): 180 normal cases, matched single/mixed-card throughput and energy, native drafting and per-card temperatures.
 - [Two RTX 5070 Ti placement strategies](docs/two-5070-ti-placement.md): measured communication paths, standalone prefill/decode, independent instances, energy and profiling limits.
 - [Capability evaluation](docs/capabilities.md): visual score/coverage dashboard, question-by-repeat evidence explorer, pinned Core/GSM8K/ARC/MMLU-Pro suites and paired-comparison limits.
-- [Flash-Next task accuracy](docs/flash-next-quality.md): fixed public-question samples, audit answers, coverage and generation conditions on two RTX 5070 Ti cards.
+- [Flash-Next task accuracy](docs/flash-next-quality.md): UD-IQ4_XS and IQ3_S on matched public-question samples, audit answers, coverage and generation conditions on two RTX 5070 Ti cards.
 - [Architecture](docs/architecture.md): components and boundaries.
 - [API](docs/api.md): automatic naming/opaque route identity, private registry boundaries, environment-based authentication, local routes and managed-only extensions.
 - [FAQ](docs/faq.md): common questions and limits.
@@ -83,7 +83,7 @@ The hosted Results view also includes a shared catalog that you can browse witho
 
 The helper's **Capabilities** tab runs original Core tasks and pinned GSM8K, ARC-Challenge and MMLU-Pro test questions. MMLU-Pro offers its full 12,032-question split or a fixed 64-question sample balanced across 14 subjects. Choose a deterministic subset or the full suite and compare auditable rule-scored answers. These are zero-shot chat adaptations, separate from official leaderboard scores and intelligence rankings. Requested reasoning, reported MTP/quantization and unknown effective settings remain distinct in public model/endpoint configuration fingerprints. See [capability evaluation](docs/capabilities.md) for scoring, dataset licenses and uncertainty.
 
-The [Flash-Next accuracy collection](docs/flash-next-quality.md) publishes fixed ARC64, GSM64 and MMLU-Pro64 samples with inspectable answers and complete question coverage, separately from throughput measurements.
+The [Flash-Next accuracy collection](docs/flash-next-quality.md) compares UD-IQ4_XS and IQ3_S on the same ARC64, GSM64 and MMLU-Pro64 samples, with inspectable answers and complete question coverage, separately from throughput measurements.
 
 Its visual dashboard combines strict pass rate, correct/planned and coverage tiles with category bars, an outcome ring and repeat comparisons. Select a chart to filter the paginated question-by-repeat matrix, then open a cell to inspect the question, expected output, model response and rule explanation. Matching evaluation protocols support paired comparisons that exclude unscored requests. A format mismatch or request error is shown distinctly from a passed answer; inspect the evidence before drawing conclusions about reasoning.
 
@@ -122,7 +122,7 @@ Canonical source: [docs/README.md](docs/README.md)
 - [Two RTX 5070 Ti cards](docs/two-5070-ti-comparison.md): 180 normal cases, matched single/mixed-card comparisons, native drafting, energy and thermal measurements.
 - [Two RTX 5070 Ti placement strategies](docs/two-5070-ti-placement.md): host/cross-card transfers, 153 screening conditions, three profiles, Gemma layout and workload-specific recommendations.
 - [Capability evaluation](docs/capabilities.md): visual score/coverage dashboard, question-by-repeat explorer, compatible paired comparisons, offline pinned suites and audit imports.
-- [Flash-Next task accuracy](docs/flash-next-quality.md): fixed ARC64, GSM64 and MMLU-Pro64 samples with full answer evidence, coverage, generation controls and source lineage.
+- [Flash-Next task accuracy](docs/flash-next-quality.md): UD-IQ4_XS and IQ3_S on the same ARC64, GSM64 and MMLU-Pro64 samples, with full answer evidence, coverage, generation controls and source lineage.
 - [Architecture](docs/architecture.md): components and data flow.
 - [API](docs/api.md): local HTTP interface and side effects.
 - [FAQ](docs/faq.md): common interpretation questions.
@@ -474,8 +474,8 @@ Canonical source: [docs/flash-next-quality.md](docs/flash-next-quality.md)
 
 # Flash-Next task accuracy on two RTX 5070 Ti cards
 
-This collection evaluates the original Unsloth Qwen3.8-Flash-Next
-`UD-IQ4_XS` checkpoint on fixed public questions. Each question has one primary
+This collection evaluates Qwen3.8-Flash-Next in the original Unsloth
+`UD-IQ4_XS` and ISTA-DASLab `IQ3_S` packages on fixed public questions. Each question has one primary
 generation, with its prompt, visible answer and deterministic grading retained.
 These are **64-question samples**, separate from full-dataset or official
 leaderboard results.
@@ -485,6 +485,9 @@ leaderboard results.
 | Unsloth UD-IQ4_XS | ARC-Challenge, science multiple choice | 63 / 64 | 64 / 64 | 98.4% | 91.7–99.7% | 0 / 0 |
 | Unsloth UD-IQ4_XS | GSM8K, math word problems | 63 / 64 | 64 / 64 | 98.4% | 91.7–99.7% | 0 / 0 |
 | Unsloth UD-IQ4_XS | MMLU-Pro, 14 subjects | 54 / 64 | 64 / 64 | 84.4% | 73.6–91.3% | 0 / 0 |
+| ISTA-DASLab IQ3_S | ARC-Challenge, science multiple choice | 64 / 64 | 64 / 64 | 100.0% | 94.3–100.0% | 0 / 0 |
+| ISTA-DASLab IQ3_S | GSM8K, math word problems | 62 / 64 | 64 / 64 | 96.9% | 89.3–99.1% | 0 / 0 |
+| ISTA-DASLab IQ3_S | MMLU-Pro, 14 subjects | 52 / 64 | 64 / 64 | 81.2% | 70.0–88.9% | 0 / 0 |
 
 ARC and GSM8K are close to the ceiling; the MMLU-Pro sample produces more
 answer-key mismatches. These results establish auditable performance
@@ -494,13 +497,34 @@ training. The interval is a descriptive Wilson approximation over distinct
 first-repeat questions, rather than a model-ranking significance test or an
 intelligence rating.
 
+The same selected questions, prompts and grading rules are used for both
+packages. Pairing individual answers gives the following descriptive comparison:
+
+| Suite | Both correct | Only UD-IQ4_XS correct | Only IQ3_S correct | Both incorrect |
+| --- | ---: | ---: | ---: | ---: |
+| ARC-Challenge | 63 | 0 | 1 | 0 |
+| GSM8K | 62 | 1 | 0 | 1 |
+| MMLU-Pro | 51 | 3 | 1 | 9 |
+
+Total scores differ by one or two answers per suite. They do not establish a
+general quality ranking or quality equivalence. These are different publisher
+packages, including different quantization recipes, rather than an isolated
+bit-width experiment. Evaluate their throughput separately using the
+[dual-card performance results](docs/two-5070-ti-comparison.md).
+
+![ARC-Challenge accuracy and descriptive intervals for the two Flash-Next packages](results/aggregates/flash-next-quality/accuracy-arc-challenge-test-chat-v1.png)
+
+![GSM8K accuracy and descriptive intervals for the two Flash-Next packages](results/aggregates/flash-next-quality/accuracy-gsm8k-test-chat-v1.png)
+
+![MMLU-Pro balanced-subset accuracy and descriptive intervals for the two Flash-Next packages](results/aggregates/flash-next-quality/accuracy-mmlu-pro-balanced64-chat-v1.png)
+
 ## Collection protocol
 
 | Setting | Recorded condition |
 | --- | --- |
 | Machine | Intel Core i7-5960X, 64 GiB RAM, PNY plus ASUS Prime RTX 5070 Ti, 16 GiB per card, Windows |
 | Engine | Native Strata 0.1.52; Strata Control owns model loading |
-| Weights | Original [Unsloth Qwen3.8-Flash-Next UD-IQ4_XS](https://huggingface.co/unsloth/Qwen3.8-Flash-Next-GGUF/tree/766911a6b7369840a91dbcd95f9f997acaab6cd6/UD-IQ4_XS); shard hashes retained in configuration metadata |
+| Weights | Original [Unsloth UD-IQ4_XS](https://huggingface.co/unsloth/Qwen3.8-Flash-Next-GGUF/tree/766911a6b7369840a91dbcd95f9f997acaab6cd6/UD-IQ4_XS) and [ISTA-DASLab GSQ-RCO IQ3_S](https://huggingface.co/ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF/tree/ed59f92082b1e93c0e96d60a8b11aab089b52f09); revisions retained in configuration metadata |
 | Context / KV | 65,536 tokens / INT8 |
 | Serving | One backend slot; both GPUs available to the native engine |
 | Reasoning | Requested `none`; recorded native template control `enable_thinking:false` with a closed think prefix |
@@ -509,16 +533,24 @@ intelligence rating.
 | Sampling | Temperature 0, top-p 1; one generation per selected question |
 | Selection | ARC/GSM: 64 SHA-256-ranked IDs per split. MMLU-Pro: four or five questions per each of 14 subjects. Seed 73,129; selection is independent of answers or model results |
 | Generation | 32,768-token total ceiling; no client wall-clock deadline; selection seed is not sent as an API generation seed |
-| Grading | ARC generated final letter; GSM8K final numeric answer; visible content only |
+| Grading | ARC and MMLU-Pro generated final letter; GSM8K final numeric answer; visible content only |
 
-A [native draft-count extract](results/aggregates/flash-next-quality/ud4-native-draft-rows.txt)
-and [scope/hash record](results/aggregates/flash-next-quality/ud4-native-draft-evidence.json)
-retain the first 124 engine request summaries: one budget check, ARC64 and the
-first 59 GSM requests. They report 41,226 offered and 29,042 accepted drafts,
-with no zero-offer request. MTP is configured on, and this engine also logs
-suffix drafting. The totals do not isolate mechanisms or establish an MTP
-speed or quality benefit. They exclude the five-question continuation and
-other suites.
+Native draft-count extracts retain all 193 request summaries per package:
+one budget check followed by the 192 capability questions. Each question's
+prompt and output counts match the corresponding engine summary in order.
+
+| Package | Offered / accepted drafts | Request summaries | Extract and scope/hash record |
+| --- | ---: | ---: | --- |
+| UD-IQ4_XS | 108,685 / 77,430 | 193 | [Rows](results/aggregates/flash-next-quality/ud4-native-draft-full193-rows.txt), [evidence](results/aggregates/flash-next-quality/ud4-native-draft-full193-evidence.json) |
+| IQ3_S | 102,931 / 73,098 | 193 | [Rows](results/aggregates/flash-next-quality/iq3-native-draft-full193-rows.txt), [evidence](results/aggregates/flash-next-quality/iq3-native-draft-full193-evidence.json) |
+
+There is no zero-offer request in either extract. MTP is configured on, and
+the engine also logs suffix drafting. The totals do not isolate mechanisms
+or establish an MTP speed or quality benefit. Internal draft proposals are
+not additional inference repeats. The initial
+[124-summary UD-IQ4_XS extract](results/aggregates/flash-next-quality/ud4-native-draft-rows.txt)
+and its [scope record](results/aggregates/flash-next-quality/ud4-native-draft-evidence.json)
+remain available separately.
 
 The full source splits contain 1,172 ARC-Challenge, 1,319 GSM8K and 12,032
 MMLU-Pro questions. The fixed MMLU-Pro sample has a different subject weighting
@@ -536,14 +568,14 @@ and energy comparison conditions.
 
 ## Inspect the answers
 
-All answers marked incorrect completed naturally, with a valid final output. The ARC
+All answers marked incorrect completed naturally, with a valid final output. The UD-IQ4_XS ARC
 answer selected fertilization where the source key selects maturation in a
 plant-life-cycle question. The GSM8K answer split a dinner bill including its
 tip, where the source key assigns the full tip to one payer. The recorded
 decisions are answer-key mismatches, rather than truncated output or parser
 failures. The source keys remain unchanged.
 
-MMLU-Pro used 73,772 output tokens across 64 questions. Its longest response,
+UD-IQ4_XS MMLU-Pro used 73,772 output tokens across 64 questions. Its longest response,
 engineering item `mmlu-pro-test-11438`, used 10,522 tokens and ended naturally;
 it was not truncated. The published question has compressed spacing and an
 undefined variable `y`. Its recorded final answer disagrees with the source
@@ -553,9 +585,8 @@ interpretation of an individual answer-key mismatch.
 Open **Capabilities** in the helper or hosted application to inspect published
 question evidence. The raw files are independently importable:
 
-- [ARC64 completed run](results/capabilities/cap-20261104-011521-b0148a48af.json).
-- [GSM64 derived coverage record](results/capabilities/cap-derived-20261104-ud4-gsm64-21b02ce673c2.json).
-- [MMLU-Pro balanced64 completed run](results/capabilities/cap-20261104-021604-96f2560798.json).
+- UD-IQ4_XS: [ARC64](results/capabilities/cap-20261104-011521-b0148a48af.json), [GSM64 derived coverage record](results/capabilities/cap-derived-20261104-ud4-gsm64-21b02ce673c2.json), [MMLU-Pro balanced64](results/capabilities/cap-20261104-021604-96f2560798.json).
+- IQ3_S: [ARC64](results/capabilities/cap-20261104-031500-dd84d8fedb.json), [GSM64](results/capabilities/cap-20261104-032720-214f9e86df.json), [MMLU-Pro balanced64](results/capabilities/cap-20261104-034240-e076a5af10.json).
 - [Summary CSV](results/aggregates/flash-next-quality/summary.csv).
 
 The GSM64 record is the exact union of two disjoint collection segments from
@@ -3066,6 +3097,8 @@ Canonical source: [CHANGELOG.md](CHANGELOG.md)
 # Changelog
 
 ## Unreleased
+
+- Publishes 192 Flash-Next IQ3_S accuracy observations alongside the UD-IQ4_XS series, with matched question-level comparisons, complete answer audits and explicit sample-size limits.
 
 ## 2.5.4 - 2026-11-04
 

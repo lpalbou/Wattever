@@ -1,0 +1,63 @@
+{
+  "schema": "native-request-draft-evidence-v1",
+  "condition": "ud4",
+  "model": "Qwen3.8-Flash-Next",
+  "engine": "Native Strata 0.1.52",
+  "quantization": "Unsloth UD-IQ4_XS",
+  "source_log_sha256": "5924812e64b4d865fd9ec954b53f165940e40ad26c0678c3266deb23184fa470",
+  "source_status_receipt_sha256": "944aa96150d7ef658fe0de0623e7cfbe9d9b53dbd4b6139a077f7ffc1771e809",
+  "extract_file": "ud4-native-draft-full193-rows.txt",
+  "extract_sha256": "8f377c4b5faebc9f99b19dc9944156e0f8f27528be9ddf3f8e48d542ce269687",
+  "request_rows": 193,
+  "drafts_offered": 108685,
+  "drafts_accepted": 77430,
+  "zero_offered_request_rows": 0,
+  "scope": "Complete loaded-engine lifetime: one non-suite budget smoke then192 scheduled capability questions. Internal draft counts are not inference repeats.",
+  "request_order": [
+    {
+      "ordinals_inclusive": [
+        1,
+        1
+      ],
+      "kind": "non-suite 32768-token budget smoke"
+    },
+    {
+      "ordinals_inclusive": [
+        2,
+        65
+      ],
+      "run_id": "cap-20261104-011521-b0148a48af",
+      "questions": 64
+    },
+    {
+      "ordinals_inclusive": [
+        66,
+        124
+      ],
+      "run_id": "cap-20261104-013428-1da798dd1e",
+      "questions": 59,
+      "source_run_terminal_status": "error"
+    },
+    {
+      "ordinals_inclusive": [
+        125,
+        129
+      ],
+      "run_id": "cap-20261104-021212-1ca9064533",
+      "questions": 5,
+      "source_run_terminal_status": "completed"
+    },
+    {
+      "ordinals_inclusive": [
+        130,
+        193
+      ],
+      "run_id": "cap-20261104-021604-96f2560798",
+      "questions": 64
+    }
+  ],
+  "ordering_validation": "Every one of192 engine summaries matches the corresponding saved question prompt-token and completion-token counts in suite order; final explicit engine activity count193 and in_flight0.",
+  "suffix_drafting_observed": true,
+  "qualification": "Configured MTP on with requested four drafts. These are native engine-reported request draft totals; suffix drafting is also logged. Totals do not isolate mechanisms or establish an MTP speed or quality benefit. These accuracy runs are ineligible for performance and energy comparisons.",
+  "derived_gsm64_coverage_id": "cap-derived-20261104-ud4-gsm64-21b02ce673c2"
+}
