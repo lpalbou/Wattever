@@ -69,6 +69,23 @@ def private_key(key):
     return _private_key_uncached(key)
 
 
+def _private_metadata_key_uncached(key):
+    return bool(LOCAL_DETAIL.search(key) or network_detail(key) or private_key(key))
+
+
+@lru_cache(maxsize=8192)
+def _private_metadata_key_cached(key):
+    return _private_metadata_key_uncached(key)
+
+
+def _private_metadata_key(key):
+    # Classify bounded, exact string keys only. Values and the host value-type
+    # condition remain outside this cache and are checked on every projection.
+    if type(key) is str and len(key) <= 128:
+        return _private_metadata_key_cached(key)
+    return _private_metadata_key_uncached(key)
+
+
 def public_source(value):
     """An explicitly supplied public citation may retain its public DNS URL."""
     if not isinstance(value, str):
@@ -115,7 +132,7 @@ def public_projection(value, _path=()):
                 result[key] = "private model identifier"
                 redacted = True
                 continue
-            if (LOCAL_DETAIL.search(key) or network_detail(key) or private_key(key) or
+            if (_private_metadata_key(key) or
                     (key.lower() == "host" and isinstance(item, str))):
                 redacted = True
                 continue

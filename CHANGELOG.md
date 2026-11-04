@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## 2.5.5 - 2026-11-04
+
+- Speeds up privacy filtering for large benchmark exports by reusing field-name classifications while continuing to check every value.
 - Publishes 192 Flash-Next IQ3_S accuracy observations alongside the UD-IQ4_XS series, with matched question-level comparisons, complete answer audits and explicit sample-size limits.
 
 ## 2.5.4 - 2026-11-04

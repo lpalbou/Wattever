@@ -59,7 +59,7 @@ Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/), start an O
 ## Full local helper quick start
 
 1. Start your inference engine and load a model. For managed LM Studio operation, install LM Studio, download models and run `lms bootstrap` once. Other endpoints do not need LM Studio.
-2. Download and extract the [Wattever 2.5.4 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.4/Wattever-2.5.4.zip), or clone the repository. Use the matching documentation and source version.
+2. Download and extract the [Wattever 2.5.5 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.5/Wattever-2.5.5.zip), or clone the repository. Use the matching documentation and source version.
 3. On Windows run `Wattever.bat`; on macOS run `Wattever.command`; on Linux run `sh Wattever.sh`. Alternatively run `python -m wattever.server` from the repository.
 4. Open the displayed local URL. On **Run**, choose **OpenAI-compatible endpoint**, enter your API base URL and use **Connect**. Wattever identifies the endpoint where evidence is available and supplies its display name automatically; no manual label or ID is required. Enter a model ID manually if discovery is unavailable. Choose workloads and start. Leave the server running until the benchmark finishes.
 
@@ -146,7 +146,7 @@ Install Python 3.9 or newer. Wattever does not need Python packages or a JavaScr
 - **OpenAI-compatible endpoint:** start an inference engine such as Strata, llama.cpp or LM Studio and load your model there. Wattever needs streaming Chat Completions; model discovery is optional. Other OpenAI API surfaces are not required or implemented by this integration.
 - **LM Studio (managed):** install [LM Studio](https://lmstudio.ai/), download models and run `lms bootstrap`. Wattever can load/unload models and schedule context and MTP settings through its CLI. The API defaults to `http://127.0.0.1:1234`; `LMS_BASE_URL` changes that managed connection. Explicit configured URLs and saved measurements keep their original addresses and timing provenance.
 
-Download and extract the [Wattever 2.5.4 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.4/Wattever-2.5.4.zip), or clone the repository. Use documentation matching that source version. Start `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux. You can also run `python -m wattever.server` in the extracted folder or repository. The server listens on loopback and prints its URL; keep its window open. `GPU_BENCH_PORT` sets the starting port (default 8713); `GPU_BENCH_NO_BROWSER=1` suppresses automatic browser opening.
+Download and extract the [Wattever 2.5.5 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.5/Wattever-2.5.5.zip), or clone the repository. Use documentation matching that source version. Start `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux. You can also run `python -m wattever.server` in the extracted folder or repository. The server listens on loopback and prints its URL; keep its window open. `GPU_BENCH_PORT` sets the starting port (default 8713); `GPU_BENCH_NO_BROWSER=1` suppresses automatic browser opening.
 
 On **Run**, choose your provider. For a generic endpoint, enter your engine's API base URL, such as `http://127.0.0.1:8000/v1` (a root URL also works), and optionally the name of an API-key environment variable. Set the variable before starting the helper; enter its name, never its secret value, in Wattever. Click **Connect**. Wattever supplies a display name and an opaque route identity automatically; no label or ID is required. Model discovery lists the IDs exposed by the connected endpoint. If the provider does not expose `/models`, supply its exact served model ID manually. The Python helper connects directly, so browser CORS permission is only needed in hosted browser mode.
 
@@ -3098,6 +3098,9 @@ Canonical source: [CHANGELOG.md](CHANGELOG.md)
 
 ## Unreleased
 
+## 2.5.5 - 2026-11-04
+
+- Speeds up privacy filtering for large benchmark exports by reusing field-name classifications while continuing to check every value.
 - Publishes 192 Flash-Next IQ3_S accuracy observations alongside the UD-IQ4_XS series, with matched question-level comparisons, complete answer audits and explicit sample-size limits.
 
 ## 2.5.4 - 2026-11-04
