@@ -1,0 +1,88 @@
+# Flash-Next task accuracy on two RTX 5070 Ti cards
+
+This collection evaluates the original Unsloth Qwen3.8-Flash-Next
+`UD-IQ4_XS` checkpoint on fixed public questions. Each question has one primary
+generation, with its prompt, visible answer and deterministic grading retained.
+These are **64-question samples**, separate from full-dataset or official
+leaderboard results.
+
+| Quantization | Suite | Correct / planned | Graded coverage | Accuracy | First-repeat descriptive 95% interval | Request errors / output limits |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| Unsloth UD-IQ4_XS | ARC-Challenge, science multiple choice | 63 / 64 | 64 / 64 | 98.4% | 91.7–99.7% | 0 / 0 |
+| Unsloth UD-IQ4_XS | GSM8K, math word problems | 63 / 64 | 64 / 64 | 98.4% | 91.7–99.7% | 0 / 0 |
+
+Both samples are close to the ceiling. They establish auditable performance
+on these selected questions, with limited ability to resolve small differences
+between configurations. Public benchmark questions may have appeared in
+training. The interval is a descriptive Wilson approximation over distinct
+first-repeat questions, rather than a model-ranking significance test or an
+intelligence rating.
+
+## Collection protocol
+
+| Setting | Recorded condition |
+| --- | --- |
+| Machine | Intel Core i7-5960X, 64 GiB RAM, PNY plus ASUS Prime RTX 5070 Ti, 16 GiB per card, Windows |
+| Engine | Native Strata 0.1.52; Strata Control owns model loading |
+| Weights | Original [Unsloth Qwen3.8-Flash-Next UD-IQ4_XS](https://huggingface.co/unsloth/Qwen3.8-Flash-Next-GGUF/tree/766911a6b7369840a91dbcd95f9f997acaab6cd6/UD-IQ4_XS); shard hashes retained in configuration metadata |
+| Context / KV | 65,536 tokens / INT8 |
+| Serving | One backend slot; both GPUs available to the native engine |
+| Reasoning | Requested `none`; recorded native template control `enable_thinking:false` with a closed think prefix |
+| MTP | Configured on, requested four draft tokens; activity observed in native engine logs. Public API configuration keeps requested, reported and unknown effective state separate |
+| Expert policy | All selected experts participate; route-tail skipping disabled |
+| Sampling | Temperature 0, top-p 1; one generation per selected question |
+| Selection | 64 SHA-256-ranked IDs per full test split; seed 73,129, independent of answers or model results |
+| Generation | 32,768-token total ceiling; no client wall-clock deadline; selection seed is not sent as an API generation seed |
+| Grading | ARC generated final letter; GSM8K final numeric answer; visible content only |
+
+A [native draft-count extract](../results/aggregates/flash-next-quality/ud4-native-draft-rows.txt)
+and [scope/hash record](../results/aggregates/flash-next-quality/ud4-native-draft-evidence.json)
+retain the first 124 engine request summaries: one budget check, ARC64 and the
+first 59 GSM requests. They report 41,226 offered and 29,042 accepted drafts,
+with no zero-offer request. MTP is configured on, and this engine also logs
+suffix drafting. The totals do not isolate mechanisms or establish an MTP
+speed or quality benefit. They exclude the five-question continuation and
+other suites.
+
+The full source splits contain 1,172 ARC-Challenge and 1,319 GSM8K questions.
+These runs use the versioned zero-shot Wattever chat adaptations described in
+[capability evaluation](capabilities.md). AI2 ARC-Challenge is a school-science
+multiple-choice dataset, distinct from ARC-AGI grid reasoning.
+
+Background model downloading overlapped accuracy collection. **Do not use these
+quality runs for speed or energy comparisons.** Per-question timings and
+telemetry remain audit observations. The separate
+[dual-card throughput study](two-5070-ti-comparison.md) defines the performance
+and energy comparison conditions.
+
+## Inspect the answers
+
+Both incorrect answers completed naturally, with a valid final output. The ARC
+answer selected fertilization where the source key selects maturation in a
+plant-life-cycle question. The GSM8K answer split a dinner bill including its
+tip, where the source key assigns the full tip to one payer. The recorded
+decisions are answer-key mismatches, rather than truncated output or parser
+failures. The source keys remain unchanged.
+
+Open **Capabilities** in the helper or hosted application to inspect published
+question evidence. The raw files are independently importable:
+
+- [ARC64 completed run](../results/capabilities/cap-20261104-011521-b0148a48af.json).
+- [GSM64 derived coverage record](../results/capabilities/cap-derived-20261104-ud4-gsm64-21b02ce673c2.json).
+- [Summary CSV](../results/aggregates/flash-next-quality/summary.csv).
+
+The GSM64 record is the exact union of two disjoint collection segments from
+the same loaded engine instance and model configuration: 59 retained answers
+and five previously unobserved questions. No question was generated twice.
+All 64 answers are re-scored against the original fixed selection. Its
+[59-answer source](../results/aggregates/flash-next-quality/ud4-source/cap-20261104-013428-1da798dd1e.json)
+retains terminal status `error`; its
+[five-answer source](../results/aggregates/flash-next-quality/ud4-source/cap-20261104-021212-1ca9064533.json)
+is complete. Input hashes, zero overlap, per-item provenance and separate
+telemetry segments are recorded in the derived JSON. Segment references are
+paths from the repository root. No joined duration, averaged rate or combined
+energy is calculated.
+
+Dataset-specific sources, attribution and licenses are in
+[dataset provenance](../corpora/capabilities/README.md). See
+[sharing results](sharing-results.md) for audit imports and public contributions.

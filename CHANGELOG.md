@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Publishes Flash-Next UD-IQ4_XS ARC64 and GSM64 accuracy samples with full answer audits, coverage, source lineage and explicit performance-comparison limits.
+
 ## 2.5.3 - 2026-11-04
 
 - Adds the pinned 12,032-question MMLU-Pro test split and a fixed 64-question sample balanced across 14 subjects. Both use auditable zero-shot generated-answer chat protocols; the balanced sample defaults to all 64 questions.

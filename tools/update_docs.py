@@ -8,6 +8,7 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 DOCUMENTS = ["README.md", "docs/README.md", "docs/getting-started.md", "docs/browser.md", "docs/sharing-results.md", "docs/measurements.md",
              "docs/capabilities.md",
+             "docs/flash-next-quality.md",
              "docs/5060-ti-storage-comparison.md",
              "docs/5070-ti-hardware-follow-up.md",
              "docs/pny-5070-ti-comparison.md",
