@@ -1,0 +1,165 @@
+{
+  "capture_kind": "sequence-isolation sanity; outside performance aggregates",
+  "patch": "v2",
+  "cases": [
+    {
+      "fair_quota": 512,
+      "kv": "f16",
+      "correct": 5,
+      "planned": 5,
+      "answers": [
+        {
+          "client": 0,
+          "expected": "731129",
+          "answer": "731129",
+          "correct": true
+        },
+        {
+          "client": 1,
+          "expected": "731446",
+          "answer": "731446",
+          "correct": true
+        },
+        {
+          "client": 2,
+          "expected": "731763",
+          "answer": "731763",
+          "correct": true
+        },
+        {
+          "client": 3,
+          "expected": "732080",
+          "answer": "732080",
+          "correct": true
+        },
+        {
+          "client": 4,
+          "expected": "732397",
+          "answer": "732397",
+          "correct": true
+        }
+      ],
+      "actual_prompt_tokens": [
+        564,
+        4714,
+        4714,
+        4714,
+        4714
+      ],
+      "finish_reasons": [
+        "stop",
+        "stop",
+        "stop",
+        "stop",
+        "stop"
+      ],
+      "owned_exit_confirmed": true
+    },
+    {
+      "fair_quota": 512,
+      "kv": "q8_0",
+      "correct": 5,
+      "planned": 5,
+      "answers": [
+        {
+          "client": 0,
+          "expected": "731129",
+          "answer": "731129",
+          "correct": true
+        },
+        {
+          "client": 1,
+          "expected": "731446",
+          "answer": "731446",
+          "correct": true
+        },
+        {
+          "client": 2,
+          "expected": "731763",
+          "answer": "731763",
+          "correct": true
+        },
+        {
+          "client": 3,
+          "expected": "732080",
+          "answer": "732080",
+          "correct": true
+        },
+        {
+          "client": 4,
+          "expected": "732397",
+          "answer": "732397",
+          "correct": true
+        }
+      ],
+      "actual_prompt_tokens": [
+        564,
+        4714,
+        4714,
+        4714,
+        4714
+      ],
+      "finish_reasons": [
+        "stop",
+        "stop",
+        "stop",
+        "stop",
+        "stop"
+      ],
+      "owned_exit_confirmed": true
+    },
+    {
+      "fair_quota": 0,
+      "kv": "f16",
+      "correct": 5,
+      "planned": 5,
+      "answers": [
+        {
+          "client": 0,
+          "expected": "731129",
+          "answer": "731129",
+          "correct": true
+        },
+        {
+          "client": 1,
+          "expected": "731446",
+          "answer": "731446",
+          "correct": true
+        },
+        {
+          "client": 2,
+          "expected": "731763",
+          "answer": "731763",
+          "correct": true
+        },
+        {
+          "client": 3,
+          "expected": "732080",
+          "answer": "732080",
+          "correct": true
+        },
+        {
+          "client": 4,
+          "expected": "732397",
+          "answer": "732397",
+          "correct": true
+        }
+      ],
+      "actual_prompt_tokens": [
+        564,
+        4714,
+        4714,
+        4714,
+        4714
+      ],
+      "finish_reasons": [
+        "stop",
+        "stop",
+        "stop",
+        "stop",
+        "stop"
+      ],
+      "owned_exit_confirmed": true
+    }
+  ]
+}

@@ -9,7 +9,7 @@ Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/), start an O
 ## Full local helper quick start
 
 1. Start your inference engine and load a model. For managed LM Studio operation, install LM Studio, download models and run `lms bootstrap` once. Other endpoints do not need LM Studio.
-2. Download and extract the [Wattever 2.5.5 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.5.5/Wattever-2.5.5.zip), or clone the repository. Use the matching documentation and source version.
+2. Download and extract the [Wattever 2.6.0 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.6.0/Wattever-2.6.0.zip), or clone the repository. Use the matching documentation and source version.
 3. On Windows run `Wattever.bat`; on macOS run `Wattever.command`; on Linux run `sh Wattever.sh`. Alternatively run `python -m wattever.server` from the repository.
 4. Open the displayed local URL. On **Run**, choose **OpenAI-compatible endpoint**, enter your API base URL and use **Connect**. Wattever identifies the endpoint where evidence is available and supplies its display name automatically; no manual label or ID is required. Enter a model ID manually if discovery is unavailable. Choose workloads and start. Leave the server running until the benchmark finishes.
 
@@ -26,6 +26,8 @@ The collapsed **This machine** header shows CPU, GPU, RAM and per-card VRAM. Exp
 GPU, memory, storage and engine-setting badges summarize recorded conditions. Storage types use **HDD**, **SSD** and **NVMe**; unknown types stay unclassified. If an experiment contains alternative storage observations, **Compare recorded storage** selects the measured variants. Installed drives and storage probes alone do not create inference variants. See the [RTX 5060 Ti Strata comparison](docs/5060-ti-storage-comparison.md) for the measured gains and conditions.
 
 The [two RTX 5070 Ti comparison](docs/two-5070-ti-comparison.md) records 180 normal cases across LM Studio and native Strata, with matched throughput, energy, drafting and per-card thermal observations.
+
+The separate [prefill scheduling study](docs/prefill-scheduling-and-concurrency.md) measures fair-admission tradeoffs, independent GPU replicas and Q8-cache context capacity, with raw diagnostic timing/power evidence and reproducible configurations.
 
 The [multi-GPU communication and placement study](docs/dual-gpu-communication-and-placement.md) examines execution strategies with separate diagnostic protocols. Transfer microbenchmarks and profiled inference captures stay separate from the normal benchmark library. Study tools have their own platform and dependency requirements.
 

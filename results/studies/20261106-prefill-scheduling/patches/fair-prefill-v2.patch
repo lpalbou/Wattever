@@ -1,0 +1,58 @@
+diff --git a/tools/server/server-context.cpp b/tools/server/server-context.cpp
+index 9377e3c..3297d59 100644
+--- a/tools/server/server-context.cpp
++++ b/tools/server/server-context.cpp
+@@ -1,5 +1,6 @@
+ #include "server-context.h"
+ #include <atomic>
++#include <cstdlib>
+ #include <thread>
+ #include "base64.hpp"
+ #include "server-chat.h"
+@@ -3975,6 +3976,35 @@ private:
+         auto & alora_scale       = batch.alora_scale;
+         auto & alora_disabled_id = batch.alora_disabled_id;
+ 
++        // Experimental, opt-in text-only prompt admission. Decode tokens have
++        // already been admitted above. The default retains stock scheduling.
++        static const int fair_quota = []() {
++            const char * value = std::getenv("WATTEVER_FAIR_PREFILL_TOKENS");
++            return value ? std::clamp(std::atoi(value), 0, 8192) : 0;
++        }();
++        server_slot * fair_anchor = slot_batched;
++        auto fair_eligible = [&](server_slot & s) {
++            return fair_quota > 0 && params_base.cont_batching && s.task
++                && (s.state == SLOT_STATE_STARTED || s.state == SLOT_STATE_PROCESSING_PROMPT)
++                && s.task->type == SERVER_TASK_TYPE_COMPLETION && !s.need_embd()
++                && !s.task->tokens.has_mtmd && s.can_split() && s.lora.empty()
++                && s.task->n_tokens_shared == 0 && !s.task->is_parent() && !s.task->is_child()
++                && (!fair_anchor || fair_anchor->can_batch_with(s));
++        };
++        int fair_pending = 0;
++        for (auto & s : slots) {
++            if (fair_eligible(s)) {
++                if (!fair_anchor) { fair_anchor = &s; }
++                ++fair_pending;
++            }
++        }
++        const int fair_budget = fair_pending > 0
++            ? std::min(fair_quota, std::max(1, (n_batch - batch.size()) / fair_pending)) : 0;
++        if (fair_pending > 0) {
++            SRV_DBG("wattever fair prefill: pending=%d quota=%d budget=%d batch=%d ubatch=%d decode_tokens=%d\n",
++                fair_pending, fair_quota, fair_budget, n_batch, n_ubatch, batch.size());
++        }
++
+         // next, batch any pending prompts without exceeding n_batch
+         if (params_base.cont_batching || batch.size() == 0) {
+             bool add_ok = true; // false means the batch is full, skip remaining slots
+@@ -4461,7 +4491,9 @@ private:
+                     const int32_t n_decision_first = slot.task->type == SERVER_TASK_TYPE_DECISION ? slot.task->decision.pos_first() : -1;
+ 
+                     // add prompt tokens for processing in the current batch
+-                    while (slot.prompt.n_tokens() < slot.task->n_tokens() && batch.size() < n_batch) {
++                    const int slot_prompt_budget = fair_eligible(slot) ? fair_budget : n_batch;
++                    while (slot.prompt.n_tokens() < slot.task->n_tokens() && batch.size() < n_batch
++                            && batch.size() - n_tokens_prev < slot_prompt_budget) {
+                         // get next token to process
+                         llama_token cur_tok = input_tokens[slot.prompt.n_tokens()];
+                         if (cur_tok == LLAMA_TOKEN_NULL) {

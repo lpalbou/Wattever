@@ -4,7 +4,7 @@ description: Operate Wattever throughput and rule-scored capability benchmarks a
 license: MIT
 compatibility: Python 3.9+ and local Wattever server; streaming Chat Completions endpoint or managed LM Studio; Windows, Linux, or macOS.
 metadata:
-  package-version: "2.5.5"
+  package-version: "2.6.0"
 ---
 
 # Wattever
@@ -17,7 +17,7 @@ Optional `endpoint_reasoning_effort` requests the standard API field (`none`, `m
 
 ## Install and verify
 
-Download and extract `https://github.com/lpalbou/Wattever/releases/download/v2.5.5/Wattever-2.5.5.zip`, or clone `https://github.com/lpalbou/Wattever.git`, and install Python 3.9+. Use the documentation and skill matching that version. Start an inference engine and load its model. For managed LM Studio only, download models and run `lms bootstrap`. Launch `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux, or run `python -m wattever.server` from the extracted folder or repository. Keep the server open. Starting can reuse an existing instance and replace an idle older instance; do not restart it during an active benchmark.
+Download and extract `https://github.com/lpalbou/Wattever/releases/download/v2.6.0/Wattever-2.6.0.zip`, or clone `https://github.com/lpalbou/Wattever.git`, and install Python 3.9+. Use the documentation and skill matching that version. Start an inference engine and load its model. For managed LM Studio only, download models and run `lms bootstrap`. Launch `Wattever.bat` on Windows, `Wattever.command` on macOS, or `sh Wattever.sh` on Linux, or run `python -m wattever.server` from the extracted folder or repository. Keep the server open. Starting can reuse an existing instance and replace an idle older instance; do not restart it during an active benchmark.
 
 Check the printed URL with this read-only probe. Replace the URL with the printed address; the server may select a different port. Require a build ID plus endpoint/capability feature flags. The installed surface's documentation wins when it differs from the skill. Restart the complete helper and reload the page after code updates; an identified idle build can be replaced by the launcher, while active speed/capability work is preserved. Do not stop the inference engine merely to refresh Wattever.
 
@@ -81,6 +81,8 @@ except (urllib.error.URLError, OSError, ValueError) as exc:
 5. Compare only compatible results. Extension and resume check hardware, GPU/driver, corpus and LM Studio version. Review a result before sharing it.
 
 For saved concurrency analysis, open Results / Compare / Concurrency scaling, choose one prompt-per-request target and inspect both whole-group throughput and per-request latency. Use the model-by-concurrency map to inspect timing bars and request counts; GPU offload conditions remain separate. Incomplete groups are excluded from successful scaling. Gain uses matching successful repeats and equivalent per-request allocations; absent baselines stay unavailable. Whole-group GPU energy is counted once, including prefill. Bars start at each request's own origin, with dispatch offsets unrecorded; after-first-token intervals include scheduler pauses. Prompt length retains context-size charts. These read-only views launch no inference. See [Concurrency comparisons](../../docs/concurrency.md).
+
+The [prefill scheduling study](../../docs/prefill-scheduling-and-concurrency.md) provides separate diagnostic evidence and optional patches for an externally owned llama.cpp engine. Wattever does not install or manage that scheduler. Keep diagnostic captures outside normal machine aggregates, distinguish replica backend slots from submitted clients, and match actual output/stop conditions before comparing throughput or GPU energy.
 
 ## Task accuracy workflow
 

@@ -2,8 +2,11 @@
 
 ## Unreleased
 
+## 2.6.0 - 2026-11-06
+
 - Redesigns concurrency comparisons around request-count charts, separate group/per-request throughput, prefill and latency views, measured energy, a model-by-concurrency map, request timing bars and CSV slice exports. Prompt-length charts remain available.
 - Separates recorded GPU-offload conditions and excludes incomplete request groups from successful scaling. Scaling pairs matching successful repeats; missing baselines and low-confidence energy remain unavailable.
+- Publishes 19 valid prefill/concurrency diagnostic conditions on two RTX 5070 Ti cards, with raw request/power evidence, independent-instance comparisons, Q8-cache capacity and optional fair-scheduler patches. These studies remain separate from normal machine benchmark aggregates.
 - Adds an experiment checkpoint linking the completed dual-5070 performance, communication and Flash-Next quality studies, with GLM preparation clearly separated from measured results.
 
 ## 2.5.5 - 2026-11-04

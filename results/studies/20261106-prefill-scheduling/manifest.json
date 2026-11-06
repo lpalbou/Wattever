@@ -1,0 +1,276 @@
+{
+  "protocol": "prefill-scheduling-diagnostic-v1",
+  "capture_kind": "diagnostic; separate from canonical benchmark library",
+  "date": "2026-11-06",
+  "hardware": {
+    "cpu": "Intel Core i7-5960X",
+    "ram_gib": 64,
+    "gpus": [
+      "PNY RTX 5070 Ti 16GB",
+      "ASUS Prime RTX 5070 Ti 16GB"
+    ],
+    "pcie_under_load": "Gen3 x16 per card; raw NVML samples retained",
+    "weight_storage": "existing SATA model files; no 990 Pro test in this capture"
+  },
+  "software": {
+    "lmstudio": "0.4.24",
+    "lmstudio_engine": "CUDA12 2.70.0",
+    "nvidia_driver": "617.42",
+    "standalone": "llama.cpp b12058 + opt-in scheduler v1"
+  },
+  "measured_groups": 19,
+  "valid_performance_groups": 19,
+  "one_measured_group_per_condition": true,
+  "warmups_excluded": true,
+  "original_datasets_modified": false,
+  "qwen27_q4_weights": {
+    "model": "Qwen3.8-27B",
+    "file": "Qwen3.8-27B-Q4_K_M.gguf",
+    "quantization": "Q4_K_M",
+    "bytes": 16810714336,
+    "sha256": "e00082f779fa385cee8c68a3ec8833a75778cc87272240b942f74e0b8243e520",
+    "verified_after_inference": true,
+    "read_seconds": 53.775143099999696,
+    "file_stat_unchanged_during_hash": true
+  },
+  "weights": [
+    {
+      "key": "lfm25",
+      "model": "LFM2.5-24B-A2B",
+      "quant": "QAD-Q4_0",
+      "architecture": "lfm2moe",
+      "file": "LFM2.5-24B-A2B-QAD-Q4_0.gguf",
+      "bytes": 13578190880,
+      "sha256": "d1c03f73ecaf61017d70419eec9e5dc0b05d50ae26c23d522829b934fbabf8a5",
+      "verified_after_inference": true,
+      "file_stat_unchanged_during_hash": true
+    },
+    {
+      "key": "qwen27",
+      "model": "Qwen3.8-27B",
+      "quant": "UD-Q3_K_XL",
+      "architecture": "qwen35",
+      "file": "Qwen3.8-27B-UD-Q3_K_XL.gguf",
+      "bytes": 13146393504,
+      "sha256": "8c2a45ff85e7674ca185ec8eb6cdeab0e617ed9d8018caed0b64380eb2a67a5e",
+      "verified_after_inference": true,
+      "file_stat_unchanged_during_hash": true
+    },
+    {
+      "key": "qwen35",
+      "model": "Qwen3.6-35B-A3B",
+      "quant": "Q4_K_M",
+      "architecture": "qwen35moe",
+      "file": "Qwen3.6-35B-A3B-Q4_K_M.gguf",
+      "bytes": 21166757728,
+      "sha256": "4ac6a06bce551257267f49ad2226f8671a22519ccc1a4dde9d5b433d1f2a410d",
+      "verified_after_inference": true,
+      "file_stat_unchanged_during_hash": true
+    },
+    {
+      "model": "Qwen3.8-27B",
+      "file": "Qwen3.8-27B-Q4_K_M.gguf",
+      "quantization": "Q4_K_M",
+      "bytes": 16810714336,
+      "sha256": "e00082f779fa385cee8c68a3ec8833a75778cc87272240b942f74e0b8243e520",
+      "verified_after_inference": true,
+      "read_seconds": 53.775143099999696,
+      "file_stat_unchanged_during_hash": true
+    }
+  ],
+  "prompt_text_encoding": "utf-8",
+  "runtime_build": {
+    "source_commit": "3f8af15a76ac8675812e856da45454bafc90f12c",
+    "compiler": "MSVC19.39.33523.0",
+    "core_cuda_compilation": false,
+    "cuda_backend": "unchanged official b12058 CUDA13.4 DLL; dynamic loading",
+    "files": [
+      {
+        "name": "cublas64_13.dll",
+        "bytes": 54942320,
+        "sha256": "1119dbca0a808e0c8850bb4221e330daf0b5ddb348d62d37b6ac533854723df9"
+      },
+      {
+        "name": "cublasLt64_13.dll",
+        "bytes": 492752496,
+        "sha256": "0f5bc315fef706b5626248ebd74e8a48a9e82fa2f0cad38330f5f70984913107"
+      },
+      {
+        "name": "cudart64_13.dll",
+        "bytes": 551024,
+        "sha256": "05bfafcb97bd53b0089568a96e1e5bd6921637bd0853ff7f5342bd31a6a16890"
+      },
+      {
+        "name": "ggml-base.dll",
+        "bytes": 679936,
+        "sha256": "0ebada3dad74065c6a8d4fb72eba91054c7862dcf8e217197cdd67b20e644eb5"
+      },
+      {
+        "name": "ggml-cpu.dll",
+        "bytes": 1083392,
+        "sha256": "271a031582a8a073cc919936329e16b63001eb1cd71420b64f9313135c155bf0"
+      },
+      {
+        "name": "ggml-cuda.dll",
+        "bytes": 154970624,
+        "sha256": "a297d59908340f5b8d9e1232684536ae6832b306944cb9e1c4cce66c305dc355"
+      },
+      {
+        "name": "ggml.dll",
+        "bytes": 50688,
+        "sha256": "7587a0b795b27c4482c89aa7d0bcc74420e618bbf75ed1b5510576cb8f98ab58"
+      },
+      {
+        "name": "libomp.dll",
+        "bytes": 768000,
+        "sha256": "a12116ba72d1d6820407cf30be23da04ce79d6bb8a71a5ee71759c5a1faa6f1c"
+      },
+      {
+        "name": "llama-common.dll",
+        "bytes": 8768000,
+        "sha256": "103cecd3396f7bd6401c5cd9b381a516e0f802ac5b6f9b366c82b3a08367e905"
+      },
+      {
+        "name": "llama-server-impl.dll",
+        "bytes": 7376896,
+        "sha256": "231636e53aa9f7e312df703c750ca6f145c2355b3689c7347516cc6b31ba89df"
+      },
+      {
+        "name": "llama.dll",
+        "bytes": 3113472,
+        "sha256": "71b0db4a890c668ca42da7c857cfabdf17a821fcb20b8166fb6603265389dbba"
+      },
+      {
+        "name": "mtmd.dll",
+        "bytes": 2778624,
+        "sha256": "e410c4a08dadeacd6a5f1a7983b8db7475e5e0420391b3a78e71211569670010"
+      },
+      {
+        "name": "llama-server.exe",
+        "bytes": 10752,
+        "sha256": "1999149a24b0d24f06bdcea7ebb187bb257b6acfde35db0eb5f9ca5671d14c55"
+      }
+    ]
+  },
+  "upstream_commit": "3f8af15a76ac8675812e856da45454bafc90f12c",
+  "patch_revision_for_performance": "v1",
+  "energy_accounting": "One observed all-card group window; overlapping request windows are never summed",
+  "scope_limits": [
+    "One measured repeat; no confidence or quality-equivalence claim.",
+    "Natural-EOS LM Studio and forced256-output standalone conditions remain separate.",
+    "Per-request decode intervals include scheduler pauses.",
+    "Backend prompt_ms is server elapsed time, not isolated CUDA compute.",
+    "PDH shared allocation is not proof of GPU paging; global page reads include other applications.",
+    "Slot progress and request timings share a monotonic group origin; raw power retains its own elapsed clock."
+  ],
+  "artifacts": [
+    {
+      "file": "summary.csv",
+      "bytes": 9932,
+      "sha256": "8824e9ac83042de5a9921415c44028763a519680b07d4d8a4858cb8e09f97f3f"
+    },
+    {
+      "file": "cases.json.gz",
+      "bytes": 891759,
+      "sha256": "bd9d927eefe7692655612b4ffbd2e5799dcd5d9d4fcba777134e176e6abae974"
+    },
+    {
+      "file": "prompts.json.gz",
+      "bytes": 474615,
+      "sha256": "7220dfc03ff559e581eece31a3d01c155376847fb680dde1a8aeda7936ac6e27"
+    },
+    {
+      "file": "sanity.json",
+      "bytes": 3406,
+      "sha256": "8534a61304e7a0b7fbfebd3bc589936a2a6fbd9cf9c3a6c0dbd9d56e7cb7375a"
+    },
+    {
+      "file": "README.md",
+      "bytes": 4512,
+      "sha256": "e9051804d7180f815936be85855ff5d64217da052001d30e6954a282f79d8886"
+    },
+    {
+      "file": "patches/fair-prefill-v1.patch",
+      "bytes": 3093,
+      "sha256": "ddab5cd98754f4af94aadda018458af616212f40a8609b07cdfcbcbdcdc02526"
+    },
+    {
+      "file": "patches/fair-prefill-v2.patch",
+      "bytes": 3140,
+      "sha256": "c403f0a248ca84bb2ca5ecfba68d25f658bdea993e16e2d368d5f26b760c8a55"
+    }
+  ],
+  "figures": [
+    {
+      "file": "figures/replica-throughput-energy.png",
+      "sha256": "e23b6520ff333a47f754b891474a5d660e8f73de6fb2fd3afe17ff6ffd0914e1"
+    },
+    {
+      "file": "figures/replica-throughput-energy.svg",
+      "sha256": "4c41fe75d6022363364b837d1b3b018540930534741563a13c1826fe77b0c701"
+    },
+    {
+      "file": "figures/request-timelines.png",
+      "sha256": "ce64e13d5d2ebf6d5fa18ac08cf5b045fa9379bd4ad5c734537c9e1a995763d8"
+    },
+    {
+      "file": "figures/request-timelines.svg",
+      "sha256": "973dca080b47330ba94086b1a92028ee10b0afaa669d3a96e69756f5c2be056e"
+    }
+  ],
+  "operational_patch_revision": "v2",
+  "operational_patch_validation": "15/15 exact unique-code answers across mixed-length greedyF16, fairF16 and fairQ8; no general quality claim",
+  "operational_build": {
+    "patch": "v2: explicit parent/child exclusions, all other scheduling code unchanged",
+    "files": [
+      {
+        "name": "cublas64_13.dll",
+        "sha256": "1119dbca0a808e0c8850bb4221e330daf0b5ddb348d62d37b6ac533854723df9"
+      },
+      {
+        "name": "cublasLt64_13.dll",
+        "sha256": "0f5bc315fef706b5626248ebd74e8a48a9e82fa2f0cad38330f5f70984913107"
+      },
+      {
+        "name": "cudart64_13.dll",
+        "sha256": "05bfafcb97bd53b0089568a96e1e5bd6921637bd0853ff7f5342bd31a6a16890"
+      },
+      {
+        "name": "ggml-base.dll",
+        "sha256": "0ebada3dad74065c6a8d4fb72eba91054c7862dcf8e217197cdd67b20e644eb5"
+      },
+      {
+        "name": "ggml-cpu.dll",
+        "sha256": "271a031582a8a073cc919936329e16b63001eb1cd71420b64f9313135c155bf0"
+      },
+      {
+        "name": "ggml-cuda.dll",
+        "sha256": "a297d59908340f5b8d9e1232684536ae6832b306944cb9e1c4cce66c305dc355"
+      },
+      {
+        "name": "ggml.dll",
+        "sha256": "7587a0b795b27c4482c89aa7d0bcc74420e618bbf75ed1b5510576cb8f98ab58"
+      },
+      {
+        "name": "libomp.dll",
+        "sha256": "a12116ba72d1d6820407cf30be23da04ce79d6bb8a71a5ee71759c5a1faa6f1c"
+      },
+      {
+        "name": "llama-common.dll",
+        "sha256": "103cecd3396f7bd6401c5cd9b381a516e0f802ac5b6f9b366c82b3a08367e905"
+      },
+      {
+        "name": "llama-server-impl.dll",
+        "sha256": "3a0493b2a4bfefbf3c84b63bb75d2447af23f1a8821873d764fb5d370232a9a6"
+      },
+      {
+        "name": "llama.dll",
+        "sha256": "71b0db4a890c668ca42da7c857cfabdf17a821fcb20b8166fb6603265389dbba"
+      },
+      {
+        "name": "mtmd.dll",
+        "sha256": "e410c4a08dadeacd6a5f1a7983b8db7475e5e0420391b3a78e71211569670010"
+      }
+    ]
+  }
+}
