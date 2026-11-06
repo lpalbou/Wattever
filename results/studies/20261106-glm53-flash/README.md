@@ -11,8 +11,17 @@ snapshots are **not additional repeats** and must not be pooled as independent
 measurements. Normal machine aggregates remain separate.
 
 The initial `baseline-first-two` snapshot contains exactly two successful
-single-client cases. Remaining contexts, concurrency, optimization and quality
-measurements are pending at this checkpoint. Missing scores are not zeros.
+single-client cases. `baseline-full-twelve` retains all twelve baseline attempts:
+eleven successes and the two-client 80k deadline failure. The first snapshot
+retains the initial session's raw telemetry; the final snapshot's history covers
+the expansion session. Their shared cases are not additional repeats.
+`runtime1156-oldpack-two` adds two distinct updated-runtime conditions while
+retaining the original pack and RAM request. F32-pack, RAM optimization and quality
+measurements are pending. Missing scores are not zeros. `figures/` keeps each metric in
+a separate chart, with prompt targets as facets and submitted clients on the x-axis.
+`baseline-tail-storage.json.gz` retains read/write byte counters from both physical
+disks during the end of the final baseline case and its idle transition. It is
+an OS activity observation, not cache-bypassed storage bandwidth or per-process I/O.
 
 Decompress a snapshot with Python:
 

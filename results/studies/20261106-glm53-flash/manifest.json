@@ -18,6 +18,113 @@
           "bytes": 886
         }
       ]
+    },
+    {
+      "name": "baseline-full-twelve",
+      "cases": 12,
+      "successful": 11,
+      "source_sha256": "7412e3ab6bb8ee49c522833da62b183866f2765002017fa68fb677d7b1989f54",
+      "artifacts": [
+        {
+          "file": "baseline-full-twelve.json.gz",
+          "sha256": "e7c670b2cb77491d91c9f7f7e895af46d30579491238193090b0cc22466f843b",
+          "bytes": 352872
+        },
+        {
+          "file": "baseline-full-twelve.csv",
+          "sha256": "a5fad35ad660bbb685ad136fe09c1e52c9e7120ca8050accc304f76f72e9f4cc",
+          "bytes": 3695
+        }
+      ]
+    },
+    {
+      "name": "runtime1156-oldpack-two",
+      "cases": 2,
+      "successful": 2,
+      "source_sha256": "b7bb244fee3fc7f38bf39f7b05a30edd20f14fb6da4d9136e1536862f27ead4a",
+      "artifacts": [
+        {
+          "file": "runtime1156-oldpack-two.json.gz",
+          "sha256": "e40d409bf58ba8c2584648d720f26f59c3b49b6ce4e8fdf818cd704f6c9b656b",
+          "bytes": 87949
+        },
+        {
+          "file": "runtime1156-oldpack-two.csv",
+          "sha256": "7faa6e5ec466977060b198b7015bff4b1db81011c809ac492f4eb743cc182c33",
+          "bytes": 897
+        }
+      ]
+    },
+    {
+      "name": "runtime1156-f32pack-two",
+      "cases": 2,
+      "successful": 2,
+      "source_sha256": "0c3ba076b1a1004dd7823654f9e1412d65bd0f0988407a155f493277f5036fbc",
+      "artifacts": [
+        {
+          "file": "runtime1156-f32pack-two.json.gz",
+          "sha256": "cede6408bd999736185c9128ff0f8a90a46c9141d27472ba590c81c3d373e54c",
+          "bytes": 88935
+        },
+        {
+          "file": "runtime1156-f32pack-two.csv",
+          "sha256": "a091f548e165bbafa93e45a1f13117c771d7c443bc205c4b48dd8544ccee4088",
+          "bytes": 898
+        }
+      ]
     }
-  ]
+  ],
+  "figures": [
+    {
+      "file": "figures/decode-concurrency.png",
+      "sha256": "d2db7937815762797e7aee1b4c0b066d4684f8ac6e83d12e06455a0198f32296",
+      "bytes": 149719
+    },
+    {
+      "file": "figures/decode-concurrency.svg",
+      "sha256": "06e11bb4465f69cc56c60aee0080b9ee2df7e4469966c42dfbc0486c35c1d76d",
+      "bytes": 57101
+    },
+    {
+      "file": "figures/energy-concurrency.png",
+      "sha256": "7a0e39b429826402c781447bbc0b246769f19397ace4efea990242e514311047",
+      "bytes": 159571
+    },
+    {
+      "file": "figures/energy-concurrency.svg",
+      "sha256": "245ce67fb9c53e58f7a08cb4547876fbfb55e9142d0879d7abee7304c07f2f71",
+      "bytes": 61053
+    },
+    {
+      "file": "figures/prefill-concurrency.png",
+      "sha256": "04fe852848cc3ab3e89b2e46e12d144d2288557ab91c9f5526745c0f4364d5cd",
+      "bytes": 179735
+    },
+    {
+      "file": "figures/prefill-concurrency.svg",
+      "sha256": "2b77fd6bda252736892626964f89528fc30358d27e53db7c9dbc137d6b377183",
+      "bytes": 59535
+    },
+    {
+      "file": "figures/throughput-concurrency.png",
+      "sha256": "39db40fff4b3ed6efd9032b41f0acaa9035e6e99804804da20ca84af9e8ac7f5",
+      "bytes": 135984
+    },
+    {
+      "file": "figures/throughput-concurrency.svg",
+      "sha256": "27e5b95d5a20c81e3eb49e53102cfbad3751ec7be44ca21deb83771259164397",
+      "bytes": 59544
+    }
+  ],
+  "storage_observation": {
+    "file": "baseline-tail-storage.json.gz",
+    "sha256": "5cf1f33134673da2d9b0a4d46f6966e04ffb35917c69564a5afaf9f4a7695f96",
+    "bytes": 6347,
+    "scope": "Whole-physical-disk OS byte counters; partial final80kcase plus idle transition. Not a storage microbenchmark or per-process attribution. Driver timing fields are not analyzed."
+  },
+  "native_reference": {
+    "file": "../../aggregates/two-5070-ti-paired-cases.csv",
+    "sha256": "dc8ad41c82bc7f6f3efb8505cab8569ee77dab07008e86332bb1648ab23368e4"
+  },
+  "configuration_authority": "Use run.results[].model_configuration for canonical identity; curated condition fields describe placement, pack and memory settings."
 }
