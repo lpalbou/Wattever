@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Publishes the first NVMe-backed GLM-5.3-Flash Maya-XS diagnostic observations, with actual prompt counts, drafting and both-card energy evidence, explicit host-pinning limits and descriptive Flash-Next comparisons.
+
 ## 2.6.0 - 2026-11-06
 
 - Redesigns concurrency comparisons around request-count charts, separate group/per-request throughput, prefill and latency views, measured energy, a model-by-concurrency map, request timing bars and CSV slice exports. Prompt-length charts remain available.

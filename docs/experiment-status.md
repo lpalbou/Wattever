@@ -5,6 +5,10 @@ This checkpoint records the completed studies and GLM preparation on
 RTX 5070 Ti cards, each with 16 GiB. Performance, capability evaluation,
 transfer probes and profiled captures remain separate measurement families.
 
+For GLM measurements collected on 2026-11-06, see the
+[GLM-5.3-Flash comparison](glm53-flash-comparison.md). The preparation status
+below describes the historical 2026-11-04 checkpoint.
+
 ## Completed measurements
 
 | Collection | Coverage | Published evidence |
@@ -97,7 +101,7 @@ no observed hardware/software thermal-slowdown flags. GPU die observations do
 not measure memory-junction temperature; that counter is unavailable. Per-card
 power, clocks, utilization, energy and sample coverage remain published.
 
-## GLM preparation and remaining work
+## GLM preparation at the 2026-11-04 checkpoint
 
 The selected first candidate is **Maya-XS mixed IQ1_S/IQ2_XXS**, pinned to
 quantizer revision `6728cf78a5b198a6a6f84b7fb88956a17ec56521`. Its two shards
@@ -116,8 +120,8 @@ environment. It is a Strata-derived backend, distinct from native Strata.
 The vendor BF16 compatibility pack is a separate runtime treatment, so the
 quantizer's published quality figures do not directly describe this experiment.
 
-No GLM weights have been loaded, no GLM inference endpoint has been started,
-and **there are no measured GLM prefill, decode, energy or accuracy scores**.
+At that checkpoint, no GLM weights had been loaded, no GLM inference endpoint had been started,
+and **no GLM prefill, decode, energy or accuracy scores had been measured**.
 Runtime compilation and engine-free control checks establish preparation,
 not working-model or performance evidence. Therefore no measured comparison
 with Flash-Next or optimized GLM setting is claimed.

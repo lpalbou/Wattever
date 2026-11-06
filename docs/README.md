@@ -1,6 +1,7 @@
 # Documentation
 
-- [Experiment checkpoint](experiment-status.md): completed dual-5070 performance and quality results, communication measurements, and the explicitly unmeasured GLM preparation state.
+- [Experiment checkpoint](experiment-status.md): historical dual-5070 performance, quality and preparation checkpoint, with links to subsequent GLM measurements.
+- [GLM-5.3-Flash comparison](glm53-flash-comparison.md): preliminary NVMe-backed Maya-XS measurements, actual pinned RAM allocation, Flash-Next comparison and optimization scope.
 
 - [Browser mode](browser.md): hosted setup, privacy, storage and measurement limits.
 - [Sharing results](sharing-results.md): shared catalog, contributions and completing a benchmark later.

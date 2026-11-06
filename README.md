@@ -29,6 +29,8 @@ The [two RTX 5070 Ti comparison](docs/two-5070-ti-comparison.md) records 180 nor
 
 The separate [prefill scheduling study](docs/prefill-scheduling-and-concurrency.md) measures fair-admission tradeoffs, independent GPU replicas and Q8-cache context capacity, with raw diagnostic timing/power evidence and reproducible configurations.
 
+The [GLM-5.3-Flash study](docs/glm53-flash-comparison.md) reports preliminary Maya-XS measurements from the existing NVMe, actual pinned expert memory and descriptive Flash-Next comparisons. Optimization and quality results remain separate.
+
 The [multi-GPU communication and placement study](docs/dual-gpu-communication-and-placement.md) examines execution strategies with separate diagnostic protocols. Transfer microbenchmarks and profiled inference captures stay separate from the normal benchmark library. Study tools have their own platform and dependency requirements.
 
 The hosted Results view also includes a shared catalog that you can browse without connecting a model provider. See [sharing results](docs/sharing-results.md) to contribute your benchmark or add missing tests later.
