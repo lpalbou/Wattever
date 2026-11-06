@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-- Publishes the first NVMe-backed GLM-5.3-Flash Maya-XS diagnostic observations, with actual prompt counts, drafting and both-card energy evidence, explicit host-pinning limits and descriptive Flash-Next comparisons.
+## 2.6.1 - 2026-11-06
+
+- Publishes the NVMe-backed GLM-5.3-Flash Maya-XS six-context baseline, runtime/pack/RAM/concurrency/read-chunk screens, per-request evidence, eligible both-card energy and separate metric graphs alongside retained Flash-Next observations.
+- Consolidates the complete GLM baseline into the existing two-5070 machine entry while keeping tuning diagnostics separate. Capability scores and the selected updated-profile full matrix remain unmeasured.
+- Validates immutable study artifacts, actual token counts and complete-group accounting across platforms.
 
 ## 2.6.0 - 2026-11-06
 

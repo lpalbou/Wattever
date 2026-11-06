@@ -9,7 +9,7 @@ Open [Wattever on GitHub Pages](https://lpalbou.github.io/Wattever/), start an O
 ## Full local helper quick start
 
 1. Start your inference engine and load a model. For managed LM Studio operation, install LM Studio, download models and run `lms bootstrap` once. Other endpoints do not need LM Studio.
-2. Download and extract the [Wattever 2.6.0 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.6.0/Wattever-2.6.0.zip), or clone the repository. Use the matching documentation and source version.
+2. Download and extract the [Wattever 2.6.1 source archive](https://github.com/lpalbou/Wattever/releases/download/v2.6.1/Wattever-2.6.1.zip), or clone the repository. Use the matching documentation and source version.
 3. On Windows run `Wattever.bat`; on macOS run `Wattever.command`; on Linux run `sh Wattever.sh`. Alternatively run `python -m wattever.server` from the repository.
 4. Open the displayed local URL. On **Run**, choose **OpenAI-compatible endpoint**, enter your API base URL and use **Connect**. Wattever identifies the endpoint where evidence is available and supplies its display name automatically; no manual label or ID is required. Enter a model ID manually if discovery is unavailable. Choose workloads and start. Leave the server running until the benchmark finishes.
 

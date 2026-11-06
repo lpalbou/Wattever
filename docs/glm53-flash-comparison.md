@@ -6,12 +6,14 @@ and compatibility pack are on the existing 256 GB AirDisk NVMe. Complete verifie
 SATA backups are retained but are not the inference source. The Samsung 990 Pro
 has not been installed or measured in this capture.
 
-These are **preliminary diagnostic results**, separate from the normal machine
-benchmark aggregates. The Maya 1.1.52 baseline matrix is complete: **11 successful
+These are **preliminary results**. The complete Maya 1.1.52 baseline cohort is
+consolidated into the existing dual-5070 machine entry; tuning screens remain
+separate diagnostic studies. The baseline matrix has **11 successful
 cases and one timeout**, across six prompt targets and one/two submitted clients.
 There is one measured repeat per condition. The runtime-only update screen is
-complete, as is the F32-preserving pack screen. RAM optimization, two-slot
-serving and model-quality evaluation are separate follow-up conditions.
+complete, as are the runtime, F32-pack, RAM, two-slot and read-chunk screens.
+Collection is paused at the user's request. Model-quality evaluation and a full
+matrix for the selected updated-runtime profile have not run.
 
 See the [raw snapshots, CSV and manifest](../results/studies/20261106-glm53-flash/README.md).
 
@@ -69,6 +71,17 @@ combined GPU energy was 37.66 J per output token, including prefill. The 20k
 group's power capture was flagged incomplete; it has no reported combined energy
 or energy-per-token result. Per-request draft deltas can include activity from
 another request and do not by themselves prove concurrent MTP.
+
+An explicit concurrent-MTP screen retains RAM26/two slots and enables
+`MAYA_GLM_SPLIT_ROWS=1`, `MAYA_GLM_EVEN_GROUPS=1` and
+`MAYA_GLM_MULTI_MTP=1`. Both 501-token inputs completed, producing 254 and 232
+tokens in 186.10 s: **2.61 tok/s whole-group output**, versus 3.08 for stock
+two-slot decode. Request-specific engine events verify 105/125 and 106/124
+accepted drafts, with 126/125 verification steps. This confirms active concurrent
+MTP, rather than inferring it from a loaded head. Peak temperature was 58 C.
+Its additional row/window buffers also reduce expert pools from 9.13/9.21 to
+9.02/9.05 GiB. The observed screen does not support enabling this mode for speed;
+the 20k extension was not attempted.
 
 The second 80k request was cancelled during prefill. This is a configured-deadline
 result, not a demonstrated VRAM capacity failure. Partial output is retained in
@@ -180,6 +193,39 @@ request also reduces total pinned capacity by approximately 1.72 GiB. These are
 one-observation screens with different nonce text and natural output lengths;
 they do not isolate the contribution of each cache effect. No memory allocation
 that failed at startup is presented as an inference observation.
+
+## Selected storage-read screen
+
+With Maya 1.1.56, the F32-preserving pack, one slot and RAM40 requested,
+`MAYA_GLM_READ_CHUNKS=4` changes expert-read scheduling from the default eight
+pieces. Original experts, reasoning treatment and expert participation remain
+unchanged. The actual pinned parts remain 20.46 + 7.25 GiB.
+
+| Target | Actual input / output | Client prefill | Client decode | First token | Combined GPU energy / output token, including prefill |
+|---|---:|---:|---:|---:|---:|
+| 512 | 501 / 244 | 38.28 tok/s | 9.63 tok/s | 13.09 s | 18.15 J |
+| 20k | 17,414 / 256 | 317.39 tok/s | 11.11 tok/s | 54.87 s | 38.95 J |
+
+The corresponding eight-piece F32 screen records 37.56/303.76 tok/s prefill and
+9.10/10.72 tok/s decode. Four pieces are the selected candidate for follow-up:
+observed decode gains are approximately 6%/4%, with lower whole-case GPU energy
+per output token. One observation per condition does not establish a repeatable
+effect or a global optimum. The updated-profile full matrix and all capability
+scores remain unmeasured; the six-context matrix above belongs to the original
+1.1.52 compatibility profile. A future capability comparison is prepared with the
+same 192 frozen ARC/GSM8K/MMLU-Pro tasks, 32,768-token output budget and no
+per-request deadline as the retained Flash-Next references.
+
+Reproduce the selected condition by preparing the pinned F32 pack using
+[`pack-preparation.json`](../results/studies/20261106-glm53-flash/pack-preparation.json),
+setting the read-chunk environment option in its model configuration, then
+loading it through Strata Control: context 98,304, GPU order `1,0`, one request
+slot, INT8 KV, RAM + VRAM KV placement, RAM40 requested, reasoning None and MTP
+head enabled. The captured JSON retains exact active settings, software revisions,
+request configuration, token counts and telemetry. API calls do not load models.
+The NVMe has approximately 60 GiB free, so no model relocation was needed. Storage
+temperature counters were unavailable to this process; GPU memory-junction and
+CPU package temperature also remain unavailable.
 
 - Model revision: `6728cf78a5b198a6a6f84b7fb88956a17ec56521`; two verified shards total 73,411,389,088 bytes.
 - Runtime: Project Maya 1.1.52, revision `3c935e411cd6625a9af0f292dd0af52598e866d8`.

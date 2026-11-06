@@ -8,7 +8,9 @@ JSON and a CSV summary. JSON retains the privacy-filtered Wattever run, actual
 counts, per-request timings, backend timings, MTP counters, per-card power and raw
 telemetry. A snapshot is a view of an evolving diagnostic run: overlapping
 snapshots are **not additional repeats** and must not be pooled as independent
-measurements. Normal machine aggregates remain separate.
+measurements. The complete twelve-case 1.1.52 baseline cohort is also consolidated
+into the existing dual-5070 machine entry. This is the same measurement cohort,
+not another repeat. Runtime/F32/RAM/concurrency/read-chunk tuning remains separate.
 
 The initial `baseline-first-two` snapshot contains exactly two successful
 single-client cases. `baseline-full-twelve` retains all twelve baseline attempts:
@@ -18,7 +20,10 @@ the expansion session. Their shared cases are not additional repeats.
 `runtime1156-oldpack-two` adds two distinct updated-runtime conditions while
 retaining the original pack and RAM request. `runtime1156-f32pack-two` changes
 the pack while retaining that runtime and RAM request. RAM optimization and
-quality measurements are separate follow-up conditions. Missing scores are not zeros. `figures/` keeps each metric in
+quality measurements are separate follow-up conditions. `ram26-f32pack-two`,
+`ram26-slots2-two`, `multi-mtp1-short` and `read-chunks4-two` retain the completed
+tuning screens. Capability evaluation and the selected updated-profile full matrix
+have not run. Missing scores are not zeros. `figures/` keeps each metric in
 a separate chart, with prompt targets as facets and submitted clients on the x-axis.
 `baseline-tail-storage.json.gz` retains read/write byte counters from both physical
 disks during the end of the final baseline case and its idle transition. It is
