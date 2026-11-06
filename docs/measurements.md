@@ -21,6 +21,8 @@ Provider-reported engine counters, when supplied, are stored separately in `repo
 
 Group throughput for concurrent requests includes prefill and queueing and differs from per-request decode speed. `aggregate_completion_tps` divides successful requests' total output tokens by group wall time; it is not the sum of decode speeds. Concurrent requests have overlapping phases, so group power does not get an invented prefill/decode energy split. Compare matching model builds, settings, corpus, measurement source and protocol.
 
+Per-request decode intervals include pauses caused by other requests' prefill or backend scheduling. A staircase of first-token times can therefore coincide with low early-stream decode rates. Client timing alone does not establish kernel-level serialization. Use [Concurrency comparisons](concurrency.md) to inspect each request's first-token wait and completion duration. Incomplete groups retain their raw observations but are excluded from successful concurrency throughput/scaling charts.
+
 ## Context and workload
 
 For managed LM Studio, the default per-test allocation reserves prompt tokens, output budget, 512 tokens of headroom and a 5% prompt safety margin, subject to the model's per-request maximum. Shared KV allocation multiplies per-request capacity by concurrency. The per-test policy reloads for each context/concurrency allocation; the optional fixed policy uses the largest planned allocation per model and MTP mode, reducing reloads while changing memory conditions. Generic endpoint context estimates describe client workload planning only; configure the real context/KV allocation in the engine. More concurrency consumes more memory; large contexts can fail to fit.

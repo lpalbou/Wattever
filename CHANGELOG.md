@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Redesigns concurrency comparisons around request-count charts, separate group/per-request throughput, prefill and latency views, measured energy, a model-by-concurrency map, request timing bars and CSV slice exports. Prompt-length charts remain available.
+- Separates recorded GPU-offload conditions and excludes incomplete request groups from successful scaling. Scaling pairs matching successful repeats; missing baselines and low-confidence energy remain unavailable.
 - Adds an experiment checkpoint linking the completed dual-5070 performance, communication and Flash-Next quality studies, with GLM preparation clearly separated from measured results.
 
 ## 2.5.5 - 2026-11-04

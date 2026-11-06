@@ -21,6 +21,7 @@ const Charts = (() => {
 
   const DASHES = [null, "6 4", "2 3", "9 3 2 3", "1 4"];
   const MARKERS = ["circle", "square", "triangle", "diamond"];
+  const escape = value => String(value ?? "").replace(/[&<>"']/g, char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 
   function el(name, attrs = {}, parent = null) {
     const node = document.createElementNS(NS, name);
@@ -109,10 +110,13 @@ const Charts = (() => {
     node.style.display = "block";
     const pad = 14;
     const rect = node.getBoundingClientRect();
-    let x = event.clientX + pad;
-    let y = event.clientY + pad;
-    if (x + rect.width > window.innerWidth - 8) x = event.clientX - rect.width - pad;
-    if (y + rect.height > window.innerHeight - 8) y = event.clientY - rect.height - pad;
+    const anchor=(event.currentTarget || event.target)?.getBoundingClientRect?.();
+    const clientX=Number.isFinite(event.clientX) ? event.clientX : anchor?.left || 0;
+    const clientY=Number.isFinite(event.clientY) ? event.clientY : anchor?.top || 0;
+    let x = clientX + pad;
+    let y = clientY + pad;
+    if (x + rect.width > window.innerWidth - 8) x = clientX - rect.width - pad;
+    if (y + rect.height > window.innerHeight - 8) y = clientY - rect.height - pad;
     node.style.left = Math.max(8, x) + "px";
     node.style.top = Math.max(8, y) + "px";
   }
@@ -164,14 +168,14 @@ const Charts = (() => {
 
     const xMin = Math.min(...xs), xMax = Math.max(...xs);
     const lg = (v) => Math.log10(Math.max(v, 1));
-      const transform = opts.xScale === "linear" ? (v) => v : lg;
+    const transform = opts.xScale === "linear" ? (v) => v : lg;
     const sx = (v) => {
       if (xMax === xMin) return m.left + (width - m.left - m.right) / 2;
-        const f = (transform(v) - transform(xMin)) / (transform(xMax) - transform(xMin));
+      const f = (transform(v) - transform(xMin)) / (transform(xMax) - transform(xMin));
       return m.left + f * (width - m.left - m.right);
     };
 
-    const yVals = series.flatMap((s) => (s.points || []).map((p) => p.y))
+    const yVals = series.flatMap((s) => (s.points || []).flatMap((p) => [p.y,p.low,p.high]))
       .filter((v) => v !== null && v !== undefined && !Number.isNaN(v));
     const yMaxRaw = yVals.length ? Math.max(...yVals) : 1;
     const yMinRaw = yVals.length ? Math.min(...yVals.filter((v) => v > 0)) : 1;
@@ -221,22 +225,38 @@ const Charts = (() => {
       const pts = (s.points || []).filter((p) => p.y !== null && p.y !== undefined && !Number.isNaN(p.y))
         .sort((a, b) => a.x - b.x);
       if (pts.length > 1) {
+        let previous=-2;
         el("path", {
-          d: pts.map((p, i) => `${i ? "L" : "M"}${sx(p.x).toFixed(1)},${sy(p.y).toFixed(1)}`).join(" "),
+          d: pts.map((p, i) => {
+            const index=xs.indexOf(p.x),start=!i || (opts.breakMissing && index!==previous+1);previous=index;
+            return `${start ? "M" : "L"}${sx(p.x).toFixed(1)},${sy(p.y).toFixed(1)}`;
+          }).join(" "),
           fill: "none", stroke: s.color, "stroke-width": 2,
           "stroke-dasharray": s.dash || null,
           "stroke-linecap": "round", "stroke-linejoin": "round",
         }, plot);
       }
       for (const p of pts) {
+        if (Number.isFinite(p.low) && Number.isFinite(p.high)) {
+          const x=sx(p.x);
+          el("path",{d:`M${x},${sy(p.low)}V${sy(p.high)}M${x-4},${sy(p.low)}H${x+4}M${x-4},${sy(p.high)}H${x+4}`,
+            fill:"none",stroke:s.color,"stroke-width":1.5,"stroke-opacity":.6},plot);
+        }
         marker(plot, s.marker || "circle", sx(p.x), sy(p.y), 5, s.color, t.surface);
         const hit = el("circle", { cx: sx(p.x), cy: sy(p.y), r: 13, fill: "transparent",
-          style: "cursor:crosshair" }, plot);
-        const rows = [`<b>${s.name}</b>`,
-          `${fmtTokens(p.x)} prefill &rarr; <b>${fmtNum(p.y)}</b> ${p.unit || opts.unit || ""}`];
-        if (p.note) rows.push(`<span class="dim">${p.note}</span>`);
+          tabindex:0,role:p.onSelect ? "button" : "img","aria-label":`${s.name}: ${p.x} ${opts.xUnit || "prefill tokens"}, ${fmtNum(p.y)} ${p.unit || opts.unit || ""}`,
+          style: `cursor:${p.onSelect ? "pointer" : "crosshair"}` }, plot);
+        const rows = [`<b>${escape(s.name)}</b>`,
+          `${fmtTokens(p.x)} ${escape(opts.xUnit || "prefill tokens")} &rarr; <b>${fmtNum(p.y)}</b> ${escape(p.unit || opts.unit || "")}`];
+        if (p.note) rows.push(`<span class="dim">${escape(p.note)}</span>`);
         hit.addEventListener("mousemove", (e) => showTip(rows.join("<br>"), e));
         hit.addEventListener("mouseleave", hideTip);
+        hit.addEventListener("focus",e=>showTip(rows.join("<br>"),e));
+        hit.addEventListener("blur",hideTip);
+        if (p.onSelect) {
+          hit.addEventListener("click",()=>{hideTip();p.onSelect();});
+          hit.addEventListener("keydown",event=>{if(event.key==="Enter" || event.key===" "){event.preventDefault();hideTip();p.onSelect();}});
+        }
       }
       for (const f of s.failures || []) {
         const x = sx(f.x), y = height - m.bottom;
@@ -245,8 +265,8 @@ const Charts = (() => {
           stroke: t.fail, "stroke-width": 2, "stroke-linecap": "round" }, g);
         el("circle", { cx: x, cy: y - 6, r: 11, fill: "transparent" }, g);
         g.addEventListener("mousemove", (e) => showTip(
-          `<b>${s.name}</b><br>${fmtTokens(f.x)} prefill &rarr; <span style="color:${t.fail}">failed</span>` +
-          (f.reason ? `<br><span class="dim">${f.reason}</span>` : ""), e));
+          `<b>${escape(s.name)}</b><br>${fmtTokens(f.x)} ${escape(opts.xUnit || "prefill tokens")} &rarr; <span style="color:${t.fail}">failed</span>` +
+          (f.reason ? `<br><span class="dim">${escape(f.reason)}</span>` : ""), e));
         g.addEventListener("mouseleave", hideTip);
       }
       // direct-label the endpoint only when the panel is not crowded, and

@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const assert = require('node:assert/strict');
+const {pendingCommand,rejectPending}=require('./browser_deadlines.cjs');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 (async () => {
@@ -18,6 +19,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
   const fixture = spawn(process.env.PYTHON || 'python', ['-u', path.join(__dirname, 'ui_fixture.py')], {windowsHide: true});
   fixture.stderr.on('data', data => process.stderr.write(data));
   let browser, ws;
+  const pending = new Map();
   try {
     const port = await new Promise((resolve, reject) => {
       fixture.stdout.once('data', data => resolve(Number(String(data).trim())));
@@ -47,7 +49,9 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     ws = new WebSocket(pages.find(page => page.type === 'page').webSocketDebuggerUrl);
     await new Promise(resolve => ws.addEventListener('open', resolve, {once: true}));
     let next = 0;
-    const pending = new Map(), errors = [];
+    const errors = [];
+    ws.addEventListener('close',()=>rejectPending(pending,Error('Owned UI browser closed')));
+    ws.addEventListener('error',()=>rejectPending(pending,Error('Owned UI browser socket failed')));
     ws.addEventListener('message', event => {
       const message = JSON.parse(event.data);
       if (message.id) {
@@ -60,11 +64,10 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
       }
       if (message.method === 'Runtime.exceptionThrown') errors.push(message.params.exceptionDetails);
     });
-    const send = (method, params = {}) => new Promise((resolve, reject) => {
+    const send = (method, params = {}) => {
       const id = ++next;
-      pending.set(id, {resolve, reject});
-      ws.send(JSON.stringify({id, method, params}));
-    });
+      return pendingCommand(pending,id,method,()=>ws.send(JSON.stringify({id,method,params})),60000);
+    };
     const evaluate = async expression => {
       const result = await send('Runtime.evaluate', {expression, returnByValue: true, awaitPromise: true});
       if (result.exceptionDetails) throw Error(JSON.stringify(result.exceptionDetails));
@@ -184,6 +187,27 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     await check('document.querySelectorAll("#run-detail .telemetry-history svg[role=img]").length===2 && document.querySelector("#run-detail .telemetry-report").textContent.includes("95.0%") && document.querySelector("#run-detail .telemetry-report").textContent.includes("not proof of throttling")', 'Saved telemetry has coverage-aware summaries and usage/temperature histories: '+JSON.stringify(await evaluate('({count:document.querySelectorAll("#run-detail .telemetry-history svg[role=img]").length,text:document.querySelector("#run-detail .telemetry-report").textContent,open:document.querySelector("#run-detail .telemetry-report").open})'))+' errors='+JSON.stringify(errors));
     await evaluate('document.querySelector("#run-detail details").open=false');
     await evaluate('document.querySelector("#run-detail details").open=true;window.__detailsNode=document.querySelector("#run-detail").firstElementChild;showResultsView("compare")');
+    await delay(100);
+    await check('state.comparisonAxis === "concurrency" && !document.querySelector("#concurrency-comparison").hidden && document.querySelectorAll("#concurrency-comparison .sc-chart svg").length===2', 'Concurrency is the default comparison axis with separate group and per-request plots');
+    await check('Array.from(document.querySelectorAll("#concurrency-comparison .sc-matrix-table thead th")).map(node=>node.textContent).join().includes("4requests,8requests") && document.querySelector("#concurrency-comparison [data-state=failed]").textContent.includes("timeout")', 'Matrix exposes all measured request counts and failures together');
+    await evaluate("document.querySelector('#concurrency-comparison [data-sc-n=\"2\"]').click()");
+    await check('document.querySelectorAll("#concurrency-comparison .sc-evidence tbody tr").length===2 && document.querySelector("#concurrency-comparison .sc-evidence").textContent.includes("37.5")', 'Selecting a matrix cell reveals two real fixture requests and median37.5, never summed75decode');
+    await check('document.querySelectorAll("#concurrency-comparison .sc-timeline-row").length===2 && document.querySelector("#concurrency-comparison .sc-timeline").textContent.includes("dispatch offsets were not recorded")', 'Request timing bars expose staggered first-token waits without invented shared start times');
+    await evaluate('document.querySelector("#concurrency-comparison [data-sc-tab=latency]").click()');
+    await check('document.querySelector("#concurrency-comparison").textContent.includes("Wait for the first token") && document.querySelectorAll("#concurrency-comparison .sc-chart svg").length===2', 'Latency view keeps first-token and completion waits separate');
+    await evaluate('document.querySelector("#concurrency-comparison .sc-heading").scrollIntoView({block:"start"});window.scrollBy(0,-95)');
+    await screenshot('concurrency-desktop');
+    await evaluate('document.querySelector("#concurrency-comparison .sc-matrix").scrollIntoView({block:"start"});window.scrollBy(0,-95)');
+    await screenshot('concurrency-matrix-desktop');
+    await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+    await evaluate('document.querySelector("#concurrency-comparison .sc-heading").scrollIntoView({block:"start"});window.scrollBy(0,-100)');
+    await delay(100);
+    await check('document.documentElement.scrollWidth<=innerWidth+1 && getComputedStyle(document.querySelector("#concurrency-comparison .sc-matrix-table thead")).display==="table-header-group"', 'Concurrency controls fit mobile and the matrix retains its request-count columns');
+    await screenshot('concurrency-phone');
+    await evaluate('document.querySelector("#concurrency-comparison .sc-matrix").scrollIntoView({block:"start"});window.scrollBy(0,-100)');
+    await screenshot('concurrency-matrix-phone');
+    await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
+    await evaluate('document.querySelector("#concurrency-comparison [data-sc-tab=throughput]").click();document.querySelector("[data-comparison-axis=context]").click()');
     await delay(100);
     await check('!!document.querySelector("#comparison-overview svg") && !document.querySelector("#results-controls").hidden && document.querySelector("#panel-summary").hidden', 'Compare owns charts and their shared filters');
     await check('!Array.from(document.querySelectorAll("#comparison-overview .legend-key")).some(node=>node.textContent==="Models")', 'Model names are not repeated in the chart legend');
@@ -676,6 +700,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     console.log('Screenshots: ' + artifacts);
     await send('Browser.close').catch(() => {});
   } finally {
+    rejectPending(pending,Error('Owned UI browser cleanup'));
     if (ws) ws.close();
     if (browser) browser.kill();
     fixture.kill();

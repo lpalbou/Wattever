@@ -32,6 +32,8 @@ const state = {
   detectedEndpointProvider: null,
   conditions: null,
   comparisonLayout: "overview",
+  comparisonAxis: "concurrency",
+  scaling: {tab:"throughput",prompt:null,model:null,selectedGroup:null,n:null},
 };
 
 const CONCURRENCY_PRESETS = [...Array.from({length: 10}, (_, i) => i + 1), 15, 20, 30, 40, 50, 75, 100];
@@ -165,14 +167,15 @@ function renderRecordedConditions(runs) {
   container.querySelectorAll("[data-condition-id]").forEach(input=>{
     input.checked = selected.has(input.dataset.conditionId);
     input.closest(".chip").dataset.on = input.checked ? "1" : "0";
-    const run=variants.find(item=>item.id === input.dataset.conditionId), rows=conditionRows(run);
-    const measured=rows.filter(row=>row.status === "ok" && selectedMetricKeys().some(key=>Number.isFinite(METRICS[key].get(row)))).length;
+    const run=variants.find(item=>item.id === input.dataset.conditionId), rows=conditionRows(run,null,state.resultView==="compare" && state.comparisonAxis==="concurrency");
+    const scaling=state.resultView==="compare" && state.comparisonAxis==="concurrency" && globalThis.WatteverConcurrency;
+    const measured=rows.filter(row=>row.status === "ok" && (scaling ? scaling.successful(row) && Object.values(scaling.measurements(row)).some(Number.isFinite) : selectedMetricKeys().some(key=>Number.isFinite(METRICS[key].get(row))))).length;
     input.closest(".chip").querySelector(".condition-count").textContent=rows.length ? `${rows.length} matching cases · ${measured} measured` : "0 cases for current model / queries";
   });
 }
 
-function conditionRows(run,models=null) {
-  return (run?.results || []).filter(row=>(models ? models.includes(row.model) : state.visibleModels === null || state.visibleModels.has(row.model)) && (row.concurrency || 1) === state.comparisonConcurrency &&
+function conditionRows(run,models=null,allConcurrency=false) {
+  return (run?.results || []).filter(row=>(models ? models.includes(row.model) : state.visibleModels === null || state.visibleModels.has(row.model)) && (allConcurrency || (row.concurrency || 1) === state.comparisonConcurrency) &&
     (state.mtpFilter === "all" || (!runProviderManaged(run) && !!row.mtp === (state.mtpFilter === "on"))));
 }
 function chartConditions(runs,models,keys) {
@@ -204,7 +207,7 @@ function compareRecordedStorage(runId) {
   state.compare = new Set([runId]); state.selected = runId;
   state.conditions = new Set(variants.map(view=>view.id)); state.visibleModels = models;
   state.metrics = new Set(["wall_s"]); state.mtpFilter = "all";
-  state.comparisonConcurrency = 1; state.comparisonLayout = "models";
+  state.comparisonConcurrency = 1; state.comparisonLayout = "models"; state.comparisonAxis = "context";
   if ($("#comparison-layout")) $("#comparison-layout").value = "models";
   $$(".comparison-concurrency").forEach(select=>{select.value="1";});
   renderMetricSeg(); renderRunsList(); showResultsView("compare");
@@ -368,7 +371,7 @@ const METRICS = {
   decode_tps: {
     label: "Decode speed", kind: "line", unit: "tk/s", better: "high",
     get: (r) => r.decode_tps ?? storageMetricValue(r,"decode_tps"),
-    blurb: "Output tokens generated per second, timed after the first token so prefill cost does not leak in.",
+    blurb: "Output speed after this request's first token. Includes scheduler pauses and waits while other concurrent requests prefill.",
   },
   ttft_s: {
     label: "Time to first token", kind: "line", unit: "s", better: "low",
@@ -608,6 +611,9 @@ async function init() {
     if (button) compareRecordedStorage(button.dataset.compareStorage);
   });
   $("#comparison-layout")?.addEventListener("change", event=>{state.comparisonLayout=event.target.value;renderResultsView();});
+  $$("[data-comparison-axis]").forEach(button=>button.addEventListener("click",()=>{
+    state.comparisonAxis=button.dataset.comparisonAxis;renderResultsView();
+  }));
   $("#summary-export")?.addEventListener("click", event=>{
     event.preventDefault();
     const runs = [...state.compare].map(id=>state.runCache[id]).filter(Boolean);
@@ -701,6 +707,9 @@ async function renderResultsView() {
   await ensureRuns(ids);
   if (generation !== state.resultsRender) return;
   const runs = ids.map((id) => state.runCache[id]).filter(Boolean);
+  const scalingView=state.resultView==="compare" && state.comparisonAxis==="concurrency";
+  if ($("#results-controls")) $("#results-controls").dataset.analysis=scalingView ? "concurrency" : "context";
+  $$("[data-comparison-axis]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.comparisonAxis===state.comparisonAxis)));
   const models = allModelsOf(measurementRuns(runs));
   if ($("#result-selection-summary")) $("#result-selection-summary").textContent = runs.map(run=>run.label || run.id).join(" · ") || "Select a benchmark";
   renderRecordedConditions(runs);
@@ -717,7 +726,10 @@ async function renderResultsView() {
     state.detailSelection = selection;
     state.detailSignature = detailSignature;
   }
-  if (state.resultView === "summary") renderBenchmarkSummary(runs);
+  if (state.resultView === "summary") {
+    renderConcurrencyView($("#summary-concurrency"),runs,true);
+    renderBenchmarkSummary(runs);
+  }
   if (state.resultView === "compare") await renderCompare();
   if (state.resultView === "table") {
     const keys = selectedMetricKeys();
@@ -2586,7 +2598,7 @@ async function openComparisonLink(search) {
   const models = ids.map(id=>allModelsOf([state.runCache[id]]));
   state.compare = new Set(ids); state.selected = ids[0]; state.conditions = null;
   state.visibleModels = new Set(models[0].filter(model=>models.every(list=>list.includes(model))));
-  state.mtpFilter = "all"; state.comparisonConcurrency = 1; state.comparisonLayout = "models";
+  state.mtpFilter = "all"; state.comparisonConcurrency = 1; state.comparisonLayout = "models"; state.comparisonAxis = "context";
   state.metrics = new Set(["prefill_tps", "decode_tps"]);
   if ($("#mtp-filter")) $("#mtp-filter").value = "all";
   if ($("#comparison-layout")) $("#comparison-layout").value = "models";
@@ -2599,6 +2611,15 @@ async function openComparisonLink(search) {
 async function renderCompare() {
   const generation = state.resultsRender;
   const body = $("#compare-body");
+  const concurrency=$("#concurrency-comparison"),useScaling=state.comparisonAxis==="concurrency" && !!globalThis.WatteverConcurrency;
+  if (concurrency) concurrency.hidden=!useScaling;
+  if ($("#context-chart-layout")) $("#context-chart-layout").hidden=useScaling;
+  if (useScaling) {
+    if ($("#comparison-overview")) $("#comparison-overview").hidden=true;
+    body.hidden=true;
+    renderConcurrencyView(concurrency,[...state.compare].map(id=>state.runCache[id]).filter(Boolean));
+    return;
+  }
   if ($("#comparison-overview")) $("#comparison-overview").hidden = state.comparisonLayout !== "overview";
   body.hidden = state.comparisonLayout === "overview";
   if (state.comparisonLayout === "overview") return renderOverview();
@@ -2650,6 +2671,22 @@ async function renderCompare() {
       }
     }
   }
+}
+
+function renderConcurrencyView(container,runs,summary=false) {
+  if (!container || !globalThis.WatteverConcurrency) return;
+  if (!runs.length) {container.innerHTML=emptyState("Select a benchmark","Choose a benchmark from the library to explore concurrency.");return;}
+  const measured=measurementRuns(runs),models=allModelsOf(measured);
+  const shown=summary ? models : shownModels(models);
+  container.querySelectorAll?.('.plot').forEach(plot=>Charts.release?.(plot));
+  globalThis.WatteverConcurrency.render(container,{
+    runs:measured,models:shown,summary,state:state.scaling,charts:Charts,
+    allow:(run,row)=>summary || state.mtpFilter==="all" || (!runProviderManaged(run) && !!row.mtp===(state.mtpFilter==="on")),
+    style:(group,view)=>({color:view.compareModels ? modelColor(group.model,models) : resolveColor(runColor(group.run.parent_run_id || group.run.id)),
+      dash:group.identity.mtp==="on" || group.identity.mtp?.requested==="on" ? "6 4" : null,
+      marker:markerForRun(group.run.parent_run_id || group.run.id)}),
+    openCompare:()=>{state.comparisonAxis="concurrency";showResultsView("compare");}
+  });
 }
 
 function resolveColor(cssVar) {

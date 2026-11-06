@@ -16,6 +16,22 @@ run['results'].extend([
 for row in run['results']:
     if row.get('concurrency', 1) == 1:
         row['ttft_s'] = 0.5
+        row['completion_tokens'] = 100
+        row['wall_s'] = 2.5
+# Simulated concurrency evidence only; these fixtures never run a real model.
+run['config'].update(sizes=[512],concurrency_levels=[1,2,4,8])
+run['results'][1].update(aggregate_completion_tokens=200,wall_s=200/75)
+for index,request in enumerate(run['results'][1]['requests']):
+    request.update(completion_tokens=100,ttft_s=.6+index*.2,wall_s=2.5+index/6)
+run['results'].extend([
+    {'model':'model-a','target_tokens':512,'concurrency':4,'status':'ok','completed_requests':4,
+     'aggregate_completion_tokens':400,'aggregate_completion_tps':400/6,'wall_s':6,
+     'requests':[{'status':'ok','prompt_tokens':512,'completion_tokens':100,'decode_tps':25+i,
+                  'ttft_s':1.1+i*.1,'wall_s':5+i/3} for i in range(4)]},
+    {'model':'model-a','target_tokens':512,'concurrency':8,'status':'failed','fail_kind':'timeout',
+     'completed_requests':0,'wall_s':15,'timeout_budget_s':15,
+     'requests':[{'status':'failed','fail_kind':'timeout'} for _ in range(8)]},
+])
 run['telemetry'] = {
     'summary': {'observations': 4, 'metrics': {
         'gpu_util': {'mean': 60, 'max': 80, 'last': 80, 'early_60s_mean': 50, 'late_60s_mean': 70, 'late_minus_early': 20, 'coverage_fraction': .95},

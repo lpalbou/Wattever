@@ -6,6 +6,7 @@
 - [Sharing results](sharing-results.md): shared catalog, contributions and completing a benchmark later.
 - [Getting started](getting-started.md): managed LM Studio or generic endpoint setup, authentication, manual model IDs and first benchmark.
 - [Measurements and sessions](measurements.md): client/provider metrics, cache provenance, hardware, compute claims, power boundaries and comparisons.
+- [Concurrency comparisons](concurrency.md): total versus per-request throughput, latency ranges, model-by-request-count maps, request timing evidence, matched-repeat scaling and energy.
 - [RTX 5060 Ti storage comparison](5060-ti-storage-comparison.md): measured Strata results on Samsung SATA SSD and NVMe, both repeats, transfer rates and comparison settings.
 - [RTX 5070 Ti hardware and storage follow-up](5070-ti-hardware-follow-up.md): 144 paired storage observations, prefill/decode aggregates, native drafting evidence, three-pass transfers and memory-channel provenance.
 - [PNY versus ASUS Prime RTX 5070 Ti](pny-5070-ti-comparison.md): one PNY repeat across all 13 primary models, power and throughput comparisons with ASUS and RTX 5060 Ti, and the cancelled storage follow-up.
