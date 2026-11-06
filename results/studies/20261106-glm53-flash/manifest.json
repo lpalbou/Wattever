@@ -72,6 +72,42 @@
           "bytes": 898
         }
       ]
+    },
+    {
+      "name": "ram26-f32pack-two",
+      "cases": 2,
+      "successful": 2,
+      "source_sha256": "f8b39a026d8372f14a636c6565b31382c94abeccf41a172feb8f3286ccc3e596",
+      "artifacts": [
+        {
+          "file": "ram26-f32pack-two.json.gz",
+          "sha256": "9a85b608671daf72ad5b4e4aeafc1436db38eb023650b26a76bd29e4d20b278e",
+          "bytes": 98847
+        },
+        {
+          "file": "ram26-f32pack-two.csv",
+          "sha256": "d9975d19ee13b7220a6f57bc34e687c458f8c25e0c06a7e8016158b4264f0dbc",
+          "bytes": 884
+        }
+      ]
+    },
+    {
+      "name": "ram26-slots2-two",
+      "cases": 2,
+      "successful": 2,
+      "source_sha256": "e82aa78ac6cf8bd9e5b084d47f99067ae1032cc8c70d9399919e79fb4fd360e5",
+      "artifacts": [
+        {
+          "file": "ram26-slots2-two.json.gz",
+          "sha256": "d906d00a165cd472c799fdecfdf8cf6bba79a553076dac76d7cb3f7a47f60497",
+          "bytes": 223844
+        },
+        {
+          "file": "ram26-slots2-two.csv",
+          "sha256": "3750a570f150484aa0fce609dc0c1cc1a1db90ed368680ac3a85679ceefaf80a",
+          "bytes": 880
+        }
+      ]
     }
   ],
   "figures": [
@@ -124,7 +160,15 @@
   },
   "native_reference": {
     "file": "../../aggregates/two-5070-ti-paired-cases.csv",
-    "sha256": "dc8ad41c82bc7f6f3efb8505cab8569ee77dab07008e86332bb1648ab23368e4"
+    "sha256": "966102fcb75508bff5529139355d5999515e86d25d00b0ce5061be0ea8ebc2d7",
+    "checksum_method": "sha256 with CRLF normalized to LF"
   },
-  "configuration_authority": "Use run.results[].model_configuration for canonical identity; curated condition fields describe placement, pack and memory settings."
+  "configuration_authority": "Use run.results[].model_configuration for canonical identity; curated condition fields describe placement, pack and memory settings.",
+  "supplementary": [
+    {
+      "file": "pack-preparation.json",
+      "sha256": "b581e58ada1857f1edfc5833b7e599be60cb6995bfcd9914d215f2711316241f",
+      "bytes": 4472
+    }
+  ]
 }

@@ -10,7 +10,8 @@ These are **preliminary diagnostic results**, separate from the normal machine
 benchmark aggregates. The Maya 1.1.52 baseline matrix is complete: **11 successful
 cases and one timeout**, across six prompt targets and one/two submitted clients.
 There is one measured repeat per condition. The runtime-only update screen is
-complete; F32-pack, RAM optimization and model-quality evaluation are pending.
+complete, as is the F32-preserving pack screen. RAM optimization, two-slot
+serving and model-quality evaluation are separate follow-up conditions.
 
 See the [raw snapshots, CSV and manifest](../results/studies/20261106-glm53-flash/README.md).
 
@@ -25,8 +26,8 @@ See the [raw snapshots, CSV and manifest](../results/studies/20261106-glm53-flas
 | 40k | 38,220 / 256 | 391.55 tok/s | 11.66 tok/s | 97.61 s | 119.49 s | 144.25 W | 59 C |
 | 80k | 80,259 / 256 | 414.09 tok/s | 11.64 tok/s | 193.82 s | 215.72 s | 147.34 W | 62 C |
 
-The backend reports 38.3/315.4 tok/s prompt evaluation and 9.8/11.4 tok/s
-generation respectively. Client prefill is actual input tokens divided by TTFT;
+For the initial 512/20k screen, the backend reports 38.3/315.4 tok/s prompt
+evaluation and 9.8/11.4 tok/s generation respectively. Client prefill is actual input tokens divided by TTFT;
 backend prompt evaluation is recorded separately and is not isolated GPU compute.
 The first output token is excluded from the client decode interval/count.
 
@@ -49,6 +50,25 @@ use the actual output total divided by the common group wall time.
 | 20k | 19,475 / 19,472 | 2/2 | 159.56 s | 3.13 tok/s |
 | 40k | 39,278 / 39,281 | 2/2 | 237.37 s | 2.03 tok/s |
 | 80k | 80,082 reported for the completed request; second unavailable | 1/2 | 300.01 s, timeout | Unavailable for a complete group |
+
+A separate Maya 1.1.56/F32-pack screen enables **two real engine slots**, with
+RAM26 requested. Backend activity confirms two admitted requests and no waiting
+HTTP request; engine output records interleaved generation. Default multi-request
+decode does not speculate while both requests are active, although solo tails can
+use the loaded MTP head. This serving mode is distinct from the baseline.
+
+| Two-slot target | Actual input counts | Actual output counts | Group time | Whole-group output | Peak GPU temperature |
+|---|---:|---:|---:|---:|---:|
+| 512 | 501 / 501 | 256 / 248 | 163.53 s | 3.08 tok/s | 58 C |
+| 20k | 17,204 / 17,203 | 219 / 256 | 197.77 s | 2.40 tok/s | 63 C |
+
+Both cases completed, but extra slots alone did not improve the observed group
+rate. Runtime, pack, host allocation and actual counts also differ from the
+one-slot baseline, so this is not a pure slot-count ablation. The short group's
+combined GPU energy was 37.66 J per output token, including prefill. The 20k
+group's power capture was flagged incomplete; it has no reported combined energy
+or energy-per-token result. Per-request draft deltas can include activity from
+another request and do not by themselves prove concurrent MTP.
 
 The second 80k request was cancelled during prefill. This is a configured-deadline
 result, not a demonstrated VRAM capacity failure. Partial output is retained in
@@ -144,8 +164,22 @@ retain F32 precision rather than being rounded to BF16.
 
 A 28 GiB requested expert-RAM condition failed during startup with an
 out-of-memory error before any measured inference. It contributes no throughput
-or efficiency result. A smaller allocation is an independent diagnostic
-condition, rather than a retry of an inference observation.
+or efficiency result. A 26 GiB request successfully pinned 13.29 + 12.70 GiB,
+compared with 20.46 + 7.25 GiB for the 40 GiB request. Both smaller-budget cases
+completed, but their observed speeds were lower:
+
+| Maya 1.1.56, F32-preserving pack | Target | Actual input / output | Client prefill | Client decode | Combined GPU energy / output token, including prefill |
+|---|---:|---:|---:|---:|---:|
+| RAM40 requested | 512 | 501 / 240 | 37.56 tok/s | 9.10 tok/s | 19.27 J |
+| RAM26 requested | 512 | 503 / 254 | 34.46 tok/s | 7.67 tok/s | 21.86 J |
+| RAM40 requested | 20k | 17,415 / 256 | 303.76 tok/s | 10.72 tok/s | 40.52 J |
+| RAM26 requested | 20k | 17,344 / 256 | 274.47 tok/s | 9.57 tok/s | 44.78 J |
+
+Balanced host bytes are not equivalent to balanced expert hit rates. The smaller
+request also reduces total pinned capacity by approximately 1.72 GiB. These are
+one-observation screens with different nonce text and natural output lengths;
+they do not isolate the contribution of each cache effect. No memory allocation
+that failed at startup is presented as an inference observation.
 
 - Model revision: `6728cf78a5b198a6a6f84b7fb88956a17ec56521`; two verified shards total 73,411,389,088 bytes.
 - Runtime: Project Maya 1.1.52, revision `3c935e411cd6625a9af0f292dd0af52598e866d8`.

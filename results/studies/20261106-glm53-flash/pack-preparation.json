@@ -1,0 +1,133 @@
+{
+  "started_utc": "2026-11-06T21:07:52.590375+00:00",
+  "command": [
+    "python",
+    "tools/iq_pack.py",
+    "--gguf",
+    "<NVME>/GLM-5.3-Flash-Maya-XS-IQ1_S-00001-of-00002.gguf",
+    "--out",
+    "<NVME>/pack-f32-1156",
+    "--compat-bf16"
+  ],
+  "source_revision": "22fc101f2c109b7e7174c975ff3c2d8e9ce0a867",
+  "model_engine_started": false,
+  "status": "completed",
+  "finished_utc": "2026-11-06T21:08:15.018790+00:00",
+  "converted_tensors_before": 849,
+  "converted_tensors_after": 807,
+  "source_F32_selection_biases_preserved": [
+    "blk.10.exp_probs_b.bias",
+    "blk.11.exp_probs_b.bias",
+    "blk.12.exp_probs_b.bias",
+    "blk.13.exp_probs_b.bias",
+    "blk.14.exp_probs_b.bias",
+    "blk.15.exp_probs_b.bias",
+    "blk.16.exp_probs_b.bias",
+    "blk.17.exp_probs_b.bias",
+    "blk.18.exp_probs_b.bias",
+    "blk.19.exp_probs_b.bias",
+    "blk.20.exp_probs_b.bias",
+    "blk.21.exp_probs_b.bias",
+    "blk.22.exp_probs_b.bias",
+    "blk.23.exp_probs_b.bias",
+    "blk.24.exp_probs_b.bias",
+    "blk.25.exp_probs_b.bias",
+    "blk.26.exp_probs_b.bias",
+    "blk.27.exp_probs_b.bias",
+    "blk.28.exp_probs_b.bias",
+    "blk.29.exp_probs_b.bias",
+    "blk.3.exp_probs_b.bias",
+    "blk.30.exp_probs_b.bias",
+    "blk.31.exp_probs_b.bias",
+    "blk.32.exp_probs_b.bias",
+    "blk.33.exp_probs_b.bias",
+    "blk.34.exp_probs_b.bias",
+    "blk.35.exp_probs_b.bias",
+    "blk.36.exp_probs_b.bias",
+    "blk.37.exp_probs_b.bias",
+    "blk.38.exp_probs_b.bias",
+    "blk.39.exp_probs_b.bias",
+    "blk.4.exp_probs_b.bias",
+    "blk.40.exp_probs_b.bias",
+    "blk.41.exp_probs_b.bias",
+    "blk.42.exp_probs_b.bias",
+    "blk.43.exp_probs_b.bias",
+    "blk.44.exp_probs_b.bias",
+    "blk.5.exp_probs_b.bias",
+    "blk.6.exp_probs_b.bias",
+    "blk.7.exp_probs_b.bias",
+    "blk.8.exp_probs_b.bias",
+    "blk.9.exp_probs_b.bias"
+  ],
+  "other_conversion_records_identical": true,
+  "tokenizer_and_profile_seed_identical": true,
+  "files": [
+    {
+      "bytes": 87926,
+      "sha256": "65eb937e0144b0a3ccac1c823a19e1bbe01c00aba1da7f0ddb3074bdbccba1bf",
+      "sha256_verified": true,
+      "relative_file": "compat-bf16.json"
+    },
+    {
+      "bytes": 943935232,
+      "sha256": "ca7aea5d3c894b2bd521f6da6e6506c0ee503d93dea3fbbb1afb782b0b3d0f24",
+      "sha256_verified": true,
+      "relative_file": "dense.bin"
+    },
+    {
+      "bytes": 106008,
+      "sha256": "53b03a13482b6fedc599d149be2d69f88c38d9edc4611a740da46314ab1dc5a7",
+      "sha256_verified": true,
+      "relative_file": "expert-profile-seed.bin"
+    },
+    {
+      "bytes": 105675,
+      "sha256": "d08cb3c796fd694cc23e957be7f1122fcdddf4f302cc2b43e65d617f2da0774f",
+      "sha256_verified": true,
+      "relative_file": "index.txt"
+    },
+    {
+      "bytes": 3756,
+      "sha256": "eb602a8be73e22d2edaab83bf75a80bd3e5112b9acef59a2f7cabf37e8cd5d95",
+      "sha256_verified": true,
+      "relative_file": "native_experts.txt"
+    },
+    {
+      "bytes": 10648,
+      "sha256": "a4fddbbf0b432101a296c17094f8bc5a2b0d30713b5b5cd92f86be78511aa724",
+      "sha256_verified": true,
+      "relative_file": "tokenizer/chat_template.jinja"
+    },
+    {
+      "bytes": 4189984,
+      "sha256": "c9f9352db4dab0d3e0cba5923692047db4efe065ba59c5ab8a5eb2fb589f0d93",
+      "sha256_verified": true,
+      "relative_file": "tokenizer/merges.txt"
+    },
+    {
+      "bytes": 464640,
+      "sha256": "3d226d66989eaa352fc8093536ece4b9398c85b57ba33860031bef042251ddb9",
+      "sha256_verified": true,
+      "relative_file": "tokenizer/token_type.json"
+    },
+    {
+      "bytes": 729,
+      "sha256": "74d0676146941e9ad57724515186294cfeb644ae15a300e2e0ba6d7c18cf13ab",
+      "sha256_verified": true,
+      "relative_file": "tokenizer/tokenizer.json"
+    },
+    {
+      "bytes": 3186346,
+      "sha256": "168e8586859e110a73372e50e742258eac5314627fddcd85957c1d6781d38ae2",
+      "sha256_verified": true,
+      "relative_file": "tokenizer/vocab.json"
+    }
+  ],
+  "qualification": "Preserves original F32 routing bias; no measured quality uplift is implied",
+  "baseline_runtime": {
+    "version": "1.1.52",
+    "revision": "3c935e411cd6625a9af0f292dd0af52598e866d8",
+    "exe_sha256": "f76e2f45ff0466554176c905ccbf48d8f74a690d6f4453233eb19d51844a9c49",
+    "source": "original prepared profile archived before runtime switch; supplementary provenance, baseline snapshots unchanged"
+  }
+}

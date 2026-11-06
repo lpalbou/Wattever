@@ -15,7 +15,7 @@ from wattever.identity import verify_model_configuration
 def validate(folder):
     folder = Path(folder)
     manifest = json.loads((folder / 'manifest.json').read_text(encoding='utf-8'))
-    entries = manifest.get('figures', []) + ([manifest['storage_observation']] if 'storage_observation' in manifest else [])
+    entries = manifest.get('figures', []) + manifest.get('supplementary', []) + ([manifest['storage_observation']] if 'storage_observation' in manifest else [])
     for snapshot in manifest['snapshots']:
         entries += snapshot['artifacts']
     for entry in entries:
@@ -27,7 +27,10 @@ def validate(folder):
     reference = manifest.get('native_reference')
     if reference:
         path = (folder / reference['file']).resolve()
-        if not path.is_relative_to(ROOT) or hashlib.sha256(path.read_bytes()).hexdigest() != reference['sha256']:
+        content = path.read_bytes()
+        if reference.get('checksum_method') == 'sha256 with CRLF normalized to LF':
+            content = content.replace(b'\r\n', b'\n')
+        if not path.is_relative_to(ROOT) or hashlib.sha256(content).hexdigest() != reference['sha256']:
             raise ValueError('Native reference is outside the repository or has changed')
     seen = {}
     close = lambda a,b: math.isclose(a,b,rel_tol=1e-7,abs_tol=1e-5)
@@ -80,7 +83,7 @@ def validate(folder):
                 raise ValueError('Whole-group throughput/count mismatch')
             if row['combined_gpu_j'] and not close(float(row['combined_gpu_j'])/total,float(row['combined_gpu_j_per_output'])):
                 raise ValueError('Shared group energy counted inconsistently')
-    print('Validated %d immutable snapshots, %d distinct recorded conditions, counts, identities and group accounting.' % (len(manifest['snapshots']),len(seen)))
+    print('Validated %d immutable snapshots, %d distinct cases, counts, identities and group accounting.' % (len(manifest['snapshots']),len(seen)))
 
 
 if __name__ == '__main__':
