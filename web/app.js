@@ -1687,31 +1687,96 @@ function statusCell(r) {
   return `<span class="st st-${esc(r.status)}"${title}>${mark} ${esc(r.status === "failed" ? (r.fail_kind || "failed").replace(/_/g, " ") : r.status)}</span>`;
 }
 
-function estimatedMark(r, aggregate = false) { return (aggregate ? r.aggregate_completion_tokens_estimated : r.completion_tokens_estimated) ? "*" : ""; }
+function estimatedMark(r, aggregate = false) {
+  if (!r) return "";
+  if (aggregate) {
+    return (r.aggregate_completion_tokens_estimated || (r.requests && r.requests.some(q => q && q.completion_tokens_estimated))) ? "*" : "";
+  }
+  return r.completion_tokens_estimated ? "*" : "";
+}
+
 function requestDetails(r) {
-  if (!Array.isArray(r.requests)) return "";
+  if (!Array.isArray(r.requests) || r.requests.length <= 1) return "";
   return `<details><summary>${esc(r.completed_requests ?? 0)}/${r.requests.length} completed</summary>${r.requests.map((q, i) => `<div>Request ${i + 1}: ${esc(q.status || "unknown")} - ${fmt(q.decode_tps, 1)}${estimatedMark(q)} tk/s - TTFT ${fmt(q.ttft_s, 2)} s ${q.message ? esc(q.message) : ""}</div>`).join("")}</details>`;
 }
 
+function liveRowMetrics(r) {
+  const n = r.concurrency || 1;
+  const reqs = Array.isArray(r.requests) && r.requests.length ? r.requests : [r];
+  const ok = reqs.filter((q) => q && (q.status === "ok" || (!q.status && r.status === "ok")));
+  const num = (v) => typeof v === "number" && Number.isFinite(v) ? v : null;
+  const median = (vals) => storageMedian(vals.map(num));
+  const sum = (vals) => { const v = vals.map(num); return v.length && v.every((x) => x !== null) ? v.reduce((a, b) => a + b, 0) : null; };
+  // Output tokens of all successful requests (null if any is unknown).
+  const outTokens = num(r.aggregate_completion_tokens) ?? sum(ok.map((q) => q.completion_tokens));
+  const wall = num(r.wall_s);
+  // Total throughput: output tokens / wall time of the whole case (includes prefill + queueing). Same definition for 1 or N requests.
+  const groupTps = num(r.aggregate_completion_tps) ?? (outTokens && wall ? outTokens / wall : null);
+  // Sum of each stream's post-first-token rate; an upper bound because streams only partly overlap.
+  const sumDecode = n > 1 && ok.length === reqs.length ? sum(ok.map((q) => q.decode_tps)) : null;
+  // Whole-case GPU energy across all monitored cards, counted once.
+  let energy = null, watts = null, cards = [];
+  if (r.group_power) {
+    const g = r.group_power;
+    energy = num(g.gpu_energy_j); watts = num(g.gpu_w_avg);
+    cards = (g.gpus || []).map((c) => ({ name: c.name || `GPU ${c.index}`, w: num(c.gpu_w_avg), vram: num(c.vram_mb_max) }));
+  } else if (r.power) {
+    const p = r.power;
+    energy = num(p.prefill_energy_j) !== null && num(p.decode_energy_j) !== null ? p.prefill_energy_j + p.decode_energy_j : null;
+    const span = (num(r.ttft_s) || 0) + (num(r.decode_s) || 0);
+    watts = energy !== null && span > 0 ? energy / span : null;
+    cards = (p.gpus || []).map((c) => {
+      const e = num(c.prefill?.gpu_energy_j) !== null && num(c.decode?.gpu_energy_j) !== null ? c.prefill.gpu_energy_j + c.decode.gpu_energy_j : null;
+      return { name: c.name || `GPU ${c.index}`, w: e !== null && span > 0 ? e / span : null, vram: num(c.vram_peak_mb) };
+    });
+  }
+  const estimated = !!(r.aggregate_completion_tokens_estimated || r.completion_tokens_estimated || reqs.some((q) => q && q.completion_tokens_estimated));
+  const vramCards = cards.length > 1 && cards.every((c) => c.vram !== null) ? cards.reduce((a, c) => a + c.vram, 0) : null;
+  return {
+    n, estimated, groupTps, sumDecode, watts, cards,
+    prompt: median(ok.map((q) => q.prompt_tokens)),
+    prefill: median(ok.map((q) => q.prefill_tps)),
+    decode: median(ok.map((q) => q.decode_tps)),
+    ttft: median(ok.map((q) => q.ttft_s)),
+    jPerTok: energy !== null && outTokens && !estimated ? energy / outTokens : null,
+    vram: vramCards ?? num(r.vram_peak_mb),
+  };
+}
+
 function renderLiveTable() {
-  const rows = state.liveResults.map((r) => `<tr>
-    <td>${esc(r.model)}</td>
-    <td class="num">${fmtTokens(r.target_tokens)}</td>
-    <td>${providerManaged() ? '<span class="dim">provider controlled</span>' : r.mtp ? '<span class="badge accent">MTP</span>' : '<span class="dim">off</span>'}</td>
-    <td class="num">${fmtInt(r.prompt_tokens)}</td>
-    <td>${statusCell(r)} ${requestDetails(r)}</td>
-    <td class="num">${r.concurrency || 1}</td><td class="num">${fmt(r.aggregate_completion_tps, 1)}${r.aggregate_completion_tokens_estimated ? "*" : ""}</td>
-    <td class="num">${fmt(r.prefill_tps, 0)}</td>
-    <td class="num">${fmt(r.decode_tps, 1)}${estimatedMark(r)}</td>
-    <td class="num">${fmt(r.ttft_s, 2)}</td>
-    <td class="num">${fmt(r.power && r.power.prefill_gpu_w, 0)}</td>
-    <td class="num">${fmt(r.power && r.power.j_per_1k_prefill, 1)}</td>
-    <td class="num">${fmtInt(r.vram_peak_mb)}</td>
-  </tr>`).join("");
-  $("#live-table").innerHTML = `<caption>* Output tokens and derived throughput are estimated.</caption><thead><tr>
-    <th>Model</th><th class="num">Target</th><th>MTP</th><th class="num">Actual tk</th><th>Status / requests</th><th>Concurrency</th><th>Aggregate tk/s</th>
-    <th class="num">Prefill tk/s</th><th class="num">Decode tk/s</th><th class="num">TTFT s</th>
-    <th class="num">GPU W</th><th class="num">J/1k</th><th class="num">VRAM MB</th>
+  const metrics = state.liveResults.map(liveRowMetrics);
+  const caption = metrics.some((m) => m.estimated) ? "<caption>* Output tokens estimated (server token usage unavailable).</caption>" : "";
+  const anyConcurrent = metrics.some((m) => m.n > 1);
+  const rows = state.liveResults.map((r, i) => {
+    const m = metrics[i], star = (v) => v != null && m.estimated ? "*" : "";
+    const cardTip = (key, unit, f) => m.cards.length > 1 ? ` title="${esc(m.cards.map((c) => `${c.name}: ${f(c[key])} ${unit}`).join(" · "))}"` : "";
+    return `<tr>
+      <td>${esc(r.model)}</td>
+      <td class="num">${fmtTokens(r.target_tokens)}</td>
+      <td>${providerManaged() ? '<span class="dim">provider controlled</span>' : r.mtp ? '<span class="badge accent">MTP</span>' : '<span class="dim">off</span>'}</td>
+      <td class="num">${fmtInt(m.prompt)}</td>
+      <td>${statusCell(r)}</td>
+      <td class="num">${m.n}</td>
+      <td class="num">${fmt(m.groupTps, 1)}${star(m.groupTps)}</td>
+      ${anyConcurrent ? `<td class="num">${fmt(m.sumDecode, 1)}${star(m.sumDecode)}</td>` : ""}
+      <td class="num">${fmt(m.prefill, 0)}</td>
+      <td class="num">${fmt(m.decode, 1)}${star(m.decode)}</td>
+      <td class="num">${fmt(m.ttft, 2)}</td>
+      <td class="num"${cardTip("w", "W", (v) => fmt(v, 0))}>${fmt(m.watts, 0)}</td>
+      <td class="num">${fmt(m.jPerTok, 2)}</td>
+      <td class="num"${cardTip("vram", "MB", fmtInt)}>${fmtInt(m.vram)}</td>
+    </tr>`;
+  }).join("");
+  $("#live-table").innerHTML = `${caption}<thead><tr>
+    <th>Model</th><th class="num">Target</th><th>MTP</th><th class="num" title="Median prompt tokens per request">Actual tk</th><th>Status</th><th class="num">Requests</th>
+    <th class="num" title="Total output tokens ÷ wall time of the whole case, including prefill and queueing">Total tk/s</th>
+    ${anyConcurrent ? `<th class="num" title="Sum of each request's decode rate after its first token. Upper bound: streams only partly overlap.">Σ decode tk/s</th>` : ""}
+    <th class="num" title="Median per request: prompt tokens ÷ time to first token">Prefill tk/s</th>
+    <th class="num" title="Median per request, after first token">Decode tk/s</th>
+    <th class="num" title="Median per request">TTFT s</th>
+    <th class="num" title="Average GPU power over the whole case, all cards combined">GPU W</th>
+    <th class="num" title="Whole-case GPU energy (all cards, prefill included) ÷ output tokens">J/out tk</th>
+    <th class="num" title="Peak VRAM, summed across cards">VRAM MB</th>
     </tr></thead><tbody>${rows}</tbody>`;
 }
 
