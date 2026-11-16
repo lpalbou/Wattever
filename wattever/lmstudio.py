@@ -240,7 +240,7 @@ def _stream_payloads(response, cancel=None):
 
 def _usage_count(mapping, key):
     value = mapping.get(key)
-    if value is not None and (type(value) is not int or value < 0):
+    if value is not None and (type(value) is not int or not 0 <= value <= 2**53 - 1):
         raise RuntimeError("Invalid non-negative integer token count: %s." % key)
     return value
 
@@ -403,7 +403,7 @@ def measure_completion(model, prompt, max_tokens, base=DEFAULT_BASE, timeout=180
                 if sampled_text and len(sample) < 60:
                     sample.append(sampled_text)
                 if on_progress:
-                    on_progress(deltas, now - (t_first or now))
+                    on_progress(deltas, now - t_first)
 
     t_end = time.perf_counter()
     if not stream_complete:
@@ -418,7 +418,6 @@ def measure_completion(model, prompt, max_tokens, base=DEFAULT_BASE, timeout=180
 
     prompt_tokens = _usage_count(usage, "prompt_tokens")
     completion_tokens = _usage_count(usage, "completion_tokens")
-    if completion_tokens is None and not api_base and not capture_output: completion_tokens = deltas
     details = usage.get("completion_tokens_details") or {}
     prompt_details = usage.get("prompt_tokens_details") or {}
     if not isinstance(details, dict) or not isinstance(prompt_details, dict):
@@ -428,13 +427,16 @@ def measure_completion(model, prompt, max_tokens, base=DEFAULT_BASE, timeout=180
     if (reasoning_tokens is not None and completion_tokens is not None
             and reasoning_tokens > completion_tokens):
         raise RuntimeError("Reasoning token count exceeds total completion tokens.")
-    decode_s = max(t_end - t_first, 1e-9) if t_first is not None else None
+    # Usage, finish markers and response teardown may arrive well after the
+    # last generated text. Only the last observed output ends decode.
+    decode_s = t_last - t_first if t_first is not None and t_last > t_first else None
     ttft = t_first - t_start if t_first is not None else None
     reasoning_streamed = "reasoning_content" in observed_output_kinds
     decode_scope_tokens = completion_tokens
     if reasoning_tokens is not None and not reasoning_streamed:
         decode_scope_tokens = completion_tokens - reasoning_tokens if completion_tokens is not None else None
-        decode_scope = "visible_content_only; reported hidden reasoning excluded" if reasoning_tokens else "server_usage; no reasoning tokens reported"
+        decode_scope = ("visible_content_only; reported hidden reasoning excluded from count; "
+                        "timing may still include hidden reasoning") if reasoning_tokens else "server_usage; no reasoning tokens reported"
     elif reasoning_streamed:
         decode_scope = "observed content and reasoning; unobserved reasoning cannot be ruled out"
     else:
@@ -449,19 +451,25 @@ def measure_completion(model, prompt, max_tokens, base=DEFAULT_BASE, timeout=180
                         "unavailable: only one observed output delta; no subsequent output event to measure decode")
     decode_token_count = max(0, decode_scope_tokens - 1) if decode_scope_tokens is not None else None
 
+    from . import PHASE_PROTOCOL
     result = {
         "t_start": t_start,
         "t_first_token": t_first,
+        "t_last_output": t_last,
         "t_end": t_end,
         "ttft_s": ttft,
         "decode_s": decode_s,
         "wall_s": t_end - t_start,
+        "response_tail_s": t_end - t_last if t_last is not None else None,
         "prompt_tokens": prompt_tokens,
         "completion_tokens": completion_tokens,
-        "completion_tokens_estimated": usage.get("completion_tokens") is None,
+        "completion_tokens_estimated": usage.get("completion_tokens") is None and completion_tokens is not None,
         "reasoning_tokens": reasoning_tokens,
         "decode_token_count": decode_token_count,
         "timing_scope": {"boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+                         "phase_protocol": PHASE_PROTOCOL,
+                         "decode_end_boundary": "last_observed_nonempty_output",
+                         "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
                          "first_output_kind": first_output_kind,
                          "observed_output_kinds": sorted(observed_output_kinds),
                          "empty_deltas_before_output": empty_deltas_before_output,
@@ -470,19 +478,20 @@ def measure_completion(model, prompt, max_tokens, base=DEFAULT_BASE, timeout=180
                          "requested_reasoning_effort": reasoning_effort if reasoning_effort is not None else "none" if disable_thinking else None,
                          "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
                          "decode_token_scope": decode_scope,
-                         "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk"},
+                         "decode_count_estimated_boundary": decode_token_count is not None,
+                         "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"},
         "deltas": deltas,
         "cached_prompt_tokens": cached_tokens,
         "metric_sources": {"ttft_s": "client_monotonic_clock_to_first_observed_output" if t_first is not None else "unavailable; no observable output",
                            "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown" if t_first is not None else "unavailable; no observable output or client TTFT",
                            "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
-                           "completion_tokens": "server_usage" if usage.get("completion_tokens") is not None else "unavailable" if api_base or capture_output else "stream_chunk_estimate"},
+                           "completion_tokens": "server_usage" if usage.get("completion_tokens") is not None else "unavailable"},
         "reported_timings": reported_timings,
         # prefill throughput: every prompt token had to be ingested before the
         # first token could be sampled
-        "prefill_tps": (prompt_tokens / ttft) if (prompt_tokens and ttft is not None and ttft > 0) else None,
+        "prefill_tps": (prompt_tokens / ttft) if (prompt_tokens is not None and ttft is not None and ttft > 0) else None,
         # the first token is attributed to prefill, so it is excluded here
-        "decode_tps": (decode_token_count / decode_s) if decode_token_count and decode_s is not None else None,
+        "decode_tps": (decode_token_count / decode_s) if decode_token_count is not None and decode_s is not None and decode_s > 0 else None,
         "finish_reason": finish_reason,
         "sample_text": "".join(sample)[:400],
         "response_model": response_model,

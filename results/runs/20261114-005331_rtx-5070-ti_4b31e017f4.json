@@ -1,0 +1,4245 @@
+{
+ "id": "20261114-005331_rtx-5070-ti_4b31e017f4",
+ "created_at": "2026-11-14T00:53:31+00:00",
+ "label": "2x5070ti",
+ "notes": "Models: qwen3.8-flash-next-unsloth-ud-iq4_xs, qwen3.8-flash-next-iq3_s, qwen3.6-35b-a3b-ud-q4_k_xl\nPrompt tokens: 5k, 10k, 20k, 40k, 80k, 100k, 120k\nSimultaneous queries: 1\nAnswer: 256 tokens; repeats: 1\nReasoning, context allocation, placement and speculative decoding: provider controlled\nPower monitoring: all detected NVIDIA GPUs, per card and combined (monitoring only; model placement is engine controlled)",
+ "gpu": {
+  "name": "Remote endpoint: hardware unverified"
+ },
+ "host": {
+  "platform": "remote-unverified"
+ },
+ "lms_version": null,
+ "config": {
+  "provider": "openai",
+  "endpoint_label": "Strata private endpoint",
+  "endpoint_inference_local": false,
+  "endpoint_reasoning_effort": "none",
+  "models": [
+   "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+   "qwen3.8-flash-next-iq3_s",
+   "qwen3.6-35b-a3b-ud-q4_k_xl"
+  ],
+  "concurrency_levels": [
+   1
+  ],
+  "sizes": [
+   5000,
+   10000,
+   20000,
+   40000,
+   80000,
+   100000,
+   120000
+  ],
+  "max_tokens": 256,
+  "repeats": 1,
+  "gpu_offload": "provider_managed",
+  "fallback_on_failure": false,
+  "stop_model_after_failure": true,
+  "skip_after_timeout": false,
+  "context_headroom": 512,
+  "context_safety_fraction": 0.05,
+  "context_policy": "provider_managed",
+  "context_planner_version": 1,
+  "per_test_timeout_s": 1800,
+  "load_timeout_s": 900,
+  "warmup": true,
+  "disable_thinking": null,
+  "mtp_modes": [
+   "off"
+  ],
+  "power_interval_ms": 150,
+  "hardware_probe_policy": "auto",
+  "other_idle_w": 60.0,
+  "cpu_tdp_w": 140.0,
+  "label": "2x5070ti",
+  "notes": "Models: qwen3.8-flash-next-unsloth-ud-iq4_xs, qwen3.8-flash-next-iq3_s, qwen3.6-35b-a3b-ud-q4_k_xl\nPrompt tokens: 5k, 10k, 20k, 40k, 80k, 100k, 120k\nSimultaneous queries: 1\nAnswer: 256 tokens; repeats: 1\nReasoning, context allocation, placement and speculative decoding: provider controlled\nPower monitoring: all detected NVIDIA GPUs, per card and combined (monitoring only; model placement is engine controlled)",
+  "gpu_index": 0,
+  "endpoint_id": "strata-private-c2f58720db36",
+  "endpoint_identity": {
+   "id": "strata-private-c2f58720db36",
+   "label": "Strata private endpoint",
+   "source": "detected",
+   "service": "Strata",
+   "version": "unknown",
+   "location": "private",
+   "route_registry": "opaque_local_mapping",
+   "evidence": "same_origin_service_response",
+   "scope": "route identity; actual inference backend and host are not verified"
+  },
+  "endpoint_name_override": "",
+  "reproducibility": {},
+  "performance_claims": [],
+  "canonical_model_id": "",
+  "reported_mtp": "unknown",
+  "reported_reasoning": "unknown",
+  "token_limit_field": "max_tokens",
+  "temperature": 0,
+  "runtime_gpu_placement": ""
+ },
+ "status": "completed",
+ "results": [
+  {
+   "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+   "target_tokens": 5000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 6018,
+   "context_length": null,
+   "gpu_offload": "externally_managed",
+   "quantization": "UD-IQ4_XS",
+   "quantization_source": "model_identifier",
+   "quantization_method": "UD",
+   "quantization_method_source": "model_identifier",
+   "architecture": null,
+   "params": null,
+   "load_s": null,
+   "prompt_chars": 22596,
+   "corpus_wraps": 0,
+   "nonce": "ea1dd08c0d31",
+   "max_tokens": 256,
+   "reasoning_disabled": null,
+   "timestamp": "2026-11-14T00:57:31+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "ok",
+   "prompt_tokens": 4669,
+   "completion_tokens": 195,
+   "completion_tokens_estimated": false,
+   "cached_prompt_tokens": 0,
+   "metric_sources": {
+    "ttft_s": "client_monotonic_clock_to_first_observed_output",
+    "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+    "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+    "completion_tokens": "server_usage"
+   },
+   "reported_timings": {},
+   "timing_scope": {
+    "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+    "phase_protocol": "observed-output-phases-v2",
+    "decode_end_boundary": "last_observed_nonempty_output",
+    "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+    "first_output_kind": "content",
+    "observed_output_kinds": [
+     "content"
+    ],
+    "empty_deltas_before_output": 0,
+    "reasoning_streamed": false,
+    "reasoning_token_count_source": "unavailable",
+    "requested_reasoning_effort": "none",
+    "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+    "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+    "decode_count_estimated_boundary": true,
+    "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+   },
+   "phase_protocol": "observed-output-phases-v2",
+   "decode_token_count": 194,
+   "reasoning_tokens": null,
+   "target_error_pct": -6.62,
+   "ttft_s": 13.873159399999963,
+   "decode_s": 12.141214600000012,
+   "wall_s": 26.015513899999974,
+   "response_tail_s": 0.0011398999999983062,
+   "prefill_tps": 336.5491497199991,
+   "decode_tps": 15.978631989586924,
+   "group_power": {
+    "available": false,
+    "source": "unavailable_remote"
+   },
+   "finish_reason": "stop",
+   "sample_text": "The report outlines the maturation of agentic AI by October 2026, noting that successful deployments rely on single-model loops with robust scaffolding rather than complex multi-agent societies. Key advancements include inference-time compute scaling, context engineering techniques like compaction and retrieval, and standardized tool protocols.",
+   "vram_after_load_mb": null,
+   "vram_peak_mb": null,
+   "power": {
+    "scope": null,
+    "gpu_indices": null,
+    "prefill_gpu_power_complete": null,
+    "decode_gpu_power_complete": null,
+    "available": false,
+    "low_confidence": false,
+    "source": "unavailable_remote",
+    "prefill_cpu_w": null,
+    "decode_cpu_w": null,
+    "prefill_gpu_w": null,
+    "prefill_gpu_w_max": null,
+    "decode_gpu_w": null,
+    "decode_gpu_w_max": null,
+    "prefill_system_w_est": null,
+    "decode_system_w_est": null,
+    "prefill_energy_j": null,
+    "decode_energy_j": null,
+    "prefill_system_energy_j_est": null,
+    "decode_system_energy_j_est": null,
+    "j_per_1k_prefill": null,
+    "j_per_1k_prefill_system_est": null,
+    "j_per_token_decode": null,
+    "j_per_token_decode_system_est": null,
+    "prefill_gpu_util": null,
+    "decode_gpu_util": null,
+    "prefill_cpu_util": null,
+    "decode_cpu_util": null,
+    "temp_c_max": null,
+    "clock_mhz_avg": null,
+    "samples": 0,
+    "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown"
+   },
+   "per_request_context_length": 6018,
+   "requested_total_context": 6018,
+   "load_parallel_capacity": null,
+   "context_policy": "provider_managed",
+   "load_reused": false,
+   "chars_per_token_after": 4.7557,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "UD-IQ4_XS",
+     "source": "model_identifier",
+     "user_reported": "unknown",
+     "method": "UD",
+     "method_source": "model_identifier"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "525c3dd75b668ba4564907a5575370ad841d0742d2f1bae402d863dceda6a5c4"
+   },
+   "configuration_id": "525c3dd75b668ba4564907a5575370ad841d0742d2f1bae402d863dceda6a5c4",
+   "mtp_source": "unknown; externally managed",
+   "context_control": "external",
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+   "target_tokens": 10000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 11268,
+   "context_length": null,
+   "gpu_offload": "externally_managed",
+   "quantization": "UD-IQ4_XS",
+   "quantization_source": "model_identifier",
+   "quantization_method": "UD",
+   "quantization_method_source": "model_identifier",
+   "architecture": null,
+   "params": null,
+   "load_s": null,
+   "prompt_chars": 47419,
+   "corpus_wraps": 0,
+   "nonce": "f0d991e66962",
+   "max_tokens": 256,
+   "reasoning_disabled": null,
+   "timestamp": "2026-11-14T00:57:59+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "ok",
+   "prompt_tokens": 9409,
+   "completion_tokens": 197,
+   "completion_tokens_estimated": false,
+   "cached_prompt_tokens": 0,
+   "metric_sources": {
+    "ttft_s": "client_monotonic_clock_to_first_observed_output",
+    "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+    "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+    "completion_tokens": "server_usage"
+   },
+   "reported_timings": {},
+   "timing_scope": {
+    "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+    "phase_protocol": "observed-output-phases-v2",
+    "decode_end_boundary": "last_observed_nonempty_output",
+    "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+    "first_output_kind": "content",
+    "observed_output_kinds": [
+     "content"
+    ],
+    "empty_deltas_before_output": 0,
+    "reasoning_streamed": false,
+    "reasoning_token_count_source": "unavailable",
+    "requested_reasoning_effort": "none",
+    "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+    "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+    "decode_count_estimated_boundary": true,
+    "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+   },
+   "phase_protocol": "observed-output-phases-v2",
+   "decode_token_count": 196,
+   "reasoning_tokens": null,
+   "target_error_pct": -5.91,
+   "ttft_s": 11.727873700000032,
+   "decode_s": 7.253664200000003,
+   "wall_s": 18.982472200000018,
+   "response_tail_s": 0.0009342999999830681,
+   "prefill_tps": 802.2767161962167,
+   "decode_tps": 27.02082624668508,
+   "group_power": {
+    "available": false,
+    "source": "unavailable_remote"
+   },
+   "finish_reason": "stop",
+   "sample_text": "This report outlines the maturation of agentic AI by October 2026, noting that successful deployments rely on single-model loops with robust scaffolding rather than autonomous multi-agent societies. Key advancements include inference-time compute scaling and context engineering, which enable long-horizon tasks like complex refactoring",
+   "vram_after_load_mb": null,
+   "vram_peak_mb": null,
+   "power": {
+    "scope": null,
+    "gpu_indices": null,
+    "prefill_gpu_power_complete": null,
+    "decode_gpu_power_complete": null,
+    "available": false,
+    "low_confidence": false,
+    "source": "unavailable_remote",
+    "prefill_cpu_w": null,
+    "decode_cpu_w": null,
+    "prefill_gpu_w": null,
+    "prefill_gpu_w_max": null,
+    "decode_gpu_w": null,
+    "decode_gpu_w_max": null,
+    "prefill_system_w_est": null,
+    "decode_system_w_est": null,
+    "prefill_energy_j": null,
+    "decode_energy_j": null,
+    "prefill_system_energy_j_est": null,
+    "decode_system_energy_j_est": null,
+    "j_per_1k_prefill": null,
+    "j_per_1k_prefill_system_est": null,
+    "j_per_token_decode": null,
+    "j_per_token_decode_system_est": null,
+    "prefill_gpu_util": null,
+    "decode_gpu_util": null,
+    "prefill_cpu_util": null,
+    "decode_cpu_util": null,
+    "temp_c_max": null,
+    "clock_mhz_avg": null,
+    "samples": 0,
+    "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown"
+   },
+   "per_request_context_length": 11268,
+   "requested_total_context": 11268,
+   "load_parallel_capacity": null,
+   "context_policy": "provider_managed",
+   "load_reused": false,
+   "chars_per_token_after": 4.9403,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "UD-IQ4_XS",
+     "source": "model_identifier",
+     "user_reported": "unknown",
+     "method": "UD",
+     "method_source": "model_identifier"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "525c3dd75b668ba4564907a5575370ad841d0742d2f1bae402d863dceda6a5c4"
+   },
+   "configuration_id": "525c3dd75b668ba4564907a5575370ad841d0742d2f1bae402d863dceda6a5c4",
+   "mtp_source": "unknown; externally managed",
+   "context_control": "external",
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+   "target_tokens": 20000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 21768,
+   "context_length": null,
+   "gpu_offload": "externally_managed",
+   "quantization": "UD-IQ4_XS",
+   "quantization_source": "model_identifier",
+   "quantization_method": "UD",
+   "quantization_method_source": "model_identifier",
+   "architecture": null,
+   "params": null,
+   "load_s": null,
+   "prompt_chars": 98663,
+   "corpus_wraps": 0,
+   "nonce": "66a456064deb",
+   "max_tokens": 256,
+   "reasoning_disabled": null,
+   "timestamp": "2026-11-14T00:58:20+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "ok",
+   "prompt_tokens": 18998,
+   "completion_tokens": 189,
+   "completion_tokens_estimated": false,
+   "cached_prompt_tokens": 0,
+   "metric_sources": {
+    "ttft_s": "client_monotonic_clock_to_first_observed_output",
+    "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+    "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+    "completion_tokens": "server_usage"
+   },
+   "reported_timings": {},
+   "timing_scope": {
+    "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+    "phase_protocol": "observed-output-phases-v2",
+    "decode_end_boundary": "last_observed_nonempty_output",
+    "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+    "first_output_kind": "content",
+    "observed_output_kinds": [
+     "content"
+    ],
+    "empty_deltas_before_output": 0,
+    "reasoning_streamed": false,
+    "reasoning_token_count_source": "unavailable",
+    "requested_reasoning_effort": "none",
+    "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+    "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+    "decode_count_estimated_boundary": true,
+    "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+   },
+   "phase_protocol": "observed-output-phases-v2",
+   "decode_token_count": 188,
+   "reasoning_tokens": null,
+   "target_error_pct": -5.01,
+   "ttft_s": 17.118439300000034,
+   "decode_s": 6.676442899999984,
+   "wall_s": 23.79578250000003,
+   "response_tail_s": 0.0009003000000120664,
+   "prefill_tps": 1109.7974334611195,
+   "decode_tps": 28.158707086373862,
+   "group_power": {
+    "available": false,
+    "source": "unavailable_remote"
+   },
+   "finish_reason": "stop",
+   "sample_text": "This report outlines the maturation of agentic AI by October 2026, noting that successful deployments rely on single-model loops with robust scaffolding rather than complex multi-agent societies. Key advancements include inference-time compute scaling and context engineering, which enable long-horizon tasks like code refactoring",
+   "vram_after_load_mb": null,
+   "vram_peak_mb": null,
+   "power": {
+    "scope": null,
+    "gpu_indices": null,
+    "prefill_gpu_power_complete": null,
+    "decode_gpu_power_complete": null,
+    "available": false,
+    "low_confidence": false,
+    "source": "unavailable_remote",
+    "prefill_cpu_w": null,
+    "decode_cpu_w": null,
+    "prefill_gpu_w": null,
+    "prefill_gpu_w_max": null,
+    "decode_gpu_w": null,
+    "decode_gpu_w_max": null,
+    "prefill_system_w_est": null,
+    "decode_system_w_est": null,
+    "prefill_energy_j": null,
+    "decode_energy_j": null,
+    "prefill_system_energy_j_est": null,
+    "decode_system_energy_j_est": null,
+    "j_per_1k_prefill": null,
+    "j_per_1k_prefill_system_est": null,
+    "j_per_token_decode": null,
+    "j_per_token_decode_system_est": null,
+    "prefill_gpu_util": null,
+    "decode_gpu_util": null,
+    "prefill_cpu_util": null,
+    "decode_cpu_util": null,
+    "temp_c_max": null,
+    "clock_mhz_avg": null,
+    "samples": 0,
+    "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown"
+   },
+   "per_request_context_length": 21768,
+   "requested_total_context": 21768,
+   "load_parallel_capacity": null,
+   "context_policy": "provider_managed",
+   "load_reused": false,
+   "chars_per_token_after": 5.1048,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "UD-IQ4_XS",
+     "source": "model_identifier",
+     "user_reported": "unknown",
+     "method": "UD",
+     "method_source": "model_identifier"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "525c3dd75b668ba4564907a5575370ad841d0742d2f1bae402d863dceda6a5c4"
+   },
+   "configuration_id": "525c3dd75b668ba4564907a5575370ad841d0742d2f1bae402d863dceda6a5c4",
+   "mtp_source": "unknown; externally managed",
+   "context_control": "external",
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+   "target_tokens": 40000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 42768,
+   "context_length": null,
+   "gpu_offload": "externally_managed",
+   "quantization": "UD-IQ4_XS",
+   "quantization_source": "model_identifier",
+   "quantization_method": "UD",
+   "quantization_method_source": "model_identifier",
+   "architecture": null,
+   "params": null,
+   "load_s": null,
+   "prompt_chars": 204128,
+   "corpus_wraps": 0,
+   "nonce": "17c3a24dd018",
+   "max_tokens": 256,
+   "reasoning_disabled": null,
+   "timestamp": "2026-11-14T00:58:45+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "failed",
+   "fail_kind": "context_overflow",
+   "message": "HTTP 400 from external endpoint: {\"error\":{\"message\":\"request exceeds the context window: prompt (39634 tokens) leaves no room to answer in the context (32768); requests are never truncated\",\"type\":\"invalid_request_error\",\"param\":null,\"code\":null}}",
+   "per_request_context_length": 42768,
+   "requested_total_context": 42768,
+   "load_parallel_capacity": null,
+   "context_policy": "provider_managed",
+   "load_reused": false,
+   "chars_per_token_after": 5.1048,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "UD-IQ4_XS",
+     "source": "model_identifier",
+     "user_reported": "unknown",
+     "method": "UD",
+     "method_source": "model_identifier"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "525c3dd75b668ba4564907a5575370ad841d0742d2f1bae402d863dceda6a5c4"
+   },
+   "configuration_id": "525c3dd75b668ba4564907a5575370ad841d0742d2f1bae402d863dceda6a5c4",
+   "mtp_source": "unknown; externally managed",
+   "context_control": "external",
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+   "target_tokens": 80000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "status": "skipped",
+   "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
+   "quantization": "UD-IQ4_XS",
+   "quantization_source": "model_identifier",
+   "quantization_method": "UD",
+   "quantization_method_source": "model_identifier",
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "UD-IQ4_XS",
+     "source": "model_identifier",
+     "user_reported": "unknown",
+     "method": "UD",
+     "method_source": "model_identifier"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "525c3dd75b668ba4564907a5575370ad841d0742d2f1bae402d863dceda6a5c4"
+   },
+   "configuration_id": "525c3dd75b668ba4564907a5575370ad841d0742d2f1bae402d863dceda6a5c4",
+   "mtp_source": "unknown; externally managed",
+   "context_length": null,
+   "context_control": "external",
+   "reasoning_disabled": null,
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "load_parallel_capacity": null,
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+   "target_tokens": 100000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "status": "skipped",
+   "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
+   "quantization": "UD-IQ4_XS",
+   "quantization_source": "model_identifier",
+   "quantization_method": "UD",
+   "quantization_method_source": "model_identifier",
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "UD-IQ4_XS",
+     "source": "model_identifier",
+     "user_reported": "unknown",
+     "method": "UD",
+     "method_source": "model_identifier"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "525c3dd75b668ba4564907a5575370ad841d0742d2f1bae402d863dceda6a5c4"
+   },
+   "configuration_id": "525c3dd75b668ba4564907a5575370ad841d0742d2f1bae402d863dceda6a5c4",
+   "mtp_source": "unknown; externally managed",
+   "context_length": null,
+   "context_control": "external",
+   "reasoning_disabled": null,
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "load_parallel_capacity": null,
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+   "target_tokens": 120000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "status": "skipped",
+   "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
+   "quantization": "UD-IQ4_XS",
+   "quantization_source": "model_identifier",
+   "quantization_method": "UD",
+   "quantization_method_source": "model_identifier",
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "UD-IQ4_XS",
+     "source": "model_identifier",
+     "user_reported": "unknown",
+     "method": "UD",
+     "method_source": "model_identifier"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "525c3dd75b668ba4564907a5575370ad841d0742d2f1bae402d863dceda6a5c4"
+   },
+   "configuration_id": "525c3dd75b668ba4564907a5575370ad841d0742d2f1bae402d863dceda6a5c4",
+   "mtp_source": "unknown; externally managed",
+   "context_length": null,
+   "context_control": "external",
+   "reasoning_disabled": null,
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "load_parallel_capacity": null,
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.8-flash-next-iq3_s",
+   "target_tokens": 5000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 6018,
+   "context_length": null,
+   "gpu_offload": "externally_managed",
+   "quantization": "IQ3_S",
+   "quantization_source": "model_identifier",
+   "quantization_method": null,
+   "quantization_method_source": "unknown",
+   "architecture": null,
+   "params": null,
+   "load_s": null,
+   "prompt_chars": 22596,
+   "corpus_wraps": 0,
+   "nonce": "db09b148666c",
+   "max_tokens": 256,
+   "reasoning_disabled": null,
+   "timestamp": "2026-11-14T01:01:57+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "ok",
+   "prompt_tokens": 4670,
+   "completion_tokens": 195,
+   "completion_tokens_estimated": false,
+   "cached_prompt_tokens": 0,
+   "metric_sources": {
+    "ttft_s": "client_monotonic_clock_to_first_observed_output",
+    "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+    "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+    "completion_tokens": "server_usage"
+   },
+   "reported_timings": {},
+   "timing_scope": {
+    "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+    "phase_protocol": "observed-output-phases-v2",
+    "decode_end_boundary": "last_observed_nonempty_output",
+    "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+    "first_output_kind": "content",
+    "observed_output_kinds": [
+     "content"
+    ],
+    "empty_deltas_before_output": 0,
+    "reasoning_streamed": false,
+    "reasoning_token_count_source": "unavailable",
+    "requested_reasoning_effort": "none",
+    "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+    "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+    "decode_count_estimated_boundary": true,
+    "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+   },
+   "phase_protocol": "observed-output-phases-v2",
+   "decode_token_count": 194,
+   "reasoning_tokens": null,
+   "target_error_pct": -6.6,
+   "ttft_s": 6.157599499999947,
+   "decode_s": 6.403485499999988,
+   "wall_s": 12.703408699999954,
+   "response_tail_s": 0.14232370000001993,
+   "prefill_tps": 758.412430038693,
+   "decode_tps": 30.296000514095077,
+   "group_power": {
+    "available": false,
+    "source": "unavailable_remote"
+   },
+   "finish_reason": "stop",
+   "sample_text": "The report outlines the maturation of agentic AI by October 2026, noting that successful deployments rely on single-model loops with robust scaffolding rather than complex multi-agent societies. Key advancements include inference-time compute scaling, context engineering techniques like compaction and retrieval, and standardized tool protocols.",
+   "vram_after_load_mb": null,
+   "vram_peak_mb": null,
+   "power": {
+    "scope": null,
+    "gpu_indices": null,
+    "prefill_gpu_power_complete": null,
+    "decode_gpu_power_complete": null,
+    "available": false,
+    "low_confidence": false,
+    "source": "unavailable_remote",
+    "prefill_cpu_w": null,
+    "decode_cpu_w": null,
+    "prefill_gpu_w": null,
+    "prefill_gpu_w_max": null,
+    "decode_gpu_w": null,
+    "decode_gpu_w_max": null,
+    "prefill_system_w_est": null,
+    "decode_system_w_est": null,
+    "prefill_energy_j": null,
+    "decode_energy_j": null,
+    "prefill_system_energy_j_est": null,
+    "decode_system_energy_j_est": null,
+    "j_per_1k_prefill": null,
+    "j_per_1k_prefill_system_est": null,
+    "j_per_token_decode": null,
+    "j_per_token_decode_system_est": null,
+    "prefill_gpu_util": null,
+    "decode_gpu_util": null,
+    "prefill_cpu_util": null,
+    "decode_cpu_util": null,
+    "temp_c_max": null,
+    "clock_mhz_avg": null,
+    "samples": 0,
+    "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown"
+   },
+   "per_request_context_length": 6018,
+   "requested_total_context": 6018,
+   "load_parallel_capacity": null,
+   "context_policy": "provider_managed",
+   "load_reused": false,
+   "chars_per_token_after": 4.7551,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.8-flash-next-iq3_s",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.8-flash-next-iq3_s",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "IQ3_S",
+     "source": "model_identifier",
+     "user_reported": "unknown"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "035bfc3372771e89f69f1de3c579530f042425bc2fb12c2d9f69dabfa7373f81"
+   },
+   "configuration_id": "035bfc3372771e89f69f1de3c579530f042425bc2fb12c2d9f69dabfa7373f81",
+   "mtp_source": "unknown; externally managed",
+   "context_control": "external",
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.8-flash-next-iq3_s",
+   "target_tokens": 10000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 11268,
+   "context_length": null,
+   "gpu_offload": "externally_managed",
+   "quantization": "IQ3_S",
+   "quantization_source": "model_identifier",
+   "quantization_method": null,
+   "quantization_method_source": "unknown",
+   "architecture": null,
+   "params": null,
+   "load_s": null,
+   "prompt_chars": 47419,
+   "corpus_wraps": 0,
+   "nonce": "32b0d6a3f80d",
+   "max_tokens": 256,
+   "reasoning_disabled": null,
+   "timestamp": "2026-11-14T01:02:11+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "ok",
+   "prompt_tokens": 9410,
+   "completion_tokens": 188,
+   "completion_tokens_estimated": false,
+   "cached_prompt_tokens": 0,
+   "metric_sources": {
+    "ttft_s": "client_monotonic_clock_to_first_observed_output",
+    "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+    "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+    "completion_tokens": "server_usage"
+   },
+   "reported_timings": {},
+   "timing_scope": {
+    "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+    "phase_protocol": "observed-output-phases-v2",
+    "decode_end_boundary": "last_observed_nonempty_output",
+    "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+    "first_output_kind": "content",
+    "observed_output_kinds": [
+     "content"
+    ],
+    "empty_deltas_before_output": 0,
+    "reasoning_streamed": false,
+    "reasoning_token_count_source": "unavailable",
+    "requested_reasoning_effort": "none",
+    "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+    "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+    "decode_count_estimated_boundary": true,
+    "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+   },
+   "phase_protocol": "observed-output-phases-v2",
+   "decode_token_count": 187,
+   "reasoning_tokens": null,
+   "target_error_pct": -5.9,
+   "ttft_s": 10.456182399999989,
+   "decode_s": 4.187504200000035,
+   "wall_s": 14.644657800000004,
+   "response_tail_s": 0.000971199999980854,
+   "prefill_tps": 899.9460453176496,
+   "decode_tps": 44.65667162793495,
+   "group_power": {
+    "available": false,
+    "source": "unavailable_remote"
+   },
+   "finish_reason": "stop",
+   "sample_text": "The report outlines the maturation of agentic AI by October 2026, noting that successful deployments rely on simple, single-model loops with robust engineering scaffolding rather than complex multi-agent societies. Key advancements include inference-time compute scaling, context engineering techniques like compaction and retrieval, and standardized",
+   "vram_after_load_mb": null,
+   "vram_peak_mb": null,
+   "power": {
+    "scope": null,
+    "gpu_indices": null,
+    "prefill_gpu_power_complete": null,
+    "decode_gpu_power_complete": null,
+    "available": false,
+    "low_confidence": false,
+    "source": "unavailable_remote",
+    "prefill_cpu_w": null,
+    "decode_cpu_w": null,
+    "prefill_gpu_w": null,
+    "prefill_gpu_w_max": null,
+    "decode_gpu_w": null,
+    "decode_gpu_w_max": null,
+    "prefill_system_w_est": null,
+    "decode_system_w_est": null,
+    "prefill_energy_j": null,
+    "decode_energy_j": null,
+    "prefill_system_energy_j_est": null,
+    "decode_system_energy_j_est": null,
+    "j_per_1k_prefill": null,
+    "j_per_1k_prefill_system_est": null,
+    "j_per_token_decode": null,
+    "j_per_token_decode_system_est": null,
+    "prefill_gpu_util": null,
+    "decode_gpu_util": null,
+    "prefill_cpu_util": null,
+    "decode_cpu_util": null,
+    "temp_c_max": null,
+    "clock_mhz_avg": null,
+    "samples": 0,
+    "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown"
+   },
+   "per_request_context_length": 11268,
+   "requested_total_context": 11268,
+   "load_parallel_capacity": null,
+   "context_policy": "provider_managed",
+   "load_reused": false,
+   "chars_per_token_after": 4.9398,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.8-flash-next-iq3_s",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.8-flash-next-iq3_s",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "IQ3_S",
+     "source": "model_identifier",
+     "user_reported": "unknown"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "035bfc3372771e89f69f1de3c579530f042425bc2fb12c2d9f69dabfa7373f81"
+   },
+   "configuration_id": "035bfc3372771e89f69f1de3c579530f042425bc2fb12c2d9f69dabfa7373f81",
+   "mtp_source": "unknown; externally managed",
+   "context_control": "external",
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.8-flash-next-iq3_s",
+   "target_tokens": 20000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 21768,
+   "context_length": null,
+   "gpu_offload": "externally_managed",
+   "quantization": "IQ3_S",
+   "quantization_source": "model_identifier",
+   "quantization_method": null,
+   "quantization_method_source": "unknown",
+   "architecture": null,
+   "params": null,
+   "load_s": null,
+   "prompt_chars": 98663,
+   "corpus_wraps": 0,
+   "nonce": "096d0138dfbf",
+   "max_tokens": 256,
+   "reasoning_disabled": null,
+   "timestamp": "2026-11-14T01:02:27+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "ok",
+   "prompt_tokens": 18998,
+   "completion_tokens": 183,
+   "completion_tokens_estimated": false,
+   "cached_prompt_tokens": 0,
+   "metric_sources": {
+    "ttft_s": "client_monotonic_clock_to_first_observed_output",
+    "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+    "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+    "completion_tokens": "server_usage"
+   },
+   "reported_timings": {},
+   "timing_scope": {
+    "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+    "phase_protocol": "observed-output-phases-v2",
+    "decode_end_boundary": "last_observed_nonempty_output",
+    "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+    "first_output_kind": "content",
+    "observed_output_kinds": [
+     "content"
+    ],
+    "empty_deltas_before_output": 0,
+    "reasoning_streamed": false,
+    "reasoning_token_count_source": "unavailable",
+    "requested_reasoning_effort": "none",
+    "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+    "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+    "decode_count_estimated_boundary": true,
+    "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+   },
+   "phase_protocol": "observed-output-phases-v2",
+   "decode_token_count": 182,
+   "reasoning_tokens": null,
+   "target_error_pct": -5.01,
+   "ttft_s": 15.209103700000014,
+   "decode_s": 3.976700600000072,
+   "wall_s": 19.186596200000054,
+   "response_tail_s": 0.000791899999967427,
+   "prefill_tps": 1249.1202883967437,
+   "decode_tps": 45.766583483804816,
+   "group_power": {
+    "available": false,
+    "source": "unavailable_remote"
+   },
+   "finish_reason": "stop",
+   "sample_text": "The report outlines the maturation of agentic AI by October 2026, noting that successful deployments rely on simple, single-model loops with robust scaffolding rather than complex multi-agent societies. Key advancements include inference-time compute scaling, context engineering techniques like compaction and retrieval, and standardized tool",
+   "vram_after_load_mb": null,
+   "vram_peak_mb": null,
+   "power": {
+    "scope": null,
+    "gpu_indices": null,
+    "prefill_gpu_power_complete": null,
+    "decode_gpu_power_complete": null,
+    "available": false,
+    "low_confidence": false,
+    "source": "unavailable_remote",
+    "prefill_cpu_w": null,
+    "decode_cpu_w": null,
+    "prefill_gpu_w": null,
+    "prefill_gpu_w_max": null,
+    "decode_gpu_w": null,
+    "decode_gpu_w_max": null,
+    "prefill_system_w_est": null,
+    "decode_system_w_est": null,
+    "prefill_energy_j": null,
+    "decode_energy_j": null,
+    "prefill_system_energy_j_est": null,
+    "decode_system_energy_j_est": null,
+    "j_per_1k_prefill": null,
+    "j_per_1k_prefill_system_est": null,
+    "j_per_token_decode": null,
+    "j_per_token_decode_system_est": null,
+    "prefill_gpu_util": null,
+    "decode_gpu_util": null,
+    "prefill_cpu_util": null,
+    "decode_cpu_util": null,
+    "temp_c_max": null,
+    "clock_mhz_avg": null,
+    "samples": 0,
+    "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown"
+   },
+   "per_request_context_length": 21768,
+   "requested_total_context": 21768,
+   "load_parallel_capacity": null,
+   "context_policy": "provider_managed",
+   "load_reused": false,
+   "chars_per_token_after": 5.1046,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.8-flash-next-iq3_s",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.8-flash-next-iq3_s",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "IQ3_S",
+     "source": "model_identifier",
+     "user_reported": "unknown"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "035bfc3372771e89f69f1de3c579530f042425bc2fb12c2d9f69dabfa7373f81"
+   },
+   "configuration_id": "035bfc3372771e89f69f1de3c579530f042425bc2fb12c2d9f69dabfa7373f81",
+   "mtp_source": "unknown; externally managed",
+   "context_control": "external",
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.8-flash-next-iq3_s",
+   "target_tokens": 40000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 42768,
+   "context_length": null,
+   "gpu_offload": "externally_managed",
+   "quantization": "IQ3_S",
+   "quantization_source": "model_identifier",
+   "quantization_method": null,
+   "quantization_method_source": "unknown",
+   "architecture": null,
+   "params": null,
+   "load_s": null,
+   "prompt_chars": 204128,
+   "corpus_wraps": 0,
+   "nonce": "9cbe27ea6a84",
+   "max_tokens": 256,
+   "reasoning_disabled": null,
+   "timestamp": "2026-11-14T01:02:48+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "ok",
+   "prompt_tokens": 39633,
+   "completion_tokens": 213,
+   "completion_tokens_estimated": false,
+   "cached_prompt_tokens": 0,
+   "metric_sources": {
+    "ttft_s": "client_monotonic_clock_to_first_observed_output",
+    "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+    "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+    "completion_tokens": "server_usage"
+   },
+   "reported_timings": {},
+   "timing_scope": {
+    "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+    "phase_protocol": "observed-output-phases-v2",
+    "decode_end_boundary": "last_observed_nonempty_output",
+    "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+    "first_output_kind": "content",
+    "observed_output_kinds": [
+     "content"
+    ],
+    "empty_deltas_before_output": 0,
+    "reasoning_streamed": false,
+    "reasoning_token_count_source": "unavailable",
+    "requested_reasoning_effort": "none",
+    "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+    "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+    "decode_count_estimated_boundary": true,
+    "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+   },
+   "phase_protocol": "observed-output-phases-v2",
+   "decode_token_count": 212,
+   "reasoning_tokens": null,
+   "target_error_pct": -0.9175,
+   "ttft_s": 26.59109019999994,
+   "decode_s": 4.518242100000066,
+   "wall_s": 31.11021470000003,
+   "response_tail_s": 0.0008824000000231536,
+   "prefill_tps": 1490.4616434267177,
+   "decode_tps": 46.92090315390512,
+   "group_power": {
+    "available": false,
+    "source": "unavailable_remote"
+   },
+   "finish_reason": "stop",
+   "sample_text": "This report outlines the maturation of agentic AI by October 2026, noting that successful deployments rely on simple, single-model loops with robust scaffolding rather than complex multi-agent societies. Key advancements include inference-time compute scaling, context engineering techniques like compaction and retrieval, and standardized tool",
+   "vram_after_load_mb": null,
+   "vram_peak_mb": null,
+   "power": {
+    "scope": null,
+    "gpu_indices": null,
+    "prefill_gpu_power_complete": null,
+    "decode_gpu_power_complete": null,
+    "available": false,
+    "low_confidence": false,
+    "source": "unavailable_remote",
+    "prefill_cpu_w": null,
+    "decode_cpu_w": null,
+    "prefill_gpu_w": null,
+    "prefill_gpu_w_max": null,
+    "decode_gpu_w": null,
+    "decode_gpu_w_max": null,
+    "prefill_system_w_est": null,
+    "decode_system_w_est": null,
+    "prefill_energy_j": null,
+    "decode_energy_j": null,
+    "prefill_system_energy_j_est": null,
+    "decode_system_energy_j_est": null,
+    "j_per_1k_prefill": null,
+    "j_per_1k_prefill_system_est": null,
+    "j_per_token_decode": null,
+    "j_per_token_decode_system_est": null,
+    "prefill_gpu_util": null,
+    "decode_gpu_util": null,
+    "prefill_cpu_util": null,
+    "decode_cpu_util": null,
+    "temp_c_max": null,
+    "clock_mhz_avg": null,
+    "samples": 0,
+    "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown"
+   },
+   "per_request_context_length": 42768,
+   "requested_total_context": 42768,
+   "load_parallel_capacity": null,
+   "context_policy": "provider_managed",
+   "load_reused": false,
+   "chars_per_token_after": 5.1344,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.8-flash-next-iq3_s",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.8-flash-next-iq3_s",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "IQ3_S",
+     "source": "model_identifier",
+     "user_reported": "unknown"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "035bfc3372771e89f69f1de3c579530f042425bc2fb12c2d9f69dabfa7373f81"
+   },
+   "configuration_id": "035bfc3372771e89f69f1de3c579530f042425bc2fb12c2d9f69dabfa7373f81",
+   "mtp_source": "unknown; externally managed",
+   "context_control": "external",
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.8-flash-next-iq3_s",
+   "target_tokens": 80000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 84768,
+   "context_length": null,
+   "gpu_offload": "externally_managed",
+   "quantization": "IQ3_S",
+   "quantization_source": "model_identifier",
+   "quantization_method": null,
+   "quantization_method_source": "unknown",
+   "architecture": null,
+   "params": null,
+   "load_s": null,
+   "prompt_chars": 410750,
+   "corpus_wraps": 1,
+   "nonce": "b06ec609af50",
+   "max_tokens": 256,
+   "reasoning_disabled": null,
+   "timestamp": "2026-11-14T01:03:20+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "failed",
+   "fail_kind": "context_overflow",
+   "message": "HTTP 400 from external endpoint: {\"error\":{\"message\":\"request exceeds the context window: prompt (81033 tokens) leaves no room to answer in the context (65536); requests are never truncated\",\"type\":\"invalid_request_error\",\"param\":null,\"code\":null}}",
+   "per_request_context_length": 84768,
+   "requested_total_context": 84768,
+   "load_parallel_capacity": null,
+   "context_policy": "provider_managed",
+   "load_reused": false,
+   "chars_per_token_after": 5.1344,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.8-flash-next-iq3_s",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.8-flash-next-iq3_s",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "IQ3_S",
+     "source": "model_identifier",
+     "user_reported": "unknown"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "035bfc3372771e89f69f1de3c579530f042425bc2fb12c2d9f69dabfa7373f81"
+   },
+   "configuration_id": "035bfc3372771e89f69f1de3c579530f042425bc2fb12c2d9f69dabfa7373f81",
+   "mtp_source": "unknown; externally managed",
+   "context_control": "external",
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.8-flash-next-iq3_s",
+   "target_tokens": 100000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "status": "skipped",
+   "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
+   "quantization": "IQ3_S",
+   "quantization_source": "model_identifier",
+   "quantization_method": null,
+   "quantization_method_source": "unknown",
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.8-flash-next-iq3_s",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.8-flash-next-iq3_s",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "IQ3_S",
+     "source": "model_identifier",
+     "user_reported": "unknown"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "035bfc3372771e89f69f1de3c579530f042425bc2fb12c2d9f69dabfa7373f81"
+   },
+   "configuration_id": "035bfc3372771e89f69f1de3c579530f042425bc2fb12c2d9f69dabfa7373f81",
+   "mtp_source": "unknown; externally managed",
+   "context_length": null,
+   "context_control": "external",
+   "reasoning_disabled": null,
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "load_parallel_capacity": null,
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.8-flash-next-iq3_s",
+   "target_tokens": 120000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "status": "skipped",
+   "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
+   "quantization": "IQ3_S",
+   "quantization_source": "model_identifier",
+   "quantization_method": null,
+   "quantization_method_source": "unknown",
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.8-flash-next-iq3_s",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.8-flash-next-iq3_s",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "IQ3_S",
+     "source": "model_identifier",
+     "user_reported": "unknown"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "035bfc3372771e89f69f1de3c579530f042425bc2fb12c2d9f69dabfa7373f81"
+   },
+   "configuration_id": "035bfc3372771e89f69f1de3c579530f042425bc2fb12c2d9f69dabfa7373f81",
+   "mtp_source": "unknown; externally managed",
+   "context_length": null,
+   "context_control": "external",
+   "reasoning_disabled": null,
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "load_parallel_capacity": null,
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.6-35b-a3b-ud-q4_k_xl",
+   "target_tokens": 5000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 6018,
+   "context_length": null,
+   "gpu_offload": "externally_managed",
+   "quantization": "UD-Q4_K_XL",
+   "quantization_source": "model_identifier",
+   "quantization_method": "UD",
+   "quantization_method_source": "model_identifier",
+   "architecture": null,
+   "params": null,
+   "load_s": null,
+   "prompt_chars": 22596,
+   "corpus_wraps": 0,
+   "nonce": "031cfeeb8895",
+   "max_tokens": 256,
+   "reasoning_disabled": null,
+   "timestamp": "2026-11-14T01:06:06+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "ok",
+   "prompt_tokens": 4670,
+   "completion_tokens": 195,
+   "completion_tokens_estimated": false,
+   "cached_prompt_tokens": 0,
+   "metric_sources": {
+    "ttft_s": "client_monotonic_clock_to_first_observed_output",
+    "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+    "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+    "completion_tokens": "server_usage"
+   },
+   "reported_timings": {},
+   "timing_scope": {
+    "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+    "phase_protocol": "observed-output-phases-v2",
+    "decode_end_boundary": "last_observed_nonempty_output",
+    "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+    "first_output_kind": "content",
+    "observed_output_kinds": [
+     "content"
+    ],
+    "empty_deltas_before_output": 0,
+    "reasoning_streamed": false,
+    "reasoning_token_count_source": "unavailable",
+    "requested_reasoning_effort": "none",
+    "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+    "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+    "decode_count_estimated_boundary": true,
+    "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+   },
+   "phase_protocol": "observed-output-phases-v2",
+   "decode_token_count": 194,
+   "reasoning_tokens": null,
+   "target_error_pct": -6.6,
+   "ttft_s": 11.551618399999938,
+   "decode_s": 4.265381500000103,
+   "wall_s": 15.849760299999957,
+   "response_tail_s": 0.032760399999915535,
+   "prefill_tps": 404.272357196289,
+   "decode_tps": 45.48244981134637,
+   "group_power": {
+    "available": false,
+    "source": "unavailable_remote"
+   },
+   "finish_reason": "stop",
+   "sample_text": "The October 2026 report on Agentic AI identifies a dominant architecture centered on single models executing tight loops with well-defined tools, rather than complex multi-agent societies. Success now hinges less on raw model scale and more on inference-time compute, context engineering, and robust scaffolding like idemp",
+   "vram_after_load_mb": null,
+   "vram_peak_mb": null,
+   "power": {
+    "scope": null,
+    "gpu_indices": null,
+    "prefill_gpu_power_complete": null,
+    "decode_gpu_power_complete": null,
+    "available": false,
+    "low_confidence": false,
+    "source": "unavailable_remote",
+    "prefill_cpu_w": null,
+    "decode_cpu_w": null,
+    "prefill_gpu_w": null,
+    "prefill_gpu_w_max": null,
+    "decode_gpu_w": null,
+    "decode_gpu_w_max": null,
+    "prefill_system_w_est": null,
+    "decode_system_w_est": null,
+    "prefill_energy_j": null,
+    "decode_energy_j": null,
+    "prefill_system_energy_j_est": null,
+    "decode_system_energy_j_est": null,
+    "j_per_1k_prefill": null,
+    "j_per_1k_prefill_system_est": null,
+    "j_per_token_decode": null,
+    "j_per_token_decode_system_est": null,
+    "prefill_gpu_util": null,
+    "decode_gpu_util": null,
+    "prefill_cpu_util": null,
+    "decode_cpu_util": null,
+    "temp_c_max": null,
+    "clock_mhz_avg": null,
+    "samples": 0,
+    "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown"
+   },
+   "per_request_context_length": 6018,
+   "requested_total_context": 6018,
+   "load_parallel_capacity": null,
+   "context_policy": "provider_managed",
+   "load_reused": false,
+   "chars_per_token_after": 4.7551,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "UD-Q4_K_XL",
+     "source": "model_identifier",
+     "user_reported": "unknown",
+     "method": "UD",
+     "method_source": "model_identifier"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "dcf656b7896acc6b8cc237c8baab99b967d8ae5beb490762ce83cc14af857b84"
+   },
+   "configuration_id": "dcf656b7896acc6b8cc237c8baab99b967d8ae5beb490762ce83cc14af857b84",
+   "mtp_source": "unknown; externally managed",
+   "context_control": "external",
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.6-35b-a3b-ud-q4_k_xl",
+   "target_tokens": 10000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 11268,
+   "context_length": null,
+   "gpu_offload": "externally_managed",
+   "quantization": "UD-Q4_K_XL",
+   "quantization_source": "model_identifier",
+   "quantization_method": "UD",
+   "quantization_method_source": "model_identifier",
+   "architecture": null,
+   "params": null,
+   "load_s": null,
+   "prompt_chars": 47419,
+   "corpus_wraps": 0,
+   "nonce": "541d7dbc1cf1",
+   "max_tokens": 256,
+   "reasoning_disabled": null,
+   "timestamp": "2026-11-14T01:06:22+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "ok",
+   "prompt_tokens": 9407,
+   "completion_tokens": 200,
+   "completion_tokens_estimated": false,
+   "cached_prompt_tokens": 0,
+   "metric_sources": {
+    "ttft_s": "client_monotonic_clock_to_first_observed_output",
+    "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+    "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+    "completion_tokens": "server_usage"
+   },
+   "reported_timings": {},
+   "timing_scope": {
+    "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+    "phase_protocol": "observed-output-phases-v2",
+    "decode_end_boundary": "last_observed_nonempty_output",
+    "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+    "first_output_kind": "content",
+    "observed_output_kinds": [
+     "content"
+    ],
+    "empty_deltas_before_output": 0,
+    "reasoning_streamed": false,
+    "reasoning_token_count_source": "unavailable",
+    "requested_reasoning_effort": "none",
+    "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+    "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+    "decode_count_estimated_boundary": true,
+    "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+   },
+   "phase_protocol": "observed-output-phases-v2",
+   "decode_token_count": 199,
+   "reasoning_tokens": null,
+   "target_error_pct": -5.93,
+   "ttft_s": 19.102247000000034,
+   "decode_s": 4.571684199999936,
+   "wall_s": 23.70567749999998,
+   "response_tail_s": 0.03174630000000889,
+   "prefill_tps": 492.45515462133767,
+   "decode_tps": 43.52881592302521,
+   "group_power": {
+    "available": false,
+    "source": "unavailable_remote"
+   },
+   "finish_reason": "stop",
+   "sample_text": "The October 2026 report on Agentic AI identifies a mature landscape dominated by single-model loops with well-defined tools, rather than complex multi-agent societies. Success now hinges less on raw model scale and more on inference-time compute, context engineering, and robust scaffolding like retries and audit logs",
+   "vram_after_load_mb": null,
+   "vram_peak_mb": null,
+   "power": {
+    "scope": null,
+    "gpu_indices": null,
+    "prefill_gpu_power_complete": null,
+    "decode_gpu_power_complete": null,
+    "available": false,
+    "low_confidence": false,
+    "source": "unavailable_remote",
+    "prefill_cpu_w": null,
+    "decode_cpu_w": null,
+    "prefill_gpu_w": null,
+    "prefill_gpu_w_max": null,
+    "decode_gpu_w": null,
+    "decode_gpu_w_max": null,
+    "prefill_system_w_est": null,
+    "decode_system_w_est": null,
+    "prefill_energy_j": null,
+    "decode_energy_j": null,
+    "prefill_system_energy_j_est": null,
+    "decode_system_energy_j_est": null,
+    "j_per_1k_prefill": null,
+    "j_per_1k_prefill_system_est": null,
+    "j_per_token_decode": null,
+    "j_per_token_decode_system_est": null,
+    "prefill_gpu_util": null,
+    "decode_gpu_util": null,
+    "prefill_cpu_util": null,
+    "decode_cpu_util": null,
+    "temp_c_max": null,
+    "clock_mhz_avg": null,
+    "samples": 0,
+    "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown"
+   },
+   "per_request_context_length": 11268,
+   "requested_total_context": 11268,
+   "load_parallel_capacity": null,
+   "context_policy": "provider_managed",
+   "load_reused": false,
+   "chars_per_token_after": 4.9408,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "UD-Q4_K_XL",
+     "source": "model_identifier",
+     "user_reported": "unknown",
+     "method": "UD",
+     "method_source": "model_identifier"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "dcf656b7896acc6b8cc237c8baab99b967d8ae5beb490762ce83cc14af857b84"
+   },
+   "configuration_id": "dcf656b7896acc6b8cc237c8baab99b967d8ae5beb490762ce83cc14af857b84",
+   "mtp_source": "unknown; externally managed",
+   "context_control": "external",
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.6-35b-a3b-ud-q4_k_xl",
+   "target_tokens": 20000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 21768,
+   "context_length": null,
+   "gpu_offload": "externally_managed",
+   "quantization": "UD-Q4_K_XL",
+   "quantization_source": "model_identifier",
+   "quantization_method": "UD",
+   "quantization_method_source": "model_identifier",
+   "architecture": null,
+   "params": null,
+   "load_s": null,
+   "prompt_chars": 98663,
+   "corpus_wraps": 0,
+   "nonce": "1ddff30aa975",
+   "max_tokens": 256,
+   "reasoning_disabled": null,
+   "timestamp": "2026-11-14T01:06:47+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "ok",
+   "prompt_tokens": 18997,
+   "completion_tokens": 202,
+   "completion_tokens_estimated": false,
+   "cached_prompt_tokens": 0,
+   "metric_sources": {
+    "ttft_s": "client_monotonic_clock_to_first_observed_output",
+    "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+    "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+    "completion_tokens": "server_usage"
+   },
+   "reported_timings": {},
+   "timing_scope": {
+    "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+    "phase_protocol": "observed-output-phases-v2",
+    "decode_end_boundary": "last_observed_nonempty_output",
+    "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+    "first_output_kind": "content",
+    "observed_output_kinds": [
+     "content"
+    ],
+    "empty_deltas_before_output": 0,
+    "reasoning_streamed": false,
+    "reasoning_token_count_source": "unavailable",
+    "requested_reasoning_effort": "none",
+    "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+    "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+    "decode_count_estimated_boundary": true,
+    "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+   },
+   "phase_protocol": "observed-output-phases-v2",
+   "decode_token_count": 201,
+   "reasoning_tokens": null,
+   "target_error_pct": -5.015,
+   "ttft_s": 37.706090399999994,
+   "decode_s": 5.417711700000041,
+   "wall_s": 43.1603487000001,
+   "response_tail_s": 0.036546600000065155,
+   "prefill_tps": 503.81781294408614,
+   "decode_tps": 37.10053453010401,
+   "group_power": {
+    "available": false,
+    "source": "unavailable_remote"
+   },
+   "finish_reason": "stop",
+   "sample_text": "The October 2026 report on Agentic AI identifies a mature industry landscape dominated by single-model loops with well-defined tools, rather than complex multi-agent societies. Success now hinges less on raw model scale and more on inference-time compute, context engineering, and robust scaffolding like retries and audit",
+   "vram_after_load_mb": null,
+   "vram_peak_mb": null,
+   "power": {
+    "scope": null,
+    "gpu_indices": null,
+    "prefill_gpu_power_complete": null,
+    "decode_gpu_power_complete": null,
+    "available": false,
+    "low_confidence": false,
+    "source": "unavailable_remote",
+    "prefill_cpu_w": null,
+    "decode_cpu_w": null,
+    "prefill_gpu_w": null,
+    "prefill_gpu_w_max": null,
+    "decode_gpu_w": null,
+    "decode_gpu_w_max": null,
+    "prefill_system_w_est": null,
+    "decode_system_w_est": null,
+    "prefill_energy_j": null,
+    "decode_energy_j": null,
+    "prefill_system_energy_j_est": null,
+    "decode_system_energy_j_est": null,
+    "j_per_1k_prefill": null,
+    "j_per_1k_prefill_system_est": null,
+    "j_per_token_decode": null,
+    "j_per_token_decode_system_est": null,
+    "prefill_gpu_util": null,
+    "decode_gpu_util": null,
+    "prefill_cpu_util": null,
+    "decode_cpu_util": null,
+    "temp_c_max": null,
+    "clock_mhz_avg": null,
+    "samples": 0,
+    "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown"
+   },
+   "per_request_context_length": 21768,
+   "requested_total_context": 21768,
+   "load_parallel_capacity": null,
+   "context_policy": "provider_managed",
+   "load_reused": false,
+   "chars_per_token_after": 5.1051,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "UD-Q4_K_XL",
+     "source": "model_identifier",
+     "user_reported": "unknown",
+     "method": "UD",
+     "method_source": "model_identifier"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "dcf656b7896acc6b8cc237c8baab99b967d8ae5beb490762ce83cc14af857b84"
+   },
+   "configuration_id": "dcf656b7896acc6b8cc237c8baab99b967d8ae5beb490762ce83cc14af857b84",
+   "mtp_source": "unknown; externally managed",
+   "context_control": "external",
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.6-35b-a3b-ud-q4_k_xl",
+   "target_tokens": 40000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 42768,
+   "context_length": null,
+   "gpu_offload": "externally_managed",
+   "quantization": "UD-Q4_K_XL",
+   "quantization_source": "model_identifier",
+   "quantization_method": "UD",
+   "quantization_method_source": "model_identifier",
+   "architecture": null,
+   "params": null,
+   "load_s": null,
+   "prompt_chars": 204128,
+   "corpus_wraps": 0,
+   "nonce": "4f8b8384760a",
+   "max_tokens": 256,
+   "reasoning_disabled": null,
+   "timestamp": "2026-11-14T01:07:30+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "ok",
+   "prompt_tokens": 39635,
+   "completion_tokens": 206,
+   "completion_tokens_estimated": false,
+   "cached_prompt_tokens": 0,
+   "metric_sources": {
+    "ttft_s": "client_monotonic_clock_to_first_observed_output",
+    "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+    "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+    "completion_tokens": "server_usage"
+   },
+   "reported_timings": {},
+   "timing_scope": {
+    "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+    "phase_protocol": "observed-output-phases-v2",
+    "decode_end_boundary": "last_observed_nonempty_output",
+    "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+    "first_output_kind": "content",
+    "observed_output_kinds": [
+     "content"
+    ],
+    "empty_deltas_before_output": 0,
+    "reasoning_streamed": false,
+    "reasoning_token_count_source": "unavailable",
+    "requested_reasoning_effort": "none",
+    "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+    "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+    "decode_count_estimated_boundary": true,
+    "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+   },
+   "phase_protocol": "observed-output-phases-v2",
+   "decode_token_count": 205,
+   "reasoning_tokens": null,
+   "target_error_pct": -0.9125,
+   "ttft_s": 79.43432389999998,
+   "decode_s": 8.90283240000008,
+   "wall_s": 88.38902260000009,
+   "response_tail_s": 0.05186630000002879,
+   "prefill_tps": 498.9656618705105,
+   "decode_tps": 23.026379784482764,
+   "group_power": {
+    "available": false,
+    "source": "unavailable_remote"
+   },
+   "finish_reason": "stop",
+   "sample_text": "The October 2026 report on Agentic AI identifies a matured industry landscape dominated by single-model loops with well-defined tools, rather than complex multi-agent societies. Success now hinges less on raw model scale and more on inference-time compute, context engineering, and robust scaffolding like idemp",
+   "vram_after_load_mb": null,
+   "vram_peak_mb": null,
+   "power": {
+    "scope": null,
+    "gpu_indices": null,
+    "prefill_gpu_power_complete": null,
+    "decode_gpu_power_complete": null,
+    "available": false,
+    "low_confidence": false,
+    "source": "unavailable_remote",
+    "prefill_cpu_w": null,
+    "decode_cpu_w": null,
+    "prefill_gpu_w": null,
+    "prefill_gpu_w_max": null,
+    "decode_gpu_w": null,
+    "decode_gpu_w_max": null,
+    "prefill_system_w_est": null,
+    "decode_system_w_est": null,
+    "prefill_energy_j": null,
+    "decode_energy_j": null,
+    "prefill_system_energy_j_est": null,
+    "decode_system_energy_j_est": null,
+    "j_per_1k_prefill": null,
+    "j_per_1k_prefill_system_est": null,
+    "j_per_token_decode": null,
+    "j_per_token_decode_system_est": null,
+    "prefill_gpu_util": null,
+    "decode_gpu_util": null,
+    "prefill_cpu_util": null,
+    "decode_cpu_util": null,
+    "temp_c_max": null,
+    "clock_mhz_avg": null,
+    "samples": 0,
+    "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown"
+   },
+   "per_request_context_length": 42768,
+   "requested_total_context": 42768,
+   "load_parallel_capacity": null,
+   "context_policy": "provider_managed",
+   "load_reused": false,
+   "chars_per_token_after": 5.1344,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "UD-Q4_K_XL",
+     "source": "model_identifier",
+     "user_reported": "unknown",
+     "method": "UD",
+     "method_source": "model_identifier"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "dcf656b7896acc6b8cc237c8baab99b967d8ae5beb490762ce83cc14af857b84"
+   },
+   "configuration_id": "dcf656b7896acc6b8cc237c8baab99b967d8ae5beb490762ce83cc14af857b84",
+   "mtp_source": "unknown; externally managed",
+   "context_control": "external",
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.6-35b-a3b-ud-q4_k_xl",
+   "target_tokens": 80000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 84768,
+   "context_length": null,
+   "gpu_offload": "externally_managed",
+   "quantization": "UD-Q4_K_XL",
+   "quantization_source": "model_identifier",
+   "quantization_method": "UD",
+   "quantization_method_source": "model_identifier",
+   "architecture": null,
+   "params": null,
+   "load_s": null,
+   "prompt_chars": 410750,
+   "corpus_wraps": 1,
+   "nonce": "135911e56aa4",
+   "max_tokens": 256,
+   "reasoning_disabled": null,
+   "timestamp": "2026-11-14T01:08:59+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "failed",
+   "fail_kind": "context_overflow",
+   "message": "HTTP 400 from external endpoint: {\"error\":{\"message\":\"request exceeds the context window: prompt (81035 tokens) leaves no room to answer in the context (65536); requests are never truncated\",\"type\":\"invalid_request_error\",\"param\":null,\"code\":null}}",
+   "per_request_context_length": 84768,
+   "requested_total_context": 84768,
+   "load_parallel_capacity": null,
+   "context_policy": "provider_managed",
+   "load_reused": false,
+   "chars_per_token_after": 5.1344,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "UD-Q4_K_XL",
+     "source": "model_identifier",
+     "user_reported": "unknown",
+     "method": "UD",
+     "method_source": "model_identifier"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "dcf656b7896acc6b8cc237c8baab99b967d8ae5beb490762ce83cc14af857b84"
+   },
+   "configuration_id": "dcf656b7896acc6b8cc237c8baab99b967d8ae5beb490762ce83cc14af857b84",
+   "mtp_source": "unknown; externally managed",
+   "context_control": "external",
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.6-35b-a3b-ud-q4_k_xl",
+   "target_tokens": 100000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "status": "skipped",
+   "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
+   "quantization": "UD-Q4_K_XL",
+   "quantization_source": "model_identifier",
+   "quantization_method": "UD",
+   "quantization_method_source": "model_identifier",
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "UD-Q4_K_XL",
+     "source": "model_identifier",
+     "user_reported": "unknown",
+     "method": "UD",
+     "method_source": "model_identifier"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "dcf656b7896acc6b8cc237c8baab99b967d8ae5beb490762ce83cc14af857b84"
+   },
+   "configuration_id": "dcf656b7896acc6b8cc237c8baab99b967d8ae5beb490762ce83cc14af857b84",
+   "mtp_source": "unknown; externally managed",
+   "context_length": null,
+   "context_control": "external",
+   "reasoning_disabled": null,
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "load_parallel_capacity": null,
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  },
+  {
+   "model": "qwen3.6-35b-a3b-ud-q4_k_xl",
+   "target_tokens": 120000,
+   "mtp": null,
+   "concurrency": 1,
+   "repeat": 0,
+   "status": "skipped",
+   "fail_kind": "skipped_after_failure",
+   "message": "Skipped: a smaller context already failed for this model and concurrency.",
+   "quantization": "UD-Q4_K_XL",
+   "quantization_source": "model_identifier",
+   "quantization_method": "UD",
+   "quantization_method_source": "model_identifier",
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "provider": "openai",
+     "source": "detected",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "UD-Q4_K_XL",
+     "source": "model_identifier",
+     "user_reported": "unknown",
+     "method": "UD",
+     "method_source": "model_identifier"
+    },
+    "engine": {
+     "value": "Strata",
+     "source": "endpoint_reported"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "unknown",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "dcf656b7896acc6b8cc237c8baab99b967d8ae5beb490762ce83cc14af857b84"
+   },
+   "configuration_id": "dcf656b7896acc6b8cc237c8baab99b967d8ae5beb490762ce83cc14af857b84",
+   "mtp_source": "unknown; externally managed",
+   "context_length": null,
+   "context_control": "external",
+   "reasoning_disabled": null,
+   "reasoning_control": "effective setting unknown; explicit standard effort request only",
+   "load_parallel_capacity": null,
+   "context_budget_source": "client planning estimate; not a verified server allocation",
+   "session_id": "953978f786ab"
+  }
+ ],
+ "corpus": {
+  "chars": 407860,
+  "approx_tokens": 88665,
+  "sha256": "ce2a239612d5937d317532040bd62253d9949fb2869e82d49bcd13dcb18f6ee5"
+ },
+ "schema_version": 2,
+ "$schema": "../benchmark.schema.json",
+ "application": {
+  "name": "Wattever",
+  "version": "2.6.1",
+  "protocol_version": "2"
+ },
+ "hardware": {
+  "os": {
+   "name": "unknown remote host",
+   "release": null,
+   "architecture": null
+  },
+  "cpu": {
+   "name": null,
+   "physical_cores": null,
+   "logical_cores": null
+  },
+  "system": {
+   "manufacturer": null,
+   "model": null,
+   "memory_bytes": null
+  },
+  "gpus": [],
+  "transfer_bandwidth": {
+   "schema_version": 1,
+   "captured_at": "2026-11-14T00:53:41.558088+00:00",
+   "scope": "benchmark_client",
+   "unit": "bytes_per_second",
+   "protocol": "wattever-transfer-v1",
+   "storage_to_ram": {
+    "status": "ok",
+    "bytes_per_second": 542399152.6435459,
+    "statistic": "median",
+    "samples": [
+     {
+      "bytes": 268435456,
+      "elapsed_s": 0.4989793999999961
+     },
+     {
+      "bytes": 268435456,
+      "elapsed_s": 0.4946303000000114
+     },
+     {
+      "bytes": 268435456,
+      "elapsed_s": 0.4949039000000255
+     }
+    ],
+    "method": "win32_no_buffering",
+    "file_bytes": 268435456,
+    "block_bytes": 8388608,
+    "queue_depth": 1,
+    "os_page_cache": "bypassed",
+    "storage_scope": "probe_directory_volume",
+    "volume": "C:",
+    "device_model": "Samsung SSD 870 EVO 4TB",
+    "bus_type": "SATA",
+    "note": "Sequential reads of a flushed temporary file on the selected volume (results volume by default). File creation is excluded. Device/controller caches may contribute; model files on other volumes need separate measurement."
+   },
+   "ram_copy_single": {
+    "status": "ok",
+    "bytes_per_second": 8226734151.300016,
+    "statistic": "median",
+    "samples": [
+     {
+      "bytes": 536870912,
+      "elapsed_s": 0.0830052999999964
+     },
+     {
+      "bytes": 536870912,
+      "elapsed_s": 0.06525930000000812
+     },
+     {
+      "bytes": 536870912,
+      "elapsed_s": 0.06450970000000211
+     }
+    ],
+    "method": "native_memmove_disjoint_buffers",
+    "workers": 1,
+    "buffer_bytes_per_worker": 67108864,
+    "working_set_bytes": 134217728,
+    "copies_per_sample": 8,
+    "verified_readback": true,
+    "byte_accounting": "copied_payload",
+    "note": "Native RAM copy payload throughput. Each payload byte requires a source read and destination write; 2x this rate is logical read+write bandwidth, not measured DRAM bus traffic. Cache/write-allocation effects and worker count influence results."
+   },
+   "ram_copy_parallel": {
+    "status": "ok",
+    "bytes_per_second": 22395609571.94194,
+    "statistic": "median",
+    "samples": [
+     {
+      "bytes": 4294967296,
+      "elapsed_s": 0.18796820000000025
+     },
+     {
+      "bytes": 4294967296,
+      "elapsed_s": 0.19177719999999
+     },
+     {
+      "bytes": 4294967296,
+      "elapsed_s": 0.19279119999998784
+     }
+    ],
+    "method": "native_memmove_disjoint_buffers",
+    "workers": 8,
+    "buffer_bytes_per_worker": 67108864,
+    "working_set_bytes": 1073741824,
+    "copies_per_sample": 8,
+    "verified_readback": true,
+    "byte_accounting": "copied_payload",
+    "note": "Native RAM copy payload throughput. Each payload byte requires a source read and destination write; 2x this rate is logical read+write bandwidth, not measured DRAM bus traffic. Cache/write-allocation effects and worker count influence results."
+   },
+   "ram_to_vram_devices": [
+    {
+     "gpu_sensor_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5070 Ti",
+     "gpu_memory_bytes": 17094934528,
+     "measurement_scope": "pinned_host_to_device_on_installed_gpu_path",
+     "pcie_before": {
+      "generation_current": 1,
+      "width_current": 16,
+      "generation_max_reported": 3,
+      "width_max_reported": 16,
+      "link_encoding_ceiling_bytes_per_second": 4000000000.0,
+      "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+      "measured_host_to_device_bytes_per_second": null,
+      "source": "nvidia-smi",
+      "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+      "physical_slot": null,
+      "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+     },
+     "pcie_during": {
+      "generation_current": 3,
+      "width_current": 16,
+      "generation_max_reported": 3,
+      "width_max_reported": 16,
+      "link_encoding_ceiling_bytes_per_second": 15753846153.846155,
+      "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+      "measured_host_to_device_bytes_per_second": null,
+      "source": "nvidia-smi",
+      "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+      "physical_slot": null,
+      "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+     },
+     "physical_slot": null,
+     "physical_slot_source": "unverified",
+     "status": "ok",
+     "bytes_per_second": 13536656713.444178,
+     "statistic": "median",
+     "samples": [
+      {
+       "bytes": 2147483648,
+       "elapsed_s": 0.15864210000000867
+      },
+      {
+       "bytes": 2147483648,
+       "elapsed_s": 0.1593255999999883
+      },
+      {
+       "bytes": 2147483648,
+       "elapsed_s": 0.15839049999999588
+      }
+     ],
+     "method": "cuda_driver_synchronous_htod",
+     "host_memory": "pinned",
+     "buffer_bytes": 67108864,
+     "copies_per_sample": 32,
+     "warmup_copies": 4,
+     "verified_readback": true,
+     "readback_verified_bytes": 1,
+     "note": "Pinned RAM to device memory on this installed GPU path; host wall time includes completed copies and synchronization. The during-transfer link snapshot is collected in untimed warmup. Device and slot both constrain this path; the physical slot is not identified. Separate microbenchmark, not observed inference traffic or VRAM internal bandwidth."
+    },
+    {
+     "gpu_sensor_index": 1,
+     "gpu_name": "NVIDIA GeForce RTX 5070 Ti",
+     "gpu_memory_bytes": 17094934528,
+     "measurement_scope": "pinned_host_to_device_on_installed_gpu_path",
+     "pcie_before": {
+      "generation_current": 1,
+      "width_current": 16,
+      "generation_max_reported": 3,
+      "width_max_reported": 16,
+      "link_encoding_ceiling_bytes_per_second": 4000000000.0,
+      "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+      "measured_host_to_device_bytes_per_second": null,
+      "source": "nvidia-smi",
+      "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+      "physical_slot": null,
+      "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+     },
+     "pcie_during": {
+      "generation_current": 3,
+      "width_current": 16,
+      "generation_max_reported": 3,
+      "width_max_reported": 16,
+      "link_encoding_ceiling_bytes_per_second": 15753846153.846155,
+      "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+      "measured_host_to_device_bytes_per_second": null,
+      "source": "nvidia-smi",
+      "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+      "physical_slot": null,
+      "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+     },
+     "physical_slot": null,
+     "physical_slot_source": "unverified",
+     "status": "ok",
+     "bytes_per_second": 13523690714.145454,
+     "statistic": "median",
+     "samples": [
+      {
+       "bytes": 2147483648,
+       "elapsed_s": 0.15879419999998845
+      },
+      {
+       "bytes": 2147483648,
+       "elapsed_s": 0.15875030000000834
+      },
+      {
+       "bytes": 2147483648,
+       "elapsed_s": 0.15912890000001312
+      }
+     ],
+     "method": "cuda_driver_synchronous_htod",
+     "host_memory": "pinned",
+     "buffer_bytes": 67108864,
+     "copies_per_sample": 32,
+     "warmup_copies": 4,
+     "verified_readback": true,
+     "readback_verified_bytes": 1,
+     "note": "Pinned RAM to device memory on this installed GPU path; host wall time includes completed copies and synchronization. The during-transfer link snapshot is collected in untimed warmup. Device and slot both constrain this path; the physical slot is not identified. Separate microbenchmark, not observed inference traffic or VRAM internal bandwidth."
+    }
+   ],
+   "gpu_path_fingerprint": "18fd6cfaa59b321211e8a6d71360a520fdde3b8a992ba87162cec016bf2237c8",
+   "gpu_path_fingerprint_method": "sha256 of ordered GPU sensor index, name and normalized PCI bus path; not unique device IDs",
+   "ram_to_vram": {
+    "gpu_sensor_index": 0,
+    "gpu_name": "NVIDIA GeForce RTX 5070 Ti",
+    "gpu_memory_bytes": 17094934528,
+    "measurement_scope": "pinned_host_to_device_on_installed_gpu_path",
+    "pcie_before": {
+     "generation_current": 1,
+     "width_current": 16,
+     "generation_max_reported": 3,
+     "width_max_reported": 16,
+     "link_encoding_ceiling_bytes_per_second": 4000000000.0,
+     "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+     "measured_host_to_device_bytes_per_second": null,
+     "source": "nvidia-smi",
+     "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+     "physical_slot": null,
+     "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+    },
+    "pcie_during": {
+     "generation_current": 3,
+     "width_current": 16,
+     "generation_max_reported": 3,
+     "width_max_reported": 16,
+     "link_encoding_ceiling_bytes_per_second": 15753846153.846155,
+     "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+     "measured_host_to_device_bytes_per_second": null,
+     "source": "nvidia-smi",
+     "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+     "physical_slot": null,
+     "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+    },
+    "physical_slot": null,
+    "physical_slot_source": "unverified",
+    "status": "ok",
+    "bytes_per_second": 13536656713.444178,
+    "statistic": "median",
+    "samples": [
+     {
+      "bytes": 2147483648,
+      "elapsed_s": 0.15864210000000867
+     },
+     {
+      "bytes": 2147483648,
+      "elapsed_s": 0.1593255999999883
+     },
+     {
+      "bytes": 2147483648,
+      "elapsed_s": 0.15839049999999588
+     }
+    ],
+    "method": "cuda_driver_synchronous_htod",
+    "host_memory": "pinned",
+    "buffer_bytes": 67108864,
+    "copies_per_sample": 32,
+    "warmup_copies": 4,
+    "verified_readback": true,
+    "readback_verified_bytes": 1,
+    "note": "Pinned RAM to device memory on this installed GPU path; host wall time includes completed copies and synchronization. The during-transfer link snapshot is collected in untimed warmup. Device and slot both constrain this path; the physical slot is not identified. Separate microbenchmark, not observed inference traffic or VRAM internal bandwidth."
+   },
+   "storage_volumes": [
+    {
+     "status": "ok",
+     "bytes_per_second": 2975168339.70119,
+     "statistic": "median",
+     "samples": [
+      {
+       "bytes": 268435456,
+       "elapsed_s": 0.09022529999998596
+      },
+      {
+       "bytes": 268435456,
+       "elapsed_s": 0.09091779999999972
+      },
+      {
+       "bytes": 268435456,
+       "elapsed_s": 0.08856359999998631
+      }
+     ],
+     "method": "win32_no_buffering",
+     "file_bytes": 268435456,
+     "block_bytes": 8388608,
+     "queue_depth": 1,
+     "os_page_cache": "bypassed",
+     "storage_scope": "probe_directory_volume",
+     "volume": "D:",
+     "device_model": "Samsung SSD 990 PRO 4TB",
+     "bus_type": "NVMe",
+     "note": "Sequential reads of a flushed temporary file on the selected volume (results volume by default). File creation is excluded. Device/controller caches may contribute; model files on other volumes need separate measurement."
+    }
+   ],
+   "storage_discovery": {
+    "nvme_detected": 1,
+    "nvme_measured": 1,
+    "status": "ok",
+    "omitted": 0
+   },
+   "provenance": "measured_before_session"
+  }
+ },
+ "measurement_scope": {
+  "phase_protocol": "observed-output-phases-v2",
+  "power_gpu_sensor_index": null,
+  "power_boundary": "unavailable for remote inference",
+  "runtime_gpu_placement": "unknown; externally managed",
+  "runtime_gpu_placement_source": "unknown",
+  "context_control": false,
+  "mtp_control": false,
+  "mtp_state": "unknown; configured by endpoint operator",
+  "hardware_attribution": "unknown remote host; client telemetry is not inference telemetry"
+ },
+ "classification": {
+  "hardware_class": "remote-unverified",
+  "gpu_names": [],
+  "platform": "remote-unverified"
+ },
+ "provider": {
+  "kind": "openai",
+  "label": "Strata private endpoint",
+  "model_management": "external",
+  "inference_location": "unverified_remote",
+  "context_control": false,
+  "mtp_control": false
+ },
+ "measurement_client": {
+  "hardware": {
+   "metadata_schema_version": 1,
+   "collection": {
+    "scope": "benchmark_client",
+    "inference_server_hardware_verified": false,
+    "captured_at": "2026-11-14T00:53:36.282747+00:00",
+    "python_version": "3.13.14",
+    "policy": "Read-only allow-listed OS/driver probes without elevation; no unique device IDs, host names, network addresses or user paths."
+   },
+   "memory": {
+    "modules": [
+     {
+      "capacity_bytes": 17179869184,
+      "speed_mhz_reported": 2133,
+      "configured_clock_mhz_reported": 2133,
+      "smbios_memory_type": 1,
+      "data_width_bits": 64,
+      "total_width_bits": 72
+     },
+     {
+      "capacity_bytes": 17179869184,
+      "speed_mhz_reported": 2133,
+      "configured_clock_mhz_reported": 2133,
+      "smbios_memory_type": 1,
+      "data_width_bits": 64,
+      "total_width_bits": 72
+     },
+     {
+      "capacity_bytes": 17179869184,
+      "speed_mhz_reported": 2133,
+      "configured_clock_mhz_reported": 2133,
+      "smbios_memory_type": 1,
+      "data_width_bits": 64,
+      "total_width_bits": 72
+     },
+     {
+      "capacity_bytes": 17179869184,
+      "speed_mhz_reported": 2133,
+      "configured_clock_mhz_reported": 2133,
+      "smbios_memory_type": 1,
+      "data_width_bits": 64,
+      "total_width_bits": 72
+     }
+    ],
+    "module_count": 4,
+    "installed_capacity_bytes": 68719476736,
+    "configured_clock_mhz_reported": [
+     2133
+    ],
+    "channel_count": 4,
+    "channel_topology": {
+     "status": "inferred",
+     "source": "SMBIOS Type 17",
+     "method": "explicit_firmware_channel_slot_labels",
+     "captured_at": "2026-11-14T00:53:36.896271+00:00",
+     "channel_count": 4,
+     "populated_channel_count": 4,
+     "active_channel_count": null,
+     "note": "Populated channels inferred from explicit firmware channel/slot labels, not DIMM count. Active controller mode is unverified."
+    },
+    "measured_bandwidth_gb_s": null,
+    "source": "Win32_PhysicalMemory",
+    "note": "Channel topology includes its source and detection method; populated channels do not verify active controller mode. Module count does not establish channels. Clocks are firmware/OS reports; measured transfer probes are stored separately."
+   },
+   "motherboard": {
+    "manufacturer": "EVGA INTERNATIONAL CO.,LTD",
+    "model": "131-HE-E095"
+   },
+   "firmware": {
+    "vendor": "American Megatrends Inc.",
+    "version": "1.03"
+   },
+   "storage": [
+    {
+     "model": "Samsung SSD 870 EVO 4TB",
+     "capacity_bytes": 4000784417280,
+     "interface": "IDE",
+     "media_type": "SSD",
+     "bus_type": "SATA"
+    },
+    {
+     "model": "Samsung SSD 990 PRO 4TB",
+     "capacity_bytes": 4000784417280,
+     "interface": "SCSI",
+     "media_type": "SSD",
+     "bus_type": "NVMe"
+    }
+   ],
+   "os": {
+    "name": "Windows",
+    "release": "10",
+    "architecture": "AMD64"
+   },
+   "cpu": {
+    "name": "Intel(R) Core(TM) i7-5960X CPU @ 3.00GHz",
+    "physical_cores": 8,
+    "logical_cores": 16,
+    "socket_count": 1,
+    "architecture": "AMD64",
+    "max_clock_mhz_reported": 3001,
+    "source": "Win32_Processor"
+   },
+   "system": {
+    "manufacturer": "EVGA INTERNATIONAL CO.,LTD",
+    "model": "To be filled by O.E.M.",
+    "memory_bytes": 68636971008
+   },
+   "gpus": [
+    {
+     "name": "NVIDIA GeForce RTX 5070 Ti",
+     "vendor": "NVIDIA",
+     "memory_bytes": 17094934528,
+     "driver": "617.42",
+     "sensor_index": 0,
+     "pcie": {
+      "generation_current": 1,
+      "width_current": 16,
+      "generation_max_reported": 3,
+      "width_max_reported": 16,
+      "link_encoding_ceiling_bytes_per_second": 4000000000.0,
+      "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+      "measured_host_to_device_bytes_per_second": null,
+      "source": "nvidia-smi",
+      "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+      "physical_slot": null,
+      "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+     },
+     "capabilities": {
+      "compute_capability_reported": "12.0",
+      "power_limit_w_reported": 300.0,
+      "compute_peaks": [],
+      "measured_memory_bandwidth_gb_s": null,
+      "note": "No FLOPS/TOPS or device-memory bandwidth measurement was performed. Model quantization bit width is not hardware arithmetic precision; peak compute also depends on operation, clock and sparsity."
+     },
+     "memory_architecture": "discrete"
+    },
+    {
+     "name": "NVIDIA GeForce RTX 5070 Ti",
+     "vendor": "NVIDIA",
+     "memory_bytes": 17094934528,
+     "driver": "617.42",
+     "sensor_index": 1,
+     "pcie": {
+      "generation_current": 1,
+      "width_current": 16,
+      "generation_max_reported": 3,
+      "width_max_reported": 16,
+      "link_encoding_ceiling_bytes_per_second": 4000000000.0,
+      "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+      "measured_host_to_device_bytes_per_second": null,
+      "source": "nvidia-smi",
+      "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+      "physical_slot": null,
+      "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+     },
+     "capabilities": {
+      "compute_capability_reported": "12.0",
+      "power_limit_w_reported": 300.0,
+      "compute_peaks": [],
+      "measured_memory_bandwidth_gb_s": null,
+      "note": "No FLOPS/TOPS or device-memory bandwidth measurement was performed. Model quantization bit width is not hardware arithmetic precision; peak compute also depends on operation, clock and sparsity."
+     },
+     "memory_architecture": "discrete"
+    }
+   ]
+  },
+  "host": {
+   "cpu": "Intel(R) Core(TM) i7-5960X CPU @ 3.00GHz",
+   "cores_physical": 8,
+   "cores_logical": 16,
+   "ram_gb": 63.9,
+   "os": "Windows 10",
+   "os_build": "10.0.19045",
+   "python": "3.13.14",
+   "platform": "windows",
+   "machine_model": "To be filled by O.E.M."
+  },
+  "gpu": {
+   "name": "NVIDIA GeForce RTX 5070 Ti",
+   "vram_total_mb": 16303.0,
+   "driver": "617.42",
+   "power_limit_w": 300.0,
+   "pcie_gen": "3",
+   "compute_cap": "12.0",
+   "power_readable": true,
+   "power_source": "nvidia-smi",
+   "memory_architecture": "discrete",
+   "vendor": "nvidia"
+  }
+ },
+ "model_configurations": [
+  {
+   "fingerprint_version": "wattever-model-configuration-v1",
+   "model": {
+    "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+    "source": "requested_model_identifier"
+   },
+   "request_model": {
+    "value": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+    "source": "requested_model_identifier"
+   },
+   "endpoint": {
+    "id": "strata-private-c2f58720db36",
+    "label": "Strata private endpoint",
+    "provider": "openai",
+    "source": "detected",
+    "scope": "public route identity; actual inference backend is not verified"
+   },
+   "quantization": {
+    "value": "UD-IQ4_XS",
+    "source": "model_identifier",
+    "user_reported": "unknown",
+    "method": "UD",
+    "method_source": "model_identifier"
+   },
+   "engine": {
+    "value": "Strata",
+    "source": "endpoint_reported"
+   },
+   "engine_version": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "model_revision": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "model_source": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "kv_cache_dtype": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "reasoning": {
+    "requested": "none",
+    "effective": "unknown",
+    "effective_source": "unknown",
+    "user_reported": "unknown"
+   },
+   "mtp": {
+    "requested": "unknown",
+    "effective": "unknown",
+    "effective_source": "unknown",
+    "user_reported": "unknown"
+   },
+   "context_tokens": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "mtp_draft_tokens": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "configuration_id": "525c3dd75b668ba4564907a5575370ad841d0742d2f1bae402d863dceda6a5c4"
+  },
+  {
+   "fingerprint_version": "wattever-model-configuration-v1",
+   "model": {
+    "value": "qwen3.8-flash-next-iq3_s",
+    "source": "requested_model_identifier"
+   },
+   "request_model": {
+    "value": "qwen3.8-flash-next-iq3_s",
+    "source": "requested_model_identifier"
+   },
+   "endpoint": {
+    "id": "strata-private-c2f58720db36",
+    "label": "Strata private endpoint",
+    "provider": "openai",
+    "source": "detected",
+    "scope": "public route identity; actual inference backend is not verified"
+   },
+   "quantization": {
+    "value": "IQ3_S",
+    "source": "model_identifier",
+    "user_reported": "unknown"
+   },
+   "engine": {
+    "value": "Strata",
+    "source": "endpoint_reported"
+   },
+   "engine_version": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "model_revision": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "model_source": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "kv_cache_dtype": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "reasoning": {
+    "requested": "none",
+    "effective": "unknown",
+    "effective_source": "unknown",
+    "user_reported": "unknown"
+   },
+   "mtp": {
+    "requested": "unknown",
+    "effective": "unknown",
+    "effective_source": "unknown",
+    "user_reported": "unknown"
+   },
+   "context_tokens": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "mtp_draft_tokens": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "configuration_id": "035bfc3372771e89f69f1de3c579530f042425bc2fb12c2d9f69dabfa7373f81"
+  },
+  {
+   "fingerprint_version": "wattever-model-configuration-v1",
+   "model": {
+    "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+    "source": "requested_model_identifier"
+   },
+   "request_model": {
+    "value": "qwen3.6-35b-a3b-ud-q4_k_xl",
+    "source": "requested_model_identifier"
+   },
+   "endpoint": {
+    "id": "strata-private-c2f58720db36",
+    "label": "Strata private endpoint",
+    "provider": "openai",
+    "source": "detected",
+    "scope": "public route identity; actual inference backend is not verified"
+   },
+   "quantization": {
+    "value": "UD-Q4_K_XL",
+    "source": "model_identifier",
+    "user_reported": "unknown",
+    "method": "UD",
+    "method_source": "model_identifier"
+   },
+   "engine": {
+    "value": "Strata",
+    "source": "endpoint_reported"
+   },
+   "engine_version": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "model_revision": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "model_source": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "kv_cache_dtype": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "reasoning": {
+    "requested": "none",
+    "effective": "unknown",
+    "effective_source": "unknown",
+    "user_reported": "unknown"
+   },
+   "mtp": {
+    "requested": "unknown",
+    "effective": "unknown",
+    "effective_source": "unknown",
+    "user_reported": "unknown"
+   },
+   "context_tokens": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "mtp_draft_tokens": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "configuration_id": "dcf656b7896acc6b8cc237c8baab99b967d8ae5beb490762ce83cc14af857b84"
+  }
+ ],
+ "reproducibility": {
+  "source": "user_reported",
+  "settings": {}
+ },
+ "performance_claims": [],
+ "measurement_mode": "helper",
+ "active_session_id": "953978f786ab",
+ "sessions": [
+  {
+   "id": "953978f786ab",
+   "started_at": "2026-11-14T00:53:36+00:00",
+   "status": "completed",
+   "config": {
+    "provider": "openai",
+    "endpoint_label": "Strata private endpoint",
+    "endpoint_inference_local": false,
+    "endpoint_reasoning_effort": "none",
+    "models": [
+     "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+     "qwen3.8-flash-next-iq3_s",
+     "qwen3.6-35b-a3b-ud-q4_k_xl"
+    ],
+    "concurrency_levels": [
+     1
+    ],
+    "sizes": [
+     5000,
+     10000,
+     20000,
+     40000,
+     80000,
+     100000,
+     120000
+    ],
+    "max_tokens": 256,
+    "repeats": 1,
+    "gpu_offload": "provider_managed",
+    "fallback_on_failure": false,
+    "stop_model_after_failure": true,
+    "skip_after_timeout": false,
+    "context_headroom": 512,
+    "context_safety_fraction": 0.05,
+    "context_policy": "provider_managed",
+    "context_planner_version": 1,
+    "per_test_timeout_s": 1800,
+    "load_timeout_s": 900,
+    "warmup": true,
+    "disable_thinking": null,
+    "mtp_modes": [
+     "off"
+    ],
+    "power_interval_ms": 150,
+    "hardware_probe_policy": "auto",
+    "other_idle_w": 60.0,
+    "cpu_tdp_w": 140.0,
+    "label": "2x5070ti",
+    "notes": "Models: qwen3.8-flash-next-unsloth-ud-iq4_xs, qwen3.8-flash-next-iq3_s, qwen3.6-35b-a3b-ud-q4_k_xl\nPrompt tokens: 5k, 10k, 20k, 40k, 80k, 100k, 120k\nSimultaneous queries: 1\nAnswer: 256 tokens; repeats: 1\nReasoning, context allocation, placement and speculative decoding: provider controlled\nPower monitoring: all detected NVIDIA GPUs, per card and combined (monitoring only; model placement is engine controlled)",
+    "gpu_index": 0,
+    "endpoint_id": "strata-private-c2f58720db36",
+    "endpoint_identity": {
+     "id": "strata-private-c2f58720db36",
+     "label": "Strata private endpoint",
+     "source": "detected",
+     "service": "Strata",
+     "version": "unknown",
+     "location": "private",
+     "route_registry": "opaque_local_mapping",
+     "evidence": "same_origin_service_response",
+     "scope": "route identity; actual inference backend and host are not verified"
+    },
+    "endpoint_name_override": "",
+    "reproducibility": {},
+    "performance_claims": [],
+    "canonical_model_id": "",
+    "reported_mtp": "unknown",
+    "reported_reasoning": "unknown",
+    "token_limit_field": "max_tokens",
+    "temperature": 0,
+    "runtime_gpu_placement": ""
+   },
+   "application": {
+    "name": "Wattever",
+    "version": "2.6.1",
+    "protocol_version": "2"
+   },
+   "hardware": {
+    "os": {
+     "name": "unknown remote host",
+     "release": null,
+     "architecture": null
+    },
+    "cpu": {
+     "name": null,
+     "physical_cores": null,
+     "logical_cores": null
+    },
+    "system": {
+     "manufacturer": null,
+     "model": null,
+     "memory_bytes": null
+    },
+    "gpus": []
+   },
+   "measurement_scope": {
+    "phase_protocol": "observed-output-phases-v2",
+    "power_gpu_sensor_index": null,
+    "power_boundary": "unavailable for remote inference",
+    "runtime_gpu_placement": "unknown; externally managed",
+    "runtime_gpu_placement_source": "unknown",
+    "context_control": false,
+    "mtp_control": false,
+    "mtp_state": "unknown; configured by endpoint operator",
+    "hardware_attribution": "unknown remote host; client telemetry is not inference telemetry"
+   },
+   "lms_version": null,
+   "retry_failed": false,
+   "rerun_existing": false,
+   "transfer_bandwidth": {
+    "schema_version": 1,
+    "captured_at": "2026-11-14T00:53:41.558088+00:00",
+    "scope": "benchmark_client",
+    "unit": "bytes_per_second",
+    "protocol": "wattever-transfer-v1",
+    "storage_to_ram": {
+     "status": "ok",
+     "bytes_per_second": 542399152.6435459,
+     "statistic": "median",
+     "samples": [
+      {
+       "bytes": 268435456,
+       "elapsed_s": 0.4989793999999961
+      },
+      {
+       "bytes": 268435456,
+       "elapsed_s": 0.4946303000000114
+      },
+      {
+       "bytes": 268435456,
+       "elapsed_s": 0.4949039000000255
+      }
+     ],
+     "method": "win32_no_buffering",
+     "file_bytes": 268435456,
+     "block_bytes": 8388608,
+     "queue_depth": 1,
+     "os_page_cache": "bypassed",
+     "storage_scope": "probe_directory_volume",
+     "volume": "C:",
+     "device_model": "Samsung SSD 870 EVO 4TB",
+     "bus_type": "SATA",
+     "note": "Sequential reads of a flushed temporary file on the selected volume (results volume by default). File creation is excluded. Device/controller caches may contribute; model files on other volumes need separate measurement."
+    },
+    "ram_copy_single": {
+     "status": "ok",
+     "bytes_per_second": 8226734151.300016,
+     "statistic": "median",
+     "samples": [
+      {
+       "bytes": 536870912,
+       "elapsed_s": 0.0830052999999964
+      },
+      {
+       "bytes": 536870912,
+       "elapsed_s": 0.06525930000000812
+      },
+      {
+       "bytes": 536870912,
+       "elapsed_s": 0.06450970000000211
+      }
+     ],
+     "method": "native_memmove_disjoint_buffers",
+     "workers": 1,
+     "buffer_bytes_per_worker": 67108864,
+     "working_set_bytes": 134217728,
+     "copies_per_sample": 8,
+     "verified_readback": true,
+     "byte_accounting": "copied_payload",
+     "note": "Native RAM copy payload throughput. Each payload byte requires a source read and destination write; 2x this rate is logical read+write bandwidth, not measured DRAM bus traffic. Cache/write-allocation effects and worker count influence results."
+    },
+    "ram_copy_parallel": {
+     "status": "ok",
+     "bytes_per_second": 22395609571.94194,
+     "statistic": "median",
+     "samples": [
+      {
+       "bytes": 4294967296,
+       "elapsed_s": 0.18796820000000025
+      },
+      {
+       "bytes": 4294967296,
+       "elapsed_s": 0.19177719999999
+      },
+      {
+       "bytes": 4294967296,
+       "elapsed_s": 0.19279119999998784
+      }
+     ],
+     "method": "native_memmove_disjoint_buffers",
+     "workers": 8,
+     "buffer_bytes_per_worker": 67108864,
+     "working_set_bytes": 1073741824,
+     "copies_per_sample": 8,
+     "verified_readback": true,
+     "byte_accounting": "copied_payload",
+     "note": "Native RAM copy payload throughput. Each payload byte requires a source read and destination write; 2x this rate is logical read+write bandwidth, not measured DRAM bus traffic. Cache/write-allocation effects and worker count influence results."
+    },
+    "ram_to_vram_devices": [
+     {
+      "gpu_sensor_index": 0,
+      "gpu_name": "NVIDIA GeForce RTX 5070 Ti",
+      "gpu_memory_bytes": 17094934528,
+      "measurement_scope": "pinned_host_to_device_on_installed_gpu_path",
+      "pcie_before": {
+       "generation_current": 1,
+       "width_current": 16,
+       "generation_max_reported": 3,
+       "width_max_reported": 16,
+       "link_encoding_ceiling_bytes_per_second": 4000000000.0,
+       "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+       "measured_host_to_device_bytes_per_second": null,
+       "source": "nvidia-smi",
+       "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+       "physical_slot": null,
+       "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+      },
+      "pcie_during": {
+       "generation_current": 3,
+       "width_current": 16,
+       "generation_max_reported": 3,
+       "width_max_reported": 16,
+       "link_encoding_ceiling_bytes_per_second": 15753846153.846155,
+       "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+       "measured_host_to_device_bytes_per_second": null,
+       "source": "nvidia-smi",
+       "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+       "physical_slot": null,
+       "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+      },
+      "physical_slot": null,
+      "physical_slot_source": "unverified",
+      "status": "ok",
+      "bytes_per_second": 13536656713.444178,
+      "statistic": "median",
+      "samples": [
+       {
+        "bytes": 2147483648,
+        "elapsed_s": 0.15864210000000867
+       },
+       {
+        "bytes": 2147483648,
+        "elapsed_s": 0.1593255999999883
+       },
+       {
+        "bytes": 2147483648,
+        "elapsed_s": 0.15839049999999588
+       }
+      ],
+      "method": "cuda_driver_synchronous_htod",
+      "host_memory": "pinned",
+      "buffer_bytes": 67108864,
+      "copies_per_sample": 32,
+      "warmup_copies": 4,
+      "verified_readback": true,
+      "readback_verified_bytes": 1,
+      "note": "Pinned RAM to device memory on this installed GPU path; host wall time includes completed copies and synchronization. The during-transfer link snapshot is collected in untimed warmup. Device and slot both constrain this path; the physical slot is not identified. Separate microbenchmark, not observed inference traffic or VRAM internal bandwidth."
+     },
+     {
+      "gpu_sensor_index": 1,
+      "gpu_name": "NVIDIA GeForce RTX 5070 Ti",
+      "gpu_memory_bytes": 17094934528,
+      "measurement_scope": "pinned_host_to_device_on_installed_gpu_path",
+      "pcie_before": {
+       "generation_current": 1,
+       "width_current": 16,
+       "generation_max_reported": 3,
+       "width_max_reported": 16,
+       "link_encoding_ceiling_bytes_per_second": 4000000000.0,
+       "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+       "measured_host_to_device_bytes_per_second": null,
+       "source": "nvidia-smi",
+       "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+       "physical_slot": null,
+       "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+      },
+      "pcie_during": {
+       "generation_current": 3,
+       "width_current": 16,
+       "generation_max_reported": 3,
+       "width_max_reported": 16,
+       "link_encoding_ceiling_bytes_per_second": 15753846153.846155,
+       "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+       "measured_host_to_device_bytes_per_second": null,
+       "source": "nvidia-smi",
+       "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+       "physical_slot": null,
+       "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+      },
+      "physical_slot": null,
+      "physical_slot_source": "unverified",
+      "status": "ok",
+      "bytes_per_second": 13523690714.145454,
+      "statistic": "median",
+      "samples": [
+       {
+        "bytes": 2147483648,
+        "elapsed_s": 0.15879419999998845
+       },
+       {
+        "bytes": 2147483648,
+        "elapsed_s": 0.15875030000000834
+       },
+       {
+        "bytes": 2147483648,
+        "elapsed_s": 0.15912890000001312
+       }
+      ],
+      "method": "cuda_driver_synchronous_htod",
+      "host_memory": "pinned",
+      "buffer_bytes": 67108864,
+      "copies_per_sample": 32,
+      "warmup_copies": 4,
+      "verified_readback": true,
+      "readback_verified_bytes": 1,
+      "note": "Pinned RAM to device memory on this installed GPU path; host wall time includes completed copies and synchronization. The during-transfer link snapshot is collected in untimed warmup. Device and slot both constrain this path; the physical slot is not identified. Separate microbenchmark, not observed inference traffic or VRAM internal bandwidth."
+     }
+    ],
+    "gpu_path_fingerprint": "18fd6cfaa59b321211e8a6d71360a520fdde3b8a992ba87162cec016bf2237c8",
+    "gpu_path_fingerprint_method": "sha256 of ordered GPU sensor index, name and normalized PCI bus path; not unique device IDs",
+    "ram_to_vram": {
+     "gpu_sensor_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5070 Ti",
+     "gpu_memory_bytes": 17094934528,
+     "measurement_scope": "pinned_host_to_device_on_installed_gpu_path",
+     "pcie_before": {
+      "generation_current": 1,
+      "width_current": 16,
+      "generation_max_reported": 3,
+      "width_max_reported": 16,
+      "link_encoding_ceiling_bytes_per_second": 4000000000.0,
+      "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+      "measured_host_to_device_bytes_per_second": null,
+      "source": "nvidia-smi",
+      "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+      "physical_slot": null,
+      "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+     },
+     "pcie_during": {
+      "generation_current": 3,
+      "width_current": 16,
+      "generation_max_reported": 3,
+      "width_max_reported": 16,
+      "link_encoding_ceiling_bytes_per_second": 15753846153.846155,
+      "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+      "measured_host_to_device_bytes_per_second": null,
+      "source": "nvidia-smi",
+      "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+      "physical_slot": null,
+      "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+     },
+     "physical_slot": null,
+     "physical_slot_source": "unverified",
+     "status": "ok",
+     "bytes_per_second": 13536656713.444178,
+     "statistic": "median",
+     "samples": [
+      {
+       "bytes": 2147483648,
+       "elapsed_s": 0.15864210000000867
+      },
+      {
+       "bytes": 2147483648,
+       "elapsed_s": 0.1593255999999883
+      },
+      {
+       "bytes": 2147483648,
+       "elapsed_s": 0.15839049999999588
+      }
+     ],
+     "method": "cuda_driver_synchronous_htod",
+     "host_memory": "pinned",
+     "buffer_bytes": 67108864,
+     "copies_per_sample": 32,
+     "warmup_copies": 4,
+     "verified_readback": true,
+     "readback_verified_bytes": 1,
+     "note": "Pinned RAM to device memory on this installed GPU path; host wall time includes completed copies and synchronization. The during-transfer link snapshot is collected in untimed warmup. Device and slot both constrain this path; the physical slot is not identified. Separate microbenchmark, not observed inference traffic or VRAM internal bandwidth."
+    },
+    "storage_volumes": [
+     {
+      "status": "ok",
+      "bytes_per_second": 2975168339.70119,
+      "statistic": "median",
+      "samples": [
+       {
+        "bytes": 268435456,
+        "elapsed_s": 0.09022529999998596
+       },
+       {
+        "bytes": 268435456,
+        "elapsed_s": 0.09091779999999972
+       },
+       {
+        "bytes": 268435456,
+        "elapsed_s": 0.08856359999998631
+       }
+      ],
+      "method": "win32_no_buffering",
+      "file_bytes": 268435456,
+      "block_bytes": 8388608,
+      "queue_depth": 1,
+      "os_page_cache": "bypassed",
+      "storage_scope": "probe_directory_volume",
+      "volume": "D:",
+      "device_model": "Samsung SSD 990 PRO 4TB",
+      "bus_type": "NVMe",
+      "note": "Sequential reads of a flushed temporary file on the selected volume (results volume by default). File creation is excluded. Device/controller caches may contribute; model files on other volumes need separate measurement."
+     }
+    ],
+    "storage_discovery": {
+     "nvme_detected": 1,
+     "nvme_measured": 1,
+     "status": "ok",
+     "omitted": 0
+    },
+    "provenance": "measured_before_session"
+   },
+   "idle": {
+    "gpu_w": null,
+    "system_w_est": null,
+    "cpu_util": null,
+    "cpu_w": null,
+    "vram_mb": null,
+    "source": "unavailable_remote",
+    "baseline_kind": "externally managed model remains loaded; no verified idle baseline"
+   },
+   "power_source": "unavailable_remote",
+   "finished_at": "2026-11-14T01:09:02+00:00"
+  }
+ ],
+ "hardware_probe": {
+  "policy": "auto",
+  "status": "measured",
+  "source": "new_capture",
+  "measured_this_session": true,
+  "captured_at": "2026-11-14T00:53:41.558088+00:00"
+ },
+ "idle": {
+  "gpu_w": null,
+  "system_w_est": null,
+  "cpu_util": null,
+  "cpu_w": null,
+  "vram_mb": null,
+  "source": "unavailable_remote",
+  "baseline_kind": "externally managed model remains loaded; no verified idle baseline"
+ },
+ "power_source": "unavailable_remote",
+ "finished_at": "2026-11-14T01:09:02+00:00",
+ "remaining_tests": 0
+}

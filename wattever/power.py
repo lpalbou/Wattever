@@ -57,7 +57,7 @@ def _f(tok):
 # --------------------------------------------------------------------------
 
 def _nvidia_gpu_info(index=0):
-    q = "uuid,name,memory.total,driver_version,power.limit,pcie.link.gen.max,compute_cap"
+    q = "uuid,name,memory.total,driver_version,power.limit,pcie.link.gen.max,compute_cap,power.draw"
     try:
         p = run(["nvidia-smi", "--id=%d" % index, "--query-gpu=" + q,
                  "--format=csv,noheader,nounits"])
@@ -66,7 +66,7 @@ def _nvidia_gpu_info(index=0):
     if p.returncode != 0 or not p.stdout.strip():
         return {}
     parts = [x.strip() for x in p.stdout.strip().splitlines()[0].split(",")]
-    parts += [""] * (7 - len(parts))
+    parts += [""] * (8 - len(parts))
     return {
         "uuid": parts[0],
         "name": parts[1],
@@ -75,7 +75,7 @@ def _nvidia_gpu_info(index=0):
         "power_limit_w": _f(parts[4]),
         "pcie_gen": parts[5],
         "compute_cap": parts[6],
-        "power_readable": _f(parts[4]) is not None,
+        "power_readable": _f(parts[7]) is not None,
         "power_source": SRC_NVIDIA,
         "memory_architecture": "discrete",
         "vendor": "nvidia",
@@ -157,33 +157,33 @@ def _mac_gpu_info():
 
 
 def _mac_gpu_info_uncached():
-    chip = sysctl("machdep.cpu.brand_string") or "Apple Silicon"
     model = sysctl("hw.model") or ""
     memsize = sysctl("hw.memsize")
     total_mb = (float(memsize) / (1024 ** 2)) if memsize and memsize.isdigit() else None
     cores = None
-    name = chip
+    name = None
     try:
         p = run(["system_profiler", "-json", "SPDisplaysDataType"], timeout=30)
         if p.returncode == 0:
             import json
             entries = (json.loads(p.stdout or "{}").get("SPDisplaysDataType") or [])
             if entries:
-                name = entries[0].get("sppci_model") or chip
+                name = entries[0].get("sppci_model") or entries[0].get("_name")
                 raw = entries[0].get("sppci_cores") or entries[0].get("spdisplays_cores")
                 if raw:
                     digits = re.sub(r"[^0-9]", "", str(raw))
                     cores = int(digits) if digits else None
     except (OSError, ValueError, subprocess.SubprocessError):
         pass
-    ok, why = powermetrics_probe()
+    unified = bool(name and name.lower().startswith('apple '))
+    ok, why = powermetrics_probe() if name else (False, 'GPU inventory unavailable')
     return {
         "uuid": model or name,
         "name": name,
         # Unified memory: there is no separate VRAM pool, so the figure that
         # answers "how big a model can this hold" is the system total. Flagged
         # as unified so nothing compares it to a discrete card's VRAM blindly.
-        "vram_total_mb": total_mb,
+        "vram_total_mb": total_mb if unified else None,
         "driver": sysctl("kern.osproductversion") or "",
         "power_limit_w": None,
         "pcie_gen": "",
@@ -191,8 +191,8 @@ def _mac_gpu_info_uncached():
         "power_readable": ok,
         "power_source": SRC_POWERMETRICS if ok else SRC_NONE,
         "power_note": None if ok else why,
-        "memory_architecture": "unified",
-        "vendor": "apple",
+        "memory_architecture": "unified" if unified else None,
+        "vendor": "apple" if unified else None,
         "model_identifier": model,
     }
 
@@ -555,6 +555,8 @@ class PowerSampler:
                 self._record_sensor(row, gpu_index=index if self._gpu_meters else None)
         except (OSError, ValueError):
             pass
+        if not self._stop.is_set():
+            self.error = 'nvidia-smi telemetry stream ended unexpectedly'
 
     def _loop_powermetrics(self):
         """Parse streaming powermetrics blocks into samples.
@@ -588,20 +590,8 @@ class PowerSampler:
 
             gpu_mw = grab("gpu_mw")
             cpu_mw = grab("cpu_mw")
-            ane_mw = grab("ane_mw")
-            combined_mw = grab("combined_mw")
-            package_w = grab("package_w")
             gpu_w = (gpu_mw / 1000.0) if gpu_mw is not None else None
             cpu_w = (cpu_mw / 1000.0) if cpu_mw is not None else None
-            if cpu_w is not None and ane_mw:
-                cpu_w += ane_mw / 1000.0
-            if gpu_w is None and package_w is not None:
-                # Intel Mac: only a combined package figure exists. Report it in
-                # the GPU slot would be wrong, so leave GPU empty and let the
-                # package figure drive the system estimate via the CPU slot.
-                cpu_w = package_w
-            if combined_mw is not None and cpu_w is None and gpu_w is not None:
-                cpu_w = max(0.0, combined_mw / 1000.0 - gpu_w)
             if gpu_w is None and cpu_w is None:
                 return
             self._record_sensor((time.perf_counter(), gpu_w, grab("gpu_residency"), None,
@@ -620,6 +610,8 @@ class PowerSampler:
             flush(block)
         except (OSError, ValueError):
             pass
+        if not self._stop.is_set():
+            self.error = 'powermetrics telemetry stream ended unexpectedly'
 
     def stop(self):
         self._stop.set()
@@ -718,7 +710,7 @@ class PowerSampler:
         without extra drivers.
         """
         if cpu_w is not None:
-            return (gpu_w or 0.0) + cpu_w + self.other_idle_w
+            return gpu_w + cpu_w + self.other_idle_w if gpu_w is not None else None
         if gpu_w is None or cpu_util is None:
             return None
         return gpu_w + self.other_idle_w + self.cpu_tdp_w * cpu_util
@@ -768,7 +760,9 @@ class PowerSampler:
         dur = t1 - t0
         if len(inside) < 2:
             mid = (t0 + t1) / 2.0
-            near = min(rows, key=lambda r: abs(r[T] - mid))
+            # A missing in-window reading is evidence of incomplete coverage;
+            # do not replace it with an apparently complete outside sample.
+            near = inside[0] if inside else min(rows, key=lambda r: abs(r[T] - mid))
             if abs(near[T] - mid) > max(1.0, self.interval_ms / 1000.0 * 4):
                 return {'available': False, 'source': self.source, 'low_confidence': True, 'gpu_power_complete': False}
             gw = near[GPU_W]

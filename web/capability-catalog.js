@@ -35,10 +35,10 @@
     if(route==='/api/capabilities/runs')return{runs:(await getCatalog()).runs.map(item=>({...item.summary,community:true}))};
     if(route==='/api/capabilities/export.json'){
       const ids=(url.searchParams.get('ids')||'').split(',').filter(Boolean), entries=(await getCatalog()).runs.filter(item=>!ids.length||ids.includes(item.id));
-      return{capability_runs:await Promise.all(entries.map(item=>load(item.id)))};
+      return{capability_runs:await Promise.all(entries.map(async item=>{const {community,...run}=await load(item.id);return run;}))};
     }
     const match=route.match(/^\/api\/capabilities\/runs\/([^/]+)(?:\/download)?$/);
-    if(match)return load(decodeURIComponent(match[1]));
+    if(match){const run=await load(decodeURIComponent(match[1]));if(route.endsWith('/download')){const {community,...exported}=run;return exported;}return run;}
     throw new Error('Unsupported capability catalog operation.');
   }
   root.WatteverCapabilityCatalog={request,refresh(){catalog=null;cache.clear();}};

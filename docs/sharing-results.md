@@ -2,6 +2,8 @@
 
 The hosted Results view includes a shared catalog built from benchmark JSON files in this repository, alongside results stored in your browser. You can browse shared results without connecting a model provider or entering an API key. Shared entries are read-only; deleting one in the hosted view hides it in that browser and does not delete it from GitHub. Local browser results can be renamed and deleted locally.
 
+Select benchmarks in Results or evaluations in Capabilities, then use **Share** to download individual `<id>.json` files or export a bundle. Split bundles into individual files before contributing. Share provides GitHub upload and pull-request links for both result types; submit reviewed files through GitHub. Benchmark JSON can also be downloaded from Results; browser benchmark JSON import is available in the Results library. Capability imports require the local helper.
+
 ## Contribute a benchmark
 
 1. Run a benchmark using the [full helper](getting-started.md) or [browser mode](browser.md). Partial sessions and failures are useful contributions too.
@@ -25,9 +27,9 @@ Selected primary conditions remain selected when consolidation creates engine-sp
 
 ## Add missing tests later
 
-Same-file additions and repairs support managed LM Studio and generic helper endpoints. Reconnect the matching external endpoint in Run before using Results; connection details are not stored in public files, and model loading stays with the engine operator. Browser experiments require a new run. Separate-file resume is managed-only.
+Same-file additions and repairs support managed LM Studio and generic helper endpoints. Reconnect the matching external endpoint in Benchmarks before using Results; connection details are not stored in public files, and model loading stays with the engine operator. Browser experiments require a new run. Separate-file resume is managed-only.
 
-A benchmark does not need every planned case before you contribute it. To complete or extend a helper benchmark later, download its JSON and put it in the local helper's `results/runs/` directory using its `id` as the filename. Connect its engine in Run. In Results select it and choose **Add / rerun tests**. Existing models are preselected; select the models, sizes and query counts you want, review the preview, and choose **Add missing tests**. Existing terminal cases are preserved. Increase **Total repeats per test** to append repeats. To replace one specific measurement, choose its entry in **Tests to update**; previous attempts remain in history. Select **Retry failed tests** explicitly if you also want to retry failures and skipped cases.
+A benchmark does not need every planned case before you contribute it. To complete or extend a helper benchmark later, download its JSON and put it in the local helper's `results/runs/` directory using its `id` as the filename. Connect its engine in Benchmarks. In Results select it and choose **Add / rerun tests**. Existing models are preselected; select the models, sizes and query counts you want, review the preview, and choose **Add missing tests**. Existing terminal cases are preserved. Increase **Total repeats per test** to append repeats. To replace one specific measurement, choose its entry in **Tests to update**; previous attempts remain in history. Select **Retry failed tests** explicitly if you also want to retry failures and skipped cases.
 
 The helper checks hardware, selected GPU/driver and corpus for compatibility. Managed additions also check LM Studio version; external repairs require the saved endpoint identity and a fresh connection. Start a separate benchmark when required conditions differ or cannot be verified. The same file records the added session and the helper saves a backup before modifying it. To update a contribution, submit the updated file with the same ID in a pull request; the saved cases travel with it. Do not manually edit measurements or replace failures with zeroes.
 

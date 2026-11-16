@@ -13,6 +13,7 @@ import math
 import mmap
 import os
 from pathlib import Path
+import plistlib
 import re
 import statistics
 import subprocess
@@ -28,6 +29,8 @@ MIB = 1024 ** 2
 FILE_BYTES = 256 * MIB
 BLOCK_BYTES = 8 * MIB
 SAMPLES = 3
+MAX_STORAGE_VOLUMES = 8
+MAX_EXTRA_STORAGE_PROBES = 3
 _latest = None
 _latest_hardware_key = None
 
@@ -207,6 +210,132 @@ def saved_capture(machine, selected_gpu=None, sensors=None):
 
 def _unavailable(reason):
     return {"status": "unavailable", "reason": reason}
+
+
+def storage_coverage(machine, profile):
+    """Assess coverage from public inventory/capture only; never probe hardware.
+
+    Inventory has no stable physical IDs, so even an equal number of measured
+    disks is not proof that the same physical disks are still installed.
+    """
+    disks = (machine or {}).get('storage') or []
+    detected = sum(1 for disk in disks if isinstance(disk, dict) and
+                   str(disk.get('bus_type') or disk.get('interface') or '').lower() == 'nvme')
+    discovery = (profile or {}).get('storage_discovery') or {}
+    measured = discovery.get('nvme_measured', 0)
+    measured = measured if type(measured) is int and measured >= 0 else 0
+    status = 'incomplete' if detected > measured else 'unverified'
+    return {'nvme_detected': detected, 'nvme_measured': measured, 'status': status}
+
+
+def _json_readonly(args, timeout=8):
+    result = pu.run(args, timeout=timeout)
+    if result.returncode:
+        raise OSError('Storage discovery failed')
+    return json.loads(result.stdout)
+
+
+def _nvme_discover_windows():
+    # Disk numbers are used only to associate partitions, never as paths.
+    script = ("$ErrorActionPreference='Stop'; @((Get-Disk | Where-Object {$_.BusType -eq 'NVMe'}) | ForEach-Object {"
+              "$d=$_; $parts=@(Get-Partition -DiskNumber $d.Number -ErrorAction SilentlyContinue | ForEach-Object {"
+              "$p=$_; $v=Get-Volume -Partition $p -ErrorAction SilentlyContinue; "
+              "@{letter=[string]$p.DriveLetter; readonly=[bool]$d.IsReadOnly; offline=[bool]$d.IsOffline; "
+              "health=[string]$v.HealthStatus; filesystem=[string]$v.FileSystem; driveType=[string]$v.DriveType}}); "
+              "@{model=[string]$d.FriendlyName; partitions=$parts}}) | ConvertTo-Json -Depth 5 -Compress")
+    disks = _json_readonly(['powershell', '-NoProfile', '-NonInteractive', '-Command', script])
+    if isinstance(disks, dict):
+        disks = [disks]
+    found = []
+    for disk in disks or []:
+        parts = disk.get('partitions') or []
+        if isinstance(parts, dict):
+            parts = [parts]
+        candidates = []
+        for part in parts:
+            letter = part.get('letter') or ''
+            if not re.fullmatch(r'[A-Za-z]', letter):
+                continue
+            reason = ('Disk is offline' if part.get('offline') else 'Disk is read-only' if part.get('readonly') else
+                      'Volume is not a local filesystem' if part.get('driveType') not in ('Fixed', '3') else
+                      'Volume is locked or has no filesystem' if not part.get('filesystem') else None)
+            candidates.append({'path': letter.upper() + ':\\', 'volume': letter.upper() + ':', 'reason': reason})
+        found.append({'model': disk.get('model') or None, 'volumes': candidates})
+    return found
+
+
+def _nvme_discover_linux():
+    data = _json_readonly(['lsblk', '--json', '--bytes', '--output', 'NAME,TYPE,TRAN,MODEL,RO,FSTYPE,MOUNTPOINTS'])
+    found = []
+    for disk in data.get('blockdevices') or []:
+        if disk.get('type') != 'disk' or not (str(disk.get('tran') or '').lower() == 'nvme' or re.fullmatch(r'nvme\d+n\d+', str(disk.get('name') or ''))):
+            continue
+        volumes = []
+        def walk(node):
+            if node.get('type') not in ('disk', 'part'):
+                return  # Layered/RAID mappings cannot establish a single physical device.
+            mounts = node.get('mountpoints') or []
+            if isinstance(mounts, str):
+                mounts = [mounts]
+            for mount in mounts:
+                if isinstance(mount, str) and mount.startswith('/'):
+                    fs = str(node.get('fstype') or '').lower()
+                    reason = ('Volume is read-only' if node.get('ro') in (True, 1, '1') or disk.get('ro') in (True, 1, '1') else
+                              'Volume is not a local filesystem' if fs in ('nfs', 'nfs4', 'cifs', 'smb3', '9p', 'fuse.sshfs') else
+                              'Volume filesystem is unknown' if not fs else None)
+                    volumes.append({'path': mount, 'volume': 'NVMe mounted filesystem', 'reason': reason})
+            for child in node.get('children') or []:
+                walk(child)
+        walk(disk)
+        found.append({'model': disk.get('model') or None, 'volumes': volumes})
+    return found
+
+
+def _nvme_discover_mac():
+    deadline = time.monotonic() + 8
+    def plist(args):
+        remaining = deadline-time.monotonic()
+        if remaining <= 0:
+            raise subprocess.TimeoutExpired(args, 8)
+        result = pu.run(args, timeout=remaining)
+        if result.returncode:
+            raise OSError('Storage discovery failed')
+        return plistlib.loads(result.stdout.encode() if isinstance(result.stdout, str) else result.stdout)
+    listing = plist(['diskutil', 'list', '-plist'])
+    found = []
+    for disk in (listing.get('AllDisksAndPartitions') or [])[:16]:
+        identifier = disk.get('DeviceIdentifier')
+        if not identifier or not re.fullmatch(r'disk\d+', identifier):
+            continue
+        info = plist(['diskutil', 'info', '-plist', identifier])
+        if str(info.get('BusProtocol') or '').lower() != 'nvme':
+            continue
+        volumes = []
+        for partition in (disk.get('Partitions') or [])[:16]:
+            part = partition.get('DeviceIdentifier')
+            if not part or not re.fullmatch(r'disk\d+s\d+', part):
+                continue
+            detail = plist(['diskutil', 'info', '-plist', part])
+            mount = detail.get('MountPoint')
+            if mount and detail.get('Internal') is True and str(detail.get('BusProtocol') or '').lower() == 'nvme':
+                volumes.append({'path': mount, 'volume': 'NVMe mounted filesystem',
+                                'reason': None if detail.get('WritableVolume') is True else 'Volume is read-only or locked'})
+        found.append({'model': info.get('MediaName') or None, 'volumes': volumes})
+    return found
+
+
+def discover_nvme():
+    """Read-only discovery. Returned mount paths are private and must not be published."""
+    try:
+        if pu.IS_WINDOWS:
+            return _nvme_discover_windows(), None
+        if pu.IS_LINUX:
+            return _nvme_discover_linux(), None
+        if pu.IS_MAC:
+            return _nvme_discover_mac(), None
+        return [], 'NVMe discovery is unsupported on this platform'
+    except (OSError, ValueError, TypeError, KeyError, subprocess.SubprocessError, plistlib.InvalidFileException):
+        return [], 'NVMe discovery could not complete'
 
 
 def _summary(samples, **details):
@@ -472,10 +601,12 @@ def memory_probe(workers=1, buffer_bytes=64 * MIB, copies=8):
 
 
 def _worker(directory, gpu_index, extra_directories=None):
+    deadline = time.monotonic() + 62
     result = {"schema_version": 1, "captured_at": datetime.now(timezone.utc).isoformat(),
               "scope": "benchmark_client", "unit": "bytes_per_second",
               "protocol": "wattever-transfer-v1"}
-    for key, call in (("storage_to_ram", lambda: storage_probe(directory)),
+    primary_reason = extra_directories.get('primary_reason') if isinstance(extra_directories, dict) else None
+    for key, call in (("storage_to_ram", lambda: _unavailable(primary_reason) if primary_reason else storage_probe(directory)),
                       ("ram_copy_single", lambda: memory_probe()),
                       ("ram_copy_parallel", lambda: memory_probe(min(8, max(1, (os.cpu_count() or 2) // 2))))):
         try:
@@ -515,7 +646,36 @@ def _worker(directory, gpu_index, extra_directories=None):
             result['ram_to_vram'] = cuda_probe(gpu_index)
         except Exception as exc:
             result['ram_to_vram'] = _unavailable('Transfer probe could not complete (%s)' % type(exc).__name__)
-    if extra_directories:
+    if isinstance(extra_directories, dict):
+        plan = extra_directories
+        if plan.get('primary'):
+            result['storage_to_ram'].update(plan['primary'])
+        result['storage_volumes'] = []
+        # Leave time for serialisation and process exit within the outer 75 s.
+        for item in plan.get('items', []):
+            metadata = item['metadata']
+            if item.get('reason'):
+                measured = _unavailable(item['reason'])
+            elif time.monotonic() >= deadline:
+                measured = _unavailable('Storage probe skipped because the capture time budget was exhausted')
+            else:
+                try:
+                    child = subprocess.run([sys.executable, '-m', 'wattever.bandwidth', '--storage-worker', item['path']],
+                                           timeout=min(10, max(0.1, deadline-time.monotonic())),
+                                           capture_output=True, text=True, **pu.popen_kwargs())
+                    if child.returncode:
+                        raise ValueError('Storage worker failed')
+                    measured = json.loads(child.stdout)
+                    if measured.get('status') not in ('ok', 'unavailable'):
+                        raise ValueError('Invalid storage worker result')
+                except (OSError, ValueError, subprocess.SubprocessError):
+                    measured = _unavailable('Storage probe failed or exceeded its time budget')
+            result['storage_volumes'].append(dict(measured, **metadata))
+        discovery = dict(plan.get('discovery') or {})
+        nvme = [result['storage_to_ram']] + result['storage_volumes']
+        discovery['nvme_measured'] = sum(1 for item in nvme if item.get('bus_type') == 'NVMe' and item.get('status') == 'ok')
+        result['storage_discovery'] = discovery
+    elif extra_directories:
         result["storage_volumes"] = []
         for folder in extra_directories:
             try:
@@ -526,27 +686,124 @@ def _worker(directory, gpu_index, extra_directories=None):
     return result
 
 
+def _volume_key(path):
+    try:
+        return ('device', os.stat(path).st_dev)
+    except OSError:
+        return None
+
+
+def _directory_issue(path):
+    if not os.path.isdir(path):
+        return 'Volume is missing or unmounted'
+    if pu.IS_WINDOWS:
+        drive = Path(path).drive
+        if not drive or ct.windll.kernel32.GetDriveTypeW(drive + '\\') != 3:
+            return 'Volume is not a local fixed drive'
+    else:
+        try:
+            if os.statvfs(path).f_flag & os.ST_RDONLY:
+                return 'Volume is read-only'
+        except (OSError, AttributeError):
+            return 'Volume accessibility could not be verified'
+        if pu.IS_LINUX:
+            try:
+                with open('/proc/self/mountinfo', encoding='utf-8') as stream:
+                    matches = []
+                    for line in stream:
+                        fields = line.split()
+                        sep = fields.index('-')
+                        mount = fields[4].replace('\\040', ' ').replace('\\011', '\t').replace('\\134', '\\')
+                        if path == mount or path.startswith(mount.rstrip('/') + '/'):
+                            matches.append((len(mount), fields[sep+1]))
+                    if matches and max(matches)[1].lower() in ('nfs', 'nfs4', 'cifs', 'smb3', '9p', 'fuse.sshfs'):
+                        return 'Volume is not a local filesystem'
+            except (OSError, ValueError, IndexError):
+                return 'Volume filesystem could not be verified'
+    return None
+
+
+def _storage_plan(directory, directories, owned):
+    disks, error = discover_nvme()
+    plan = {'items': [], 'primary': None,
+            'discovery': {'nvme_detected': len(disks), 'nvme_measured': 0,
+                          'status': 'unavailable' if error else 'ok'}}
+    if error:
+        plan['discovery']['reason'] = error
+    seen = {_volume_key(directory)} - {None}
+    primary_key = _volume_key(directory)
+    eligible = 0
+    def add(path, metadata, reason=None):
+        nonlocal eligible
+        if len(plan['items']) >= MAX_STORAGE_VOLUMES:
+            return
+        if reason is None:
+            reason = _directory_issue(path)
+        key = _volume_key(path) if not reason else None
+        if key is not None and key in seen:
+            if key == primary_key and metadata.get('bus_type') == 'NVMe':
+                plan['primary'] = metadata
+            return
+        if key is not None:
+            seen.add(key)
+        scratch = None
+        if not reason:
+            if eligible >= MAX_EXTRA_STORAGE_PROBES:
+                reason = 'Storage probe skipped because the per-capture volume limit was reached'
+            else:
+                eligible += 1
+                try:
+                    scratch = owned.enter_context(tempfile.TemporaryDirectory(prefix='.transfer-', dir=path))
+                except OSError:
+                    reason = 'Volume is not writable or could not be accessed'
+        plan['items'].append({'path': scratch, 'metadata': metadata, 'reason': reason})
+    for disk in disks:
+        metadata = {'bus_type': 'NVMe', 'device_model': disk.get('model'), 'volume': 'NVMe volume'}
+        volumes = disk.get('volumes') or []
+        if not volumes:
+            add(None, metadata, 'No accessible mounted volume could be safely mapped to this NVMe device')
+            continue
+        selected = next((v for v in volumes if not v.get('reason') and not _directory_issue(v.get('path'))), volumes[0])
+        metadata['volume'] = selected.get('volume') or 'NVMe volume'
+        add(selected.get('path'), metadata, selected.get('reason'))
+    for folder in directories or []:
+        try:
+            path = str(Path(folder).resolve())
+            label = Path(path).drive or 'additional filesystem'
+            add(path, {'volume': label})
+        except (OSError, ValueError, TypeError):
+            add(None, {'volume': 'additional filesystem'}, 'Additional volume could not be resolved')
+    plan['discovery']['omitted'] = max(0, len(disks) - MAX_STORAGE_VOLUMES - (1 if plan['primary'] else 0))
+    return plan
+
+
 def measure(gpu_index=0, directory=None, directories=None):
     """Run before inference; bounded child process releases its CUDA context on exit."""
     global _latest, _latest_hardware_key
     directory = str(Path(directory or Path(__file__).resolve().parents[1] / "results").resolve())
+    plan = None
     try:
-        Path(directory).mkdir(parents=True, exist_ok=True)
+        try:
+            Path(directory).mkdir(parents=True, exist_ok=True)
+            primary_reason = _directory_issue(directory)
+        except OSError:
+            primary_reason = 'Primary volume is not writable or could not be accessed'
         # The child owns only this freshly created directory. Timeout cleanup is
         # performed after subprocess.run has killed and reaped the child.
         with ExitStack() as owned:
-            scratch = owned.enter_context(tempfile.TemporaryDirectory(prefix=".transfer-", dir=directory))
-            assert Path(scratch).resolve().parent == Path(directory)
-            extras = []
-            for folder in dict.fromkeys(str(Path(p).resolve()) for p in (directories or [])):
-                if folder == directory:
-                    continue
-                if not Path(folder).is_dir():
-                    raise ValueError("Additional storage folders must exist")
-                extras.append(owned.enter_context(tempfile.TemporaryDirectory(prefix=".transfer-", dir=folder)))
+            try:
+                scratch = owned.enter_context(tempfile.TemporaryDirectory(prefix=".transfer-", dir=directory)) if not primary_reason else None
+            except OSError:
+                scratch = None
+                primary_reason = 'Primary volume is not writable or could not be accessed'
+            if scratch is None:
+                scratch = owned.enter_context(tempfile.TemporaryDirectory(prefix=".transfer-"))
+            plan = _storage_plan(directory, directories, owned)
+            if primary_reason:
+                plan['primary_reason'] = primary_reason
             args = [sys.executable, "-m", "wattever.bandwidth", "--worker", scratch, str(gpu_index)]
-            if extras:
-                args.append(json.dumps(extras))
+            if plan['items'] or plan['primary'] or primary_reason or plan['discovery']['nvme_detected'] or plan['discovery']['status'] != 'ok':
+                args.append(json.dumps(plan))
             result = subprocess.run(args, timeout=75, capture_output=True, text=True,
                                     cwd=str(Path(__file__).resolve().parents[1]), **pu.popen_kwargs())
         if result.returncode:
@@ -564,12 +821,19 @@ def measure(gpu_index=0, directory=None, directories=None):
         _latest = copy.deepcopy(profile)
         return profile
     except (OSError, ValueError, subprocess.SubprocessError):
-        return {"schema_version": 1, "captured_at": datetime.now(timezone.utc).isoformat(),
+        failure = {"schema_version": 1, "captured_at": datetime.now(timezone.utc).isoformat(),
                 "scope": "benchmark_client", "protocol": "wattever-transfer-v1", "unit": "bytes_per_second",
                 "storage_to_ram": _unavailable("Probe worker failed or exceeded 75 seconds"),
                 "ram_to_vram": _unavailable("Probe worker failed or exceeded 75 seconds"),
                 "ram_copy_single": _unavailable("Probe worker failed or exceeded 75 seconds"),
                 "ram_copy_parallel": _unavailable("Probe worker failed or exceeded 75 seconds")}
+        if plan:
+            if plan.get('primary'):
+                failure['storage_to_ram'].update(plan['primary'])
+            failure['storage_volumes'] = [dict(_unavailable(item.get('reason') or 'Probe worker failed or exceeded 75 seconds'),
+                                               **item['metadata']) for item in plan['items']]
+            failure['storage_discovery'] = dict(plan['discovery'], nvme_measured=0)
+        return failure
 
 
 def attach(run, profile, *, provenance="measured_before_session"):
@@ -647,6 +911,12 @@ def backfill(run, current, profile):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) == 3 and sys.argv[1] == '--storage-worker':
+        try:
+            print(json.dumps(storage_probe(sys.argv[2])))
+        except Exception as exc:
+            print(json.dumps(_unavailable('Storage probe could not complete (%s)' % type(exc).__name__)))
+        raise SystemExit(0)
     if len(sys.argv) not in (4, 5) or sys.argv[1] != "--worker":
         raise SystemExit("Internal bandwidth worker requires a directory and GPU sensor index")
     print(json.dumps(_worker(sys.argv[2], int(sys.argv[3]), json.loads(sys.argv[4]) if len(sys.argv) == 5 else None)))

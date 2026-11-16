@@ -403,11 +403,16 @@ class BandwidthTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
             def worker(args, **kwargs):
                 from types import SimpleNamespace
-                extras=json.loads(args[-1])
-                self.assertEqual(len(extras),1)
-                self.assertEqual(Path(extras[0]).parent,Path(second).resolve())
+                plan=json.loads(args[-1])
+                self.assertEqual(len(plan['items']),1)
+                self.assertEqual(Path(plan['items'][0]['path']).parent,Path(second).resolve())
                 return SimpleNamespace(returncode=0,stdout=json.dumps({"protocol":"wattever-transfer-v1"}))
-            with patch.object(bandwidth.subprocess,'run',side_effect=worker):
+            def key(path):
+                return ('device', 1 if Path(path).resolve().is_relative_to(Path(first).resolve()) else 2)
+            with patch.object(bandwidth.subprocess,'run',side_effect=worker), \
+                 patch.object(bandwidth, 'discover_nvme', return_value=([], None)), \
+                 patch.object(bandwidth, '_directory_issue', return_value=None), \
+                 patch.object(bandwidth, '_volume_key', side_effect=key):
                 bandwidth.measure(directory=first,directories=[first,second,second])
             self.assertEqual(list(Path(first).iterdir()),[])
             self.assertEqual(list(Path(second).iterdir()),[])

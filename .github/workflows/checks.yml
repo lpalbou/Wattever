@@ -34,11 +34,26 @@ jobs:
       - run: node tests/test_machine_visual.js
       - run: node tests/test_chart_conditions.js
       - run: node tests/test_concurrency_analysis.js
+      - run: node tests/test_concurrency_export.js
+      - run: node tests/test_adversarial_collective_views.js
+      - run: node tests/test_adversarial_energy_count.js
+      - run: node tests/test_adversarial_live_headers.js
+      - run: node tests/test_adversarial_detail_scope.js
+      - run: node tests/test_system_ui.js
+      - run: node tests/test_system_dashboard.js
+      - run: node tests/test_adversarial_system_history_review.js
+      - run: node tests/test_adversarial_results_even_repeat_median.js
+      - run: node tests/test_results_redesign.js
+      - run: node tests/test_adversarial_results_controls.js
+      - run: node tests/test_results_coverage.js
+      - run: node tests/test_decode_phase_metrics.js
       - run: node tests/test_endpoint_ui.js
       - run: node tests/test_browser_endpoint_identity.js
       - run: node tests/test_results_endpoint_catalog.js
       - run: node tests/test_capability_metrics.js
       - run: node tests/test_capabilities_ui.js
+      - run: node tests/test_capability_catalog.js
+      - run: node tests/test_capability_share.js
       - run: node tests/test_capability_live_ui.js
       - run: node tests/test_extension_ui.js
       - run: node tests/test_metric_selection.js

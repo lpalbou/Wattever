@@ -137,6 +137,63 @@ def _probe_identity(cfg,budget=2.8):
     return dict(result)
 
 
+def lookup_base_url(endpoint_id):
+    """Resolve a loopback/private registry id back to its API base URL."""
+    if not isinstance(endpoint_id, str) or not endpoint_id:
+        return None
+    try:
+        with open(ROUTE_REGISTRY_PATH, encoding="utf-8") as handle:
+            registry = json.load(handle)
+        routes = registry.get("routes") if isinstance(registry, dict) else None
+        if not isinstance(routes, dict):
+            return None
+        for base, route in routes.items():
+            if route == endpoint_id:
+                return base
+    except (OSError, ValueError, TypeError):
+        return None
+    return None
+
+
+def _strata_maya_companion_url(base):
+    parsed = urllib.parse.urlsplit(base)
+    if parsed.port != 8086 or _location(base) != "local":
+        return None
+    host = parsed.hostname
+    if not host:
+        return None
+    scheme = parsed.scheme or "http"
+    path = parsed.path or "/v1"
+    return urllib.parse.urlunsplit((scheme, f"{host}:8097", path, "", ""))
+
+
+def _merge_strata_companion_models(cfg, models):
+    """Strata Control lists prepared Maya GLM on :8097 even when :8086 omits it."""
+    service = (cfg.get("endpoint_identity") or {}).get("service")
+    if service not in ("Strata", "unknown"):
+        return models
+    companion = _strata_maya_companion_url(cfg.get("endpoint_base_url") or "")
+    if not companion:
+        return models
+    known = {entry["id"] for entry in models}
+    headers = {"Accept": "application/json"}
+    key = api_key(cfg)
+    if key:
+        headers["Authorization"] = "Bearer " + key
+    try:
+        request = urllib.request.Request(companion + "/models", headers=headers)
+        with open_request(request, 3) as response:
+            payload = json.load(response)
+        data = payload.get("data")
+        if not isinstance(data, list):
+            return models
+        extra = [_model_entry(item) for item in data
+                 if isinstance(item, dict) and isinstance(item.get("id"), str) and item["id"] and item["id"] not in known]
+        return models + extra
+    except Exception:
+        return models
+
+
 def _opaque_route(base,service,location):
     cache_key=(ROUTE_REGISTRY_PATH,base)
     with _IDENTITY_LOCK:
@@ -434,8 +491,9 @@ def list_models(cfg, timeout=10):
             resolve_identity(cfg,probe=False)
         data = payload.get("data")
         if not isinstance(data, list): raise ValueError("Expected an OpenAI model list with a data array.")
-        return [_model_entry(m) for m in data
-                if isinstance(m, dict) and isinstance(m.get("id"), str) and m["id"]]
+        models = [_model_entry(m) for m in data
+                  if isinstance(m, dict) and isinstance(m.get("id"), str) and m["id"]]
+        return _merge_strata_companion_models(cfg, models)
     except Exception as exc:
         raise ValueError("Model discovery failed: %s. You can enter model IDs manually." % sanitize_error(exc, cfg)) from None
 

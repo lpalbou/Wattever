@@ -65,6 +65,44 @@ class MemoryTests(unittest.TestCase):
 
 
 class TelemetryTests(unittest.TestCase):
+    def test_nvidia_power_readability_uses_draw_not_limit(self):
+        output = 'uuid, GPU, 16000, driver, 250, 4, 8.9, [N/A]\n'
+        with patch.object(power, 'run', return_value=SimpleNamespace(returncode=0, stdout=output)):
+            self.assertFalse(power._nvidia_gpu_info()['power_readable'])
+
+    def test_partial_power_does_not_become_a_system_total(self):
+        sampler = power.PowerSampler()
+        self.assertIsNone(sampler._system_w(None, .5, cpu_w=25))
+        self.assertEqual(sampler._system_w(30, .5, cpu_w=25), 115)
+
+    def test_powermetrics_keeps_ane_out_of_cpu_reading(self):
+        sampler = power.PowerSampler()
+        process = SimpleNamespace(stdout=io.StringIO(
+            '*** Sampled system activity\nGPU Power: 30000 mW\n'
+            'CPU Power: 20000 mW\nANE Power: 5000 mW\n'))
+        with patch.object(power, 'popen', return_value=process):
+            sampler._loop_powermetrics()
+        self.assertEqual(sampler._sensor_row[power.GPU_W], 30)
+        self.assertEqual(sampler._sensor_row[power.CPU_W], 20)
+        self.assertIn('ended unexpectedly', sampler.error)
+
+    def test_mac_inventory_does_not_invent_a_gpu_or_unified_memory(self):
+        def sysctl(name):
+            return {'machdep.cpu.brand_string': 'Intel Core i7', 'hw.memsize': '17179869184'}.get(name)
+        response = SimpleNamespace(returncode=0, stdout='{"SPDisplaysDataType": [{"sppci_model": "AMD Radeon"}]}')
+        with patch.object(power, 'sysctl', side_effect=sysctl), patch.object(power, 'run', return_value=response), \
+             patch.object(power, 'powermetrics_probe', return_value=(False, 'unavailable')):
+            info = power._mac_gpu_info_uncached()
+        self.assertEqual(info['name'], 'AMD Radeon')
+        self.assertIsNone(info['vram_total_mb'])
+        self.assertIsNone(info['memory_architecture'])
+        response.stdout = '{"SPDisplaysDataType": []}'
+        with patch.object(power, 'sysctl', side_effect=sysctl), patch.object(power, 'run', return_value=response), \
+             patch.object(power, 'powermetrics_probe') as probe:
+            info = power._mac_gpu_info_uncached()
+        self.assertIsNone(info['name'])
+        probe.assert_not_called()
+
     def sampler(self):
         sampler = power.PowerSampler(interval_ms=1000)
         sampler._started_perf = 100

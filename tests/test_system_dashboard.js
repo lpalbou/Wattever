@@ -1,0 +1,34 @@
+const assert=require('node:assert/strict');
+const {Dashboard,catalog,value,append,segments,nearest}=require('../web/system-dashboard.js');
+const metrics=catalog({gpus:[{index:0}]});
+const ram=metrics.find(m=>m.key==='system_memory_used_bytes');
+assert.equal(value({system_memory_used_bytes:3*1073741824},ram),3);
+const watts=metrics.find(m=>m.key==='gpu:0:gpu_w');
+assert.equal(value({gpus:[{index:0,gpu_w:0}]},watts),0,'An observed zero is distinct from missing telemetry');
+assert.equal(value({gpus:[{index:1,gpu_w:99}]},watts),null,'Do not copy another card\'s reading');
+assert.equal(value({gpu_w:null},metrics.find(m=>m.key==='gpu_w')),null);
+assert(!catalog({}).some(m=>m.key.startsWith('gpu:')),'No invented per-card device when inventory is missing');
+const points=[];
+const sample=(time,age=0)=>({timestamp:time,telemetry:{sample_age_s:age,cpu_util_percent:time%100}});
+assert(append(points,sample(100)));
+assert(!append(points,sample(100)),'Repeated sensor observations must not become new samples');
+assert(!append(points,sample(105,5)),'Stale observations must not enter history as fresh values');
+assert(!append(points,{timestamp:110,telemetry:null}));
+for(let i=101;i<=1100;i++)append(points,sample(i));
+assert.equal(points.length,900,'Bound history retention even during long sessions');
+assert.equal(points.at(-1).time,1100);
+const cpu=metrics.find(m=>m.key==='cpu_util_percent');
+const gaps=[{time:0,telemetry:{cpu_util_percent:10}},{time:1,telemetry:{cpu_util_percent:20}},
+  {time:2,telemetry:{}},{time:3,telemetry:{cpu_util_percent:30}},
+  {time:10,telemetry:{cpu_util_percent:40}}];
+const paths=segments(gaps,cpu,t=>t,v=>v);
+assert.equal(paths.length,3,'Missing sensors and long gaps split line paths instead of interpolating');
+assert.equal(paths[0],'M0.00,10.00 L1.00,20.00');
+assert.equal(nearest(gaps,6),null,'An empty interval has no inspectable observation');
+assert.equal(nearest(gaps,10).time,10);
+assert.notEqual(cpu.dash,metrics.find(m=>m.key==='gpu:0:gpu_util').dash,'Overlapping colors must have distinct line patterns');
+const state={now:2000,paused:false,points:[{time:1000},{time:1980}],window:120,end:Dashboard.prototype.end};
+assert.deepEqual(Dashboard.prototype.visible.call(state),[{time:1980}],'The window advances with wall time even without fresh readings');
+state.paused=true;state.pausedAt=1100;
+assert.deepEqual(Dashboard.prototype.visible.call(state),[{time:1000}],'An explicitly paused window remains anchored to its pause time');
+console.log('System dashboard sensor scopes, units, history retention and gaps passed');

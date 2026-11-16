@@ -12,7 +12,7 @@ const elements = {
   '#power-interval': {value: '150'}, '#run-label': {value: 'run'}, '#run-notes': {value: 'notes'},
   '#mtp-chips input:checked': {value: 'off'},
 };
-const context = {Charts: {fmtNum: String}, document: {querySelector: (s) => elements[s], querySelectorAll: () => []}};
+const context = {WatteverConcurrency: require('../web/concurrency.js'), Charts: {fmtNum: String}, document: {querySelector: (s) => elements[s], querySelectorAll: () => []}};
 vm.createContext(context);
 vm.runInContext(source, context);
 vm.runInContext(`
@@ -24,9 +24,8 @@ vm.runInContext(`
   if (JSON.stringify(shared).includes('private') || benchmarkIncompleteNotice(shared).includes('WinError') || !benchmarkIncompleteNotice(shared).includes('24 unrecorded cases')) throw Error('shared diagnostic leakage');
   if (shared.notes !== 'ordinary setup notes' || shared.hardware.gpus[0].name !== 'Test GPU' || shared.hardware.cpu.name !== 'Test CPU' || shared.config.gpu_offload !== 'max' || shared.sessions[0].config.context_policy !== 'fixed') throw Error('shared hardware/settings provenance lost');
   if(benchmarkIncompleteNotice({status:'completed',remaining_tests:0}) || benchmarkIncompleteNotice({status:'running',remaining_tests:24})) throw Error('Completed and active benchmarks must not show stale incomplete warnings');
-  if ([...through(CONCURRENCY_PRESETS, 5)].join(',') !== '1,2,3,4,5') throw Error('select five');
-  if ([...through(CONCURRENCY_PRESETS, 2)].join(',') !== '1,2') throw Error('lower selection');
-  if ([...through([512,5000,10000,20000,40000], 20000)].join(',') !== '512,5000,10000,20000') throw Error('context selection');
+  const levels = new Set([1, 5]); toggleLevel(levels, 2); toggleLevel(levels, 1);
+  if ([...levels].sort((a,b)=>a-b).join(',') !== '2,5') throw Error('independent selections');
   state.env = {defaults: {other_idle_w: 10, cpu_tdp_w: 25, power_interval_ms: 200}};
 
   state.metrics = new Set(['prefill_tps', 'decode_tps', 'ttft_s']);
@@ -63,15 +62,16 @@ vm.runInContext(`
   const minimal = generatedMetadata({}, cfg);
   if (minimal.label !== 'Local benchmark' || minimal.label.includes('undefined')) throw Error('missing hardware metadata');
   const rows = [
-    {model:'m', target_tokens:512, concurrency:1, status:'ok', aggregate_completion_tps:999, prefill_tps:999},
-    {model:'m', target_tokens:512, concurrency:10, status:'ok', aggregate_completion_tps:10, prefill_tps:100},
-    {model:'m', target_tokens:512, concurrency:10, status:'ok', aggregate_completion_tps:30, prefill_tps:10},
-    {model:'m', target_tokens:512, concurrency:10, status:'ok', aggregate_completion_tps:20, prefill_tps:30},
+    {model:'m', target_tokens:512, concurrency:1, status:'ok', decode_tps:999, prefill_tps:999},
+    {model:'m', target_tokens:512, concurrency:10, status:'ok', wall_s:10, requests:Array.from({length:10},()=>({status:'ok',completion_tokens:10}))},
+    {model:'m', target_tokens:512, concurrency:10, status:'ok', wall_s:10, requests:Array.from({length:10},()=>({status:'ok',completion_tokens:30}))},
+    {model:'m', target_tokens:512, concurrency:10, status:'ok', wall_s:10, requests:Array.from({length:10},()=>({status:'ok',completion_tokens:20}))},
     {model:'m', target_tokens:1000, concurrency:1, status:'failed', fail_kind:'error'}
   ];
   const run = {id:'r', results:rows};
-  if (pick(run, 'm', 512, false, METRICS.aggregate_completion_tps).aggregate_completion_tps !== 20) throw Error('metric median or concurrency');
-  if (pointsFor(run, 'm', METRICS.aggregate_completion_tps, false)[0].y !== 20) throw Error('points');
+  state.comparisonConcurrency = 10;
+  if (METRICS.group_output_tps.get(pick(run, 'm', 512, false, METRICS.group_output_tps)) !== 20) throw Error('metric median or concurrency');
+  if (pointsFor(run, 'm', METRICS.group_output_tps, false)[0].y !== 20) throw Error('points');
   if (failuresFor(run, 'm', false).length !== 0) throw Error('failure filter');
   state.comparisonConcurrency = 2;
   if (tracksFor([run]).length !== 0) throw Error('track filter');

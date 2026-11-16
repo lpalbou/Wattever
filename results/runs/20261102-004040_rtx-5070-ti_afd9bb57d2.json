@@ -1177,7 +1177,6 @@
    "completed_requests": 2,
    "wall_s": 5.53030200000012,
    "aggregate_completion_tokens": 390,
-   "aggregate_completion_tps": 70.52056108328108,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 5626.0,
    "group_power": {
@@ -1280,7 +1279,16 @@
     "configuration_id": "43833e20e383cc541b1c3182d1ed74684523bea49f22c723f26d6a4dfa5d6724"
    },
    "configuration_id": "43833e20e383cc541b1c3182d1ed74684523bea49f22c723f26d6a4dfa5d6724",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 382.7698273578581,
+   "decode_tps": 70.52056108328108,
+   "ttft_s": 2.934881100000098,
+   "prompt_tokens": 562,
+   "completion_tokens": 390,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-e4b",
@@ -1392,7 +1400,6 @@
    "completed_requests": 2,
    "wall_s": 6.620248899999979,
    "aggregate_completion_tokens": 352,
-   "aggregate_completion_tps": 53.17020633468949,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 5834.0,
    "group_power": {
@@ -1495,7 +1502,16 @@
     "configuration_id": "43833e20e383cc541b1c3182d1ed74684523bea49f22c723f26d6a4dfa5d6724"
    },
    "configuration_id": "43833e20e383cc541b1c3182d1ed74684523bea49f22c723f26d6a4dfa5d6724",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 2527.0893220720336,
+   "decode_tps": 53.17020633468949,
+   "ttft_s": 3.8816798499998413,
+   "prompt_tokens": 5193,
+   "completion_tokens": 352,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-e4b",
@@ -1607,7 +1623,6 @@
    "completed_requests": 2,
    "wall_s": 8.725994899999932,
    "aggregate_completion_tokens": 366,
-   "aggregate_completion_tps": 41.94364129183743,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 5788.0,
    "group_power": {
@@ -1710,7 +1725,16 @@
     "configuration_id": "43833e20e383cc541b1c3182d1ed74684523bea49f22c723f26d6a4dfa5d6724"
    },
    "configuration_id": "43833e20e383cc541b1c3182d1ed74684523bea49f22c723f26d6a4dfa5d6724",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 3251.204088641415,
+   "decode_tps": 41.94364129183743,
+   "ttft_s": 5.117383049999944,
+   "prompt_tokens": 9990,
+   "completion_tokens": 366,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-e4b",
@@ -1822,7 +1846,6 @@
    "completed_requests": 2,
    "wall_s": 11.302162899999985,
    "aggregate_completion_tokens": 374,
-   "aggregate_completion_tps": 33.09101127891198,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 6206.0,
    "group_power": {
@@ -1925,7 +1948,16 @@
     "configuration_id": "43833e20e383cc541b1c3182d1ed74684523bea49f22c723f26d6a4dfa5d6724"
    },
    "configuration_id": "43833e20e383cc541b1c3182d1ed74684523bea49f22c723f26d6a4dfa5d6724",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 4558.314190962473,
+   "decode_tps": 33.09101127891198,
+   "ttft_s": 7.272263599999974,
+   "prompt_tokens": 19464,
+   "completion_tokens": 374,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-e4b",
@@ -2037,7 +2069,6 @@
    "completed_requests": 2,
    "wall_s": 21.44542720000004,
    "aggregate_completion_tokens": 350,
-   "aggregate_completion_tps": 16.320495587982474,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 6944.0,
    "group_power": {
@@ -2140,7 +2171,16 @@
     "configuration_id": "43833e20e383cc541b1c3182d1ed74684523bea49f22c723f26d6a4dfa5d6724"
    },
    "configuration_id": "43833e20e383cc541b1c3182d1ed74684523bea49f22c723f26d6a4dfa5d6724",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 4258.539079486069,
+   "decode_tps": 16.320495587982474,
+   "ttft_s": 14.232321200000001,
+   "prompt_tokens": 39438,
+   "completion_tokens": 350,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-e4b",
@@ -2252,7 +2292,6 @@
    "completed_requests": 2,
    "wall_s": 54.775513100000126,
    "aggregate_completion_tokens": 389,
-   "aggregate_completion_tps": 7.101713484451123,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 8426.0,
    "group_power": {
@@ -2355,7 +2394,16 @@
     "configuration_id": "43833e20e383cc541b1c3182d1ed74684523bea49f22c723f26d6a4dfa5d6724"
    },
    "configuration_id": "43833e20e383cc541b1c3182d1ed74684523bea49f22c723f26d6a4dfa5d6724",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 3153.3596082393683,
+   "decode_tps": 7.101713484451123,
+   "ttft_s": 35.9336558,
+   "prompt_tokens": 80432,
+   "completion_tokens": 389,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen/qwen3.5-9b",
@@ -3451,7 +3499,6 @@
    "completed_requests": 2,
    "wall_s": 5.744311400000015,
    "aggregate_completion_tokens": 426,
-   "aggregate_completion_tps": 74.1603249433864,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 7516.0,
    "group_power": {
@@ -3554,7 +3601,16 @@
     "configuration_id": "6b61a53796b5636f995ed656480c568977764e927ea4d0810ba6893ac01637eb"
    },
    "configuration_id": "6b61a53796b5636f995ed656480c568977764e927ea4d0810ba6893ac01637eb",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 464.2112533879699,
+   "decode_tps": 74.1603249433864,
+   "ttft_s": 2.4469989499999656,
+   "prompt_tokens": 568,
+   "completion_tokens": 426,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen/qwen3.5-9b",
@@ -3666,7 +3722,6 @@
    "completed_requests": 2,
    "wall_s": 6.899015700000064,
    "aggregate_completion_tokens": 383,
-   "aggregate_completion_tps": 55.51516573588845,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 7891.0,
    "group_power": {
@@ -3769,7 +3824,16 @@
     "configuration_id": "6b61a53796b5636f995ed656480c568977764e927ea4d0810ba6893ac01637eb"
    },
    "configuration_id": "6b61a53796b5636f995ed656480c568977764e927ea4d0810ba6893ac01637eb",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 2656.795007421579,
+   "decode_tps": 55.51516573588845,
+   "ttft_s": 3.8474585500000558,
+   "prompt_tokens": 5226,
+   "completion_tokens": 383,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen/qwen3.5-9b",
@@ -3881,7 +3945,6 @@
    "completed_requests": 2,
    "wall_s": 8.534766199999922,
    "aggregate_completion_tokens": 350,
-   "aggregate_completion_tps": 41.00873905602747,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 8281.0,
    "group_power": {
@@ -3984,7 +4047,16 @@
     "configuration_id": "6b61a53796b5636f995ed656480c568977764e927ea4d0810ba6893ac01637eb"
    },
    "configuration_id": "6b61a53796b5636f995ed656480c568977764e927ea4d0810ba6893ac01637eb",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 3492.9712455049544,
+   "decode_tps": 41.00873905602747,
+   "ttft_s": 5.139960299999984,
+   "prompt_tokens": 10015,
+   "completion_tokens": 350,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen/qwen3.5-9b",
@@ -4096,7 +4168,6 @@
    "completed_requests": 2,
    "wall_s": 13.080142999999907,
    "aggregate_completion_tokens": 357,
-   "aggregate_completion_tps": 27.293279591821168,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 9017.0,
    "group_power": {
@@ -4199,7 +4270,16 @@
     "configuration_id": "6b61a53796b5636f995ed656480c568977764e927ea4d0810ba6893ac01637eb"
    },
    "configuration_id": "6b61a53796b5636f995ed656480c568977764e927ea4d0810ba6893ac01637eb",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 3863.042742113105,
+   "decode_tps": 27.293279591821168,
+   "ttft_s": 8.283478849999938,
+   "prompt_tokens": 19576,
+   "completion_tokens": 357,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen/qwen3.5-9b",
@@ -4311,7 +4391,6 @@
    "completed_requests": 2,
    "wall_s": 25.829064400000107,
    "aggregate_completion_tokens": 336,
-   "aggregate_completion_tps": 13.008601271674348,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 10203.0,
    "group_power": {
@@ -4414,7 +4493,16 @@
     "configuration_id": "6b61a53796b5636f995ed656480c568977764e927ea4d0810ba6893ac01637eb"
    },
    "configuration_id": "6b61a53796b5636f995ed656480c568977764e927ea4d0810ba6893ac01637eb",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 3480.4945616782925,
+   "decode_tps": 13.008601271674348,
+   "ttft_s": 17.054767099999935,
+   "prompt_tokens": 39536,
+   "completion_tokens": 336,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen/qwen3.5-9b",
@@ -4526,7 +4614,6 @@
    "completed_requests": 2,
    "wall_s": 65.60413459999995,
    "aggregate_completion_tokens": 336,
-   "aggregate_completion_tps": 5.12162841638948,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 13022.0,
    "group_power": {
@@ -4629,7 +4716,16 @@
     "configuration_id": "6b61a53796b5636f995ed656480c568977764e927ea4d0810ba6893ac01637eb"
    },
    "configuration_id": "6b61a53796b5636f995ed656480c568977764e927ea4d0810ba6893ac01637eb",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 2601.0446740479556,
+   "decode_tps": 5.12162841638948,
+   "ttft_s": 42.747526950000065,
+   "prompt_tokens": 80277,
+   "completion_tokens": 336,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "spark-x2.6-4b",
@@ -5725,7 +5821,6 @@
    "completed_requests": 2,
    "wall_s": 4.610102300000108,
    "aggregate_completion_tokens": 417,
-   "aggregate_completion_tps": 90.45352420921121,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 4430.0,
    "group_power": {
@@ -5828,7 +5923,16 @@
     "configuration_id": "48a8e5ea2fd1adcb6b96adeaf19e0965cf788481ea8120b5045adcc7c0e6a392"
    },
    "configuration_id": "48a8e5ea2fd1adcb6b96adeaf19e0965cf788481ea8120b5045adcc7c0e6a392",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 463.24457225381525,
+   "decode_tps": 90.45352420921121,
+   "ttft_s": 2.4680188500000213,
+   "prompt_tokens": 574,
+   "completion_tokens": 417,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "spark-x2.6-4b",
@@ -5940,7 +6044,6 @@
    "completed_requests": 2,
    "wall_s": 5.643204499999911,
    "aggregate_completion_tokens": 404,
-   "aggregate_completion_tps": 71.5905298133368,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 4823.0,
    "group_power": {
@@ -6043,7 +6146,16 @@
     "configuration_id": "48a8e5ea2fd1adcb6b96adeaf19e0965cf788481ea8120b5045adcc7c0e6a392"
    },
    "configuration_id": "48a8e5ea2fd1adcb6b96adeaf19e0965cf788481ea8120b5045adcc7c0e6a392",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 2897.275741031479,
+   "decode_tps": 71.5905298133368,
+   "ttft_s": 3.486136800000054,
+   "prompt_tokens": 5160,
+   "completion_tokens": 404,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "spark-x2.6-4b",
@@ -6155,7 +6267,6 @@
    "completed_requests": 2,
    "wall_s": 7.290111799999977,
    "aggregate_completion_tokens": 460,
-   "aggregate_completion_tps": 63.09916948050117,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 5245.0,
    "group_power": {
@@ -6258,7 +6369,16 @@
     "configuration_id": "48a8e5ea2fd1adcb6b96adeaf19e0965cf788481ea8120b5045adcc7c0e6a392"
    },
    "configuration_id": "48a8e5ea2fd1adcb6b96adeaf19e0965cf788481ea8120b5045adcc7c0e6a392",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 4174.658318595877,
+   "decode_tps": 63.09916948050117,
+   "ttft_s": 4.357875449999938,
+   "prompt_tokens": 10052,
+   "completion_tokens": 460,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "spark-x2.6-4b",
@@ -6370,7 +6490,6 @@
    "completed_requests": 2,
    "wall_s": 11.273096399999986,
    "aggregate_completion_tokens": 500,
-   "aggregate_completion_tps": 44.35338635088765,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 5793.0,
    "group_power": {
@@ -6473,7 +6592,16 @@
     "configuration_id": "48a8e5ea2fd1adcb6b96adeaf19e0965cf788481ea8120b5045adcc7c0e6a392"
    },
    "configuration_id": "48a8e5ea2fd1adcb6b96adeaf19e0965cf788481ea8120b5045adcc7c0e6a392",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 4676.283663503081,
+   "decode_tps": 44.35338635088765,
+   "ttft_s": 7.062924900000098,
+   "prompt_tokens": 19586,
+   "completion_tokens": 500,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "spark-x2.6-4b",
@@ -6585,7 +6713,6 @@
    "completed_requests": 2,
    "wall_s": 23.027505999999903,
    "aggregate_completion_tokens": 508,
-   "aggregate_completion_tps": 22.060573993553714,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 7391.0,
    "group_power": {
@@ -6688,7 +6815,16 @@
     "configuration_id": "48a8e5ea2fd1adcb6b96adeaf19e0965cf788481ea8120b5045adcc7c0e6a392"
    },
    "configuration_id": "48a8e5ea2fd1adcb6b96adeaf19e0965cf788481ea8120b5045adcc7c0e6a392",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 4046.559133232604,
+   "decode_tps": 22.060573993553714,
+   "ttft_s": 15.04239715000017,
+   "prompt_tokens": 39478,
+   "completion_tokens": 508,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "spark-x2.6-4b",
@@ -6800,7 +6936,6 @@
    "completed_requests": 2,
    "wall_s": 61.84488140000008,
    "aggregate_completion_tokens": 380,
-   "aggregate_completion_tps": 6.144405024277393,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 10493.0,
    "group_power": {
@@ -6903,7 +7038,16 @@
     "configuration_id": "48a8e5ea2fd1adcb6b96adeaf19e0965cf788481ea8120b5045adcc7c0e6a392"
    },
    "configuration_id": "48a8e5ea2fd1adcb6b96adeaf19e0965cf788481ea8120b5045adcc7c0e6a392",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 2745.752875641397,
+   "decode_tps": 6.144405024277393,
+   "ttft_s": 39.7817424000001,
+   "prompt_tokens": 80295,
+   "completion_tokens": 380,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "lfm2.5-24b-a2b",
@@ -8011,7 +8155,6 @@
    "completed_requests": 2,
    "wall_s": 4.395581999999649,
    "aggregate_completion_tokens": 512,
-   "aggregate_completion_tps": 116.48059346863302,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14261.0,
    "group_power": {
@@ -8116,7 +8259,16 @@
     "configuration_id": "7d8cfaea378fa9e0507e091d3551956dbf5e982c1fb28d6c612f9a953c331dda"
    },
    "configuration_id": "7d8cfaea378fa9e0507e091d3551956dbf5e982c1fb28d6c612f9a953c331dda",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 425.93541992936395,
+   "decode_tps": 116.48059346863302,
+   "ttft_s": 2.6367665000000216,
+   "prompt_tokens": 562,
+   "completion_tokens": 512,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "lfm2.5-24b-a2b",
@@ -8228,7 +8380,6 @@
    "completed_requests": 2,
    "wall_s": 5.8607145000000855,
    "aggregate_completion_tokens": 512,
-   "aggregate_completion_tps": 87.36136182712748,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14525.0,
    "group_power": {
@@ -8333,7 +8484,16 @@
     "configuration_id": "7d8cfaea378fa9e0507e091d3551956dbf5e982c1fb28d6c612f9a953c331dda"
    },
    "configuration_id": "7d8cfaea378fa9e0507e091d3551956dbf5e982c1fb28d6c612f9a953c331dda",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 2649.5737509532205,
+   "decode_tps": 87.36136182712748,
+   "ttft_s": 3.9661494499998753,
+   "prompt_tokens": 5274,
+   "completion_tokens": 512,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "lfm2.5-24b-a2b",
@@ -8445,7 +8605,6 @@
    "completed_requests": 2,
    "wall_s": 7.272337800000059,
    "aggregate_completion_tokens": 512,
-   "aggregate_completion_tps": 70.40377029790831,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14803.0,
    "group_power": {
@@ -8550,7 +8709,16 @@
     "configuration_id": "7d8cfaea378fa9e0507e091d3551956dbf5e982c1fb28d6c612f9a953c331dda"
    },
    "configuration_id": "7d8cfaea378fa9e0507e091d3551956dbf5e982c1fb28d6c612f9a953c331dda",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 3814.1733825100328,
+   "decode_tps": 70.40377029790831,
+   "ttft_s": 4.843109700000014,
+   "prompt_tokens": 10138,
+   "completion_tokens": 512,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "lfm2.5-24b-a2b",
@@ -8662,7 +8830,6 @@
    "completed_requests": 2,
    "wall_s": 10.490667399999893,
    "aggregate_completion_tokens": 512,
-   "aggregate_completion_tps": 48.80528382779586,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15026.0,
    "group_power": {
@@ -8767,7 +8934,16 @@
     "configuration_id": "7d8cfaea378fa9e0507e091d3551956dbf5e982c1fb28d6c612f9a953c331dda"
    },
    "configuration_id": "7d8cfaea378fa9e0507e091d3551956dbf5e982c1fb28d6c612f9a953c331dda",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 4744.77156569686,
+   "decode_tps": 48.80528382779586,
+   "ttft_s": 7.191531000000168,
+   "prompt_tokens": 19738,
+   "completion_tokens": 512,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "lfm2.5-24b-a2b",
@@ -8879,7 +9055,6 @@
    "completed_requests": 2,
    "wall_s": 23.733154900000045,
    "aggregate_completion_tokens": 512,
-   "aggregate_completion_tps": 21.573195900727004,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15861.0,
    "group_power": {
@@ -8984,7 +9159,16 @@
     "configuration_id": "7d8cfaea378fa9e0507e091d3551956dbf5e982c1fb28d6c612f9a953c331dda"
    },
    "configuration_id": "7d8cfaea378fa9e0507e091d3551956dbf5e982c1fb28d6c612f9a953c331dda",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 3793.2249196504754,
+   "decode_tps": 21.573195900727004,
+   "ttft_s": 16.886140450000084,
+   "prompt_tokens": 39642,
+   "completion_tokens": 512,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "lfm2.5-24b-a2b",
@@ -9028,7 +9212,6 @@
    "completed_requests": 0,
    "wall_s": 300.0144473999999,
    "aggregate_completion_tokens": null,
-   "aggregate_completion_tps": null,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15900.0,
    "group_power": {
@@ -10233,7 +10416,6 @@
    "completed_requests": 2,
    "wall_s": 4.992564700000003,
    "aggregate_completion_tokens": 501,
-   "aggregate_completion_tps": 100.34922531900283,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 12376.0,
    "group_power": {
@@ -10336,7 +10518,16 @@
     "configuration_id": "c3218f68f49bc9bebca99299c9e2dc8823d1be36a32bc11105af9ee0729ca06f"
    },
    "configuration_id": "c3218f68f49bc9bebca99299c9e2dc8823d1be36a32bc11105af9ee0729ca06f",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 489.04590670754715,
+   "decode_tps": 100.34922531900283,
+   "ttft_s": 2.5178224000001137,
+   "prompt_tokens": 617,
+   "completion_tokens": 501,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "openai/gpt-oss-20b",
@@ -10448,7 +10639,6 @@
    "completed_requests": 2,
    "wall_s": 6.266500400000041,
    "aggregate_completion_tokens": 512,
-   "aggregate_completion_tps": 81.70429543098675,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 12404.0,
    "group_power": {
@@ -10551,7 +10741,16 @@
     "configuration_id": "c3218f68f49bc9bebca99299c9e2dc8823d1be36a32bc11105af9ee0729ca06f"
    },
    "configuration_id": "c3218f68f49bc9bebca99299c9e2dc8823d1be36a32bc11105af9ee0729ca06f",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 2955.274489859319,
+   "decode_tps": 81.70429543098675,
+   "ttft_s": 3.607683400000269,
+   "prompt_tokens": 5352,
+   "completion_tokens": 512,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "openai/gpt-oss-20b",
@@ -10663,7 +10862,6 @@
    "completed_requests": 2,
    "wall_s": 7.4956686000000445,
    "aggregate_completion_tokens": 504,
-   "aggregate_completion_tps": 67.23883177012348,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 12726.0,
    "group_power": {
@@ -10766,7 +10964,16 @@
     "configuration_id": "c3218f68f49bc9bebca99299c9e2dc8823d1be36a32bc11105af9ee0729ca06f"
    },
    "configuration_id": "c3218f68f49bc9bebca99299c9e2dc8823d1be36a32bc11105af9ee0729ca06f",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 4170.432754579076,
+   "decode_tps": 67.23883177012348,
+   "ttft_s": 4.850889599999846,
+   "prompt_tokens": 10140,
+   "completion_tokens": 504,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "openai/gpt-oss-20b",
@@ -10878,7 +11085,6 @@
    "completed_requests": 2,
    "wall_s": 10.744730900000377,
    "aggregate_completion_tokens": 511,
-   "aggregate_completion_tps": 47.55819431457163,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 13307.0,
    "group_power": {
@@ -10981,7 +11187,16 @@
     "configuration_id": "c3218f68f49bc9bebca99299c9e2dc8823d1be36a32bc11105af9ee0729ca06f"
    },
    "configuration_id": "c3218f68f49bc9bebca99299c9e2dc8823d1be36a32bc11105af9ee0729ca06f",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 4962.907011878609,
+   "decode_tps": 47.55819431457163,
+   "ttft_s": 7.835218349999877,
+   "prompt_tokens": 19572,
+   "completion_tokens": 511,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "openai/gpt-oss-20b",
@@ -11093,7 +11308,6 @@
    "completed_requests": 2,
    "wall_s": 20.203826899999967,
    "aggregate_completion_tokens": 497,
-   "aggregate_completion_tps": 24.59930004646797,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14400.0,
    "group_power": {
@@ -11196,7 +11410,16 @@
     "configuration_id": "c3218f68f49bc9bebca99299c9e2dc8823d1be36a32bc11105af9ee0729ca06f"
    },
    "configuration_id": "c3218f68f49bc9bebca99299c9e2dc8823d1be36a32bc11105af9ee0729ca06f",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 4436.036656651992,
+   "decode_tps": 24.59930004646797,
+   "ttft_s": 17.464830750000147,
+   "prompt_tokens": 39258,
+   "completion_tokens": 497,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "openai/gpt-oss-20b",
@@ -11308,7 +11531,6 @@
    "completed_requests": 2,
    "wall_s": 65.63910889999988,
    "aggregate_completion_tokens": 512,
-   "aggregate_completion_tps": 7.800227769393148,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15961.0,
    "group_power": {
@@ -11411,7 +11633,16 @@
     "configuration_id": "c3218f68f49bc9bebca99299c9e2dc8823d1be36a32bc11105af9ee0729ca06f"
    },
    "configuration_id": "c3218f68f49bc9bebca99299c9e2dc8823d1be36a32bc11105af9ee0729ca06f",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 2581.1857907876097,
+   "decode_tps": 7.800227769393148,
+   "ttft_s": 61.81877170000007,
+   "prompt_tokens": 80231,
+   "completion_tokens": 512,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -12457,7 +12688,6 @@
    "completed_requests": 2,
    "wall_s": 5.135630000000219,
    "aggregate_completion_tokens": 382,
-   "aggregate_completion_tps": 74.38230557886446,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15832.0,
    "group_power": {
@@ -12562,7 +12792,16 @@
     "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd"
    },
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 321.82985454080375,
+   "decode_tps": 74.38230557886446,
+   "ttft_s": 3.5410942500000147,
+   "prompt_tokens": 570,
+   "completion_tokens": 382,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -12674,7 +12913,6 @@
    "completed_requests": 2,
    "wall_s": 7.109105999999883,
    "aggregate_completion_tokens": 484,
-   "aggregate_completion_tps": 68.08169691097699,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15817.0,
    "group_power": {
@@ -12779,7 +13017,16 @@
     "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd"
    },
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 2138.2488221426847,
+   "decode_tps": 68.08169691097699,
+   "ttft_s": 4.694507349999867,
+   "prompt_tokens": 5198,
+   "completion_tokens": 484,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -12891,7 +13138,6 @@
    "completed_requests": 2,
    "wall_s": 8.96755660000008,
    "aggregate_completion_tokens": 439,
-   "aggregate_completion_tps": 48.95424914296009,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15915.0,
    "group_power": {
@@ -12996,7 +13242,16 @@
     "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd"
    },
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 2959.7674997366403,
+   "decode_tps": 48.95424914296009,
+   "ttft_s": 6.228574799999933,
+   "prompt_tokens": 10144,
+   "completion_tokens": 439,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -13108,7 +13363,6 @@
    "completed_requests": 2,
    "wall_s": 195.37036239999998,
    "aggregate_completion_tokens": 440,
-   "aggregate_completion_tps": 2.25213279330028,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15728.0,
    "group_power": {
@@ -13213,7 +13467,16 @@
     "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd"
    },
    "configuration_id": "7b55759bc1fc14836fa96bcf76aad25a042825aed2ae22f7868d71f2a34f4fcd",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 213.9368263571636,
+   "decode_tps": 2.25213279330028,
+   "ttft_s": 145.86052130000007,
+   "prompt_tokens": 19678,
+   "completion_tokens": 440,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-26b-a4b-qat",
@@ -13257,7 +13520,6 @@
    "completed_requests": 0,
    "wall_s": 300.0161929999995,
    "aggregate_completion_tokens": null,
-   "aggregate_completion_tps": null,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15939.0,
    "group_power": {
@@ -13410,7 +13672,6 @@
    "completed_requests": 0,
    "wall_s": 300.0160370000003,
    "aggregate_completion_tokens": null,
-   "aggregate_completion_tps": null,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15895.0,
    "group_power": {
@@ -14627,7 +14888,6 @@
    "completed_requests": 2,
    "wall_s": 5.07834129999992,
    "aggregate_completion_tokens": 364,
-   "aggregate_completion_tps": 71.67694695904069,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 8881.0,
    "group_power": {
@@ -14732,7 +14992,16 @@
     "configuration_id": "e4fab89a2791aeab7091bdcd80595c261cee6e1ebac099b34a3224cd33f179d2"
    },
    "configuration_id": "e4fab89a2791aeab7091bdcd80595c261cee6e1ebac099b34a3224cd33f179d2",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 440.62654603669426,
+   "decode_tps": 71.67694695904069,
+   "ttft_s": 2.568021800000224,
+   "prompt_tokens": 566,
+   "completion_tokens": 364,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-12b-qat",
@@ -14844,7 +15113,6 @@
    "completed_requests": 2,
    "wall_s": 8.202912200000355,
    "aggregate_completion_tokens": 418,
-   "aggregate_completion_tps": 50.95751238200281,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 8866.0,
    "group_power": {
@@ -14949,7 +15217,16 @@
     "configuration_id": "e4fab89a2791aeab7091bdcd80595c261cee6e1ebac099b34a3224cd33f179d2"
    },
    "configuration_id": "e4fab89a2791aeab7091bdcd80595c261cee6e1ebac099b34a3224cd33f179d2",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 2053.8140775519773,
+   "decode_tps": 50.95751238200281,
+   "ttft_s": 4.969600249999985,
+   "prompt_tokens": 5198,
+   "completion_tokens": 418,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-12b-qat",
@@ -15061,7 +15338,6 @@
    "completed_requests": 2,
    "wall_s": 10.906095400000595,
    "aggregate_completion_tokens": 433,
-   "aggregate_completion_tps": 39.702568528785875,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 9091.0,
    "group_power": {
@@ -15166,7 +15442,16 @@
     "configuration_id": "e4fab89a2791aeab7091bdcd80595c261cee6e1ebac099b34a3224cd33f179d2"
    },
    "configuration_id": "e4fab89a2791aeab7091bdcd80595c261cee6e1ebac099b34a3224cd33f179d2",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 2612.3678612875074,
+   "decode_tps": 39.702568528785875,
+   "ttft_s": 7.252489649999916,
+   "prompt_tokens": 9993,
+   "completion_tokens": 433,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-12b-qat",
@@ -15278,7 +15563,6 @@
    "completed_requests": 2,
    "wall_s": 17.57353400000011,
    "aggregate_completion_tokens": 443,
-   "aggregate_completion_tps": 25.20836161923932,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 9481.0,
    "group_power": {
@@ -15383,7 +15667,16 @@
     "configuration_id": "e4fab89a2791aeab7091bdcd80595c261cee6e1ebac099b34a3224cd33f179d2"
    },
    "configuration_id": "e4fab89a2791aeab7091bdcd80595c261cee6e1ebac099b34a3224cd33f179d2",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 2761.525939725733,
+   "decode_tps": 25.20836161923932,
+   "ttft_s": 11.36869409999963,
+   "prompt_tokens": 19468,
+   "completion_tokens": 443,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-12b-qat",
@@ -15495,7 +15788,6 @@
    "completed_requests": 2,
    "wall_s": 36.58923920000052,
    "aggregate_completion_tokens": 472,
-   "aggregate_completion_tps": 12.89996759484393,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 10033.0,
    "group_power": {
@@ -15600,7 +15892,16 @@
     "configuration_id": "e4fab89a2791aeab7091bdcd80595c261cee6e1ebac099b34a3224cd33f179d2"
    },
    "configuration_id": "e4fab89a2791aeab7091bdcd80595c261cee6e1ebac099b34a3224cd33f179d2",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 2416.994336309021,
+   "decode_tps": 12.89996759484393,
+   "ttft_s": 24.279080599999816,
+   "prompt_tokens": 39441,
+   "completion_tokens": 472,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-12b-qat",
@@ -15712,7 +16013,6 @@
    "completed_requests": 2,
    "wall_s": 94.46072110000023,
    "aggregate_completion_tokens": 409,
-   "aggregate_completion_tps": 4.3298420257348536,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 11571.0,
    "group_power": {
@@ -15817,7 +16117,16 @@
     "configuration_id": "e4fab89a2791aeab7091bdcd80595c261cee6e1ebac099b34a3224cd33f179d2"
    },
    "configuration_id": "e4fab89a2791aeab7091bdcd80595c261cee6e1ebac099b34a3224cd33f179d2",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 1775.577815096797,
+   "decode_tps": 4.3298420257348536,
+   "ttft_s": 63.65561919999982,
+   "prompt_tokens": 80426,
+   "completion_tokens": 409,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-e2b",
@@ -16913,7 +17222,6 @@
    "completed_requests": 2,
    "wall_s": 4.360108400000172,
    "aggregate_completion_tokens": 379,
-   "aggregate_completion_tps": 86.92444435555434,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 3647.0,
    "group_power": {
@@ -17016,7 +17324,16 @@
     "configuration_id": "6717fd558bace8e9d604c2fd0b798e7abc142d9f586ba19add556afc74c9e48d"
    },
    "configuration_id": "6717fd558bace8e9d604c2fd0b798e7abc142d9f586ba19add556afc74c9e48d",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 458.8991002374896,
+   "decode_tps": 86.92444435555434,
+   "ttft_s": 2.4293123000002197,
+   "prompt_tokens": 559,
+   "completion_tokens": 379,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-e2b",
@@ -17128,7 +17445,6 @@
    "completed_requests": 2,
    "wall_s": 5.505768500000158,
    "aggregate_completion_tokens": 455,
-   "aggregate_completion_tps": 82.64059776577727,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 3733.0,
    "group_power": {
@@ -17231,7 +17547,16 @@
     "configuration_id": "6717fd558bace8e9d604c2fd0b798e7abc142d9f586ba19add556afc74c9e48d"
    },
    "configuration_id": "6717fd558bace8e9d604c2fd0b798e7abc142d9f586ba19add556afc74c9e48d",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 3297.000640138948,
+   "decode_tps": 82.64059776577727,
+   "ttft_s": 3.1286370999996507,
+   "prompt_tokens": 5195,
+   "completion_tokens": 455,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-e2b",
@@ -17343,7 +17668,6 @@
    "completed_requests": 2,
    "wall_s": 6.913366800000404,
    "aggregate_completion_tokens": 472,
-   "aggregate_completion_tps": 68.27353641932791,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 3603.0,
    "group_power": {
@@ -17446,7 +17770,16 @@
     "configuration_id": "6717fd558bace8e9d604c2fd0b798e7abc142d9f586ba19add556afc74c9e48d"
    },
    "configuration_id": "6717fd558bace8e9d604c2fd0b798e7abc142d9f586ba19add556afc74c9e48d",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 4453.504964580208,
+   "decode_tps": 68.27353641932791,
+   "ttft_s": 4.1250567500001125,
+   "prompt_tokens": 9990,
+   "completion_tokens": 472,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-e2b",
@@ -17558,7 +17891,6 @@
    "completed_requests": 2,
    "wall_s": 8.816068600000108,
    "aggregate_completion_tokens": 423,
-   "aggregate_completion_tps": 47.98057038712185,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 3787.0,
    "group_power": {
@@ -17661,7 +17993,16 @@
     "configuration_id": "6717fd558bace8e9d604c2fd0b798e7abc142d9f586ba19add556afc74c9e48d"
    },
    "configuration_id": "6717fd558bace8e9d604c2fd0b798e7abc142d9f586ba19add556afc74c9e48d",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 6063.054646837837,
+   "decode_tps": 47.98057038712185,
+   "ttft_s": 5.515303249999761,
+   "prompt_tokens": 19462,
+   "completion_tokens": 423,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-e2b",
@@ -17773,7 +18114,6 @@
    "completed_requests": 2,
    "wall_s": 16.02226840000003,
    "aggregate_completion_tokens": 382,
-   "aggregate_completion_tps": 23.84181755437322,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 4130.0,
    "group_power": {
@@ -17876,7 +18216,16 @@
     "configuration_id": "6717fd558bace8e9d604c2fd0b798e7abc142d9f586ba19add556afc74c9e48d"
    },
    "configuration_id": "6717fd558bace8e9d604c2fd0b798e7abc142d9f586ba19add556afc74c9e48d",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 5710.060770900558,
+   "decode_tps": 23.84181755437322,
+   "ttft_s": 10.534428450000632,
+   "prompt_tokens": 39438,
+   "completion_tokens": 382,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "google/gemma-4-e2b",
@@ -17988,7 +18337,6 @@
    "completed_requests": 2,
    "wall_s": 40.16816910000034,
    "aggregate_completion_tokens": 362,
-   "aggregate_completion_tps": 9.012111034953717,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 4797.0,
    "group_power": {
@@ -18091,7 +18439,16 @@
     "configuration_id": "6717fd558bace8e9d604c2fd0b798e7abc142d9f586ba19add556afc74c9e48d"
    },
    "configuration_id": "6717fd558bace8e9d604c2fd0b798e7abc142d9f586ba19add556afc74c9e48d",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 4261.40851803948,
+   "decode_tps": 9.012111034953717,
+   "ttft_s": 26.63008690000015,
+   "prompt_tokens": 80429,
+   "completion_tokens": 362,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -19137,7 +19494,6 @@
    "completed_requests": 2,
    "wall_s": 9.462428499999987,
    "aggregate_completion_tokens": 452,
-   "aggregate_completion_tps": 47.76786424330716,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14145.0,
    "group_power": {
@@ -19242,7 +19598,16 @@
     "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1"
    },
    "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 345.7884452350705,
+   "decode_tps": 47.76786424330716,
+   "ttft_s": 3.2931046000003334,
+   "prompt_tokens": 570,
+   "completion_tokens": 452,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -19354,7 +19719,6 @@
    "completed_requests": 2,
    "wall_s": 13.932157400000506,
    "aggregate_completion_tokens": 425,
-   "aggregate_completion_tps": 30.50496687612678,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14823.0,
    "group_power": {
@@ -19459,7 +19823,16 @@
     "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1"
    },
    "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 1328.7017279949293,
+   "decode_tps": 30.50496687612678,
+   "ttft_s": 7.61341504999973,
+   "prompt_tokens": 5226,
+   "completion_tokens": 425,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -19571,7 +19944,6 @@
    "completed_requests": 2,
    "wall_s": 19.56580219999978,
    "aggregate_completion_tokens": 421,
-   "aggregate_completion_tps": 21.517134625842466,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15624.0,
    "group_power": {
@@ -19676,7 +20048,16 @@
     "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1"
    },
    "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 1496.0747161599354,
+   "decode_tps": 21.517134625842466,
+   "ttft_s": 11.594893100000263,
+   "prompt_tokens": 10082,
+   "completion_tokens": 421,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -19788,7 +20169,6 @@
    "completed_requests": 2,
    "wall_s": 39.606400399999984,
    "aggregate_completion_tokens": 422,
-   "aggregate_completion_tps": 10.654843554023156,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15825.0,
    "group_power": {
@@ -19893,7 +20273,16 @@
     "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1"
    },
    "configuration_id": "9d7136c22cac5f7188d74ac8d20443965b08a464fe7f6d8b7ed21e01294485c1",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 1248.0930355389276,
+   "decode_tps": 10.654843554023156,
+   "ttft_s": 24.998168899999655,
+   "prompt_tokens": 19712,
+   "completion_tokens": 422,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-27b@q3_k_xl",
@@ -19937,7 +20326,6 @@
    "completed_requests": 0,
    "wall_s": 300.0041827999994,
    "aggregate_completion_tokens": null,
-   "aggregate_completion_tps": null,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15885.0,
    "group_power": {
@@ -20090,7 +20478,6 @@
    "completed_requests": 0,
    "wall_s": 300.00895709999986,
    "aggregate_completion_tokens": null,
-   "aggregate_completion_tps": null,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15857.0,
    "group_power": {
@@ -21295,7 +21682,6 @@
    "completed_requests": 2,
    "wall_s": 6.388658200000464,
    "aggregate_completion_tokens": 419,
-   "aggregate_completion_tps": 65.58497682658458,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 6063.0,
    "group_power": {
@@ -21398,7 +21784,16 @@
     "configuration_id": "03b2fdffb8ebc797e503544c28e889b01e114a1faae8d3f3f595eff9ffed7ce9"
    },
    "configuration_id": "03b2fdffb8ebc797e503544c28e889b01e114a1faae8d3f3f595eff9ffed7ce9",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 376.6350969536611,
+   "decode_tps": 65.58497682658458,
+   "ttft_s": 3.0066681500002232,
+   "prompt_tokens": 568,
+   "completion_tokens": 419,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "prism-ml/bonsai-27b",
@@ -21510,7 +21905,6 @@
    "completed_requests": 2,
    "wall_s": 11.494126999999935,
    "aggregate_completion_tokens": 512,
-   "aggregate_completion_tps": 44.54448780668622,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 6722.0,
    "group_power": {
@@ -21613,7 +22007,16 @@
     "configuration_id": "03b2fdffb8ebc797e503544c28e889b01e114a1faae8d3f3f595eff9ffed7ce9"
    },
    "configuration_id": "03b2fdffb8ebc797e503544c28e889b01e114a1faae8d3f3f595eff9ffed7ce9",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 1453.0876694652354,
+   "decode_tps": 44.54448780668622,
+   "ttft_s": 6.9817817999996805,
+   "prompt_tokens": 5225,
+   "completion_tokens": 512,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "prism-ml/bonsai-27b",
@@ -21725,7 +22128,6 @@
    "completed_requests": 2,
    "wall_s": 16.6907254000007,
    "aggregate_completion_tokens": 512,
-   "aggregate_completion_tps": 30.675718863601848,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 7434.0,
    "group_power": {
@@ -21828,7 +22230,16 @@
     "configuration_id": "03b2fdffb8ebc797e503544c28e889b01e114a1faae8d3f3f595eff9ffed7ce9"
    },
    "configuration_id": "03b2fdffb8ebc797e503544c28e889b01e114a1faae8d3f3f595eff9ffed7ce9",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 1640.8604331945448,
+   "decode_tps": 30.675718863601848,
+   "ttft_s": 10.54735589999973,
+   "prompt_tokens": 10014,
+   "completion_tokens": 512,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "prism-ml/bonsai-27b",
@@ -21940,7 +22351,6 @@
    "completed_requests": 2,
    "wall_s": 29.473526400000083,
    "aggregate_completion_tokens": 512,
-   "aggregate_completion_tps": 17.371521583518373,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 8591.0,
    "group_power": {
@@ -22043,7 +22453,16 @@
     "configuration_id": "03b2fdffb8ebc797e503544c28e889b01e114a1faae8d3f3f595eff9ffed7ce9"
    },
    "configuration_id": "03b2fdffb8ebc797e503544c28e889b01e114a1faae8d3f3f595eff9ffed7ce9",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 1591.5633064730052,
+   "decode_tps": 17.371521583518373,
+   "ttft_s": 19.41969109999991,
+   "prompt_tokens": 19578,
+   "completion_tokens": 512,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "prism-ml/bonsai-27b",
@@ -22155,7 +22574,6 @@
    "completed_requests": 2,
    "wall_s": 69.85974970000007,
    "aggregate_completion_tokens": 512,
-   "aggregate_completion_tps": 7.328969860308554,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 11386.0,
    "group_power": {
@@ -22258,7 +22676,16 @@
     "configuration_id": "03b2fdffb8ebc797e503544c28e889b01e114a1faae8d3f3f595eff9ffed7ce9"
    },
    "configuration_id": "03b2fdffb8ebc797e503544c28e889b01e114a1faae8d3f3f595eff9ffed7ce9",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 1235.0543629793322,
+   "decode_tps": 7.328969860308554,
+   "ttft_s": 46.379640650000056,
+   "prompt_tokens": 39534,
+   "completion_tokens": 512,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "prism-ml/bonsai-27b",
@@ -22370,7 +22797,6 @@
    "completed_requests": 2,
    "wall_s": 200.6591542999995,
    "aggregate_completion_tokens": 512,
-   "aggregate_completion_tps": 2.551590540616573,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15784.0,
    "group_power": {
@@ -22473,7 +22899,16 @@
     "configuration_id": "03b2fdffb8ebc797e503544c28e889b01e114a1faae8d3f3f595eff9ffed7ce9"
    },
    "configuration_id": "03b2fdffb8ebc797e503544c28e889b01e114a1faae8d3f3f595eff9ffed7ce9",
-   "session_id": "21e78e713150"
+   "session_id": "21e78e713150",
+   "prefill_tps": 831.7787582476575,
+   "decode_tps": 2.551590540616573,
+   "ttft_s": 130.68493119999994,
+   "prompt_tokens": 80278,
+   "completion_tokens": 512,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
@@ -23605,7 +24040,6 @@
    "completed_requests": 2,
    "wall_s": 27.034700500000326,
    "aggregate_completion_tokens": 429,
-   "aggregate_completion_tps": 15.868494640804133,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14170.0,
    "group_power": {
@@ -23714,7 +24148,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "a19a0e4f9694"
+   "session_id": "a19a0e4f9694",
+   "prefill_tps": 66.92716673231727,
+   "decode_tps": 15.868494640804133,
+   "ttft_s": 10.18823380000049,
+   "prompt_tokens": 566,
+   "completion_tokens": 429,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
@@ -23826,7 +24269,6 @@
    "completed_requests": 2,
    "wall_s": 29.885052800000267,
    "aggregate_completion_tokens": 385,
-   "aggregate_completion_tps": 12.882694321356412,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14202.0,
    "group_power": {
@@ -23935,7 +24377,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "a19a0e4f9694"
+   "session_id": "a19a0e4f9694",
+   "prefill_tps": 505.04743106998495,
+   "decode_tps": 12.882694321356412,
+   "ttft_s": 13.43210020000015,
+   "prompt_tokens": 5224,
+   "completion_tokens": 385,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
@@ -24047,7 +24498,6 @@
    "completed_requests": 2,
    "wall_s": 41.24365359999956,
    "aggregate_completion_tokens": 395,
-   "aggregate_completion_tps": 9.57723105307053,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14216.0,
    "group_power": {
@@ -24156,7 +24606,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "a19a0e4f9694"
+   "session_id": "a19a0e4f9694",
+   "prefill_tps": 624.9381812068341,
+   "decode_tps": 9.57723105307053,
+   "ttft_s": 21.812562650000018,
+   "prompt_tokens": 10016,
+   "completion_tokens": 395,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
@@ -24268,7 +24727,6 @@
    "completed_requests": 2,
    "wall_s": 52.5872860999998,
    "aggregate_completion_tokens": 402,
-   "aggregate_completion_tps": 7.644433280613839,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14244.0,
    "group_power": {
@@ -24377,7 +24835,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "a19a0e4f9694"
+   "session_id": "a19a0e4f9694",
+   "prefill_tps": 886.9994867980578,
+   "decode_tps": 7.644433280613839,
+   "ttft_s": 30.813194799999565,
+   "prompt_tokens": 19577,
+   "completion_tokens": 402,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
@@ -24489,7 +24956,6 @@
    "completed_requests": 2,
    "wall_s": 77.85668869999972,
    "aggregate_completion_tokens": 417,
-   "aggregate_completion_tps": 5.35599454539866,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14286.0,
    "group_power": {
@@ -24598,7 +25064,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "a19a0e4f9694"
+   "session_id": "a19a0e4f9694",
+   "prefill_tps": 1149.380013980802,
+   "decode_tps": 5.35599454539866,
+   "ttft_s": 49.255814850000206,
+   "prompt_tokens": 39536,
+   "completion_tokens": 417,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
@@ -24710,7 +25185,6 @@
    "completed_requests": 2,
    "wall_s": 135.59746390000055,
    "aggregate_completion_tokens": 411,
-   "aggregate_completion_tps": 3.031030140085078,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14334.0,
    "group_power": {
@@ -24819,7 +25293,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "a19a0e4f9694"
+   "session_id": "a19a0e4f9694",
+   "prefill_tps": 1264.6128378746616,
+   "decode_tps": 3.031030140085078,
+   "ttft_s": 92.90132325000059,
+   "prompt_tokens": 80277,
+   "completion_tokens": 411,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-flash-next-iq3_s",
@@ -25939,7 +26422,6 @@
    "completed_requests": 2,
    "wall_s": 16.908203799999683,
    "aggregate_completion_tokens": 396,
-   "aggregate_completion_tps": 23.420583563110792,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14256.0,
    "group_power": {
@@ -26046,7 +26528,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "643685e27909"
+   "session_id": "643685e27909",
+   "prefill_tps": 97.6002273000783,
+   "decode_tps": 23.420583563110792,
+   "ttft_s": 7.2977807500010385,
+   "prompt_tokens": 567,
+   "completion_tokens": 396,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-flash-next-iq3_s",
@@ -26158,7 +26649,6 @@
    "completed_requests": 2,
    "wall_s": 22.781902999999147,
    "aggregate_completion_tokens": 414,
-   "aggregate_completion_tps": 18.172318616228658,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14288.0,
    "group_power": {
@@ -26265,7 +26755,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "643685e27909"
+   "session_id": "643685e27909",
+   "prefill_tps": 625.7288649018434,
+   "decode_tps": 18.172318616228658,
+   "ttft_s": 11.104666750000433,
+   "prompt_tokens": 5228,
+   "completion_tokens": 414,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-flash-next-iq3_s",
@@ -26377,7 +26876,6 @@
    "completed_requests": 2,
    "wall_s": 30.276246400000673,
    "aggregate_completion_tokens": 364,
-   "aggregate_completion_tps": 12.022626424390307,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14310.0,
    "group_power": {
@@ -26484,7 +26982,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "643685e27909"
+   "session_id": "643685e27909",
+   "prefill_tps": 793.6202676900169,
+   "decode_tps": 12.022626424390307,
+   "ttft_s": 17.796693099999175,
+   "prompt_tokens": 10016,
+   "completion_tokens": 364,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-flash-next-iq3_s",
@@ -26596,7 +27103,6 @@
    "completed_requests": 2,
    "wall_s": 42.355896799999755,
    "aggregate_completion_tokens": 394,
-   "aggregate_completion_tps": 9.302128623563988,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14326.0,
    "group_power": {
@@ -26703,7 +27209,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "643685e27909"
+   "session_id": "643685e27909",
+   "prefill_tps": 1057.3644591997172,
+   "decode_tps": 9.302128623563988,
+   "ttft_s": 26.498208550000527,
+   "prompt_tokens": 19576,
+   "completion_tokens": 394,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-flash-next-iq3_s",
@@ -26815,7 +27330,6 @@
    "completed_requests": 2,
    "wall_s": 65.55648839999958,
    "aggregate_completion_tokens": 412,
-   "aggregate_completion_tps": 6.28465633311748,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14367.0,
    "group_power": {
@@ -26922,7 +27436,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "643685e27909"
+   "session_id": "643685e27909",
+   "prefill_tps": 1318.362034235929,
+   "decode_tps": 6.28465633311748,
+   "ttft_s": 43.52214515000014,
+   "prompt_tokens": 39536,
+   "completion_tokens": 412,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.8-flash-next-iq3_s",
@@ -27034,7 +27557,6 @@
    "completed_requests": 2,
    "wall_s": 116.65198349999991,
    "aggregate_completion_tokens": 356,
-   "aggregate_completion_tps": 3.0518126594907002,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 14404.0,
    "group_power": {
@@ -27141,7 +27663,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "643685e27909"
+   "session_id": "643685e27909",
+   "prefill_tps": 1431.307443052248,
+   "decode_tps": 3.0518126594907002,
+   "ttft_s": 83.0811213499992,
+   "prompt_tokens": 80277,
+   "completion_tokens": 356,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.6-35b-a3b-ud-q4_k_xl",
@@ -28273,7 +28804,6 @@
    "completed_requests": 2,
    "wall_s": 14.920859399999244,
    "aggregate_completion_tokens": 428,
-   "aggregate_completion_tps": 28.684674825098995,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15286.0,
    "group_power": {
@@ -28382,7 +28912,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "82a1126c790f"
+   "session_id": "82a1126c790f",
+   "prefill_tps": 121.98865846657118,
+   "decode_tps": 28.684674825098995,
+   "ttft_s": 5.509392599999956,
+   "prompt_tokens": 568,
+   "completion_tokens": 428,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.6-35b-a3b-ud-q4_k_xl",
@@ -28494,7 +29033,6 @@
    "completed_requests": 2,
    "wall_s": 19.127165600000808,
    "aggregate_completion_tokens": 373,
-   "aggregate_completion_tps": 19.501059791105916,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15315.0,
    "group_power": {
@@ -28603,7 +29141,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "82a1126c790f"
+   "session_id": "82a1126c790f",
+   "prefill_tps": 731.3789308102291,
+   "decode_tps": 19.501059791105916,
+   "ttft_s": 9.547845299999608,
+   "prompt_tokens": 5227,
+   "completion_tokens": 373,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.6-35b-a3b-ud-q4_k_xl",
@@ -28715,7 +29262,6 @@
    "completed_requests": 2,
    "wall_s": 26.4669030999994,
    "aggregate_completion_tokens": 405,
-   "aggregate_completion_tps": 15.30213030477333,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15351.0,
    "group_power": {
@@ -28824,7 +29370,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "82a1126c790f"
+   "session_id": "82a1126c790f",
+   "prefill_tps": 947.2261531950058,
+   "decode_tps": 15.30213030477333,
+   "ttft_s": 14.44492099999934,
+   "prompt_tokens": 10015,
+   "completion_tokens": 405,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.6-35b-a3b-ud-q4_k_xl",
@@ -28936,7 +29491,6 @@
    "completed_requests": 2,
    "wall_s": 43.63929129999997,
    "aggregate_completion_tokens": 422,
-   "aggregate_completion_tps": 9.670184538491814,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15398.0,
    "group_power": {
@@ -29045,7 +29599,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "82a1126c790f"
+   "session_id": "82a1126c790f",
+   "prefill_tps": 1058.373946454787,
+   "decode_tps": 9.670184538491814,
+   "ttft_s": 26.064522299999226,
+   "prompt_tokens": 19578,
+   "completion_tokens": 422,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.6-35b-a3b-ud-q4_k_xl",
@@ -29157,7 +29720,6 @@
    "completed_requests": 2,
    "wall_s": 82.86254159999953,
    "aggregate_completion_tokens": 420,
-   "aggregate_completion_tps": 5.068635258950377,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15442.0,
    "group_power": {
@@ -29266,7 +29828,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "82a1126c790f"
+   "session_id": "82a1126c790f",
+   "prefill_tps": 1087.4863440674997,
+   "decode_tps": 5.068635258950377,
+   "ttft_s": 51.968457550000494,
+   "prompt_tokens": 39536,
+   "completion_tokens": 420,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   },
   {
    "model": "qwen3.6-35b-a3b-ud-q4_k_xl",
@@ -29378,7 +29949,6 @@
    "completed_requests": 2,
    "wall_s": 183.7449488000002,
    "aggregate_completion_tokens": 419,
-   "aggregate_completion_tps": 2.2803347941611527,
    "aggregate_completion_tokens_estimated": false,
    "vram_after_load_mb": 15366.0,
    "group_power": {
@@ -29487,7 +30057,16 @@
    "context_control": "external",
    "reasoning_control": "effective setting unknown; explicit standard effort request only",
    "context_budget_source": "client planning estimate; not a verified server allocation",
-   "session_id": "82a1126c790f"
+   "session_id": "82a1126c790f",
+   "prefill_tps": 958.295657364743,
+   "decode_tps": 2.2803347941611527,
+   "ttft_s": 121.18769020000036,
+   "prompt_tokens": 80276,
+   "completion_tokens": 419,
+   "metric_sources": {
+    "prefill_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill",
+    "decode_tps": "group_wall_clock; prefill is sum(prompt_tokens)/latest_ttft, decode is sum(completion_tokens)/group_wall_s including queue and prefill"
+   }
   }
  ],
  "corpus": {

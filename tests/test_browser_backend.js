@@ -5,7 +5,7 @@ const {TextDecoder, TextEncoder} = require('util');
 const storage = new Map();
 let calls = [], responseFn;
 const window = {WATTEVER_STATIC:true, localStorage:{getItem:k=>storage.get(k) || null, setItem:(k,v)=>storage.set(k,v)}, crypto:require('crypto').webcrypto};
-const ctx = {window, URL, document:{baseURI:'https://example.test/site/'}, fetch:(...args)=>{calls.push(args); return responseFn(...args)}, performance, TextDecoder, TextEncoder, Uint8Array, AbortController, setTimeout, clearTimeout, console};
+const ctx = {window, WatteverPhaseMetrics:require('../web/phase-metrics.js'), URL, document:{baseURI:'https://example.test/site/'}, fetch:(...args)=>{calls.push(args); return responseFn(...args)}, performance, TextDecoder, TextEncoder, Uint8Array, AbortController, setTimeout, clearTimeout, console};
 vm.runInNewContext(fs.readFileSync('web/model-metadata.js','utf8'),ctx);
 vm.runInNewContext(fs.readFileSync('web/browser.js','utf8'),ctx);
 const adapter=window.WatteverBrowser;
@@ -49,12 +49,23 @@ const modelResponse=()=>({ok:true,json:async()=>({data:[{id:'test-model',quantiz
  const started=await adapter.request('/api/bench/start',{method:'POST',body:JSON.stringify({models:['test-model'],sizes:[2],concurrency_levels:[1],repeats:1,max_tokens:3,per_test_timeout_s:5,mtp_modes:['off'],reproducibility:{engine:'Strata',context_tokens:32768},performance_claims:[{precision:'INT4',value:100,kind:'advertised_peak',sparsity:'dense',execution_path:'Tensor cores',source:'https://www.nvidia.com/en-us/geforce/'}]})});
  for (let n=0;n<100 && (await adapter.request('/api/status')).running;n++) await new Promise(resolve=>setTimeout(resolve,1));
  const run=await adapter.request('/api/runs/'+started.run_id);
- assert.strictEqual(run.status,'completed'); assert.strictEqual(run.results[0].prompt_tokens,12); assert.strictEqual(run.results[0].completion_tokens,3); assert.strictEqual(run.results[0].completion_tokens_estimated,false); assert.strictEqual(run.measurement_mode,'browser'); assert.strictEqual(run.results[0].mtp,null); assert.strictEqual(run.corpus.sha256.length,64); assert(run.results[0].aggregate_completion_tps > 0);
+ assert.strictEqual(run.status,'completed'); assert.strictEqual(run.results[0].prompt_tokens,12); assert.strictEqual(run.results[0].completion_tokens,3); assert.strictEqual(run.results[0].completion_tokens_estimated,false); assert.strictEqual(run.measurement_mode,'browser'); assert.strictEqual(run.results[0].mtp,null); assert.strictEqual(run.corpus.sha256.length,64); assert(run.results[0].decode_tps > 0);
+ assert(run.results[0].decode_s>0); assert.strictEqual(run.results[0].decode_token_count,2);
+ assert.strictEqual(run.results[0].decode_tps,run.results[0].decode_token_count/run.results[0].decode_s);
  assert(!JSON.stringify(run).includes('secret'));
  assert.strictEqual(run.reproducibility.source,'user_reported');
  assert.strictEqual(run.reproducibility.settings.context_tokens,32768);
  assert.strictEqual(run.performance_claims[0].unit,'TOPS');
  assert.strictEqual((await adapter.request('/api/runs/'+run.id+'/download')).performance_claims[0].source,'https://www.nvidia.com/en-us/geforce/');
+ // A concurrent browser run stores the group phase and end-to-end output separately.
+ const concurrent=await adapter.request('/api/bench/start',{method:'POST',body:JSON.stringify({models:['test-model'],sizes:[2],concurrency_levels:[2],repeats:1,max_tokens:3,per_test_timeout_s:5,mtp_modes:['off']})});
+ for (let n=0;n<100 && (await adapter.request('/api/status')).running;n++) await new Promise(resolve=>setTimeout(resolve,1));
+ const concurrentRun=await adapter.request('/api/runs/'+concurrent.run_id), grouped=concurrentRun.results[0];
+ assert.equal(grouped.status,'ok');assert.equal(grouped.requests.length,2);
+ assert(grouped.requests.every(q=>q.start_offset_s>=0 && q.decode_s>0 && q.decode_token_count===2));
+ const phase=require('../web/phase-metrics.js');
+ assert.equal(grouped.decode_tps,phase.decodePhase(grouped).tps);
+ assert.equal(grouped.group_output_tps,phase.outputRate(grouped));
  // Imported extras are untrusted: every public JSON/CSV download is projected.
  const imported=adapter.importRun({id:'privacy-run',results:[{model:'C:\\private-model\\weights.gguf',target_tokens:512,status:'ok',decode_tps:28.1}],
    config:{models:['unsloth/Qwen3.6-35B-A3B'],OPENAI_API_KEY:'private-key',AWS_SESSION_TOKEN:'private-token'},
@@ -86,6 +97,65 @@ const modelResponse=()=>({ok:true,json:async()=>({data:[{id:'test-model',quantiz
  const mem=await quotaWindow.WatteverBrowser.request('/api/runs');
  assert.strictEqual(mem.runs[0].id,'memory-only'); assert(mem.storage_error);
  assert.strictEqual((await quotaWindow.WatteverBrowser.request('/api/export.json')).runs.length,1);
+ // Trailing usage, DONE and EOF must not extend the visible output interval.
+ let clock=1000;
+ const timedWindow={WATTEVER_STATIC:true,localStorage:window.localStorage,crypto:window.crypto};
+ const packets=[
+  [2000,'data: {"choices":[{"delta":{"content":"several tokens"}}]}\n\n'],
+  [3000,'data: {"choices":[{"delta":{"content":"more"},"finish_reason":"stop"}]}\n\n'],
+  [7000,'data: {"choices":[],"usage":{"prompt_tokens":20,"completion_tokens":10,"completion_tokens_details":{"reasoning_tokens":3}}}\n\n'],
+  [8000,'data: [DONE]\n\n']];
+ let packet=0;
+ const timedCtx={...ctx,window:timedWindow,performance:{now:()=>clock},fetch:async()=>({ok:true,body:{getReader:()=>({read:async()=>{
+  if(packet===packets.length){clock=9000;return {done:true};}
+  const [at,text]=packets[packet++];clock=at;return {done:false,value:new TextEncoder().encode(text)};
+ }})}})};
+ const source=fs.readFileSync('web/browser.js','utf8').replace('root.WatteverBrowser = {enabled:', 'root.WatteverBrowser = {testStream:stream,enabled:');
+ vm.runInNewContext(source,timedCtx);
+ const measured=await timedWindow.WatteverBrowser.testStream('test','prompt',{token_limit_field:'max_tokens',max_tokens:20,per_test_timeout_s:5,endpoint_reasoning_effort:'none'},500);
+ assert.equal(measured.status,'ok');assert.equal(measured.start_offset_s,.5);assert.equal(measured.ttft_s,1);
+ assert.equal(measured.decode_s,1);assert.equal(measured.wall_s,7);assert.equal(measured.response_tail_s,5);
+ assert.equal(packet,packets.length,'DONE terminates without an extra EOF read');
+ assert.equal(measured.decode_token_count,6,'exclude hidden reasoning and one first token, never count chunks as tokens');
+ assert.equal(measured.decode_tps,6);
+ assert.equal(measured.completion_tokens_estimated,false);
+ assert.equal(measured.timing_scope.decode_count_estimated_boundary,true);
+ assert.equal(measured.timing_scope.decode_end_boundary,'last_observed_nonempty_output');
+ assert.equal(measured.timing_scope.phase_protocol,'observed-output-phases-v2');
+ // One visible event can carry many tokens; it has no measurable decode interval.
+ packet=0;clock=1000;
+ packets.splice(0,packets.length,
+  [2000,'data: {"choices":[{"delta":{"content":"many tokens"},"finish_reason":"stop"}]}\n\n'],
+  [7000,'data: {"choices":[],"usage":{"prompt_tokens":20,"completion_tokens":10}}\n\n'],
+  [8000,'data: [DONE]\n\n']);
+ const oneEvent=await timedWindow.WatteverBrowser.testStream('test','prompt',{token_limit_field:'max_tokens',max_tokens:20,per_test_timeout_s:5,endpoint_reasoning_effort:'none'},500);
+ assert.equal(oneEvent.decode_s,null);assert.equal(oneEvent.decode_tps,null);
+ assert.equal(oneEvent.decode_token_count,null);assert.equal(oneEvent.response_tail_s,6);
+
+ // Empty pre-output deltas and partially streamed reasoning leave the count unknown.
+ packet=0;clock=1000;
+ packets.splice(0,packets.length,
+  [1500,'data: {"choices":[{"delta":{"content":""}}]}\n\n'],
+  [2000,'data: {"choices":[{"delta":{"reasoning_content":"a"}}]}\n\n'],
+  [3000,'data: {"choices":[{"delta":{"content":"b"},"finish_reason":"stop"}]}\n\n'],
+  [7000,'data: {"usage":{"prompt_tokens":0,"completion_tokens":10,"completion_tokens_details":{"reasoning_tokens":3}}}\n\n'],
+  [8000,'data: [DONE]\n\n']);
+ const ambiguous=await timedWindow.WatteverBrowser.testStream('test','prompt',{token_limit_field:'max_tokens',max_tokens:20,per_test_timeout_s:5},500);
+ assert.equal(ambiguous.prompt_tokens,0);assert.equal(ambiguous.prefill_tps,0);
+ assert.equal(ambiguous.decode_token_count,null);assert.equal(ambiguous.decode_tps,null);
+ assert.equal(ambiguous.timing_scope.empty_deltas_before_output,1);
+ // A zero usage value is measured and terminal output after DONE is ignored.
+ packet=0;clock=1000;
+ packets.splice(0,packets.length,
+  [2000,'data: {"choices":[{"delta":{"content":"a"}}]}\n\n'],
+  [3000,'data: {"choices":[{"delta":{"content":"b"},"finish_reason":"stop"}]}\n\n'],
+  [7000,'data: {"usage":{"prompt_tokens":0,"completion_tokens":0,"completion_tokens_details":{"reasoning_tokens":0}}}\n\n'],
+  [8000,'data: [DONE]\n\ndata: {"usage":{"prompt_tokens":999,"completion_tokens":999}}\n\n']);
+ const zeros=await timedWindow.WatteverBrowser.testStream('test','prompt',{token_limit_field:'max_tokens',max_tokens:20,per_test_timeout_s:5},500);
+ assert.equal(zeros.prompt_tokens,0);assert.equal(zeros.completion_tokens,0);assert.equal(zeros.decode_token_count,0);assert.equal(zeros.decode_tps,0);
+ packet=0;clock=1000;packets[2]=[7000,'data: {"usage":{"prompt_tokens":-1,"completion_tokens":10}}\n\n'];
+ const invalid=await timedWindow.WatteverBrowser.testStream('test','prompt',{token_limit_field:'max_tokens',max_tokens:20,per_test_timeout_s:5},500);
+ assert.equal(invalid.status,'failed');assert.match(invalid.message,/Invalid token usage/);
  // Authentication failure stops the session before subsequent cases.
  let inferenceCalls=0;
  responseFn=async url => String(url).endsWith('/corpus.md') ? {ok:true,text:async()=> 'corpus'} : (inferenceCalls++, {ok:false,status:401});

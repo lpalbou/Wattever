@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Organizes the interface into System, Benchmarks, Results, Capabilities and Share, with independent local system monitoring.
+- Replaces the Results Summary with an Overview of each model's peak prefill and decode speed, its change across prompt length and concurrent queries, and the longest prompt completed. Any figure opens its graph.
+- Rebuilds Graphs & comparisons around a toggle-button control panel with no menus: several metrics at once, prompt length or concurrent queries on the axis, several query counts or prompt lengths as separate lines, model toggles, and colour by model or benchmark. Charts gain a compare-at-pointer tooltip and a shared key that highlights its lines.
+- Stops failed or skipped tests from appearing as separate recorded conditions, and names a condition as a variant only when another one measured the same model. Provenance labels and a session's test plan no longer split one model into several configurations.
+- Accounts for every passed test in Graphs: a banner states how many the current toggles draw and offers one-click remedies for the rest, each chart names the values it could not draw and why, and untouched defaults choose query counts, metrics and colours that show everything while the chart stays readable. Library cards say "N tests passed" and list the model count.
+- Reports complete concurrent-batch prefill and output rates using recorded batch timing, while preserving per-request evidence and unavailable timing.
+
 ## 2.6.1 - 2026-11-06
 
 - Publishes the NVMe-backed GLM-5.3-Flash Maya-XS six-context baseline, runtime/pack/RAM/concurrency/read-chunk screens, per-request evidence, eligible both-card energy and separate metric graphs alongside retained Flash-Next observations.

@@ -296,4 +296,44 @@ class EndpointPolicyTests(unittest.TestCase):
         with self.assertRaises(ValueError): endpoints.validate({"endpoint_label":[]})
 
 
+class StrataCompanionTests(unittest.TestCase):
+    def test_lookup_base_url_inverts_route_registry(self):
+        import tempfile
+        registry = {"version": 1, "routes": {"http://127.0.0.1:8086/v1": "endpoint-local-abc123"}}
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "routes.json")
+            with open(path, "w", encoding="utf-8") as handle:
+                json.dump(registry, handle)
+            with patch.object(endpoints, "ROUTE_REGISTRY_PATH", path):
+                self.assertEqual(endpoints.lookup_base_url("endpoint-local-abc123"), "http://127.0.0.1:8086/v1")
+                self.assertIsNone(endpoints.lookup_base_url("missing"))
+
+    def test_merge_adds_maya_catalog_when_gateway_omits_glm(self):
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *args): pass
+
+            def do_GET(self):
+                if self.path != "/v1/models":
+                    self.send_error(404)
+                    return
+                body = json.dumps({"object": "list", "data": [{"id": "glm-5.3-flash-maya-xs-iq1_s"}]}).encode()
+                self.send_response(200)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+        maya = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        threading.Thread(target=maya.serve_forever, daemon=True).start()
+        self.addCleanup(maya.shutdown)
+        self.addCleanup(maya.server_close)
+        cfg = dict(runner.DEFAULT_CONFIG, provider="openai", endpoint_base_url="http://127.0.0.1:8086/v1",
+                   endpoint_identity={"service": "Strata"})
+        models = [{"id": "qwen-pack", "type": "llm", "quantization_source": "unknown"}]
+        with patch("wattever.endpoints._strata_maya_companion_url",
+                   return_value="http://127.0.0.1:%d/v1" % maya.server_port):
+            merged = endpoints._merge_strata_companion_models(cfg, models)
+        ids = [model["id"] for model in merged]
+        self.assertEqual(ids, ["qwen-pack", "glm-5.3-flash-maya-xs-iq1_s"])
+
+
 if __name__ == "__main__": unittest.main()

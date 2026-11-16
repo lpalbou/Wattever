@@ -70,6 +70,47 @@ class MultiGpuTests(unittest.TestCase):
         self.assertIsNotNone(result['gpus'][0]['gpu_energy_j'])
         self.assertIsNone(result['gpus'][1]['gpu_energy_j'])
 
+    def test_single_missing_in_window_sample_cannot_use_nearby_complete_sample(self):
+        sampler=self.sampler()
+        self.append(sampler,100,100,50)
+        self.append(sampler,101,100,None)
+        result=sampler.window(100.9,101.5)
+        self.assertIsNone(result['gpu_energy_j'])
+        self.assertFalse(result['gpu_power_complete'])
+
+    def test_decode_energy_excludes_late_usage(self):
+        sampler=self.sampler()
+        for t in (100,101,102,103,104,105,106): self.append(sampler,t,100,50)
+        bench=runner.BenchRunner(); bench.sampler=sampler
+        measured={'t_start':100,'t_first_token':101,'t_last_output':103,'t_end':106,
+                  'prompt_tokens':500,'completion_tokens':11,'decode_token_count':10,
+                  'reasoning_tokens':0,'ttft_s':1,'decode_s':2,'wall_s':6,
+                  'prefill_tps':500,'decode_tps':5,'finish_reason':'stop','sample_text':'answer'}
+        with patch.object(bench,'_measure_completion',return_value=measured), \
+             patch.object(runner.corpus,'build_prompt',return_value=('test',{'nonce':'abc','corpus_wraps':0})):
+            row=bench._one_test({'results':[]},dict(runner.DEFAULT_CONFIG),'model',512,0,1,{},'max',1536,0,4)
+        self.assertEqual(row['power']['prefill_energy_j'],150)
+        self.assertEqual(row['power']['j_per_1k_prefill'],300)
+        self.assertEqual(row['power']['decode_energy_j'],300)
+        self.assertEqual(row['group_power']['gpu_energy_j'],900)
+        self.assertEqual(row['power']['j_per_token_decode'],30)
+        self.assertEqual([g['decode']['gpu_energy_j'] for g in row['power']['gpus']], [200,100])
+
+    def test_missing_decode_end_has_no_energy_and_does_not_use_eof(self):
+        sampler=self.sampler()
+        for t in (100,101,102,103): self.append(sampler,t,100,50)
+        bench=runner.BenchRunner(); bench.sampler=sampler
+        measured={'t_start':100,'t_first_token':101,'t_end':103,
+                  'prompt_tokens':500,'completion_tokens':11,'decode_token_count':None,
+                  'reasoning_tokens':0,'ttft_s':1,'decode_s':None,'wall_s':3,
+                  'prefill_tps':500,'decode_tps':None,'finish_reason':'stop','sample_text':'answer'}
+        with patch.object(bench,'_measure_completion',return_value=measured), \
+             patch.object(runner.corpus,'build_prompt',return_value=('test',{'nonce':'abc','corpus_wraps':0})):
+            row=bench._one_test({'results':[]},dict(runner.DEFAULT_CONFIG),'model',512,0,1,{},'max',1536,0,4)
+        self.assertEqual(row['status'],'ok')
+        self.assertIsNone(row['power']['decode_energy_j'])
+        self.assertIsNone(row['power']['j_per_token_decode'])
+
     def test_stale_card_and_reversed_device_arrival_order(self):
         sampler=self.sampler()
         sampler._record_sensor((100,50,80,2000,2300,70,None,None),gpu_index=1)

@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const source=fs.readFileSync('web/app.js','utf8').replace(/\ninit\(\);\s*$/,'');
-const context={Charts:{fmtNum:String},document:{querySelector:()=>null}};
+const context={WatteverPhaseMetrics:require('../web/phase-metrics.js'),Charts:{fmtNum:String},document:{querySelector:()=>null}};
 vm.createContext(context);vm.runInContext(source,context);
 vm.runInContext(`
  const historical={model:'m',target_tokens:512,concurrency:1,repeat:0,status:'ok',session_id:'old',wall_s:10,decode_tps:40};
@@ -28,6 +28,7 @@ vm.runInContext(`
  if(reused.find(v=>v.storage_alternative).storage_baseline_id!==reused[0].id)throw Error('Frozen baseline pairing');
  const pairRun={storage_comparison:{baseline_results:[{...control,repeat:0,wall_s:1,prefill_tps:1},{...control,repeat:1,wall_s:100,prefill_tps:100}],
    alternate_results:[{...alternate,repeat:0,wall_s:1,prefill_tps:1},{...alternate,repeat:1,wall_s:10,prefill_tps:10}]}};
+ for(const rows of [pairRun.storage_comparison.baseline_results,pairRun.storage_comparison.alternate_results]) for(const row of rows){row.ttft_s=1;row.prompt_tokens=row.prefill_tps;}
  const wall=storageComparisonGroups(pairRun,'wall_s')[0];
  if(wall.primary!==50.5 || wall.alternative!==5.5 || wall.speedup!==5.5)throw Error('Use median of paired ratios, not ratio of pooled medians');
  if(storageComparisonGroups(pairRun,'prefill_tps')[0].speedup!==.55)throw Error('Higher-is-better metrics need paired inverse ratios');

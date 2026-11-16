@@ -99,6 +99,7 @@ class StorageTests(unittest.TestCase):
         self.assertNotIn("uuid", self.run["gpu"])
         self.assertEqual(validate_run(self.run), [])
         self.assertEqual(self.run["measurement_scope"]["runtime_gpu_placement_source"], "unknown")
+        self.assertEqual(self.run["measurement_scope"]["phase_protocol"], "observed-output-phases-v2")
         reordered = copy.deepcopy(self.run)
         machine["gpus"].reverse()
         with patch.object(hardware, "inventory", return_value=machine):
@@ -149,6 +150,33 @@ class StorageTests(unittest.TestCase):
                 httpd.shutdown()
                 httpd.server_close()
                 thread.join()
+
+    def test_json_downloads_preserve_legacy_wall_rate_as_recorded_evidence(self):
+        source = "group_wall_clock; decode is sum(completion_tokens)/group_wall_s"
+        self.run["results"] = [{"model": "model", "target_tokens": 512, "concurrency": 2,
+                                "status": "ok", "decode_tps": 12, "metric_sources": {"decode_tps": source},
+                                "requests": [{"status": "ok"}, {"status": "ok"}]}]
+        store.save(self.run)
+        before = Path(store.path_for("sample")).read_bytes()
+        httpd = ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)
+        thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+        thread.start()
+        try:
+            base = "http://127.0.0.1:%d" % httpd.server_port
+            for path in ("/api/runs/sample/download", "/api/export.json"):
+                with self.subTest(path=path), urllib.request.urlopen(base + path) as response:
+                    body = json.load(response)
+                    run = body["runs"][0] if "runs" in body else body
+                    row = run["results"][0]
+                    self.assertIsNone(row["decode_tps"])
+                    self.assertEqual(row["recorded_decode_tps"], 12)
+                    self.assertEqual(row["recorded_metric_sources"]["decode_tps"], source)
+                    self.assertIsNone(row["derived_metrics"]["decode_tps"])
+            self.assertEqual(Path(store.path_for("sample")).read_bytes(), before)
+        finally:
+            httpd.shutdown()
+            httpd.server_close()
+            thread.join()
 
     def test_validator_rejects_incomplete_groups_and_nonfinite_metrics(self):
         self.run["results"] = [{"model": "m", "status": "ok", "concurrency": 2,

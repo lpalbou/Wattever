@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs'), vm = require('node:vm');
-const context = {window: {}, Charts: {fmtNum: String}, document: {querySelector() {}, querySelectorAll() { return []; }}, console};
+const context = {WatteverPhaseMetrics:require('../web/phase-metrics.js'),window: {}, Charts: {fmtNum: String}, document: {querySelector() {}, querySelectorAll() { return []; }}, console};
 vm.createContext(context);
 vm.runInContext(fs.readFileSync('web/app.js', 'utf8').replace(/\ninit\(\);\s*$/, ''), context);
 assert.match(vm.runInContext('transferBandwidthMarkup(null)', context), /No transfer capture attached/);
@@ -62,9 +62,9 @@ assert.match(concurrentCsv,/""decode_tps"":65/);
 
 // Paired metric summaries match repeat IDs, exclude failures, and use actual query metrics.
 context.metricRun={id:'metrics',storage_comparison:{protocol:'wattever-storage-comparison-v1',
- baseline_results:[{model:'m',concurrency:2,target_tokens:80000,repeat:0,status:'ok',wall_s:100,requests:[{ttft_s:10,decode_tps:20},{ttft_s:30,decode_tps:40}]},
+ baseline_results:[{model:'m',concurrency:2,target_tokens:80000,repeat:0,status:'ok',wall_s:100,requests:[{status:'ok',start_offset_s:0,prompt_tokens:500,completion_tokens:1000,decode_token_count:1000,decode_s:50,ttft_s:10,decode_tps:20},{status:'ok',start_offset_s:0,prompt_tokens:500,completion_tokens:2000,decode_token_count:2000,decode_s:50,ttft_s:30,decode_tps:40}]},
   {model:'m',concurrency:2,target_tokens:80000,repeat:1,status:'failed',wall_s:600}],
- alternate_results:[{model:'m',concurrency:2,target_tokens:80000,repeat:0,status:'ok',wall_s:50,requests:[{ttft_s:5,decode_tps:40},{ttft_s:15,decode_tps:80}]},
+ alternate_results:[{model:'m',concurrency:2,target_tokens:80000,repeat:0,status:'ok',wall_s:50,requests:[{status:'ok',start_offset_s:0,prompt_tokens:500,completion_tokens:1000,decode_token_count:1000,decode_s:25,ttft_s:5,decode_tps:40},{status:'ok',start_offset_s:0,prompt_tokens:500,completion_tokens:2000,decode_token_count:2000,decode_s:25,ttft_s:15,decode_tps:80}]},
   {model:'m',concurrency:2,target_tokens:80000,repeat:1,status:'ok',wall_s:75,requests:[{ttft_s:100,decode_tps:1}]}]}};
 const before=JSON.stringify(context.metricRun);
 let group=vm.runInContext('storageComparisonGroups(metricRun,"wall_s")[0]',context);
@@ -72,7 +72,7 @@ assert.deepEqual([group.primary,group.alternative,group.speedup,group.pairedCoun
 group=vm.runInContext('storageComparisonGroups(metricRun,"ttft_s")[0]',context);
 assert.deepEqual([group.primary,group.alternative,group.speedup],[20,10,2]);
 group=vm.runInContext('storageComparisonGroups(metricRun,"decode_tps")[0]',context);
-assert.deepEqual([group.primary,group.alternative,group.speedup],[30,60,2]);
+assert.deepEqual([group.primary,group.alternative,group.speedup],[3000/70,3000/35,2]);
 assert.equal(JSON.stringify(context.metricRun),before,'Rendering must preserve raw observations');
 const direct=vm.runInContext('storageExperimentSummary(metricRun)',context);
 assert.match(direct,/^<section/);assert.match(direct,/Compare recorded storage/);

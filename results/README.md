@@ -116,9 +116,11 @@ Each concurrent request has its own leading nonce to invalidate prefix caching.
 In managed LM Studio, `lms load --parallel` sets prediction capacity for that
 level. Generic endpoint concurrency and context capacity are engine controlled.
 
-`aggregate_completion_tps` is successful requests' total output tokens divided
-by group wall time, including prefill and queueing. It is not the sum of individual
-decode speeds. A group is successful only when every request succeeds. Generic
+Row-level `prefill_tps` and `decode_tps` for concurrent groups use wall-clock
+throughput: total prompt tokens ÷ latest TTFT, and total output tokens ÷ group
+`wall_s` (not the sum of per-stream client rates).
+`aggregate_completion_tokens` records total output tokens for energy denominators.
+A group is successful only when every request succeeds. Generic
 endpoint throughput stays unavailable if server token usage is missing. Legacy
 managed results can include explicitly marked stream-chunk estimates; the UI
 marks estimated counts and derived throughput with `*`. Client prompt tokens/TTFT

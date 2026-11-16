@@ -114,7 +114,7 @@ def path_for(run_id):
 
 def prepare_run(run):
     """Attach versioned, public machine/protocol metadata to a new session."""
-    from . import __version__, corpus, hardware
+    from . import __version__, PHASE_PROTOCOL, corpus, hardware
     machine = hardware.inventory()
     run["schema_version"] = SCHEMA_VERSION
     run["$schema"] = "../benchmark.schema.json"
@@ -125,6 +125,7 @@ def prepare_run(run):
     run["gpu"] = {k: v for k, v in (run.get("gpu") or {}).items() if k != "uuid"}
     cfg = run.get("config") or {}
     run["measurement_scope"] = {
+        "phase_protocol": PHASE_PROTOCOL,
         "power_gpu_sensor_index": cfg.get("gpu_index", 0),
         "power_boundary": "selected GPU only; not the sum of all connected GPUs",
         "runtime_gpu_placement": cfg.get("runtime_gpu_placement") or "unknown; managed by LM Studio",
@@ -332,6 +333,101 @@ def load_config():
         return None
 
 
+def _csv_rate(row, key):
+    if (row.get("concurrency") or 1) <= 1:
+        if key in ("prefill_tps", "decode_tps"):
+            return _csv_phase(row, key.removesuffix("_tps")).get("tps")
+        return row.get(key)
+    from .collective_metrics import collective_row_metrics
+    return collective_row_metrics(row, partial=True).get(key)
+
+
+def _csv_completion_count(row):
+    if (row.get("concurrency") or 1) <= 1:
+        from .collective_metrics import _sum_int
+        if row.get("status") != "ok":
+            return None
+        requests = row.get("requests")
+        if isinstance(requests, list) and requests:
+            if len(requests) != 1 or not isinstance(requests[0], dict) or requests[0].get("status") != "ok":
+                return None
+            request = requests[0]
+        else:
+            request = row
+        return _sum_int([request.get("completion_tokens")])
+    from .collective_metrics import collective_row_metrics
+    return collective_row_metrics(row, partial=True).get("completion_tokens")
+
+
+def _csv_group_output_rate(row):
+    if (row.get("concurrency") or 1) > 1:
+        return _csv_rate(row, "group_output_tps")
+    from .collective_metrics import _finite
+    count = _csv_completion_count(row)
+    wall = row.get("wall_s")
+    import math
+    return count / wall if count is not None and len(_finite([wall])) == 1 and wall > 0 and math.isfinite(count / wall) else None
+
+
+def _csv_phase(row, phase):
+    from .collective_metrics import collective_decode_phase, collective_prefill_phase, collective_row_metrics
+    if (row.get("concurrency") or 1) <= 1:
+        if row.get("status") != "ok":
+            return {}
+        requests = [dict(row, start_offset_s=0)]
+    else:
+        metrics = collective_row_metrics(row, partial=True)
+        if phase + "_tps" not in metrics:
+            return {}
+        requests = [request for request in row.get("requests", [])
+                    if isinstance(request, dict) and request.get("status") == "ok"]
+    helper = collective_prefill_phase if phase == "prefill" else collective_decode_phase
+    return helper(requests) or {}
+
+
+def _csv_derived_sources(row):
+    from .collective_metrics import observed_output_protocol
+    if (row.get("concurrency") or 1) <= 1:
+        sources = {}
+        if _csv_phase(row, "prefill"):
+            sources["prefill_tps"] = "client_ttft_prefill_proxy; prompt_tokens/ttft_s; includes queue and network"
+        if _csv_phase(row, "decode"):
+            sources["decode_tps"] = "decode_token_count/recorded_decode_s; first-chunk token count is an estimate"
+            if not observed_output_protocol(row):
+                sources["decode_tps"] += "; approximate: historical timing may include trailing transport and yield a lower rate"
+        return sources
+    from .collective_metrics import _SOURCES, collective_row_metrics
+    metrics = collective_row_metrics(row, partial=True)
+    sources = {key: value for key, value in _SOURCES.items() if key in metrics}
+    if "decode_tps" in sources:
+        if any(not observed_output_protocol(request) for request in row.get("requests", [])
+               if isinstance(request, dict) and request.get("status") == "ok"):
+            sources["decode_tps"] += "; approximate: historical timing may include trailing transport and yield a lower rate"
+    if row.get("status") != "ok":
+        sources = {key: value + "; successful requests only" for key, value in sources.items()}
+    return sources
+
+
+def export_projection(run):
+    """Public export with explicit derived phases; never mutate the saved run."""
+    from .privacy import public_projection
+    from .collective_metrics import _walk_result_rows, collective_row_metrics, enrich_run
+    projected = public_projection(run)
+    enrich_run(projected, partial=True)
+    for row in _walk_result_rows(projected):
+        if (row.get("concurrency") or 1) <= 1:
+            continue
+        metrics = collective_row_metrics(row, partial=True)
+        row["derived_metrics"] = {
+            "prefill_tps": metrics.get("prefill_tps"),
+            "decode_tps": metrics.get("decode_tps"),
+            "group_output_tps": metrics.get("group_output_tps"),
+            "metric_sources": _csv_derived_sources(row),
+            "scope": "Derived from recorded successful request observations; null means insufficient phase evidence. Unmarked historical decode_s may include trailing transport and is approximate.",
+        }
+    return projected
+
+
 CSV_COLUMNS = [
     ("run_id", lambda r, run: run.get("id")),
     ("run_label", lambda r, run: run.get("label")),
@@ -354,8 +450,14 @@ CSV_COLUMNS = [
     ("gpu_offload", lambda r, _: r.get("gpu_offload")),
     ("load_s", lambda r, _: r.get("load_s")),
     ("ttft_s", lambda r, _: r.get("ttft_s")),
-    ("prefill_tps", lambda r, _: r.get("prefill_tps")),
-    ("decode_tps", lambda r, _: r.get("decode_tps")),
+    ("phase_protocol", lambda r, _: r.get("phase_protocol") or (r.get("timing_scope") or {}).get("phase_protocol")),
+    ("prefill_s", lambda r, _: _csv_phase(r, "prefill").get("prefill_s")),
+    ("prefill_tokens", lambda r, _: _csv_phase(r, "prefill").get("prefill_tokens")),
+    ("decode_s", lambda r, _: _csv_phase(r, "decode").get("decode_s")),
+    ("decode_tokens", lambda r, _: _csv_phase(r, "decode").get("decode_tokens")),
+    ("prefill_tps", lambda r, _: _csv_rate(r, "prefill_tps")),
+    ("decode_tps", lambda r, _: _csv_rate(r, "decode_tps")),
+    ("group_output_tps", lambda r, _: _csv_group_output_rate(r)),
     ("completion_tokens", lambda r, _: r.get("completion_tokens")),
     ("reasoning_tokens", lambda r, _: r.get("reasoning_tokens")),
     ("prefill_gpu_w", lambda r, _: (r.get("power") or {}).get("prefill_gpu_w")),
@@ -376,10 +478,10 @@ CSV_COLUMNS = [
     ("prefill_cpu_w", lambda r, _: (r.get("power") or {}).get("prefill_cpu_w")),
     ("decode_cpu_w", lambda r, _: (r.get("power") or {}).get("decode_cpu_w")),
     ("concurrency", lambda r, _: r.get("concurrency", 1)),
-    ("aggregate_completion_tps", lambda r, _: r.get("aggregate_completion_tps")),
-    ("aggregate_completion_tokens", lambda r, _: r.get("aggregate_completion_tokens")),
+    ("aggregate_completion_tokens", lambda r, _: _csv_completion_count(r)),
     ("completed_requests", lambda r, _: r.get("completed_requests")),
     ("wall_s", lambda r, _: r.get("wall_s")),
+    ("response_tail_s", lambda r, _: r.get("response_tail_s")),
     ("completion_tokens_estimated", lambda r, _: r.get("completion_tokens_estimated")),
     ("aggregate_completion_tokens_estimated", lambda r, _: r.get("aggregate_completion_tokens_estimated")),
     ("hardware_class", lambda r, run: (run.get("classification") or {}).get("hardware_class")),
@@ -414,6 +516,20 @@ CSV_COLUMNS = [
     ("whole_case_gpu_energy_j", lambda r, run: (r.get('group_power') or {}).get('gpu_energy_j')),
     ("prefill_gpu_energy_j", lambda r, run: (r.get('power') or {}).get('prefill_energy_j')),
     ("decode_gpu_energy_j", lambda r, run: (r.get('power') or {}).get('decode_energy_j')),
+    ("recorded_prefill_tps", lambda r, _: r.get("recorded_prefill_tps", r.get("prefill_tps"))),
+    ("recorded_decode_tps", lambda r, _: r.get("recorded_decode_tps", r.get("decode_tps"))),
+    ("recorded_aggregate_completion_tokens", lambda r, _: r.get("aggregate_completion_tokens")),
+    ("metric_sources_json", lambda r, _: json.dumps(r.get("metric_sources") or {})),
+    ("recorded_metric_sources_json", lambda r, _: json.dumps(r.get("recorded_metric_sources") or {})),
+    ("derived_metric_sources_json", lambda r, _: json.dumps(_csv_derived_sources(r))),
+    ("request_metrics_json", lambda r, _: json.dumps([
+        {key: request[key] for key in (
+            "status", "prompt_tokens", "completion_tokens", "cached_prompt_tokens",
+            "start_offset_s", "wall_s", "response_tail_s", "ttft_s", "decode_s", "prefill_tps", "decode_tps",
+            "completion_tokens_estimated", "reasoning_tokens", "decode_token_count", "timing_scope", "metric_sources", "reported_timings"
+        ) if request.get(key) is not None}
+        for request in (r.get("requests") or [r]) if isinstance(request, dict)
+    ])),
 ]
 
 

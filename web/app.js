@@ -6,13 +6,20 @@ const state = {
   runCache: {},          // id -> full run
   selected: null,        // results tab
   compare: new Set(),
-  metrics: new Set(["prefill_tps"]),
+  metrics: new Set(["prefill_tps", "decode_tps"]),
   visibleModels: null,
   colorBy: "models",
   mtpFilter: "all",
   sizes: new Set(),
   concurrencyLevels: new Set([1]),
   comparisonConcurrency: 1,
+  queryLevels: null,      // concurrent-query levels drawn as separate lines; null = the single comparisonConcurrency
+  promptLevels: null,     // prompt lengths drawn as separate lines on the concurrency axis; null = best covered
+  resultScope: null,
+  colorTouched: false,
+  promptsTouched: false,
+  levelsTouched: false,   // until the user picks levels or metrics, the view chooses ones that show every test
+  metricsTouched: false,
   resultView: "summary",
   selectionInitialized: false,
   resultsRender: 0,
@@ -32,7 +39,7 @@ const state = {
   detectedEndpointProvider: null,
   conditions: null,
   comparisonLayout: "overview",
-  comparisonAxis: "concurrency",
+  comparisonAxis: "context",
   scaling: {tab:"throughput",prompt:null,model:null,selectedGroup:null,n:null},
 };
 
@@ -157,7 +164,7 @@ function renderRecordedConditions(runs) {
   const container = $("#recorded-conditions");
   if (!container) return;
   const variants = availableMeasurementRuns(runs), selected = new Set(measurementRuns(runs).map(run=>run.id));
-  container.hidden = variants.length < 2;
+  container.hidden = !variants.length || (variants.length === 1 && selected.has(variants[0].id));
   const signature = JSON.stringify(variants.map(run=>[run.id,run.label]));
   if (container.dataset.conditions !== signature) {
     container.dataset.conditions = signature;
@@ -168,14 +175,84 @@ function renderRecordedConditions(runs) {
     input.checked = selected.has(input.dataset.conditionId);
     input.closest(".chip").dataset.on = input.checked ? "1" : "0";
     const run=variants.find(item=>item.id === input.dataset.conditionId), rows=conditionRows(run,null,state.resultView==="compare" && state.comparisonAxis==="concurrency");
-    const scaling=state.resultView==="compare" && state.comparisonAxis==="concurrency" && globalThis.WatteverConcurrency;
-    const measured=rows.filter(row=>row.status === "ok" && (scaling ? scaling.successful(row) && Object.values(scaling.measurements(row)).some(Number.isFinite) : selectedMetricKeys().some(key=>Number.isFinite(METRICS[key].get(row))))).length;
+    const measured=rows.filter(row=>row.status === "ok" && selectedMetricKeys().some(key=>Number.isFinite(METRICS[key].get(row)))).length;
     input.closest(".chip").querySelector(".condition-count").textContent=rows.length ? `${rows.length} matching cases · ${measured} measured` : "0 cases for current model / queries";
   });
 }
 
+/* Results can show several concurrent-query levels at once. With no explicit
+ * choice the single comparisonConcurrency level applies. */
+function activeQueryLevels() {
+  return state.queryLevels?.size ? [...state.queryLevels].sort((a,b)=>a-b) : [state.comparisonConcurrency];
+}
+function levelOn(count) {
+  return state.queryLevels?.size ? state.queryLevels.has(count) : count === state.comparisonConcurrency;
+}
+function activePromptLevels() {
+  if (state.promptLevels?.size) return [...state.promptLevels].sort((a,b)=>a-b);
+  const best = state.resultScope?.bestPrompt;
+  return best == null ? [] : [best];
+}
+/* What the ticked benchmarks actually recorded: the only values worth offering. */
+function resultLevels(runs) {
+  const queries = new Set(), prompts = new Set(), coverage = new Map();
+  for (const run of runs) for (const row of run.results || []) {
+    const count = row.concurrency || 1;
+    if (Number.isInteger(count) && count > 0) queries.add(count);
+    if (!Number.isFinite(row.target_tokens)) continue;
+    prompts.add(row.target_tokens);
+    if (row.status !== "ok") continue;
+    if (!coverage.has(row.target_tokens)) coverage.set(row.target_tokens, new Set());
+    coverage.get(row.target_tokens).add(count);
+  }
+  const sorted = values => [...values].sort((a,b)=>a-b);
+  // The prompt length measured at the most query levels makes the fullest scaling curve.
+  const bestPrompt = sorted(prompts).reduce((best, size) => best === null || (coverage.get(size)?.size || 0) >= (coverage.get(best)?.size || 0) ? size : best, null);
+  return {queries: sorted(queries), prompts: sorted(prompts), bestPrompt};
+}
+const AUTO_LINE_LIMIT = 8;
+/* Until the user chooses for themselves, pick metrics and colours that show every passed test legibly. */
+function autoResultDefaults(measured, models) {
+  if (state.resultView !== "compare") return;
+  const runs = splitRowConditions(measured), shown = shownModels(models);
+  const axis = state.comparisonAxis, levels = axis === "context" ? activeQueryLevels() : activePromptLevels();
+  if (!state.metricsTouched) {
+    const missing = graphCoverage(runs, shown, selectedMetricKeys(), axis, levels);
+    if (missing.unrecorded.length) missing.suggest.slice(0, 2).forEach(key => state.metrics.add(key));
+  }
+  if (!state.colorTouched) {
+    // One model on one benchmark leaves colour free to tell the levels apart.
+    const lineups = new Set(runs.flatMap(run => (run.results || []).filter(row => shown.includes(row.model)).map(row => runKey(run) + "|" + row.model)));
+    state.colorBy = lineups.size === 1 && levels.length > 1 ? "levels" : state.colorBy === "levels" ? "models" : state.colorBy;
+  }
+}
+function syncResultLevels(runs) {
+  const scope = state.resultScope = resultLevels(runs);
+  if (state.queryLevels?.size) {
+    const kept = scope.queries.filter(value => state.queryLevels.has(value));
+    state.queryLevels = kept.length ? new Set(kept) : null;
+  }
+  if (!state.levelsTouched) {
+    const shown = shownModels(allModelsOf(runs));
+    const lineups = new Set(runs.flatMap(run => (run.results || []).filter(row => shown.includes(row.model)).map(row => run.id + "|" + row.model + "|" + !!row.mtp)));
+    const lines = lineups.size * scope.queries.length;
+    // The other axis gets the same treatment: every prompt length while the chart stays readable.
+    if (!state.promptsTouched) state.promptLevels = scope.prompts.length > 1 && lineups.size * scope.prompts.length <= AUTO_LINE_LIMIT ? new Set(scope.prompts) : null;
+    state.queryLevels = scope.queries.length > 1 && lines <= AUTO_LINE_LIMIT ? new Set(scope.queries) : null;
+    if (!state.queryLevels && scope.queries.length) state.comparisonConcurrency = scope.queries[0];
+  }
+  if (state.queryLevels?.size) state.comparisonConcurrency = Math.min(...state.queryLevels);
+  else if (scope.queries.length && !scope.queries.includes(state.comparisonConcurrency)) state.comparisonConcurrency = scope.queries[0];
+  if (state.promptLevels?.size) {
+    const kept = scope.prompts.filter(value => state.promptLevels.has(value));
+    state.promptLevels = kept.length ? new Set(kept) : null;
+  }
+  if (scope.queries.length < 2) state.comparisonAxis = "context";
+  return scope;
+}
+
 function conditionRows(run,models=null,allConcurrency=false) {
-  return (run?.results || []).filter(row=>(models ? models.includes(row.model) : state.visibleModels === null || state.visibleModels.has(row.model)) && (allConcurrency || (row.concurrency || 1) === state.comparisonConcurrency) &&
+  return (run?.results || []).filter(row=>(models ? models.includes(row.model) : state.visibleModels === null || state.visibleModels.has(row.model)) && (allConcurrency || levelOn(row.concurrency || 1)) &&
     (state.mtpFilter === "all" || (!runProviderManaged(run) && !!row.mtp === (state.mtpFilter === "on"))));
 }
 function chartConditions(runs,models,keys) {
@@ -207,9 +284,8 @@ function compareRecordedStorage(runId) {
   state.compare = new Set([runId]); state.selected = runId;
   state.conditions = new Set(variants.map(view=>view.id)); state.visibleModels = models;
   state.metrics = new Set(["wall_s"]); state.mtpFilter = "all";
-  state.comparisonConcurrency = 1; state.comparisonLayout = "models"; state.comparisonAxis = "context";
-  if ($("#comparison-layout")) $("#comparison-layout").value = "models";
-  $$(".comparison-concurrency").forEach(select=>{select.value="1";});
+  state.comparisonConcurrency = 1; state.queryLevels = null; state.promptLevels = null; state.levelsTouched = true; state.metricsTouched = true;
+  state.comparisonLayout = "models"; state.comparisonAxis = "context"; state.colorBy = "benchmarks";
   renderMetricSeg(); renderRunsList(); showResultsView("compare");
 }
 
@@ -262,6 +338,9 @@ function rememberEndpoint(payload,provider) {
   state.detectedEndpoint=identity && typeof identity === "object" ? identity : provider === "lmstudio" ? {id:"lmstudio",label:"LM Studio",source:"declared_provider"} : null;
   return state.detectedEndpoint;
 }
+const OPENAI_URL_STORAGE = "wattever-openai-base-url";
+const HELPER_PROVIDER_STORAGE = "wattever-helper-provider";
+
 function helperConnectionSignature() {
   const config = helperEndpointConfig();
   return JSON.stringify({provider:config.provider,base:config.endpoint_base_url,keyEnv:config.endpoint_api_key_env,
@@ -298,6 +377,27 @@ function updateProviderControls() {
     if ($("#helper-local-note")) $("#helper-local-note").hidden = !generic;
   }
 }
+async function refreshOpenAiCatalog(config = helperEndpointConfig()) {
+  if (browserMode() || config.provider !== "openai" || !config.endpoint_base_url) return false;
+  const found = await api("/api/endpoint/check", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(config)});
+  rememberEndpoint(found, config.provider);
+  const models = Array.isArray(found) ? found : found.models || found.data || [];
+  if (!models.length) throw new Error(found.error || "No model IDs found.");
+  state.env = {...state.env, models, default_models: models.map((model) => model.id),
+    last_config: {...state.env.defaults, ...state.env.last_config, ...config, models: models.map(model => model.id)},
+    lms: {server: true, cli: false}, capabilities: {...state.env.capabilities, context_planning: false}};
+  state.providerNeedsConnection = false;
+  state.endpointSignature = helperConnectionSignature();
+  renderEnv();
+  updateProviderControls();
+  const status = $("#helper-status");
+  if (status) {
+    status.textContent = "Ready · " + (helperEndpointConfig().endpoint_label || "OpenAI-compatible endpoint") + " · " + models.length + " model(s)";
+    status.dataset.state = "ready";
+  }
+  return true;
+}
+
 async function connectHelperEndpoint() {
   const status = $("#helper-status"), button = $("#helper-connect");
   status.dataset.state = "connecting";
@@ -306,26 +406,37 @@ async function connectHelperEndpoint() {
   try {
     const config = helperEndpointConfig();
     if (config.provider === "openai" && !config.endpoint_base_url) throw new Error("Enter your endpoint URL.");
-    const env = await api("/api/env");
     if (config.provider === "openai") {
-      let models = [], discoveryError = null;
-      try { const found = await api("/api/endpoint/check", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(config)}); rememberEndpoint(found,config.provider); models = Array.isArray(found) ? found : found.models || found.data || []; if (found.error) discoveryError = new Error(found.error); }
-      catch (error) { discoveryError = error; }
       const manual = $("#helper-model").value.trim();
-      if (manual && !models.length) models.push({id: manual, type: "llm", state: "manual model ID; discovery unavailable"});
-      if (!models.length) throw discoveryError || new Error("No model IDs found. Enter the served model ID.");
-      env.models = models; env.default_models = models.map(m => m.id);
-      env.lms = {server: true, cli: false};
-      env.capabilities = {...env.capabilities, context_planning: false};
-      env.last_config = {...env.defaults, ...config, models: env.default_models};
-    } else {
-      rememberEndpoint(env,"lmstudio");
-      env.last_config = {...env.defaults, provider: "lmstudio", models: env.default_models || []};
+      try {
+        await refreshOpenAiCatalog(config);
+      } catch (error) {
+        if (manual) {
+          state.env = {...(state.env || {}), models: [{id: manual, type: "llm", state: "manual model ID; discovery unavailable"}],
+            last_config: {...state.env.defaults, ...state.env.last_config, ...config, models: [manual]},
+            default_models: [manual], lms: {server: true, cli: false}};
+          state.providerNeedsConnection = false;
+          state.endpointSignature = helperConnectionSignature();
+          renderEnv();
+          updateProviderControls();
+          status.textContent = "Manual model ID ready; discovery unavailable. Availability is checked when a request is sent.";
+          status.dataset.state = "ready";
+        } else throw error;
+      }
+      state.env.last_config = {...state.env.defaults, ...config, models: state.env.default_models};
+      localStorage.setItem(OPENAI_URL_STORAGE, config.endpoint_base_url);
+      localStorage.setItem(HELPER_PROVIDER_STORAGE, "openai");
+      updatePlan();
+      return;
     }
+    const env = await api("/api/env");
+    rememberEndpoint(env,"lmstudio");
+    env.last_config = {...env.defaults, provider: "lmstudio", models: env.default_models || []};
+    localStorage.setItem(HELPER_PROVIDER_STORAGE, "lmstudio");
     state.env = env; renderEnv(); updateProviderControls();
     state.providerNeedsConnection = false;
     state.endpointSignature = helperConnectionSignature(); updatePlan();
-    status.textContent = "Ready · " + (helperEndpointConfig().endpoint_label || "OpenAI-compatible endpoint") + " · " + env.models.length + " model(s)";
+    status.textContent = "Ready · LM Studio · " + env.models.length + " model(s)";
     status.dataset.state = "ready";
   } catch (error) { status.textContent = "Connection failed: " + error.message; status.dataset.state = "error"; }
   finally { button.disabled = false; }
@@ -362,43 +473,74 @@ async function api(path, opts = {}) {
 /* ---------------- metrics ---------------- */
 const METRICS = {
   wall_s: {label:"Completion time",kind:"line",unit:"s",better:"low",get:r=>r.wall_s,blurb:"Elapsed time until all queries in the case complete."},
-  aggregate_completion_tps: { label: "Aggregate output throughput", kind: "line", unit: "tk/s", better: "high", get: (r) => r.aggregate_completion_tps, blurb: "Total output tokens divided by group wall time." },
   prefill_tps: {
     label: "Prefill speed", kind: "line", unit: "tk/s", better: "high",
-    get: (r) => r.prefill_tps ?? storageMetricValue(r,"prefill_tps"),
-    blurb: "Prompt tokens divided by client time to first token. Includes queueing and transport; prompt caching can raise this figure. This is not an engine-only prefill measurement.",
+    get: (r) => r._metricValues?.prefill_tps ?? collectiveRate(r, "prefill_tps"),
+    blurb: "One stream: client prefill rate. Concurrent group: total prompt tokens ÷ latest time to first token (queueing and serial load included).",
+  },
+  group_output_tps: {
+    label: "End-to-end output throughput", kind: "line", unit: "tk/s", better: "high",
+    get: r => r._metricValues?.group_output_tps ?? phaseMetrics()?.outputRate(r) ?? null,
+    blurb: "Total output tokens divided by group wall time, including prefill and queueing, for every request count.",
   },
   decode_tps: {
-    label: "Decode speed", kind: "line", unit: "tk/s", better: "high",
-    get: (r) => r.decode_tps ?? storageMetricValue(r,"decode_tps"),
-    blurb: "Output speed after this request's first token. Includes scheduler pauses and waits while other concurrent requests prefill.",
+    label: "Total decode throughput", kind: "line", unit: "tk/s", better: "high",
+    get: r => r._metricValues?.decode_tps ?? decodeRate(r),
+    blurb: "Scoped decode tokens divided by the union of post-first-token decode intervals. Excludes TTFT and gaps with no decoding request; overlapping intervals count once.",
   },
+  per_request_decode_tps: {
+    label: "Decode per request (median)",kind:"line",unit:"tk/s",better:"high",get:r=>r._metricValues?.per_request_decode_tps ?? requestDecodeRate(r),
+    blurb:"Median recorded per-request generation speed after the first token. Time to first token is excluded.",
+  },
+  decode_s: {label:"Decode time",kind:"line",unit:"s",better:"low",get:r=>r._metricValues?.decode_s ?? phaseMetrics()?.decodePhase(r)?.decode_s ?? null,
+    blurb:"Duration of post-first-token decode intervals, merged across concurrent requests. TTFT and gaps outside all decode intervals are excluded."},
+  prefill_s: {label:"Prefill time (client TTFT proxy)",kind:"line",unit:"s",better:"low",get:r=>r._metricValues?.prefill_s ?? phaseMetrics()?.prefillPhase(r)?.prefill_s ?? null,
+    blurb:"Client-observed request-start to first-output intervals, merged across requests. Includes network and queueing; isolated engine prefill timing is separate."},
   ttft_s: {
     label: "Time to first token", kind: "line", unit: "s", better: "low",
     get: (r) => r.ttft_s ?? storageMetricValue(r,"ttft_s"),
     blurb: "Client wait until the first output token, including transport, queueing and prompt processing.",
   },
   j_per_1k_prefill: {
-    label: "Energy / 1k prefill", kind: "bars", unit: "J", better: "low",
+    label: "Energy / 1k prefill", kind: "bars", unit: "J/1k tk", better: "low",
     get: (r) => r.power && r.power.j_per_1k_prefill,
     blurb: "Measured GPU joules per thousand prompt tokens ingested.",
   },
   j_per_token_decode: {
-    label: "Energy / output token", kind: "bars", unit: "J", better: "low",
+    label: "GPU decode energy / decode token", kind: "bars", unit: "J/tk", better: "low",
     get: (r) => r.power && r.power.j_per_token_decode,
-    blurb: "Measured GPU joules per generated token.",
+    blurb: "Single-request GPU decode-phase joules per scoped decode token; excludes prefill energy. Concurrent whole-case energy is a separate metric.",
   },
+  gpu_energy_per_output_token: {label:"Whole-case GPU energy / output token",kind:"bars",unit:"J/tk",better:"low",
+    get:r=>globalThis.WatteverConcurrency?.measurements(r).energy ?? null,
+    blurb:"Verified whole-case GPU energy, including prefill, divided by measured completion tokens. Separate from decode-phase energy."},
   prefill_gpu_w: {
     label: "GPU watts (prefill)", kind: "bars", unit: "W", better: null,
     get: (r) => r.power && r.power.prefill_gpu_w,
     blurb: "Average measured board power while ingesting the prompt.",
   },
   vram_peak_mb: {
-    label: "VRAM peak", kind: "line", unit: "MB", better: null,
+    label: "VRAM peak", kind: "line", unit: "MiB", better: null,
     get: (r) => r.vram_peak_mb,
-    blurb: "Peak selected-device memory sampled during the test. This alone does not establish whether the runtime offloaded work to RAM.",
+    blurb: "Peak simultaneous monitored GPU memory sampled during the test. Per-card capacities remain separate; this does not establish engine placement.",
   },
 };
+/* Control-panel wording: short names on the toggle buttons, grouped by what they answer. */
+const METRIC_GROUPS = [["speed", "Speed", "tokens per second"], ["time", "Time", "seconds"], ["hardware", "Energy & memory", ""]];
+const METRIC_CHIPS = {
+  prefill_tps: ["Prefill speed", "speed"], decode_tps: ["Decode speed", "speed"],
+  per_request_decode_tps: ["Decode per request", "speed"], group_output_tps: ["End-to-end output", "speed"],
+  ttft_s: ["Time to first token", "time"], wall_s: ["Completion time", "time"],
+  prefill_s: ["Prefill time", "time"], decode_s: ["Decode time", "time"],
+  j_per_1k_prefill: ["Energy / 1k prefill", "hardware"], j_per_token_decode: ["Decode energy / token", "hardware"],
+  gpu_energy_per_output_token: ["Whole-case energy / token", "hardware"],
+  prefill_gpu_w: ["GPU watts (prefill)", "hardware"], vram_peak_mb: ["VRAM peak", "hardware"],
+};
+for(const [key,metric] of Object.entries(METRICS)) {
+  [metric.short, metric.group] = METRIC_CHIPS[key] || [metric.label, "hardware"];
+  const get=metric.get;
+  metric.get=row=>row?._metricValues && Object.prototype.hasOwnProperty.call(row._metricValues,key) ? row._metricValues[key] : get(row);
+}
 
 /* colour follows the run, fixed by creation order over every known run, so
  * selecting or deselecting runs never repaints the survivors */
@@ -415,17 +557,14 @@ function runColor(runId) {
 }
 
 /* Field help is available on hover, keyboard focus, and touch. */
-const FIELD_HELP = {
-  "mtp-filter": "Compare ordinary decoding, speculative decoding, or both.",
-  "comparison-concurrency": "Compare runs at the same number of simultaneous queries.",
-};
+const FIELD_HELP = {};
 function applyFieldTooltips() {
   $$("input, select, textarea").forEach((input) => {
     if (input.title) return;
     const label = input.closest("label") || (input.id ? document.querySelector(`label[for="${input.id}"]`) : null);
     const field = input.closest(".field");
     const help = field && field.querySelector("[data-help]");
-    input.title = (label && label.dataset.help) || (help && help.dataset.help) || FIELD_HELP[input.id] || (input.classList.contains("comparison-concurrency") ? FIELD_HELP["comparison-concurrency"] : "Include " + ((label && label.textContent.trim()) || "this option") + " in the selection.");
+    input.title = (label && label.dataset.help) || (help && help.dataset.help) || FIELD_HELP[input.id] || "Include " + ((label && label.textContent.trim()) || "this option") + " in the selection.";
     if (label && !label.title) label.title = input.title;
   });
 }
@@ -529,17 +668,49 @@ async function init() {
     $("#app-version").textContent = "v" + info.version;
   }).catch(() => { $("#app-version").textContent = "Server unavailable"; });
   $$(".tab").forEach((tab) => tab.addEventListener("click", () => showPanel(tab.dataset.panel)));
+  document.addEventListener("visibilitychange", () => updateSystemPolling($("#panel-system").classList.contains("active")));
+  $("#export-graphs")?.addEventListener("click", exportVisibleGraphs);
+  $("#share-benchmarks")?.addEventListener("click", shareBenchmarks);
   $("#theme-toggle").addEventListener("click", toggleTheme);
   $("#clean-run").addEventListener("click", prepareCleanRun);
-  $$(".comparison-concurrency").forEach((select) => {
-    select.innerHTML = CONCURRENCY_PRESETS.map((value) => `<option value="${value}">${value}</option>`).join("");
-    select.addEventListener("change", () => {
-      state.comparisonConcurrency = Number(select.value);
-      if (state.metrics.size === 1 && (state.metrics.has("prefill_tps") || state.metrics.has("aggregate_completion_tps"))) {
-        state.metrics = new Set([state.comparisonConcurrency > 1 ? "aggregate_completion_tps" : "prefill_tps"]);
-      }
-      renderMetricSeg(); renderResultsView();
-    });
+  // Control panel: toggles only. Each handler changes one piece of state and redraws in place.
+  $("#result-metrics")?.addEventListener("click", event => {
+    const chip = event.target.closest?.("[data-metric]");
+    if (!chip) return;
+    const key = chip.dataset.metric;
+    state.metricsTouched = true;
+    if (state.metrics.has(key)) state.metrics.delete(key); else state.metrics.add(key);
+    redrawResultsWithoutScrolling();
+  });
+  $("#result-levels")?.addEventListener("click", event => {
+    const every = event.target.closest?.("[data-level-all]");
+    if (every) return applyCoverageAction({dataset: {coverage: "levels"}});
+    const chip = event.target.closest?.("[data-level]");
+    if (!chip) return;
+    const value = Number(chip.dataset.level), prompts = chip.dataset.levelKind === "prompt";
+    const picked = new Set(prompts ? activePromptLevels() : activeQueryLevels());
+    if (picked.has(value)) picked.delete(value); else picked.add(value);
+    if (!picked.size) return;   // one value always stays ticked; an empty chart answers nothing
+    if (prompts) state.promptsTouched = true; else state.levelsTouched = true;
+    if (prompts) state.promptLevels = picked;
+    else { state.queryLevels = picked; state.comparisonConcurrency = Math.min(...picked); }
+    redrawResultsWithoutScrolling();
+  });
+  $$("[data-comparison-layout]").forEach(button => button.addEventListener("click", () => {
+    state.comparisonLayout = button.dataset.comparisonLayout; redrawResultsWithoutScrolling();
+  }));
+  $$("[data-mtp-filter]").forEach(button => button.addEventListener("click", () => {
+    state.mtpFilter = button.dataset.mtpFilter; redrawResultsWithoutScrolling();
+  }));
+  $("#chart-key")?.addEventListener("mouseover", event => highlightSeries(event.target.closest?.("[data-hl-tag]")));
+  $("#chart-key")?.addEventListener("mouseleave", () => highlightSeries(null));
+  $("#chart-key")?.addEventListener("focusin", event => highlightSeries(event.target.closest?.("[data-hl-tag]")));
+  $("#chart-key")?.addEventListener("focusout", () => highlightSeries(null));
+  document.addEventListener("click", event => {
+    const link = event.target.closest?.("[data-open-graph]");
+    if (link) openGraphFor(JSON.parse(link.dataset.openGraph));
+    const remedy = event.target.closest?.("[data-coverage]");
+    if (remedy) applyCoverageAction(remedy);
   });
   $$("[data-result-view]").forEach((button) => button.addEventListener("click", () => showResultsView(button.dataset.resultView)));
   ["[data-result-view]", "[data-compare-view]"].forEach((selector) => {
@@ -610,9 +781,9 @@ async function init() {
     const button = event.target.closest?.("[data-compare-storage]");
     if (button) compareRecordedStorage(button.dataset.compareStorage);
   });
-  $("#comparison-layout")?.addEventListener("change", event=>{state.comparisonLayout=event.target.value;renderResultsView();});
   $$("[data-comparison-axis]").forEach(button=>button.addEventListener("click",()=>{
-    state.comparisonAxis=button.dataset.comparisonAxis;renderResultsView();
+    if (button.getAttribute("aria-disabled") === "true") return;
+    state.comparisonAxis=button.dataset.comparisonAxis;redrawResultsWithoutScrolling();
   }));
   $("#summary-export")?.addEventListener("click", event=>{
     event.preventDefault();
@@ -622,11 +793,9 @@ async function init() {
     setTimeout(()=>URL.revokeObjectURL(url),1000);
   });
   $$("[data-color-by]").forEach(button => button.addEventListener("click", () => {
-    state.colorBy = button.dataset.colorBy;
-    $$("[data-color-by]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
-    renderResultsView();
+    state.colorBy = button.dataset.colorBy; state.colorTouched = true;
+    redrawResultsWithoutScrolling();
   }));
-  $("#mtp-filter").addEventListener("change", (e) => { state.mtpFilter = e.target.value; renderResultsView(); });
   $$("#mtp-chips input").forEach((input) => input.addEventListener("change", () => {
     $$("#mtp-chips .chip").forEach((chip) => {
       chip.dataset.on = chip.querySelector("input").checked ? "1" : "0";
@@ -644,11 +813,14 @@ async function init() {
     return;
   }
   renderEnv();
+  if (!browserMode()) {
+    try { await refreshOpenAiCatalog(); } catch (_) { /* user can connect manually */ }
+  }
   renderMetricSeg();
   await loadRuns();
   const hash = location.hash.slice(1);
   if (!hash && browserMode()) showPanel("results", false);
-  if (["summary", "run", "results", "compare", "capabilities"].includes(hash)) {
+  if (["summary", "run", "system", "results", "compare", "capabilities", "share"].includes(hash)) {
     showPanel(hash, false);
   }
   await openComparisonLink(location.search);
@@ -672,6 +844,70 @@ function toggleTheme() {
   if ($("#panel-results").classList.contains("active")) renderResultsView();
 }
 
+let systemPollTimer = null, systemPollGeneration = 0, systemDashboard = null;
+function updateSystemPolling(active) {
+  systemPollGeneration++;
+  clearTimeout(systemPollTimer); systemPollTimer = null;
+  if (!active || document.hidden) return;
+  if (browserMode()) {
+    $("#system-status").textContent = "Live hardware readings require the desktop helper. Browser mode cannot access local telemetry.";
+    $("#system-stats").innerHTML = "";
+    return;
+  }
+  pollSystem(systemPollGeneration);
+}
+async function pollSystem(generation) {
+  try {
+    const sample = await api("/api/system");
+    if (generation !== systemPollGeneration) return;
+    const t = sample.telemetry;
+    const age = t?.sample_age_s;
+    const stamp = Number.isFinite(sample.timestamp) ? new Date((sample.timestamp - (Number.isFinite(age) ? age : 0)) * 1000).toLocaleTimeString() : "";
+    const stale = Number.isFinite(age) && age > Math.max(3, 3 * (sample.sampling_interval_ms || 1000) / 1000);
+    $("#system-status").textContent = (t ? (stale ? "Stale sample" : "Sample") + (stamp ? " \u00b7 " + stamp : "") + (Number.isFinite(age) ? ` \u00b7 ${fmt(age,1)} s old` : "") : "Warming up; waiting for the first sample.") + (sample.error ? " \u00b7 Some readings unavailable: " + sample.error : "");
+    const val = (v, divisor=1) => Number.isFinite(v) ? fmt(v/divisor, 1) : "\u2014";
+    if (globalThis.WatteverSystemDashboard) {
+      if (!systemDashboard) systemDashboard = new WatteverSystemDashboard.Dashboard($("#system-stats"));
+      systemDashboard.update(sample, t ? liveGpuCards(t) : "");
+    } else {
+    $("#system-stats").innerHTML = t ? [stat(t.gpus?.length ? "Monitored NVIDIA power" : "GPU/SoC sensor power",val(t.gpu_w),"W"),stat("System power",val(t.system_w_est),"W estimated"),stat(t.gpus?.length ? "Monitored NVIDIA load" : "GPU/SoC sensor load",val(t.gpu_util),"%"),stat(t.gpus?.length ? "Monitored NVIDIA memory used" : "GPU/SoC memory used",val(t.vram_mb,1024),"GiB"),stat("RAM used",val(t.system_memory_used_bytes,1073741824),"GiB"),stat("CPU load",val(t.cpu_util_percent ?? (Number.isFinite(t.cpu_util) ? t.cpu_util * 100 : null)),"%"),stat("GPU temperature",val(t.temp_c),"\u00b0C"),stat("CPU temperature",val(t.cpu_temp_c),"\u00b0C")].join("") + liveGpuCards(t) : "";
+    }
+  } catch (error) {
+    if (generation !== systemPollGeneration) return;
+    $("#system-status").textContent = "Live readings unavailable: " + error.message;
+    systemDashboard?.tick();
+    if (!systemDashboard) $("#system-stats").innerHTML = "";
+  }
+  if (generation === systemPollGeneration) systemPollTimer = setTimeout(() => pollSystem(generation), 1000);
+}
+function exportVisibleGraphs() {
+  const graphs = [...document.querySelectorAll("#panel-compare svg")].filter(svg => svg.getBoundingClientRect().width > 0);
+  if (!graphs.length) { alert("No visible graphs to export. Select a benchmark and measures first."); return; }
+  const ns = "http://www.w3.org/2000/svg", output = document.createElementNS(ns,"svg");
+  output.setAttribute("xmlns",ns);
+  let y = 0, width = 0;
+  graphs.forEach(graph => {
+    const rect = graph.getBoundingClientRect(), copy = graph.cloneNode(true);
+    copy.setAttribute("x",0); copy.setAttribute("y",y); copy.setAttribute("width",rect.width); copy.setAttribute("height",rect.height);
+    output.appendChild(copy); y += rect.height; width = Math.max(width,rect.width);
+  });
+  output.setAttribute("width",width); output.setAttribute("height",y); output.setAttribute("viewBox",`0 0 ${width} ${y}`);
+  const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(output)],{type:"image/svg+xml"}));
+  const link = document.createElement("a"); link.href=url; link.download="wattever-graphs.svg"; link.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+async function shareBenchmarks() {
+  const ids = [...state.compare];
+  if (!ids.length) { $("#share-status").textContent = "Select one or more benchmarks in Results first."; return; }
+  try { const bundle = await api("/api/export.json?ids=" + ids.map(encodeURIComponent).join(",")); downloadBlob(JSON.stringify(bundle, null, 2), "wattever-benchmarks.json", "application/json"); $("#share-status").textContent = "Bundle downloaded. For contributions, use the individual download buttons or split the bundle into separate files."; } catch (error) { $("#share-status").textContent = "Export failed: " + error.message; }
+}
+
+function renderShareRuns() {
+  const node = $("#share-run-files"); if (!node) return;
+  const ids = [...state.compare];
+  node.innerHTML = ids.length ? ids.map(id => `<a class="btn-sm" href="/api/runs/${encodeURIComponent(id)}/download" download="${esc(benchmarkFilename(id))}">Download ${esc((state.runCache[id] || {}).label || id)} JSON</a>`).join(" ") : '<p class="hint">Select benchmarks in Results to download individual files.</p>';
+}
+
+let capabilityActivated = false;
 function showPanel(name, pushHash = true) {
   if (name === "summary" || name === "compare") {
     state.resultView = name;
@@ -680,12 +916,17 @@ function showPanel(name, pushHash = true) {
   $$(".tab").forEach((tab) => tab.setAttribute("aria-selected", String(tab.dataset.panel === name)));
   $$(".panel").forEach((panel) => panel.classList.toggle("active", panel.id === "panel-" + name));
   if (pushHash && location.hash.slice(1) !== name) history.replaceState(null, "", "#" + name);
+  if (name === "share") {
+    renderShareRuns();
+    if (!capabilityActivated && window.WatteverCapabilities) { capabilityActivated = true; window.WatteverCapabilities.activate(); }
+  }
   if (name === "results") {
     showResultsView(state.resultView);
     checkForActiveBenchmark();
   }
+  updateSystemPolling(name === "system");
   Charts.hideTip();
-  if (name === "capabilities") { window.scrollTo(0,0); window.WatteverCapabilities?.activate(); }
+  if (name === "capabilities") { window.scrollTo(0,0); if (window.WatteverCapabilities) { capabilityActivated = true; window.WatteverCapabilities.activate(); } }
 }
 
 function showResultsView(view) {
@@ -704,20 +945,29 @@ function showResultsView(view) {
 async function renderResultsView() {
   const generation = ++state.resultsRender;
   const ids = [...state.compare];
+  if (ids.some(id => !state.runCache[id])) {
+    // Figures from the benchmark shown before must not sit under the new name while it loads.
+    const loading = emptyState("Loading benchmark", "Reading its measurements.");
+    for (const selector of ["#run-detail", "#summary-body", "#compare-body", "#results-table"]) if ($(selector)) $(selector).innerHTML = loading;
+    if ($("#chart-key")) $("#chart-key").innerHTML = "";
+    state.detailSignature = null;
+  }
   await ensureRuns(ids);
   if (generation !== state.resultsRender) return;
   const runs = ids.map((id) => state.runCache[id]).filter(Boolean);
-  const scalingView=state.resultView==="compare" && state.comparisonAxis==="concurrency";
-  if ($("#results-controls")) $("#results-controls").dataset.analysis=scalingView ? "concurrency" : "context";
-  $$("[data-comparison-axis]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.comparisonAxis===state.comparisonAxis)));
-  const models = allModelsOf(measurementRuns(runs));
+  const measured = measurementRuns(runs);
+  syncResultLevels(measured);
+  if ($("#results-controls")) $("#results-controls").dataset.analysis = state.comparisonAxis;
+  const models = allModelsOf(measured);
   if ($("#result-selection-summary")) $("#result-selection-summary").textContent = runs.map(run=>run.label || run.id).join(" · ") || "Select a benchmark";
+  autoResultDefaults(measured, models);
+  renderResultControls(runs, models);
   renderRecordedConditions(runs);
   renderVisibleModels(models);
   const shown = shownModels(models);
   $("#summary-export").href = "/api/export.csv?ids=" + ids.map(encodeURIComponent).join(",");
   $("#summary-export").hidden = !runs.length;
-  const detailSignature = JSON.stringify([state.selected, state.comparisonConcurrency, resultsConnectionKey(), !!state.env?.capabilities?.extend, runs.map(run => [run.id, run.status, run.label, run.notes, (run.results || []).length, run.hardware?.memory, run.hardware_follow_ups])]);
+  const detailSignature = JSON.stringify([state.selected, resultsConnectionKey(), !!state.env?.capabilities?.extend, runs.map(run => [run.id, run.status, run.label, run.notes, (run.results || []).length, run.hardware?.memory, run.hardware_follow_ups])]);
   if (detailSignature !== state.detailSignature) {
     const selection = JSON.stringify([...state.compare]);
     const keepDetailsOpen = state.detailSelection === selection && $("#run-detail details")?.open;
@@ -726,17 +976,14 @@ async function renderResultsView() {
     state.detailSelection = selection;
     state.detailSignature = detailSignature;
   }
-  if (state.resultView === "summary") {
-    renderConcurrencyView($("#summary-concurrency"),runs,true);
-    renderBenchmarkSummary(runs);
-  }
+  if (state.resultView === "summary") renderOverviewTab(runs);
   if (state.resultView === "compare") await renderCompare();
   if (state.resultView === "table") {
     const keys = selectedMetricKeys();
     $("#results-table-heading").textContent = keys.length === 1 ? METRICS[keys[0]].label : "Measurements";
     $("#results-table").innerHTML = !runs.length ? emptyState("Select a benchmark", "Choose a benchmark from the list on the left.")
-      : !keys.length ? emptyState("Choose measures to display", "Select one or more measure badges above.")
-      : compareTable(tracksFor(runs), shown, keys);
+      : !keys.length ? emptyState("Choose a metric", "Tick one or more metric buttons above.")
+      : compareTable(tracksFor(splitRowConditions(measured)), shown, keys);
     renderAllMeasurements();
   }
 }
@@ -746,7 +993,7 @@ function renderAllMeasurements() {
   const runs = measurementRuns([...state.compare].map(id => state.runCache[id]).filter(Boolean));
   target.parentElement.hidden = !runs.length;
   target.innerHTML = target.parentElement.open
-    ? runs.map(run => `<h4>${esc(run.label || run.id)}</h4>${detailedResultsTable({...run,id:run.parent_run_id || run.id,community:run.community || run.storage_alternative || run.storage_baseline, results: (run.results || []).filter(row => (state.visibleModels === null || state.visibleModels.has(row.model)) && (row.concurrency || 1) === state.comparisonConcurrency)})}`).join("") : "";
+    ? runs.map(run => `<h4>${esc(run.label || run.id)}</h4>${detailedResultsTable({...run,id:run.parent_run_id || run.id,community:run.community || run.storage_alternative || run.storage_baseline, results: (run.results || []).filter(row => (state.visibleModels === null || state.visibleModels.has(row.model)) && levelOn(row.concurrency || 1))})}`).join("") : "";
   target.querySelectorAll("button[data-repair-case]").forEach(button => button.addEventListener("click", () => {
     const run = state.runCache[button.dataset.runId];
     const selectedCase = JSON.parse(button.dataset.repairCase);
@@ -812,8 +1059,6 @@ function renderEnv() {
   state.models = new Set((env.last_config && Array.isArray(last.models) ? last.models : (env.default_models || [])).filter((id) => availableModels.has(id)));
   state.sizes = new Set(Array.isArray(last.sizes) ? last.sizes : (env.defaults.sizes || []));
   state.concurrencyLevels = new Set(Array.isArray(last.concurrency_levels) ? last.concurrency_levels : [1]);
-  if (state.sizes.size) state.sizes = through([...new Set([...(env.size_presets || [512, 5000, 10000, 20000, 40000, 80000, 100000, 120000, 150000, 200000, 260000]), ...state.sizes])], Math.max(...state.sizes));
-  if (state.concurrencyLevels.size) state.concurrencyLevels = through([...new Set([...CONCURRENCY_PRESETS, ...state.concurrencyLevels])], Math.max(...state.concurrencyLevels));
   renderHardware();
   renderModels();
   renderSizes();
@@ -861,20 +1106,20 @@ function selectModels(which) {
   updatePlan();
 }
 
-function through(presets, maximum) {
-  return new Set(presets.filter((value) => value <= Number(maximum)));
+function toggleLevel(selected, value) {
+  if (selected.has(value)) selected.delete(value); else selected.add(value);
 }
 
 function renderSizes() {
   const presets = [...new Set([...(state.env.size_presets || [512, 5000, 10000, 20000, 40000, 80000]), 100000, 120000, 150000, 200000, 260000, ...state.sizes])].sort((a, b) => a - b);
   renderRange("#size-chips", presets, state.sizes, (value) => {
-    state.sizes = through(presets, value);
+    toggleLevel(state.sizes, value);
     renderSizes(); updatePlan();
   }, (value) => fmtTokens(value), "prompt tokens");
 }
 
 function renderRange(selector, presets, selected, onSelect, format, unit) {
-  $(selector).innerHTML = presets.map((value) => `<label class="chip" data-on="${selected.has(value) ? 1 : 0}" title="Test every smaller value through ${format(value)} ${unit}"><input type="checkbox" value="${value}" aria-label="${format(value)} ${unit}" ${selected.has(value) ? "checked" : ""}>${format(value)}</label>`).join("");
+  $(selector).innerHTML = presets.map((value) => `<label class="chip" data-on="${selected.has(value) ? 1 : 0}" title="Test ${format(value)} ${unit}"><input type="checkbox" value="${value}" aria-label="${format(value)} ${unit}" ${selected.has(value) ? "checked" : ""}>${format(value)}</label>`).join("");
   $$(selector + " input").forEach((input) => input.addEventListener("change", () => {
     const value = Number(input.value);
     onSelect(value);
@@ -950,11 +1195,20 @@ function hardwareMarkup(hw) {
   for(const disk of hw.storage || []) {const key=JSON.stringify([disk.model,disk.capacity_bytes,storageKind(disk),disk.bus_type]);const item=disks.get(key) || {...disk,count:0};item.count++;disks.set(key,item);}
   const capacity=bytes=>bytes>=1e12 ? Number((bytes/1e12).toFixed(1))+" TB" : bytes>=1e9 ? Number((bytes/1e9).toFixed(0))+" GB" : bytes>0 ? Number((bytes/1e6).toFixed(0))+" MB" : "Capacity unreported";
   const storage=[...disks.values()].map(disk=>hardwareTile(storageKind(disk) || "Storage type unreported",disk.model || "Model unreported",[capacity(disk.capacity_bytes)+(disk.count>1 ? " each" : ""),disk.count>1 && `${disk.count} devices`,disk.bus_type && disk.bus_type !== storageKind(disk) && disk.bus_type],"storage")).join("");
-  return `<div class="hardware-visual"><section class="hardware-section"><h4>Compute &amp; memory</h4><div class="hardware-grid">${compute.join("")}</div></section>${storage ? `<section class="hardware-section"><h4>Storage inventory</h4><div class="hardware-grid storage-inventory">${storage}</div></section>` : ""}${transferBandwidthMarkup(hw.transfer_bandwidth)}<section class="hardware-section"><h4>Platform</h4><div class="hardware-grid">${platform}</div></section></div>`;
+  return `<div class="hardware-visual"><section class="hardware-section"><h4>Compute &amp; memory</h4><div class="hardware-grid">${compute.join("")}</div></section>${storage ? `<section class="hardware-section"><h4>Storage inventory</h4><div class="hardware-grid storage-inventory">${storage}</div></section>` : ""}${transferBandwidthMarkup(hw.transfer_bandwidth)}${storageCoverageMarkup(hw)}<section class="hardware-section"><h4>Platform</h4><div class="hardware-grid">${platform}</div></section></div>`;
 }
 
 function conditionBadge(label, title = "", kind = "") {
   return `<span class="badge condition-badge ${esc(kind)}"${title ? ` title="${esc(title)}"` : ""}>${esc(label)}</span>`;
+}
+
+function storageCoverageMarkup(hw) {
+  const count=(hw.storage || []).filter(disk=>storageKind(disk)==="NVMe").length;
+  if(!count) return "";
+  const coverage=hw.transfer_coverage;
+  if(coverage?.status==="complete") return `<p class="hint nvme-coverage">NVMe transfer coverage: ${esc(coverage.nvme_measured)} of ${esc(coverage.nvme_detected)} detected drives measured.</p>`;
+  if(coverage?.status==="unverified" && coverage.nvme_measured>0) return `<p class="hint nvme-coverage">This capture includes ${esc(coverage.nvme_measured)} NVMe drive measurement${coverage.nvme_measured===1?"":"s"}. Matching these observations to the current physical drives is unverified; inspect the device and capture labels.</p>`;
+  return `<p class="banner warn nvme-coverage"><b>${esc(count)} NVMe drive${count===1?"":"s"} detected.</b> ${coverage?.status==="incomplete" || !hw.transfer_bandwidth ? "The transfer capture does not cover every detected NVMe drive." : "NVMe transfer coverage has not been verified for this capture."} Use Measure transfer bandwidth in System to probe mounted NVMe volumes. Locked, unmounted or unwritable volumes remain explicitly unavailable.</p>`;
 }
 
 function storageKind(disk) {
@@ -1050,12 +1304,54 @@ const STORAGE_METRICS = {
   decode_tps: {label:"Decode / query",unit:"tk/s",lower:false},
 };
 function storageMedian(values) {
-  const sorted = values.filter(value => typeof value === "number" && Number.isFinite(value) && value > 0).sort((a,b)=>a-b);
+  const sorted = values.filter(value => typeof value === "number" && Number.isFinite(value) && value >= 0).sort((a,b)=>a-b);
   return sorted.length ? (sorted[Math.floor((sorted.length-1)/2)] + sorted[Math.floor(sorted.length/2)]) / 2 : null;
+}
+function wallCollectiveMetrics(row, { partial = false } = {}) {
+  return {
+    prefill_tps: phaseMetrics()?.prefillPhase(row,{partial})?.tps ?? null,
+    decode_tps: phaseMetrics()?.decodePhase(row,{partial})?.tps ?? null,
+    group_output_tps: phaseMetrics()?.outputRate(row,{partial}) ?? null,
+  };
+}
+function collectiveRate(row, field, { partial = false } = {}) {
+  if(field === "decode_tps") return decodeRate(row, {partial});
+  if(field === "prefill_tps") return phaseMetrics()?.prefillPhase(row,{partial})?.tps ?? null;
+  const num = (v) => typeof v === "number" && Number.isFinite(v) ? v : null;
+  const n = row.concurrency || 1;
+  const stored = num(row[field]);
+  if (n <= 1) {
+    const reqs = Array.isArray(row.requests) && row.requests.length ? row.requests : [row];
+    const ok = reqs.filter((q) => q && q.status === "ok");
+    const vals = ok.map((q) => num(q[field]));
+    if (vals.length && vals.every((v) => v !== null)) return vals[0];
+    return stored;
+  }
+  const wall = wallCollectiveMetrics(row, { partial });
+  return wall?.[field] ?? null;
+}
+function phaseMetrics() {return globalThis.WatteverPhaseMetrics || globalThis.WatteverConcurrency?.phaseMetrics;}
+function decodeRate(row,{partial=false}={}) {
+  const phase=phaseMetrics()?.decodePhase(row,{partial});
+  if(phase) return phase.tps;
+  return null;
+}
+function decodeApproximate(row) {
+  const phase=phaseMetrics()?.decodePhase(row);
+  return !phase || phase.estimated_boundary || phase.legacy_boundary;
+}
+function requestDecodeRate(row) {
+  const requests = Array.isArray(row.requests) && row.requests.length ? row.requests : (row.concurrency || 1) === 1 ? [row] : [];
+  const values = requests.filter(request => request.status === "ok" || (request === row && row.status === "ok"))
+    .map(request => phaseMetrics()?.decodePhase({...request,concurrency:1})?.tps).filter(value => Number.isFinite(value) && value >= 0);
+  if (values.length !== requests.length) return null;
+  values.sort((a,b) => a-b);
+  return values.length ? (values[Math.floor((values.length-1)/2)] + values[Math.floor(values.length/2)]) / 2 : null;
 }
 function storageMetricValue(row,metric) {
   if (row.status !== "ok") return null;
   if (metric === "wall_s") return Number.isFinite(row.wall_s) && row.wall_s > 0 ? row.wall_s : null;
+  if (metric === "prefill_tps" || metric === "decode_tps") return collectiveRate(row, metric);
   return storageMedian((row.requests || [row]).map(request => request.status && request.status !== "ok" ? null : request[metric]));
 }
 function storageComparisonGroups(run, metric = "wall_s") {
@@ -1089,7 +1385,7 @@ function storageComparisonCsv(run) {
   const comparison = run.storage_comparison || {}, alternatives = comparison.alternate_results || [];
   const key = row => JSON.stringify([row.model, !!row.mtp, row.concurrency || 1, row.target_tokens, row.repeat || 0]);
   const selected = new Set(alternatives.map(key));
-  const columns = ["condition", "model", "quantization", "quantization_method", "target_tokens", "concurrency", "repeat", "status", "prompt_tokens", "completion_tokens", "wall_s", "ttft_s", "prefill_tps", "decode_tps", "aggregate_completion_tps", "session_id", "request_metrics_json"];
+  const columns = ["condition", "model", "quantization", "quantization_method", "target_tokens", "concurrency", "repeat", "status", "prompt_tokens", "completion_tokens", "wall_s", "ttft_s", "prefill_tps", "decode_tps", "session_id", "request_metrics_json", "group_output_tps", "per_request_decode_tps"];
   const quote = value => {
     if (value == null) return "";
     let text = String(value);
@@ -1099,26 +1395,30 @@ function storageComparisonCsv(run) {
   const rows = [[comparison.baseline_label || "primary", (comparison.baseline_results || run.results || []).filter(row => selected.has(key(row)))],
     [comparison.alternative_label || "alternative", alternatives]].flatMap(([condition, values]) => values.map(row =>
       columns.map(column => {
+        if (column === "group_output_tps") return quote(METRICS.group_output_tps.get(row));
+        if (column === "per_request_decode_tps") return quote(METRICS.per_request_decode_tps.get(row));
         if (column === "request_metrics_json") {
-          const metrics = ["status", "prompt_tokens", "completion_tokens", "cached_prompt_tokens", "wall_s", "ttft_s", "prefill_tps", "decode_tps", "completion_tokens_estimated", "reasoning_tokens", "decode_token_count"];
+          const metrics = ["status", "prompt_tokens", "completion_tokens", "cached_prompt_tokens", "wall_s", "decode_s", "start_offset_s", "ttft_s", "prefill_tps", "decode_tps", "completion_tokens_estimated", "reasoning_tokens", "decode_token_count", "timing_scope", "response_tail_s", "metric_sources"];
           return quote(JSON.stringify((row.requests || [row]).map(request => Object.fromEntries(metrics.filter(key => request[key] != null).map(key => [key, request[key]])))));
         }
-        return quote(column === "condition" ? condition : column === "repeat" ? (row.repeat || 0) + 1 : row[column]);
+        return quote(column === "condition" ? condition : column === "repeat" ? (row.repeat || 0) + 1 : ["prefill_tps", "decode_tps"].includes(column) ? collectiveRate(row, column) : row[column]);
       }).join(",")));
   return [columns.map(quote).join(","), ...rows].join("\r\n");
 }
 
 function selectedResultsCsv(runs) {
-  const columns = ["benchmark","condition","model","quantization","quantization_method","target_tokens","concurrency","repeat","status","wall_s","ttft_s","prefill_tps","decode_tps","aggregate_completion_tps","prompt_tokens","completion_tokens","request_metrics_json","gpu_power_scope","power_json","group_power_json","vram_peak_mb"];
+  const columns = ["benchmark","condition","model","quantization","quantization_method","target_tokens","concurrency","repeat","status","wall_s","ttft_s","prefill_tps","decode_tps","prompt_tokens","completion_tokens","request_metrics_json","gpu_power_scope","power_json","group_power_json","vram_peak_mb","group_output_tps","per_request_decode_tps"];
   const quote = value=>{
     if (value == null) return "";
     let text=String(value);if(typeof value === "string" && /^[=+\-@\t\r]/.test(text)) text="'"+text;
     return '"'+text.replace(/"/g,'""')+'"';
   };
   const rows = measurementRuns(runs).flatMap(run=>(run.results || []).filter(row=>
-    (state.visibleModels === null || state.visibleModels.has(row.model)) && (row.concurrency || 1) === state.comparisonConcurrency &&
+    (state.visibleModels === null || state.visibleModels.has(row.model)) && levelOn(row.concurrency || 1) &&
     (state.mtpFilter === "all" || (!runProviderManaged(run) && !!row.mtp === (state.mtpFilter === "on"))))
     .map(row=>columns.map(column=>{
+      if(column === "group_output_tps") return quote(METRICS.group_output_tps.get(row));
+      if(column === "per_request_decode_tps") return quote(METRICS.per_request_decode_tps.get(row));
       if(column === "benchmark") return quote(run.parent_run_id || run.id);
       if(column === "condition") return quote(run.label || run.id);
       if(column === "repeat") return quote((row.repeat || 0)+1);
@@ -1126,10 +1426,10 @@ function selectedResultsCsv(runs) {
       if(column === "power_json") return quote(JSON.stringify(row.power || {}));
       if(column === "group_power_json") return quote(JSON.stringify(row.group_power || {}));
       if(column === "request_metrics_json") {
-        const keys=["status","prompt_tokens","completion_tokens","wall_s","ttft_s","prefill_tps","decode_tps","completion_tokens_estimated"];
+        const keys=["status","prompt_tokens","completion_tokens","wall_s","decode_s","decode_token_count","start_offset_s","ttft_s","prefill_tps","decode_tps","completion_tokens_estimated","timing_scope","response_tail_s","metric_sources"];
         return quote(JSON.stringify((row.requests || [row]).map(request=>Object.fromEntries(keys.filter(key=>request[key]!=null).map(key=>[key,request[key]])))));
       }
-      return quote(row[column]);
+      return quote(["prefill_tps", "decode_tps"].includes(column) ? collectiveRate(row, column) : row[column]);
     }).join(",")));
   return [columns.map(quote).join(","),...rows].join("\r\n");
 }
@@ -1213,13 +1513,14 @@ function renderHardware() {
       $("#hardware-inventory").insertAdjacentHTML("beforeend", '<button class="btn-sm" id="detect-memory-topology">Refresh memory topology</button><span class="hint" id="memory-topology-status"> Built-in OS / firmware probe; no install needed.</span>');
       $("#detect-memory-topology").addEventListener("click",event=>refreshMemoryTopology(null,event.target));
     } else $("#hardware-inventory").insertAdjacentHTML("beforeend", '<p class="hint">Relaunch the desktop helper to enable built-in memory topology detection.</p>');
-    $("#hardware-inventory").insertAdjacentHTML("beforeend", '<button class="btn-sm" id="measure-transfers">Measure transfer bandwidth</button><span class="hint" id="transfer-status"> Separate from capability tests.</span>');
+    $("#hardware-inventory").insertAdjacentHTML("beforeend", '<button class="btn-sm" id="measure-transfers">Measure transfer bandwidth</button><span class="hint" id="transfer-status"> Includes mounted NVMe drives; run while inference is idle.</span>');
     $("#measure-transfers").addEventListener("click", async (event) => {
       event.target.disabled = true;
       $("#transfer-status").textContent = " Measuring storage and GPU transfers…";
       try {
         const result = await api("/api/hardware/bandwidth", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({gpu_index: Number($("#gpu-index").value) || 0, storage_probe_directory: $("#storage-probe-directory")?.value.trim() || null, storage_probe_directories: storageProbeDirectories()})});
         state.env.hardware.transfer_bandwidth = result.transfer_bandwidth;
+        state.env.hardware.transfer_coverage = result.transfer_coverage;
         renderHardware();
       } catch (error) {
         $("#transfer-status").textContent = " " + error.message;
@@ -1276,7 +1577,7 @@ async function refreshMemoryTopology(runId,button,gpuIndex) {
 function renderConcurrency() {
   const levels = [...new Set([...CONCURRENCY_PRESETS, ...state.concurrencyLevels])].sort((a, b) => a - b);
   renderRange("#concurrency-chips", levels, state.concurrencyLevels, (value) => {
-    state.concurrencyLevels = through(levels, value);
+    toggleLevel(state.concurrencyLevels, value);
     renderConcurrency(); updatePlan();
   }, String, "simultaneous queries");
 }
@@ -1320,6 +1621,16 @@ function applyLastConfig() {
   if (!last) return;
   if (!browserMode() && last.provider && $("#helper-provider")) {
     $("#helper-provider").value = last.provider;
+    updateProviderControls();
+  }
+  const connection = state.env.endpoint_connection;
+  const storedUrl = localStorage.getItem(OPENAI_URL_STORAGE);
+  if (!browserMode() && $("#helper-url") && !$("#helper-url").value.trim()) {
+    $("#helper-url").value = connection?.base_url || storedUrl || "";
+  }
+  const storedProvider = localStorage.getItem(HELPER_PROVIDER_STORAGE);
+  if (!browserMode() && storedProvider === "openai" && $("#helper-provider") && last.provider !== "openai") {
+    $("#helper-provider").value = "openai";
     updateProviderControls();
   }
   const set = (id, value) => { if (value !== undefined && value !== null && $(id)) $(id).value = value; };
@@ -1647,27 +1958,11 @@ function renderLive(status) {
   const sampleNote = $("#live-sample-note");
   sampleNote.hidden = !outcome;
   const sampleTime = t.timestamp ? new Date(t.timestamp) : null;
-  sampleNote.textContent = outcome ? "Last recorded sample" + (sampleTime && Number.isFinite(sampleTime.getTime()) ? " · " + sampleTime.toLocaleString() : "") : "";
-  const present = value => Number.isFinite(value);
-  const percent = value => present(value) ? fmt(value, 0) : "—";
-  $("#pill-power").hidden = !status.running || !present(t.gpu_w);
-  if (status.running && present(t.gpu_w)) {
-    $("#pill-power").innerHTML = `<span class="num">${Math.round(t.gpu_w)}</span> W GPU`;
-  }
-  $("#live-stats").innerHTML = [
-    stat(t.gpus?.length>1 ? "All GPUs power" : "GPU power", t.gpu_w !== null && t.gpu_w !== undefined ? Math.round(t.gpu_w) : "—", t.gpus?.length>1 ? "W combined" : "W measured"),
-    stat("System", t.system_w_est ? Math.round(t.system_w_est) : "—", "W estimated"),
-    stat(t.gpus?.length>1 ? "GPU load · mean" : "GPU load", t.gpu_util !== null && t.gpu_util !== undefined ? Math.round(t.gpu_util) : "—", "%"),
-    stat("VRAM", percent(t.vram_percent), "% used"),
-    stat(t.gpus?.length>1 ? "VRAM used · sum" : "VRAM used", present(t.vram_mb) ? (t.vram_mb / 1024).toFixed(1) : "—", "GiB"),
-    stat("RAM", percent(t.system_memory_percent), "% used"),
-    stat("RAM used", present(t.system_memory_used_bytes) ? (t.system_memory_used_bytes / 1073741824).toFixed(1) : "—", "GiB"),
-    stat("CPU load", percent(t.cpu_util_percent ?? (present(t.cpu_util) ? t.cpu_util * 100 : null)), "%"),
-    stat("TTFT", live.ttft_s ? fmt(live.ttft_s, 2) : "—", outcome ? "s last test" : "s this test"),
-    stat("Decoding", live.decode_tps_live ? fmt(live.decode_tps_live, 1) : "—", outcome ? "tk/s last test" : "tk/s live"),
-    stat(t.gpus?.length>1 ? "GPU temp · max" : "GPU temp", present(t.temp_c) ? Math.round(t.temp_c) : "—", "°C reported"),
-    stat("CPU temp", present(t.cpu_temp_c) ? Math.round(t.cpu_temp_c) : "—", "°C"),
-  ].join("") + liveGpuCards(t);
+  sampleNote.textContent = outcome ? "Last recorded sample" + (sampleTime && Number.isFinite(sampleTime.getTime()) ? " \u00b7 " + sampleTime.toLocaleString() : "") : "";
+  $("#pill-power").hidden = !status.running || !Number.isFinite(t.gpu_w);
+  if (status.running && Number.isFinite(t.gpu_w)) $("#pill-power").innerHTML = `<span class="num">${Math.round(t.gpu_w)}</span> W GPU`;
+  $("#live-stats").innerHTML = stat("TTFT", Number.isFinite(live.ttft_s) ? fmt(live.ttft_s, 2) : "\u2014", outcome ? "s last test" : "s this test")
+    + stat("Stream arrival", Number.isFinite(live.decode_chunks_per_s_live) ? fmt(live.decode_chunks_per_s_live, 1) : "\u2014", outcome ? "chunks/s last test" : "chunks/s live");
 }
 
 function liveGpuCards(telemetry) {
@@ -1687,31 +1982,99 @@ function statusCell(r) {
   return `<span class="st st-${esc(r.status)}"${title}>${mark} ${esc(r.status === "failed" ? (r.fail_kind || "failed").replace(/_/g, " ") : r.status)}</span>`;
 }
 
-function estimatedMark(r, aggregate = false) { return (aggregate ? r.aggregate_completion_tokens_estimated : r.completion_tokens_estimated) ? "*" : ""; }
+function estimatedMark(r, aggregate = false) {
+  if (!r) return "";
+  if (aggregate) {
+    return (r.aggregate_completion_tokens_estimated || (r.requests && r.requests.some(q => q && q.completion_tokens_estimated))) ? "*" : "";
+  }
+  return r.completion_tokens_estimated ? "*" : "";
+}
+
 function requestDetails(r) {
-  if (!Array.isArray(r.requests)) return "";
+  if (!Array.isArray(r.requests) || r.requests.length <= 1) return "";
   return `<details><summary>${esc(r.completed_requests ?? 0)}/${r.requests.length} completed</summary>${r.requests.map((q, i) => `<div>Request ${i + 1}: ${esc(q.status || "unknown")} - ${fmt(q.decode_tps, 1)}${estimatedMark(q)} tk/s - TTFT ${fmt(q.ttft_s, 2)} s ${q.message ? esc(q.message) : ""}</div>`).join("")}</details>`;
 }
 
+function liveRowMetrics(r) {
+  const n = r.concurrency || 1;
+  const reqs = Array.isArray(r.requests) && r.requests.length ? r.requests : [r];
+  const ok = reqs.filter((q) => q && (q.status === "ok" || (!q.status && r.status === "ok")));
+  const num = (v) => typeof v === "number" && Number.isFinite(v) ? v : null;
+  const median = (vals) => storageMedian(vals.map(num));
+  const sum = (vals) => { const v = vals.map(num); return v.length && v.every((x) => x !== null) ? v.reduce((a, b) => a + b, 0) : null; };
+  const outTokens = n > 1 ? (ok.length === n && reqs.length === n ? sum(ok.map(q => q.completion_tokens)) : null) : (num(r.completion_tokens) ?? sum(ok.map(q => q.completion_tokens)));
+  let energy = null, watts = null, cards = [];
+  if (r.group_power) {
+    const g = r.group_power;
+    energy = g.scope && g.available !== false && g.low_confidence === false && g.gpu_power_complete === true && (!Number.isFinite(g.gpu_sampled_coverage_fraction) || g.gpu_sampled_coverage_fraction >= 0.8) ? num(g.gpu_energy_j) : null; watts = num(g.gpu_w_avg);
+    cards = (g.gpus || []).map((c) => ({ name: c.name || `GPU ${c.index}`, w: num(c.gpu_w_avg), vram: num(c.vram_mb_max) }));
+  } else if (r.power) {
+    const p = r.power;
+    // Phase-only windows do not establish energy during response delivery tails.
+    energy = null;
+    const span = (num(r.ttft_s) || 0) + (num(r.decode_s) || 0);
+    watts = null;
+    cards = (p.gpus || []).map((c) => {
+      const e = num(c.prefill?.gpu_energy_j) !== null && num(c.decode?.gpu_energy_j) !== null ? c.prefill.gpu_energy_j + c.decode.gpu_energy_j : null;
+      return { name: c.name || `GPU ${c.index}`, w: e !== null && span > 0 ? e / span : null, vram: num(c.vram_peak_mb) };
+    });
+  }
+  const estimated = !!(r.aggregate_completion_tokens_estimated || r.completion_tokens_estimated || reqs.some((q) => q && q.completion_tokens_estimated));
+  const partial = { ...r, requests: reqs.length > 1 ? reqs : undefined };
+  return {
+    n, estimated, watts, cards, wall: num(r.wall_s),
+    decodeTime: phaseMetrics()?.decodePhase(r)?.decode_s ?? null,
+    prefillTime: phaseMetrics()?.prefillPhase(r)?.prefill_s ?? null,
+    totalPrompt: (n === 1 || ok.length === n) ? sum(ok.map(q => q.prompt_tokens)) : null,
+    totalOutput: (n === 1 || ok.length === n) ? sum(ok.map(q => q.completion_tokens)) : null,
+    prompt: num(r.prompt_tokens) ?? median(ok.map((q) => q.prompt_tokens)),
+    prefill: collectiveRate(partial, "prefill_tps", { partial: true }) ?? collectiveRate(r, "prefill_tps", { partial: true }),
+    decode: decodeRate(r),decodeApprox:decodeApproximate(r),
+    perRequestDecode: requestDecodeRate(r),
+    outputTps: outTokens !== null && num(r.wall_s) > 0 ? outTokens / r.wall_s : null,
+    ttft: num(r.ttft_s) ?? median(ok.map((q) => q.ttft_s)),
+    jPerTok: energy !== null && outTokens && !estimated ? energy / outTokens : null,
+    vram: num(r.group_power?.vram_mb_max) ?? num(r.vram_peak_mb),
+  };
+}
+
 function renderLiveTable() {
-  const rows = state.liveResults.map((r) => `<tr>
-    <td>${esc(r.model)}</td>
-    <td class="num">${fmtTokens(r.target_tokens)}</td>
-    <td>${providerManaged() ? '<span class="dim">provider controlled</span>' : r.mtp ? '<span class="badge accent">MTP</span>' : '<span class="dim">off</span>'}</td>
-    <td class="num">${fmtInt(r.prompt_tokens)}</td>
-    <td>${statusCell(r)} ${requestDetails(r)}</td>
-    <td class="num">${r.concurrency || 1}</td><td class="num">${fmt(r.aggregate_completion_tps, 1)}${r.aggregate_completion_tokens_estimated ? "*" : ""}</td>
-    <td class="num">${fmt(r.prefill_tps, 0)}</td>
-    <td class="num">${fmt(r.decode_tps, 1)}${estimatedMark(r)}</td>
-    <td class="num">${fmt(r.ttft_s, 2)}</td>
-    <td class="num">${fmt(r.power && r.power.prefill_gpu_w, 0)}</td>
-    <td class="num">${fmt(r.power && r.power.j_per_1k_prefill, 1)}</td>
-    <td class="num">${fmtInt(r.vram_peak_mb)}</td>
-  </tr>`).join("");
-  $("#live-table").innerHTML = `<caption>* Output tokens and derived throughput are estimated.</caption><thead><tr>
-    <th>Model</th><th class="num">Target</th><th>MTP</th><th class="num">Actual tk</th><th>Status / requests</th><th>Concurrency</th><th>Aggregate tk/s</th>
-    <th class="num">Prefill tk/s</th><th class="num">Decode tk/s</th><th class="num">TTFT s</th>
-    <th class="num">GPU W</th><th class="num">J/1k</th><th class="num">VRAM MB</th>
+  const metrics = state.liveResults.map(liveRowMetrics);
+  const caption = `<caption>Decode excludes TTFT: scoped decode tokens divided by post-first-token decode time. Concurrent intervals are merged; overlap counts once and gaps without decoding are excluded. End-to-end output includes prefill and queueing.${metrics.some(m=>m.estimated) ? " * Output tokens estimated (server token usage unavailable)." : ""}${metrics.some(m=>m.decodeApprox && m.decode!==null) ? " * Decode boundary is approximate: streamed chunks can contain multiple tokens; legacy intervals may include unrecorded delivery tails." : ""}</caption>`;
+  const rows = state.liveResults.map((r, i) => {
+    const m = metrics[i], star = (v) => v != null && m.estimated ? "*" : "";
+    const cardTip = (key, unit, f) => m.cards.length > 1 ? ` title="${esc(m.cards.map((c) => `${c.name}: ${f(c[key])} ${unit}`).join(" · "))}"` : "";
+    return `<tr>
+      <td>${esc(r.model)}</td>
+      <td class="num">${fmtTokens(r.target_tokens)}</td>
+      <td>${providerManaged() ? '<span class="dim">provider controlled</span>' : r.mtp ? '<span class="badge accent">MTP</span>' : '<span class="dim">off</span>'}</td>
+      <td class="num">${fmtInt(m.prompt)}</td>
+      <td>${statusCell(r)}</td>
+      <td class="num">${m.n}</td>
+      <td class="num">${fmtInt(m.totalPrompt)}</td><td class="num">${fmtInt(m.totalOutput)}${star(m.totalOutput)}</td><td class="num">${fmt(m.wall, 2)}</td>
+      <td class="num">${fmt(m.prefillTime, 2)}</td><td class="num">${fmt(m.decodeTime, 2)}${m.decodeTime!==null && m.decodeApprox?'*':''}</td>
+      <td class="num">${fmt(m.prefill, 0)}</td>
+      <td class="num">${fmt(m.decode, 1)}${m.decode!==null && (m.estimated || m.decodeApprox)?'*':''}</td>
+      <td class="num">${fmt(m.perRequestDecode, 1)}${m.perRequestDecode!==null && (m.estimated || m.decodeApprox)?'*':''}</td>
+      <td class="num">${fmt(m.outputTps, 1)}${star(m.outputTps)}</td>
+      <td class="num">${fmt(m.ttft, 2)}</td>
+      <td class="num"${cardTip("w", "W", (v) => fmt(v, 0))}>${fmt(m.watts, 0)}</td>
+      <td class="num">${fmt(m.jPerTok, 2)}</td>
+      <td class="num"${cardTip("vram", "MB", fmtInt)}>${fmtInt(m.vram)}</td>
+    </tr>`;
+  }).join("");
+  $("#live-table").innerHTML = `${caption}<thead><tr>
+    <th>Model</th><th class="num">Target</th><th>MTP</th><th class="num" title="Median prompt tokens per request">Actual tk</th><th>Status</th><th class="num">Queries</th>
+    <th class="num">Total prompt tk</th><th class="num">Total output tk</th><th class="num">Batch wall s</th>
+    <th class="num" title="Union of client request-start to first-output intervals; includes queueing and network">Prefill time s (TTFT proxy)</th><th class="num" title="Union of post-first-token decode intervals; excludes TTFT and gaps outside those intervals">Decode time s</th>
+    <th class="num" title="Prompt tokens divided by union request-start to first-output intervals; client TTFT proxy includes queueing and network">Prefill tk/s (TTFT proxy)</th>
+    <th class="num" title="Scoped decode tokens divided by union post-first-token duration; TTFT excluded">Total decode tk/s</th>
+    <th class="num" title="Median individual request rate after the first token">Decode / request tk/s</th>
+    <th class="num" title="Total completed output tokens divided by batch wall time, including prefill and queueing, at every query count">End-to-end output tk/s</th>
+    <th class="num" title="Median time to first token per stream">TTFT / request s</th>
+    <th class="num" title="Average GPU power over the whole case, all cards combined">GPU W</th>
+    <th class="num" title="Whole-case GPU energy (all cards, prefill included) ÷ output tokens">J/out tk</th>
+    <th class="num" title="Peak simultaneous monitored GPU memory usage">VRAM MiB</th>
     </tr></thead><tbody>${rows}</tbody>`;
 }
 
@@ -1754,10 +2117,11 @@ function renderRunsList() {
         <span class="swatch" style="background:${runColor(run.id)}"></span>
         <span style="flex:1;min-width:0">
           <span class="t">${esc(run.label || run.id)}</span>
-          <span class="s">${esc((run.created_at || "").replace("T", " "))} · ${run.n_results} test${run.n_results === 1 ? "" : "s"}</span>
+          <span class="s">${esc((run.created_at || "").replace("T", " ").replace(/\+00:00$/, ""))}</span>
+          <span class="s">${(run.models || []).length} model${(run.models || []).length === 1 ? "" : "s"} · ${run.n_results} test${run.n_results === 1 ? "" : "s"}</span>
           <span class="counts">
             ${run.community ? '<span class="badge accent badge-shared">Shared</span>' : ""}
-            <span class="badge">${run.n_ok} ok</span>
+            <span class="badge" title="Tests that completed, out of ${run.n_results} recorded">${run.n_ok} test${run.n_ok === 1 ? "" : "s"} passed</span>
             ${run.n_failed ? `<span class="badge">${run.n_failed} failed</span>` : ""}
             ${run.n_skipped ? `<span class="badge">${run.n_skipped} skipped</span>` : ""}
             ${run.n_cancelled ? `<span class="badge">${run.n_cancelled} cancelled</span>` : ""}
@@ -1794,7 +2158,7 @@ async function deleteRun(run) {
 }
 
 async function selectRun(id) {
-  if (state.compare.size !== 1 || !state.compare.has(id)) state.conditions = null;
+  if (state.compare.size !== 1 || !state.compare.has(id)) { state.conditions = null; state.visibleModels = null; }
   state.selected = id;
   state.compare = new Set([id]);
   renderRunsList();
@@ -1860,6 +2224,18 @@ function benchmarkIncompleteNotice(run) {
   return `<div class="banner warn"><div><b>${run.source_status === "running" ? "Shared checkpoint" : "Benchmark incomplete"}</b>${reason ? ` - ${reason}` : ""}${remaining > 0 ? scopePartial ? ` ${esc(remaining)} planned tests not recorded.` : ` ${esc(remaining)} tests remaining.` : ""}${pendingModels.length ? ` Pending: ${pendingModels.map(esc).join(", ")}.` : ""} ${browserMode() ? 'Download the JSON and use the desktop app to continue where supported.' : 'Use Add / rerun tests to continue where supported.'}${error ? `<details class="benchmark-error-details"><summary>Technical details</summary><pre>${esc(error)}</pre></details>` : ""}</div></div>`;
 }
 
+/* One readable line of what a benchmark covers. */
+function coverageLine(run) {
+  const rows = run.results || [], count = status => rows.filter(row => row.status === status).length;
+  const scope = resultLevels([run]), models = allModelsOf([run]).length;
+  const span = (values, format) => values.length > 1 ? `${format(values[0])} to ${format(values[values.length - 1])}` : values.length ? format(values[0]) : "";
+  const outcome = [`${count("ok")} passed`, count("failed") ? `${count("failed")} failed` : "", count("skipped") ? `${count("skipped")} skipped` : "", count("cancelled") ? `${count("cancelled")} cancelled` : ""].filter(Boolean).join(", ");
+  return [`${models} model${models === 1 ? "" : "s"}`,
+    scope.prompts.length ? `prompts of ${span(scope.prompts, fmtTokens)} tokens` : "",
+    scope.queries.length ? `${span(scope.queries, String)} concurrent quer${scope.queries.length === 1 && scope.queries[0] === 1 ? "y" : "ies"}` : "",
+    `${rows.length} test${rows.length === 1 ? "" : "s"}: ${outcome}`].filter(Boolean).join(" · ");
+}
+
 function renderRunDetail(run) {
   if (!run) {
     $("#run-detail").innerHTML = emptyState("Select a benchmark", "Click a name or tick benchmarks in the list on the left.");
@@ -1873,7 +2249,7 @@ function renderRunDetail(run) {
   const allocationNotice = allocationKeys.size > 1 ? '<p class="hint">Different context allocation settings: these benchmarks reserve different amounts of memory, which can affect speed. Check benchmark settings before comparing.</p>' : "";
   const liveNotice = active.length ? `<p class="live-result-notice" role="status"><span class="badge badge-live">Live</span> ${active.reduce((count, item) => count + (item.results || []).length, 0)} completed tests in the ongoing benchmark${active.length > 1 ? "s" : ""}. Results update as each test finishes.</p>` : "";
   if (state.compare.size > 1) {
-    $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${state.compare.size} benchmarks selected</h3></header><p class="hint">Benchmarks remain selected across tabs. Table and Compare share measurement filters.</p>${liveNotice}${measurementNotice}${allocationNotice}<div class="result-stats">${stat("Primary cases",selectedRuns.reduce((sum,item)=>sum+(item.results || []).length,0),"recorded")}${stat("Passed",selectedRuns.flatMap(item=>item.results || []).filter(row=>row.status === "ok").length,"cases")}${stat("Failed / skipped",`${selectedRuns.flatMap(item=>item.results || []).filter(row=>row.status === "failed").length} / ${selectedRuns.flatMap(item=>item.results || []).filter(row=>row.status === "skipped").length}`,"cases")}</div><details class="adv"><summary>Selected benchmarks</summary><ul>${[...state.compare].map((id) => `<li>${esc((state.runCache[id] || {}).label || id)}</li>`).join("")}</ul></details></div>`;
+    $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>Comparing ${state.compare.size} benchmarks</h3></header>${liveNotice}${measurementNotice}${allocationNotice}<div class="ov-systems">${selectedRuns.map(item => `<div class="ov-system" style="--benchmark-color:${runColor(item.id)}"><div class="ov-system-name"><strong>${esc(item.label || item.id)}</strong><small>${esc(coverageLine(item))}</small></div>${hardwareBadgesMarkup(item)}${engineBadgesMarkup(item)}</div>`).join("")}</div></div>`;
     return;
   }
   const sessionAllocationNotice = new Set(allocationConfigs(run).map(allocationKey)).size > 1
@@ -1883,10 +2259,9 @@ function renderRunDetail(run) {
   const gpu = run.gpu || {}, host = run.host || {}, cfg = run.config || {};
   const testAction = resultsTestAction(run);
   const ok = (run.results || []).filter((row) => row.status === "ok");
-  const levelRows = (run.results || []).filter(row => (row.concurrency || 1) === state.comparisonConcurrency);
-  const failureNotice = levelRows.length && !levelRows.some(row => row.status === "ok")
-    ? `<p class="hint" role="status">No successful tests at concurrency ${state.comparisonConcurrency}. Check All measurements for failure details.</p>` : "";
-  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${testAction ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" || !testAction.ready ? "disabled" : ""} title="${esc(testAction.title)}">${esc(testAction.label)}</button>` : ""}<button class="btn-sm" id="rename-run" title="${run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : "Edit this benchmark name and notes"}" ${run.status === "running" || run.community ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="${run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""}>${run.community ? "Hide" : "Delete"}</button></header>${hardwareBadgesMarkup(run)}${engineBadgesMarkup(run)}${bandwidthBadgesMarkup(displayBandwidthProfile(run))}${liveNotice}${sourceNotice}${measurementNotice}${failureNotice}${sessionAllocationNotice}${incompleteNotice}<div class="result-stats">${stat("Primary cases", (run.results || []).length, "recorded")}${stat("Passed", ok.length, "cases")}${stat("Failed / skipped", `${(run.results || []).filter(row=>row.status === "failed").length} / ${(run.results || []).filter(row=>row.status === "skipped").length}`, "cases")}</div>${storageExperimentSummary(run)}<details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}${scientificMetadata(run)}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "per_session" ? "context, placement and techniques recorded per engine/session" : cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
+  const failureNotice = (run.results || []).length && !ok.length
+    ? `<p class="hint" role="status">No test in this benchmark completed. Open Tables &amp; CSV, then All measurements, for the failure details.</p>` : "";
+  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${testAction ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" || !testAction.ready ? "disabled" : ""} title="${esc(testAction.title)}">${esc(testAction.label)}</button>` : ""}<button class="btn-sm" id="rename-run" title="${run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : "Edit this benchmark name and notes"}" ${run.status === "running" || run.community ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="${run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""}>${run.community ? "Hide" : "Delete"}</button></header>${hardwareBadgesMarkup(run)}${engineBadgesMarkup(run)}${bandwidthBadgesMarkup(displayBandwidthProfile(run))}${liveNotice}${sourceNotice}${measurementNotice}${failureNotice}${sessionAllocationNotice}${incompleteNotice}<p class="ov-coverage">${esc(coverageLine(run))}</p>${storageExperimentSummary(run)}<details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}${scientificMetadata(run)}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "per_session" ? "context, placement and techniques recorded per engine/session" : cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
   $("#extend-run")?.addEventListener("click", () => openExtendDialog(run));
   bindTelemetry($("#run-detail"),run);
   $("#delete-run").addEventListener("click", () => deleteRun(run));
@@ -2007,8 +2382,8 @@ async function removeSelectedModel() {
 function updateModelRerunAvailability() {
   const button = $("#rerun-model");
   if (!button) return;
-  button.hidden = browserMode() || !state.env?.capabilities?.extend;
   const target = selectedModelRerun();
+  button.hidden = browserMode() || !state.env?.capabilities?.extend || !target;
   button.disabled = !target?.ready;
   button.title = state.benchmarkRunning || target?.run.status === "running"
     ? "Wait for the active benchmark to finish"
@@ -2016,7 +2391,7 @@ function updateModelRerunAvailability() {
     : "Select one benchmark and one model to rerun";
   const remove = $("#remove-model"), removal = selectedModelRemoval();
   if (remove) {
-    remove.hidden = browserMode() || !state.env?.capabilities?.extend;
+    remove.hidden = browserMode() || !state.env?.capabilities?.extend || !removal;
     remove.disabled = !removal?.ready;
     remove.title = removal ? allModelsOf([removal.run]).length === 1 ? "Use Delete benchmark to remove its last model" : `Remove ${removal.model} and its measurements; keep a backup` : "Select one local benchmark and one model to remove";
   }
@@ -2144,7 +2519,7 @@ function renderExtendForm() {
   const extension = state.extension;
   const sizes = [...new Set([...(state.env.size_presets || []), ...extension.sizes])].sort((a,b) => a-b);
   const levels = [...new Set([...CONCURRENCY_PRESETS, ...extension.concurrency])].sort((a,b) => a-b);
-  $("#extend-content").innerHTML = `<div class="field"><label>Models and techniques</label><p class="hint">Choose the models and techniques to run. Add missing tests continues unfinished work. Rerun selected tests also repeats successful measurements.</p><p class="extend-continuity" role="status">Successful tests will not run again unless you choose Rerun selected tests.</p><div class="btn-row"><button type="button" class="btn-sm" id="extend-select-existing" title="Restore the benchmark models and techniques; saved measurements remain untouched">Restore benchmark selection</button><button type="button" class="btn-sm" id="extend-clear-selection" title="Clear which models will run; saved results are retained">Clear selection</button></div><p class="hint extend-progress-caption">Progress below covers saved techniques and selected additions at the prompt sizes and query counts shown below. Unchecking a model keeps its results.</p><div class="extend-models">${extension.models.map((m, i) => `<div class="extend-model" data-progress-model="${i}"><div class="extend-model-info"><strong>${esc(m.id)}</strong><small>${esc(quantizationLabel(m))}</small>${extensionProgressMarkup(extension, m)}</div><label title="Standard decoding without MTP"><input type="checkbox" data-model="${i}" data-mode="off" ${(extension.modelModes[m.id] || []).includes("off") ? "checked" : ""} ${m.unavailable ? "disabled" : ""}> ${extension.external ? "Provider controlled" : "Standard"}</label><label ${extension.external ? "hidden" : ""} title="Speculative decoding; model and runtime support is not guaranteed"><input type="checkbox" data-model="${i}" data-mode="on" ${(extension.modelModes[m.id] || []).includes("on") ? "checked" : ""} ${m.unavailable ? "disabled" : ""}> MTP</label></div>`).join("") || '<p class="hint">No installed language models found.</p>'}</div></div><div class="field"><label>Prompt sizes</label><p class="hint">Select a maximum to include every smaller size.</p><div class="chips" id="extend-sizes"></div></div><div class="field"><label>Concurrent queries</label><p class="hint">Select a maximum to include every smaller level.</p><div class="chips" id="extend-concurrency"></div></div><fieldset class="extend-actions"><legend>Action</legend><label><input type="radio" name="extend-action" value="add" ${extension.action === "add" ? "checked" : ""}> Add missing tests</label><label><input type="radio" name="extend-action" value="retry" ${extension.action === "retry" ? "checked" : ""}> Retry failed tests <span class="hint">(includes missing and skipped)</span></label><label><input type="radio" name="extend-action" value="rerun" ${extension.action === "rerun" ? "checked" : ""}> Rerun selected tests <span class="hint">(includes successful, failed, skipped and missing)</span></label>${extension.action === "rerun" ? '<p class="banner warn">Selected measurements will be replaced; previous attempts are kept.</p>' : ""}</fieldset>`;
+  $("#extend-content").innerHTML = `<div class="field"><label>Models and techniques</label><p class="hint">Choose the models and techniques to run. Add missing tests continues unfinished work. Rerun selected tests also repeats successful measurements.</p><p class="extend-continuity" role="status">Successful tests will not run again unless you choose Rerun selected tests.</p><div class="btn-row"><button type="button" class="btn-sm" id="extend-select-existing" title="Restore the benchmark models and techniques; saved measurements remain untouched">Restore benchmark selection</button><button type="button" class="btn-sm" id="extend-clear-selection" title="Clear which models will run; saved results are retained">Clear selection</button></div><p class="hint extend-progress-caption">Progress below covers saved techniques and selected additions at the prompt sizes and query counts shown below. Unchecking a model keeps its results.</p><div class="extend-models">${extension.models.map((m, i) => `<div class="extend-model" data-progress-model="${i}"><div class="extend-model-info"><strong>${esc(m.id)}</strong><small>${esc(quantizationLabel(m))}</small>${extensionProgressMarkup(extension, m)}</div><label title="Standard decoding without MTP"><input type="checkbox" data-model="${i}" data-mode="off" ${(extension.modelModes[m.id] || []).includes("off") ? "checked" : ""} ${m.unavailable ? "disabled" : ""}> ${extension.external ? "Provider controlled" : "Standard"}</label><label ${extension.external ? "hidden" : ""} title="Speculative decoding; model and runtime support is not guaranteed"><input type="checkbox" data-model="${i}" data-mode="on" ${(extension.modelModes[m.id] || []).includes("on") ? "checked" : ""} ${m.unavailable ? "disabled" : ""}> MTP</label></div>`).join("") || '<p class="hint">No installed language models found.</p>'}</div></div><div class="field"><label>Prompt sizes</label><p class="hint">Select each prompt size to test.</p><div class="chips" id="extend-sizes"></div></div><div class="field"><label>Concurrent queries</label><p class="hint">Select each query count to test.</p><div class="chips" id="extend-concurrency"></div></div><fieldset class="extend-actions"><legend>Action</legend><label><input type="radio" name="extend-action" value="add" ${extension.action === "add" ? "checked" : ""}> Add missing tests</label><label><input type="radio" name="extend-action" value="retry" ${extension.action === "retry" ? "checked" : ""}> Retry failed tests <span class="hint">(includes missing and skipped)</span></label><label><input type="radio" name="extend-action" value="rerun" ${extension.action === "rerun" ? "checked" : ""}> Rerun selected tests <span class="hint">(includes successful, failed, skipped and missing)</span></label>${extension.action === "rerun" ? '<p class="banner warn">Selected measurements will be replaced; previous attempts are kept.</p>' : ""}</fieldset>`;
   $("#extend-content").insertAdjacentHTML("afterbegin", `<div class="field"><label for="extend-repeats">Total repeats per test</label><input id="extend-repeats" type="number" min="${Number(extension.sourceConfig.repeats) || 1}" max="100" value="${extension.repeats ?? extension.sourceConfig.repeats ?? 1}" ${extension.selectedCases ? "disabled" : ""}><p class="hint">Increase this to append repeats while keeping existing measurements. Repairing or rerunning a test keeps its previous attempt in history.</p>${extension.selectedCases ? `<p class="banner">Repairing one test only: ${esc(extension.selectedCases[0][0])}, ${fmtTokens(extension.selectedCases[0][3])} prompt tokens, ${extension.selectedCases[0][2]} queries, repeat ${extension.selectedCases[0][4]+1}.</p>` : ""}</div>`);
   const installedIds = new Set(extension.models.filter(model => !model.unavailable).map(model => model.id));
   $("#extend-content").insertAdjacentHTML("afterbegin", `<div class="field"><label for="extend-timeout">Timeout per test (seconds)</label><input id="extend-timeout" type="number" min="1" max="7200" value="${extension.timeout ?? 1800}"><p class="hint">Applies to these new attempts. Saved measurements keep their settings. Longer contexts can take much longer when GPU memory spills into RAM.</p></div>`);
@@ -2196,8 +2571,8 @@ function renderExtendForm() {
     info.querySelector(".extend-model-progress").outerHTML = extensionProgressMarkup(extension, extension.models[Number(input.dataset.model)]);
     previewExtension();
   }));
-  renderRange("#extend-sizes", sizes, extension.sizes, value => { extension.sizes = through(sizes, value); renderExtendForm(); previewExtension(); }, fmtTokens, "prompt tokens");
-  renderRange("#extend-concurrency", levels, extension.concurrency, value => { extension.concurrency = through(levels, value); renderExtendForm(); previewExtension(); }, String, "simultaneous queries");
+  renderRange("#extend-sizes", sizes, extension.sizes, value => { toggleLevel(extension.sizes, value); renderExtendForm(); previewExtension(); }, fmtTokens, "prompt tokens");
+  renderRange("#extend-concurrency", levels, extension.concurrency, value => { toggleLevel(extension.concurrency, value); renderExtendForm(); previewExtension(); }, String, "simultaneous queries");
   if (extension.selectedCases) $$("#extend-sizes input, #extend-concurrency input").forEach(input => input.disabled = true);
   $$("#extend-content input[name=extend-action]").forEach(input => input.addEventListener("change", () => { extension.action = input.value; renderExtendForm(); previewExtension(); }));
 }
@@ -2274,10 +2649,16 @@ function detailedResultsTable(run) {
     ["Cached prompt tokens (unknown if absent)", row => row.cached_prompt_tokens],
     ["Token count source", row => row.metric_sources?.completion_tokens],
     ["Provider-reported timings", row => row.reported_timings && Object.keys(row.reported_timings).length ? JSON.stringify(row.reported_timings) : null],
+    ["Client timing scope",row=>row.timing_scope ? JSON.stringify(row.timing_scope) : null],
+    ["Metric provenance",row=>row.metric_sources ? JSON.stringify(row.metric_sources) : null],
     ["Placement", row => row.gpu_offload], ["Time to first token (s)", row => row.ttft_s],
-    ["Prefill (tk/s)", row => row.prefill_tps], ["Output (tk/s)", row => row.decode_tps],
-    ["Group output (tk/s)", row => row.aggregate_completion_tps],
-    ["Output tokens", row => row.completion_tokens], ["Wall time (s)", row => row.wall_s],
+    ["Prefill (tk/s)", row => collectiveRate(row, "prefill_tps")], ["Total decode (tk/s)", row => decodeRate(row)],
+    ["End-to-end output (tk/s)",row=>phaseMetrics()?.outputRate(row) ?? null],
+    ["Decode per request (median tk/s)",row=>requestDecodeRate(row)],
+    ["Prefill time (client TTFT proxy, s)",row=>phaseMetrics()?.prefillPhase(row)?.prefill_s ?? null],
+    ["Decode time (s)",row=>phaseMetrics()?.decodePhase(row)?.decode_s ?? null],
+    ["Scoped decode tokens",row=>phaseMetrics()?.decodePhase(row)?.decode_tokens ?? null],
+    ["Output tokens", row => row.completion_tokens], ["Batch wall time (s)", row => row.wall_s],
     ["GPU power (W)", row => (row.power || {}).prefill_gpu_w ?? (row.group_power || {}).gpu_w_avg],
     ["GPU decode power (W)", row => (row.power || {}).decode_gpu_w],
     ["Estimated system power (W)", row => (row.power || {}).prefill_system_w_est ?? (row.group_power || {}).system_w_est],
@@ -2285,7 +2666,7 @@ function detailedResultsTable(run) {
     ["GPU decode energy (J)", row => (row.power || {}).decode_energy_j],
     ["Group GPU energy (J)", row => (row.group_power || {}).gpu_energy_j],
     ["Energy per 1k prompt tokens (J)", row => (row.power || {}).j_per_1k_prefill],
-    ["Energy per output token (J)", row => (row.power || {}).j_per_token_decode],
+    ["GPU decode energy per scoped decode token (J)", row => (row.power || {}).j_per_token_decode],
     ["Load time (s)", row => row.load_s],
     ["Timeout budget (s)", row => row.timeout_budget_s],
     ["Timeout rule", row => row.timeout_reason],
@@ -2305,9 +2686,9 @@ function detailedResultsTable(run) {
       ["prefill energy (J)",g=>g.prefill?.gpu_energy_j],["decode energy (J)",g=>g.decode?.gpu_energy_j],
       ["whole-case power (W)",g=>g.gpu_w_avg],["whole-case energy (J)",g=>g.gpu_energy_j],
       ["peak VRAM (MiB)",g=>g.vram_peak_mb ?? g.vram_mb_max],
-      ["decode utilization (%)",g=>g.decode?.gpu_util_avg ?? g.gpu_util_avg],
+      ["decode utilization (%)",g=>g.decode?.gpu_util_avg], ["whole-case utilization (%)",g=>g.gpu_util_avg],
       ["peak temperature (°C)",g=>{const values=[g.prefill?.temp_c_max,g.decode?.temp_c_max,g.temp_c_max].filter(Number.isFinite);return values.length?Math.max(...values):null;}],
-      ["decode clock (MHz)",g=>g.decode?.clock_mhz_avg ?? g.clock_mhz_avg]
+      ["decode clock (MHz)",g=>g.decode?.clock_mhz_avg], ["whole-case clock (MHz)",g=>g.clock_mhz_avg]
     ]) fields.push([`GPU ${index+1} · ${name} · ${label}`,row=>get(card(row))]);
   }
   const exactValue = (label,value) => typeof value === "number" ? (/tokens|repeat|context/i.test(label) ? String(value) : n(value)) : value;
@@ -2316,11 +2697,11 @@ function detailedResultsTable(run) {
     if (value == null || value === "") return "";
     const repair = label === "Status" && repairable
       ? `<button class="btn-sm" data-run-id="${esc(run.id)}" data-repair-case="${esc(JSON.stringify([row.model, !!row.mtp, row.concurrency || 1, row.target_tokens, row.repeat || 0]))}" title="Rerun only this test; its previous attempt is retained">Repair repeat ${(row.repeat || 0)+1}</button>` : "";
-    return `<tr class="colored-result-row" style="--table-color:${tableRowColor(run, row.model, modelUniverse())}"><td>${esc(row.model)}</td><td>${fmtTokens(row.target_tokens)}</td><td>${row.concurrency || 1}</td><td>${esc(sessionLabel(run, row))}</td><td>${esc(label)}</td><td class="measure-cell">${esc(exactValue(label,value))}${label.includes("tk/s") ? estimatedMark(row, label.startsWith("Group")) : ""}${repair}</td></tr>`;
+    return `<tr class="colored-result-row" style="--table-color:${tableRowColor(run, row.model, modelUniverse())}"><td>${esc(row.model)}</td><td>${fmtTokens(row.target_tokens)}</td><td>${row.concurrency || 1}</td><td>${esc(sessionLabel(run, row))}</td><td>${esc(label)}</td><td class="measure-cell">${esc(exactValue(label,value))}${label.includes("tk/s") ? estimatedMark(row, (row.concurrency || 1) > 1) : ""}${repair}</td></tr>`;
   }), ...(row.requests || []).flatMap((request, index) => [
     ["Status", request.status], ["Prompt tokens", request.prompt_tokens],
-    ["Output tokens", request.completion_tokens], ["Time to first token (s)", request.ttft_s],
-    ["Output (tk/s)", request.decode_tps], ["Wall time (s)", request.wall_s], ["Failure", request.message],
+    ["Output tokens", request.completion_tokens], ["Start offset (s)", request.start_offset_s], ["Time to first token (s)", request.ttft_s],
+    ["Decode (tk/s)", request.decode_tps], ["Decode time (s)", request.decode_s], ["Scoped decode tokens", request.decode_token_count], ["Wall time (s)", request.wall_s], ["Failure", request.message],
   ].filter(([, value]) => value != null).map(([label, value]) =>
     `<tr class="colored-result-row" style="--table-color:${tableRowColor(run, row.model, modelUniverse())}"><td>${esc(row.model)}</td><td>${fmtTokens(row.target_tokens)}</td><td>${row.concurrency || 1}</td><td>${esc(sessionLabel(run, row))}</td><td>Request ${index + 1}: ${esc(label)}</td><td class="measure-cell">${esc(exactValue(label,value))}${label.startsWith("Output") ? estimatedMark(request) : ""}</td></tr>`))]).join("");
   return `<table><thead><tr><th>Model</th><th>Prompt</th><th>Queries</th><th>Session / planner</th><th>Measurement</th><th>Value</th></tr></thead><tbody>${rows}</tbody></table>`;
@@ -2375,12 +2756,12 @@ async function redrawResultsWithoutScrolling() {
 function renderVisibleModels(models) {
   updateModelRerunAvailability();
   const shown = shownModels(models);
-  $("#visible-model-count").textContent = `${shown.length} of ${models.length}`;
+  $("#visible-model-count").textContent = models.length ? `${shown.length} of ${models.length} shown` : "";
   const container = $("#visible-models");
   const signature = JSON.stringify(models);
   if (container.dataset.models !== signature) {
     container.dataset.models = signature;
-    container.innerHTML = models.map(model => `<label class="chip" title="Show or hide ${esc(model)}"><input type="checkbox" value="${esc(model)}"><span class="model-key" aria-hidden="true"></span>${esc(model)}</label>`).join("") || '<span class="dim">Select a benchmark to see its models.</span>';
+    container.innerHTML = models.map(model => `<label class="chip" title="Show or hide ${esc(model)}" data-hl-tag="model" data-hl-value="${esc(model)}"><input type="checkbox" value="${esc(model)}"><span class="model-key" aria-hidden="true"></span>${esc(model)}</label>`).join("") || '<span class="dim">Select a benchmark to see its models.</span>';
     $$("#visible-models input").forEach(input => input.addEventListener("change", async () => {
       if (state.visibleModels === null) state.visibleModels = new Set(models);
       if (input.checked) state.visibleModels.add(input.value); else state.visibleModels.delete(input.value);
@@ -2397,26 +2778,82 @@ function renderVisibleModels(models) {
       symbol.innerHTML = "";
       symbol.style.background = modelColor(input.value, models);
     } else {
-      symbol.innerHTML = shapes[chartAppearance({id: ""}, input.value, models, false).marker] || "&#9679;";
+      symbol.innerHTML = shapes[chartAppearance({id: ""}, input.value, modelUniverse(models), false).marker] || "&#9679;";
       symbol.style.background = "transparent";
     }
   });
 }
-function chartAppearance(run, model, models, mtp) {
+function configurationColor(run) {
+  return resolveColor(runColor(run.parent_run_id || run.id));
+}
+function configurationVariantIndex(run) {
+  const root = run.parent_run_id || String(run.id || "").split("::")[0];
+  const source = state.runCache[root];
+  if (!source) return (run.storage_alternative ? 1 : 0) + (run._rowConditionIndex || 0);
+  const ids = availableMeasurementRuns([source]).map(item => item.id).sort();
+  return Math.max(0, ids.indexOf(run.id)) * 5 + (run._rowConditionIndex || 0);
+}
+/* One encoding everywhere: colour carries the dimension the user picked
+ * (models or benchmarks), marker shape carries the other one, and the line
+ * pattern carries the extra level (query count or prompt length) and MTP. */
+const LEVEL_DASHES = [null, "7 4", "2 3", "10 3 2 3", "12 5", "1 4", "14 3 3 3 3 3", "5 2"];
+/* An ordered ramp for an ordered quantity: cyan through violet to red as the level rises. */
+function levelColor(index, count) {
+  return `hsl(${Math.round(190 + (count > 1 ? index * 180 / (count - 1) : 0)) % 360} 72% 60%)`;
+}
+function chartAppearance(run, model, models, mtp, levelIndex = 0, levelCount = 1) {
+  if (state.colorBy === "levels") {
+    const shape = Math.max(0, modelUniverse(models).indexOf(model)) + (runColorIndex(run.id) || 0) + configurationVariantIndex(run);
+    return {color: levelColor(levelIndex, levelCount), marker: Charts.MARKERS[shape % Charts.MARKERS.length], dash: mtp ? "2 2" : null};
+  }
   const byModel = state.colorBy === "models";
-  const modelIndex = modelUniverse(models).indexOf(model);
-  const shapeIndex = byModel ? runColorIndex(run.id) || 0 : Math.max(0, modelIndex);
+  const variant = configurationVariantIndex(run);
+  const modelIndex = Math.max(0, modelUniverse(models).indexOf(model));
+  const shapeIndex = byModel ? (runColorIndex(run.id) || 0) + variant : modelIndex + variant;
+  const dash = LEVEL_DASHES[(variant + levelIndex) % LEVEL_DASHES.length];
   return {
-    color: byModel ? modelColor(model, models) : resolveColor(runColor(run.id)),
-    marker: run.storage_alternative ? "diamond" : Charts.MARKERS[shapeIndex % Charts.MARKERS.length],
-    dash: run.storage_alternative ? "7 4" : mtp ? "2 2" : run.storage_condition ? null : Charts.DASHES[shapeIndex % Charts.DASHES.length],
+    color: byModel ? modelColor(model, models) : configurationColor(run),
+    marker: Charts.MARKERS[shapeIndex % Charts.MARKERS.length],
+    dash: [dash, mtp ? "2 2" : null].filter(Boolean).join(" ") || null,
   };
 }
-function encodingLegend(metricKeys, runs) {
-  const shapes = {circle: "&#9679;", square: "&#9632;", triangle: "&#9650;", diamond: "&#9670;"};
-  const benchmarkItems = runs.map(run => `<span>${state.colorBy === "benchmarks" ? `<i style="background:${runColor(run.id)}"></i>` : `<b>${shapes[run.storage_alternative ? "diamond" : markerForRun(run.id)] || "&#9679;"}</b>`}${run.storage_alternative ? '<svg width="24" height="8" aria-hidden="true"><line x1="0" y1="4" x2="24" y2="4" stroke="currentColor" stroke-dasharray="7 4"/></svg>' : ""}${esc(run.label || run.id)}</span>`).join("");
-  const measures = metricKeys.length > 1 ? `<div class="legend-group measure-legend"><span class="legend-key">Measures</span>${metricKeys.map(key => `<span><svg width="28" height="10" aria-hidden="true"><line x1="0" y1="5" x2="28" y2="5" stroke="currentColor" stroke-width="2" stroke-dasharray="${measureAppearance({}, key, metricKeys, false).dash || ""}"/></svg>${esc(METRICS[key].label)}</span>`).join("")}</div>` : "";
-  return `<div class="legend-stack">${runs.length ? `<div class="legend-group"><span class="legend-key">${runs.some(run => run.parent_run_id) ? "GPU / engine" : "Benchmarks"}</span>${benchmarkItems}</div>` : ""}${measures}</div>`;
+function keyGlyph(appearance, {line = true, shape = true} = {}) {
+  const c = esc(appearance.color || "currentColor");
+  const mark = !shape ? "" : appearance.marker === "square" ? `<rect x="11" y="3" width="8" height="8" fill="${c}"/>`
+    : appearance.marker === "triangle" ? `<polygon points="15,2 20,11 10,11" fill="${c}"/>`
+    : appearance.marker === "diamond" ? `<polygon points="15,1.5 20.5,7 15,12.5 9.5,7" fill="${c}"/>` : `<circle cx="15" cy="7" r="4" fill="${c}"/>`;
+  return `<svg width="30" height="14" aria-hidden="true">${line ? `<line x1="1" y1="7" x2="29" y2="7" stroke="${c}" stroke-width="2"${appearance.dash ? ` stroke-dasharray="${esc(appearance.dash)}"` : ""}/>` : ""}${mark}</svg>`;
+}
+/* The key is shared by every chart on the page, so it is drawn once. Hovering
+ * an entry dims every other line. */
+function chartKeyMarkup(used, axis) {
+  const byModel = state.colorBy !== "benchmarks", byLevel = state.colorBy === "levels", groups = [];
+  const item = (tag, value, glyph, label, title = "") => `<span class="key-item" tabindex="0" data-hl-tag="${tag}" data-hl-value="${esc(value)}"${title ? ` title="${esc(title)}"` : ""}>${glyph}${esc(label)}</span>`;
+  const modelItems = used.models.map(model => item("model", model, byModel && !byLevel
+    ? `<i class="key-dot" style="background:${esc(modelColor(model, used.allModels))}"></i>`
+    : keyGlyph({marker: chartAppearance({id: ""}, model, used.allModels, false).marker}, {line: false}), model));
+  const runItems = [...new Map(used.runs.map(run => [runKey(run), run])).values()].map(run => item("run", runKey(run), byModel
+    ? keyGlyph({marker: chartAppearance(run, "", used.allModels, false).marker}, {line: false})
+    : keyGlyph({color: configurationColor(run), dash: chartAppearance(run, "", used.allModels, false).dash}, {shape: false}), run.label || run.id, configurationFullTitle(run)));
+  const colored = byModel ? ["Models", modelItems] : ["Benchmarks", runItems], shaped = byModel ? ["Benchmarks", runItems] : ["Models", modelItems];
+  const levelName = level => axis === "context" ? `${level} quer${level === 1 ? "y" : "ies"}` : `${fmtTokens(level)} prompt`;
+  if (byLevel) {
+    groups.push(`<div class="key-group"><span class="key-title">${axis === "context" ? "Concurrent queries" : "Prompt length"} <small>colour</small></span>${used.levels.map((level, index) => item("level", level, `<i class="key-dot" style="background:${levelColor(index, used.levels.length)}"></i>`, levelName(level))).join("")}</div>`);
+    groups.push(`<div class="key-group"><span class="key-title">Models <small>marker</small></span>${modelItems.join("")}</div>`);
+    if (runItems.length > 1) groups.push(`<div class="key-group"><span class="key-title">Benchmarks <small>marker</small></span>${runItems.join("")}</div>`);
+  } else groups.push(`<div class="key-group"><span class="key-title">${colored[0]} <small>colour</small></span>${colored[1].join("")}</div>`);
+  if (!byLevel && shaped[1].length > 1) groups.push(`<div class="key-group"><span class="key-title">${shaped[0]} <small>marker</small></span>${shaped[1].join("")}</div>`);
+  const lines = [];
+  if (!byLevel && used.levels.length > 1) used.levels.forEach((level, index) => lines.push(item("level", level,
+    keyGlyph({dash: LEVEL_DASHES[index % LEVEL_DASHES.length]}, {shape: false}),
+    axis === "context" ? `${level} quer${level === 1 ? "y" : "ies"}` : `${fmtTokens(level)} prompt`)));
+  if (used.mtp.size > 1) lines.push(item("mtp", "true", keyGlyph({dash: "2 2"}, {shape: false}), "Speculative decoding on"));
+  if (lines.length) groups.push(`<div class="key-group"><span class="key-title">Line style</span>${lines.join("")}</div>`);
+  return groups.join("");
+}
+function highlightSeries(target) {
+  const tag = target?.dataset.hlTag, value = target?.dataset.hlValue;
+  $$("#panel-compare .chart-series").forEach(node => node.classList.toggle("is-dim", !!tag && node.getAttribute("data-tag-" + tag) !== value));
 }
 
 function comparisonReadout(runs,models,key) {
@@ -2454,99 +2891,6 @@ function comparisonReadout(runs,models,key) {
   return `<div class="chart-readout" aria-label="Recorded condition values"><div class="chart-readout-title">${esc(fmtTokens(size))} prompt tokens · ${esc(metric.label)} · ${state.comparisonConcurrency} quer${state.comparisonConcurrency===1 ? "y" : "ies"}</div><div class="chart-readout-values">${cells}</div></div>`;
 }
 
-async function renderOverview() {
-  const generation = state.resultsRender;
-  const body = $("#comparison-overview");
-  const ids = [...state.compare];
-  if (!state.runs.length) {
-    body.innerHTML = emptyState("Nothing to summarise yet",
-      "Run a benchmark first. This tab then overlays every model, setup and measure you tick.");
-    return;
-  }
-  await ensureRuns(ids);
-  if (generation !== state.resultsRender) return;
-  const runs = measurementRuns(ids.map((id) => state.runCache[id]).filter(Boolean));
-  const allModels = allModelsOf(runs);
-  $("#summary-export").href = "/api/export.csv?ids=" + ids.map(encodeURIComponent).join(",");
-
-  if (!runs.length) {
-    body.innerHTML = emptyState("Select a benchmark", "Tick one or more benchmarks in the list on the left.");
-    return;
-  }
-  const models = shownModels(allModels);
-  const metricKeys = selectedMetricKeys();
-  if (!metricKeys.length || !models.length) {
-    body.innerHTML = !metricKeys.length ? emptyState("Choose measures to display", "Select one or more measure badges above.") : emptyState("Choose models to display", "Select one or more model badges above, or click All.");
-    return;
-  }
-
-  const units = metricGroups(metricKeys);
-
-  body.innerHTML = units.map((u, i) => `
-    <div class="card" style="margin-bottom:16px">
-      <header><h3>${esc(u.keys.map((k) => METRICS[k].label).join("  ·  "))}</h3>
-        <div class="spacer"></div><span class="dim" style="font-size:12px">${esc(u.unit)} / ${state.comparisonConcurrency} simultaneous queries</span>
-      </header>
-      <div id="summary-legend-${i}"></div>
-      <div id="summary-readout-${i}"></div>
-      <div class="plot" id="summary-plot-${i}" style="margin-top:4px"></div>
-      <p class="hint" id="summary-note-${i}" style="margin:8px 0 0"></p>
-    </div>`).join("");
-
-  units.forEach((u, i) => {
-    const plottedRuns=chartConditions(runs,models,u.keys);
-    $(`#summary-legend-${i}`).innerHTML = encodingLegend(u.keys, plottedRuns);
-    $(`#summary-readout-${i}`).innerHTML = comparisonReadout(plottedRuns,models,u.keys[0]);
-    const series = [];
-    const sizes = new Set();
-    for (const key of u.keys) {
-      const metric = METRICS[key];
-      for (const run of plottedRuns) {
-        for (const mtp of (state.mtpFilter === "all" ? [false, true] : [state.mtpFilter === "on"])) {
-          if (runProviderManaged(run) && (state.mtpFilter !== "all" || mtp)) continue;
-          for (const model of models) {
-            const pts = pointsFor(run, model, metric, mtp);
-            const failed = failuresFor(run,model,mtp);
-            if (!pts.length && !failed.length) continue;
-            pts.forEach((p) => sizes.add(p.x));
-            failed.forEach(point=>sizes.add(point.x));
-            const bits = [model, metric.label];
-            if (runs.length > 1) bits.push(run.label || run.id);
-            if (mtp) bits.push("MTP");
-            series.push({
-              id: `${run.id}|${model}|${key}|${mtp}`,
-              name: bits.join("  ·  "),
-              ...measureAppearance(chartAppearance(run, model, allModels, mtp), key, u.keys, mtp),
-              points: pts.map((p) => ({ ...p, unit: metric.unit })),
-              failures: u.keys.indexOf(key) === 0 ? failed : [],
-            });
-          }
-        }
-      }
-    }
-    const plot = $(`#summary-plot-${i}`);
-    Charts.line(plot, {
-      unit: u.unit,
-      xLabel: "prefill tokens",
-      yLabel: u.unit,
-      yScale: "auto",
-      xTicks: [...sizes].sort((a, b) => a - b),
-      height: 360,
-      ariaLabel: u.keys.map((k) => METRICS[k].label).join(", "),
-      series,
-    });
-    const values = series.flatMap((s) => s.points.map((p) => p.y)).filter((v) => v > 0);
-    const spread = values.length ? Math.max(...values) / Math.min(...values) : 1;
-    $(`#summary-note-${i}`).innerHTML = series.length
-      ? `${series.length} series. ` + (spread >= 40
-        ? "A log scale is in use because these measures span " + Math.round(spread) +
-          "× — on a linear axis the smaller one would sit flat against the baseline."
-        : "Linear scale.") + " Estimated output throughput is identified in point details." +
-        " ✕ on the baseline marks a size that failed; hover any point for the exact figure."
-      : "No measurements for this combination.";
-  });
-}
-
 /* ---------------- compare tab ---------------- */
 function selectedMetricKeys() {
   return Object.keys(METRICS).filter(key => state.metrics.has(key));
@@ -2560,22 +2904,323 @@ function measureAppearance(base, key, keys, mtp) {
   const dash = styles[keys.indexOf(key) % styles.length];
   return {...base, dash: [base.dash,dash,mtp ? "2 2" : null].filter(Boolean).join(" ") || null};
 }
-function renderMetricSeg() {
-  const inputs = $$("#result-metrics input");
-  if (inputs.length === Object.keys(METRICS).length) {
-    inputs.forEach(input => {
-      input.checked = state.metrics.has(input.value);
-      input.closest(".chip").dataset.on = input.checked ? "1" : "0";
+/* Which metrics the ticked benchmarks can actually draw. Cached per selection. */
+function metricsWithData(runs) {
+  const signature = JSON.stringify(runs.map(run => [run.id, (run.results || []).length]));
+  if (state.metricAvailability?.signature === signature) return state.metricAvailability.keys;
+  const keys = new Set();
+  const rows = runs.flatMap(run => (run.results || []).filter(row => row.status === "ok"));
+  for (const [key, metric] of Object.entries(METRICS)) if (rows.some(row => Number.isFinite(metric.get(row)))) keys.add(key);
+  state.metricAvailability = {signature, keys};
+  return keys;
+}
+function renderMetricSeg(runs = null) {
+  const node = $("#result-metrics");
+  if (!node) return;
+  if (state.metrics.delete("aggregate_completion_tps")) state.metrics.add("decode_tps");
+  const available = runs?.length ? metricsWithData(runs) : null;
+  node.innerHTML = METRIC_GROUPS.map(([group, label, unit]) => `<div class="metric-group"><span class="metric-group-label">${esc(label)}${unit ? `<small>${esc(unit)}</small>` : ""}</span><div class="chips">${Object.entries(METRICS).filter(([, metric]) => metric.group === group).map(([key, metric]) => {
+    const on = state.metrics.has(key), recorded = !available || available.has(key);
+    return `<button type="button" class="chip metric-chip" data-metric="${esc(key)}" aria-pressed="${on}" data-on="${on ? 1 : 0}"${recorded ? "" : ' data-empty="1"'} title="${esc(metric.blurb + (recorded ? "" : " Not recorded in the ticked benchmarks."))}">${esc(metric.short)}</button>`;
+  }).join("")}</div></div>`).join("");
+}
+
+const stableJson = value => JSON.stringify(value, (_, item) => item && typeof item === "object" && !Array.isArray(item)
+  ? Object.fromEntries(Object.keys(item).sort().map(key => [key, item[key]])) : item);
+/* A failed or skipped row is filed under the condition it was attempted in. */
+const mergedConditionKeys = new WeakMap();
+/* Session settings that can change a measured speed. The plan a session ran
+ * (sizes, repeats, selected cases, timeouts) is not a condition of a result. */
+const SESSION_CONDITION_FIELDS = ["provider", "endpoint_id", "context_policy", "context_headroom", "context_safety_fraction",
+  "context_planner_version", "gpu_offload", "disable_thinking", "endpoint_reasoning_effort", "kv_cache_dtype", "max_tokens", "temperature"];
+/* The same setting reported by a different source is the same setting. */
+function withoutProvenance(value) {
+  if (Array.isArray(value)) return value.map(withoutProvenance);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(Object.entries(value).filter(([key]) => !/^(?:source|configuration_id|model_source)$|_source$/.test(key))
+    .map(([key, item]) => [key, withoutProvenance(item)]));
+}
+function rowConditionIdentity(run, row) {
+  const session = (run.sessions || []).find(item => item.id === row.session_id || item.session_id === row.session_id);
+  const sessionConfig = session?.config ?? session?.execution_config ?? null;
+  const power = row.group_power || row.power || {};
+  // Target size, repeat and measured values are deliberately excluded; settings
+  // and measurement boundaries must agree before repeats can be aggregated.
+  return {
+    // A configuration ID hashes provenance too, so it identifies a row only when the settings themselves are absent.
+    configuration_id: row.model_configuration ? null : row.configuration_id ?? null,
+    model_configuration: row.model_configuration ? withoutProvenance(row.model_configuration) : null,
+    execution_config: row.execution_config ?? null,
+    session_config: sessionConfig ? Object.fromEntries(SESSION_CONDITION_FIELDS.filter(field => sessionConfig[field] != null && sessionConfig[field] !== "").map(field => [field, sessionConfig[field]])) : null,
+    quantization: row.quantization ?? null, quantization_method: row.quantization_method ?? null,
+    engine: row.engine ?? null, engine_version: row.engine_version ?? null,
+    model_revision: row.model_revision ?? null, kv_cache_dtype: row.kv_cache_dtype ?? null,
+    reasoning_effort: row.reasoning_effort ?? null, requested_mtp: row.requested_mtp ?? null,
+    temperature: row.temperature ?? null, max_tokens: row.max_tokens ?? null,
+    gpu_offload: row.gpu_offload ?? null,
+    power_scope: power.scope ?? null, power_gpu_indices: power.gpu_indices ?? null,
+    // The distinct boundaries in use, not one entry per request: the same
+    // condition measured at 1 and at 8 concurrent queries is still one condition.
+    phase_protocol: [...new Set((row.requests?.length ? row.requests : [row]).map(request => JSON.stringify([request.timing_scope?.phase_protocol ?? "legacy_boundary", request.timing_scope?.decode_end_boundary ?? "legacy_boundary"])))].sort(),
+  };
+}
+function rowConditionFingerprint(run, row) {
+  return mergedConditionKeys.get(row) || stableJson(rowConditionIdentity(run, row));
+}
+function splitRowConditions(runs) {
+  return runs.flatMap(run => {
+    const groups = new Map(), unmeasured = [];
+    const add = (key, identity, row) => { if (!groups.has(key)) groups.set(key, {key, identity, rows: []}); groups.get(key).rows.push(row); };
+    for (const row of run.results || []) {
+      mergedConditionKeys.delete(row);
+      const identity = rowConditionIdentity(run, row);
+      if (row.status === "ok") add(stableJson(identity), identity, row); else unmeasured.push([row, identity]);
+    }
+    for (const [row, identity] of unmeasured) {
+      const key = stableJson(identity);
+      // A test that never completed often records fewer settings and no timing
+      // boundary. A setting it did not record cannot distinguish it, so it joins
+      // the one measured condition that agrees on everything it did record.
+      const fits = groups.has(key) ? [] : [...groups.values()].filter(group => group.rows.some(item => item.status === "ok")
+        && Object.keys(identity).every(field => field === "phase_protocol" || identity[field] == null || stableJson(identity[field]) === stableJson(group.identity[field])));
+      const same = fits.filter(group => group.rows.some(item => item.model === row.model && !!item.mtp === !!row.mtp));
+      const target = fits.length === 1 ? fits[0] : same.length === 1 ? same[0] : null;
+      if (target) { target.rows.push(row); mergedConditionKeys.set(row, target.key); continue; }
+      // No measured condition to join: gather this model's unmeasured attempts that agree wherever both recorded a setting.
+      const kin = groups.has(key) ? null : [...groups.values()].find(group => !group.rows.some(item => item.status === "ok")
+        && group.rows.some(item => item.model === row.model && !!item.mtp === !!row.mtp)
+        && Object.keys(identity).every(field => field === "phase_protocol" || identity[field] == null || group.identity[field] == null || stableJson(identity[field]) === stableJson(group.identity[field])));
+      if (kin) { kin.rows.push(row); mergedConditionKeys.set(row, kin.key); } else add(key, identity, row);
+    }
+    if (groups.size <= 1) return [run];
+    const ordered = [...groups.values()].sort((a, b) => a.key.localeCompare(b.key));
+    const describe = ({rows}) => {
+      const row = rows[0], config = row.model_configuration || {};
+      const reasoning = config.reasoning?.effective || config.reasoning?.requested || row.reasoning_effort;
+      const id = row.configuration_id || config.configuration_id;
+      return {id: id || null, parts: {
+        model: new Set(rows.map(item => item.model)).size === 1 ? row.model : null,
+        quantization: row.quantization || config.quantization?.value || null,
+        engine: config.engine?.value || row.engine || null,
+        reasoning: reasoning && reasoning !== "unknown" ? `reasoning ${reasoning}` : null,
+        placement: row.gpu_offload != null ? `placement ${row.gpu_offload}` : null,
+        id: id ? `config ${String(id).slice(0, 12)}` : null}};
+    };
+    const described = ordered.map(describe);
+    // Speculative decoding is already its own line, so it does not make a variant.
+    const modelsOf = ordered.map(group => new Set(group.rows.map(row => row.model + "|" + !!row.mtp)));
+    return ordered.map(({key, rows}, index) => {
+      // Two models with different settings are simply two models. A condition is
+      // a variant, and needs a name, only when another one measured the same model.
+      const rivals = ordered.map((_, other) => other).filter(other => [...modelsOf[other]].some(model => modelsOf[index].has(model)));
+      const telling = rivals.length < 2 ? [] : Object.keys(described[index].parts)
+        .filter(field => field !== "model" && new Set(rivals.map(other => described[other].parts[field])).size > 1);
+      const variant = rivals.indexOf(index);
+      const details = rivals.length < 2 ? "" : telling.map(field => described[index].parts[field]).filter(Boolean).join(" / ") || `variant ${variant + 1}`;
+      return {...run, _measurement_view:true, _rowConditionKey:key, _rowConditionIndex:variant,
+        _rowConditionLabel:details, _rowConditionId:described[index].id, label:details ? `${run.label || run.id} / ${details}` : run.label || run.id, results:rows};
     });
-    return;
+  });
+}
+/* What the user sees as one benchmark line-up: a ticked benchmark, or a named variant of it. */
+function runKey(run) {
+  return run.id + (run._rowConditionIndex ? "#" + run._rowConditionIndex : "");
+}
+function configurationIdentity(run) {
+  const gpu = run.gpu?.name || run.hardware?.gpu?.name || (Array.isArray(run.hardware?.gpus) ? run.hardware.gpus.map(item => item.name).filter(Boolean).join(", ") : "") || "GPU not recorded";
+  const engine = run.execution_group?.label || run.config?.endpoint_label || run.config?.provider || run.engine || "Engine not recorded";
+  return [run.label || run.id, engine, gpu].join(" \u00b7 ");
+}
+function configurationFullTitle(run) {
+  return configurationIdentity(run) + (run._rowConditionId ? ` / full configuration ID: ${run._rowConditionId}` : "");
+}
+function graphRuns(runs) { return measurementRuns(runs); }
+function graphModels(models) { return shownModels(models); }
+function pressSeg(selector, attribute, value) {
+  $$(selector).forEach(button => button.setAttribute("aria-pressed", String(button.dataset[attribute] === value)));
+}
+function renderResultControls(runs, models) {
+  const measured = measurementRuns(runs), scope = state.resultScope || syncResultLevels(measured);
+  const graphs = state.resultView === "compare", scalable = scope.queries.length > 1;
+  const axis = state.comparisonAxis;
+  const set = (selector, hidden) => { const node = $(selector); if (node) node.hidden = hidden; };
+  set("#rc-axis-row", !graphs);
+  pressSeg("[data-comparison-axis]", "comparisonAxis", axis);
+  const scaling = $('[data-comparison-axis="concurrency"]');
+  if (scaling) {
+    scaling.setAttribute("aria-disabled", String(!scalable));
+    scaling.title = scalable ? "Put the number of simultaneous queries on the horizontal axis" : "The ticked benchmarks recorded a single query at a time, so there is nothing to plot against.";
   }
-  $("#result-metrics").innerHTML = Object.entries(METRICS).map(([key, metric]) => `<label class="chip" data-on="${state.metrics.has(key) ? 1 : 0}" title="${esc(metric.blurb)}"><input type="checkbox" value="${key}" ${state.metrics.has(key) ? "checked" : ""}>${esc(metric.label)}</label>`).join("");
-  $$("#result-metrics input").forEach(input => input.addEventListener("change", async () => {
-    const key = input.value;
-    if (input.checked) state.metrics.add(key); else state.metrics.delete(key);
-    renderMetricSeg();
-    await redrawResultsWithoutScrolling();
-  }));
+  if ($("#rc-axis-note")) $("#rc-axis-note").textContent = !runs.length ? "" : scalable
+    ? (axis === "context" ? "How each metric changes as the prompt gets longer." : "How each metric changes as more queries arrive at once.")
+    : "Only single-query tests were recorded here, so prompt length is the only axis.";
+  // The dimension that is not on the axis becomes a row of toggles: one line per ticked value.
+  const prompts = graphs && axis === "concurrency";
+  const values = prompts ? scope.prompts : scope.queries, active = prompts ? activePromptLevels() : activeQueryLevels();
+  if ($("#rc-levels-label")) $("#rc-levels-label").textContent = prompts ? "Prompt length" : "Concurrent queries";
+  if ($("#rc-levels-hint")) $("#rc-levels-hint").textContent = graphs ? "One line per ticked value" : "Rows to list";
+  const keys = selectedMetricKeys(), shown = shownModels(models);
+  const recorded = new Set(measured.flatMap(run => (run.results || []).filter(row => row.status === "ok" && shown.includes(row.model)
+    && (!keys.length || keys.some(key => Number.isFinite(METRICS[key].get(row))))).map(row => prompts ? row.target_tokens : row.concurrency || 1)));
+  if ($("#result-levels")) $("#result-levels").innerHTML = values.map(value => {
+    const empty = graphs && !recorded.has(value), what = prompts ? `Prompts of ${fmtTokens(value)} tokens` : `${value} simultaneous quer${value === 1 ? "y" : "ies"}`;
+    return `<button type="button" class="chip" data-level="${value}" data-level-kind="${prompts ? "prompt" : "queries"}" aria-pressed="${active.includes(value)}" data-on="${active.includes(value) ? 1 : 0}"${empty ? ' data-empty="1"' : ""} title="${what}${empty ? ". Nothing recorded here for the ticked metrics and models." : ""}">${prompts ? fmtTokens(value) : value}</button>`;
+  }).join("") + (values.length > 2 ? `<button type="button" class="btn-sm" data-level-all="${prompts ? "prompt" : "queries"}" title="Tick every recorded value">All</button>` : "");
+  set("#rc-levels-row", values.length < 2);
+  pressSeg("[data-color-by]", "colorBy", !graphs && state.colorBy === "levels" ? "models" : state.colorBy);
+  const metricHint = $("#rc-metrics-row .rc-label small");
+  if (metricHint) metricHint.textContent = graphs ? "Tick any. Each gets its own chart." : "Tick any. Each gets its own column.";
+  const byLevels = $('[data-color-by="levels"]');
+  if (byLevels) { byLevels.textContent = prompts ? "Prompt length" : "Query count"; byLevels.hidden = !graphs || active.length < 2; }
+  pressSeg("[data-comparison-layout]", "comparisonLayout", state.comparisonLayout);
+  set("#rc-layout-option", !graphs);
+  // Speculative decoding only matters where it was recorded.
+  const mtp = measured.some(run => !runProviderManaged(run) && (run.results || []).some(row => row.mtp));
+  if (!mtp && state.mtpFilter !== "all") state.mtpFilter = "all";
+  pressSeg("[data-mtp-filter]", "mtpFilter", state.mtpFilter);
+  set("#rc-mtp-option", !mtp);
+  renderMetricSeg(measured);
+}
+
+/* ---------------- overview tab ----------------
+ * Answers, per model: how fast at best, what happens as prompts grow, how far
+ * it got, and what happens when queries arrive together. */
+function trendOf(points, better) {
+  if (points.length < 2 || !(points[0].y > 0)) return null;
+  const first = points[0], last = points[points.length - 1], percent = (last.y / first.y - 1) * 100;
+  return {first, last, percent, direction: Math.abs(percent) < 3 ? "same" : (percent > 0) === (better === "high") ? "better" : "worse"};
+}
+function peakOf(points) {
+  return points.reduce((best, point) => !best || point.y > best.y ? point : best, null);
+}
+function sparkline(points) {
+  if (points.length < 2) return "";
+  const width = 76, height = 24, pad = 3, top = Math.max(...points.map(point => point.y)) || 1;
+  // Zero-based, like the charts: a flat line must look flat.
+  const at = (point, index) => [pad + index * (width - 2 * pad) / (points.length - 1), height - pad - (point.y / top) * (height - 2 * pad)];
+  const path = points.map((point, index) => at(point, index).map(value => value.toFixed(1)).join(",")).join(" ");
+  const [x, y] = at(points[points.length - 1], points.length - 1);
+  return `<svg class="spark" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" aria-hidden="true"><polyline points="${path}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.4" fill="currentColor"/></svg>`;
+}
+function deltaMarkup(trend, suffix = "") {
+  if (!trend) return "";
+  const arrow = trend.direction === "same" ? "&#9644;" : trend.percent > 0 ? "&#9650;" : "&#9660;";
+  return `<span class="metric-delta" data-direction="${trend.direction}">${arrow} ${trend.percent > 0 ? "+" : ""}${trend.percent.toFixed(0)}%${suffix}</span>`;
+}
+function overviewRows(runs) {
+  const out = [];
+  for (const run of splitRowConditions(measurementRuns(runs))) for (const mtp of [false, true]) {
+    if (mtp && runProviderManaged(run)) continue;
+    const mine = (run.results || []).filter(row => !!row.mtp === mtp && (!mtp || row.fail_kind !== "mtp_unsupported"));
+    for (const model of [...new Set(mine.map(row => row.model))].sort()) {
+      const rows = mine.filter(row => row.model === model);
+      const okLevels = [...new Set(rows.filter(row => row.status === "ok").map(row => row.concurrency || 1))].sort((a, b) => a - b);
+      const base = okLevels[0] ?? Math.min(...rows.map(row => row.concurrency || 1));
+      const prefill = pointsFor(run, model, METRICS.prefill_tps, mtp, base), decode = pointsFor(run, model, METRICS.decode_tps, mtp, base);
+      const passed = [...new Set(rows.filter(row => row.status === "ok" && (row.concurrency || 1) === base).map(row => row.target_tokens))].sort((a, b) => a - b);
+      const largest = passed.length ? passed[passed.length - 1] : null;
+      // Every attempt that did not complete, at any query count, smallest first.
+      const misses = rows.filter(row => row.status !== "ok" && row.fail_kind !== "mtp_unsupported")
+        .map(row => ({x: row.target_tokens, count: row.concurrency || 1, reason: (row.fail_kind || row.status || "").replace(/_/g, " ")}))
+        .sort((a, b) => (a.count === base ? 0 : 1) - (b.count === base ? 0 : 1) || a.x - b.x || a.count - b.count);
+      const blocked = misses[0] || null;
+      let load = null;
+      if (okLevels.length > 1) {
+        const prompt = resultLevels([{results: rows}]).bestPrompt;
+        const total = pointsAcrossQueries(run, model, METRICS.decode_tps, mtp, prompt);
+        const each = pointsAcrossQueries(run, model, METRICS.per_request_decode_tps, mtp, prompt);
+        const wait = pointsAcrossQueries(run, model, METRICS.ttft_s, mtp, prompt);
+        if (total.length > 1 || each.length > 1 || wait.length > 1) load = {prompt, total, each, wait};
+      }
+      const quant = rows.find(row => row.quantization);
+      out.push({run, model, mtp, base, prefill, decode, largest, blocked, misses: misses.length, load, quant: quant ? quantizationLabel(quant) : ""});
+    }
+  }
+  return out.sort((a, b) => a.model.localeCompare(b.model) || a.mtp - b.mtp);
+}
+function graphLink(target, body, title) {
+  return `<button type="button" class="ov-link" data-open-graph="${esc(JSON.stringify(target))}" title="${esc(title)}">${body}</button>`;
+}
+function openGraphFor({model, metrics, axis}) {
+  if (model) state.visibleModels = new Set([model]);
+  if (metrics) state.metrics = new Set(metrics);
+  state.comparisonAxis = axis || "context";
+  state.queryLevels = null; state.promptLevels = null; state.levelsTouched = false; state.promptsTouched = false;
+  if (metrics) state.metricsTouched = true;
+  showResultsView("compare");
+}
+function renderOverviewTab(runs) {
+  const target = $("#summary-body");
+  if (!target) return;
+  if (!runs.length) { target.innerHTML = ""; return; }
+  const rows = overviewRows(runs);
+  const lineups = new Map();
+  for (const row of rows) lineups.set(row.model + "|" + row.mtp, (lineups.get(row.model + "|" + row.mtp) || 0) + 1);
+  const many = runs.length > 1 || [...lineups.values()].some(count => count > 1);
+  if (!rows.length) { target.innerHTML = `<div class="card">${emptyState("No measurements yet", "This benchmark has no recorded tests to summarise.")}</div>`; return; }
+  const name = row => row.model + (row.mtp ? " · MTP" : "") + (many ? ` · ${row.run.label || row.run.id}` : "");
+  const best = pick => rows.map(row => ({row, point: pick(row)})).filter(item => item.point && Number.isFinite(item.point.y))
+    .sort((a, b) => b.point.y - a.point.y)[0];
+  const tile = (label, value, unit, note, tone) => `<article class="ov-kpi" data-tone="${tone}"><span>${esc(label)}</span><strong>${value}<small>${esc(unit)}</small></strong><p>${note}</p></article>`;
+  const prefill = best(row => peakOf(row.prefill)), decode = best(row => peakOf(row.decode));
+  const reach = rows.filter(row => row.largest !== null).sort((a, b) => b.largest - a.largest)[0];
+  const reached = reach ? new Set(rows.filter(row => row.largest === reach.largest).map(row => row.model)).size : 0;
+  const modelCount = new Set(rows.map(row => row.model)).size;
+  const loaded = best(row => row.load ? peakOf(row.load.total.filter(point => point.x > 1)) : null);
+  // Older records kept each request's speed but not the group total.
+  const shared = best(row => row.load?.each.length > 1 ? row.load.each[row.load.each.length - 1] : null);
+  const kpis = [
+    tile("Fastest prefill", prefill ? n(prefill.point.y) : "—", "tk/s", prefill ? `${esc(name(prefill.row))} at a ${fmtTokens(prefill.point.x)} prompt` : "Not recorded", "blue"),
+    tile("Fastest decode", decode ? n(decode.point.y) : "—", "tk/s", decode ? `${esc(name(decode.row))} at a ${fmtTokens(decode.point.x)} prompt` : "Not recorded", "green"),
+    tile("Longest prompt completed", reach ? fmtTokens(reach.largest) : "—", "tokens", reach ? `${reached} of ${modelCount} model${modelCount === 1 ? "" : "s"} got this far` : "No test completed", "violet"),
+    loaded ? tile("Best throughput under load", n(loaded.point.y), "tk/s", `${esc(name(loaded.row))} with ${loaded.point.x} concurrent queries`, "amber")
+      : shared ? tile("Each request under load", n(shared.point.y), "tk/s", `${esc(name(shared.row))} with ${shared.point.x} concurrent queries, down from ${n(shared.row.load.each[0].y)} alone`, "amber")
+      : tile("Best throughput under load", "—", "", "Only single-query tests were recorded. Add simultaneous queries to a benchmark to see scaling.", "amber"),
+  ].join("");
+  // With several benchmarks ticked, the first one listing a model is its reference.
+  const baseline = new Map();
+  if (many) for (const row of rows) { const key = row.model + "|" + row.mtp; if (!baseline.has(key)) baseline.set(key, row); }
+  const versus = (row, field) => {
+    const first = baseline.get(row.model + "|" + row.mtp);
+    if (!many || !first || first === row) return "";
+    const a = peakOf(first[field]), b = peakOf(row[field]);
+    if (!a || !b || !(a.y > 0)) return "";
+    return deltaMarkup(trendOf([a, b], "high"), ` vs ${esc(first.run.label || first.run.id)}`);
+  };
+  const peakCell = (row, field, metric) => {
+    const peak = peakOf(row[field]);
+    if (!peak) return '<td class="num"><span class="dim">Not recorded</span></td>';
+    return `<td class="num">${graphLink({model: row.model, metrics: [metric], axis: "context"}, `<b>${n(peak.y)}</b> <span class="ov-unit">tk/s</span>`, "Open this graph")}<small>at a ${fmtTokens(peak.x)} prompt</small>${row.base > 1 ? `<small class="ov-warn">total for ${row.base} queries at once; no single-query test</small>` : ""}${versus(row, field)}</td>`;
+  };
+  const trendCell = (row, field, metric) => {
+    const points = row[field], trend = trendOf(points, "high");
+    if (!trend) return `<td><span class="dim">${points.length ? "One prompt length only" : "Not recorded"}</span></td>`;
+    return `<td>${graphLink({model: row.model, metrics: [metric], axis: "context"}, `<span class="ov-trend" data-direction="${trend.direction}">${sparkline(points)}${deltaMarkup(trend)}</span>`, "Open this graph")}<small>${n(trend.first.y)} &rarr; ${n(trend.last.y)} tk/s</small><small>from ${fmtTokens(trend.first.x)} to ${fmtTokens(trend.last.x)} tokens</small></td>`;
+  };
+  const miss = row => `${fmtTokens(row.blocked.x)}${row.blocked.count !== row.base || row.base > 1 ? ` at ${row.blocked.count} quer${row.blocked.count === 1 ? "y" : "ies"}` : ""}: ${esc(row.blocked.reason)}${row.misses > 1 ? `, and ${row.misses - 1} more` : ""}`;
+  const reachCell = row => row.largest === null
+    ? `<td><span class="metric-delta" data-direction="worse">No test completed</span>${row.blocked ? `<small>${miss(row)}</small>` : ""}</td>`
+    : `<td><b>${fmtTokens(row.largest)}</b> <span class="ov-unit">tokens</span><small>${row.blocked ? `&#10005; ${miss(row)}` : "Every test passed"}</small></td>`;
+  const loads = rows.some(row => row.load);
+  const loadCell = row => {
+    if (!loads) return "";
+    if (!row.load) return '<td><span class="dim">Single query only</span></td>';
+    const {total, each, wait, prompt} = row.load, first = total[0], last = total[total.length - 1];
+    const eachTrend = trendOf(each, "high"), waitTrend = trendOf(wait, "low");
+    const gain = total.length > 1 && first.y > 0 ? last.y / first.y : null;
+    const direction = gain === null ? "same" : gain >= 1.03 ? "better" : gain <= .97 ? "worse" : "same";
+    // Lead with total throughput; older records only kept each request's own speed.
+    const lead = eachTrend || waitTrend, span = lead ? `${lead.first.x} &rarr; ${lead.last.x} queries` : "";
+    const head = gain !== null ? `<span class="ov-trend" data-direction="${direction}">${sparkline(total)}<span class="metric-delta" data-direction="${direction}">${gain.toFixed(1)}&times; total throughput</span></span>`
+      : eachTrend ? `<span class="ov-trend" data-direction="${eachTrend.direction}">${sparkline(each)}${deltaMarkup(eachTrend, " per request")}</span>`
+      : waitTrend ? `<span class="ov-trend" data-direction="${waitTrend.direction}">${sparkline(wait)}${deltaMarkup(waitTrend, " first-token wait")}</span>` : '<span class="dim">Not recorded</span>';
+    const detail = [gain !== null ? `${n(first.y)} &rarr; ${n(last.y)} tk/s, ${first.x} &rarr; ${last.x} queries` : eachTrend ? `${n(eachTrend.first.y)} &rarr; ${n(eachTrend.last.y)} tk/s each, ${span}` : span,
+      gain !== null && eachTrend ? `each request ${eachTrend.percent > 0 ? "+" : ""}${eachTrend.percent.toFixed(0)}%` : "",
+      waitTrend && (gain !== null || eachTrend) ? `first token ${n(waitTrend.first.y)} &rarr; ${n(waitTrend.last.y)} s` : ""].filter(Boolean);
+    return `<td>${graphLink({model: row.model, metrics: ["decode_tps", "per_request_decode_tps", "ttft_s"], axis: "concurrency"}, head, "Open the concurrency graphs")}${detail.map(line => `<small>${line}</small>`).join("")}<small>at a ${fmtTokens(prompt)} prompt</small></td>`;
+  };
+  const body = rows.map(row => `<tr><td class="ov-model">${graphLink({model: row.model, metrics: ["prefill_tps", "decode_tps"], axis: "context"}, esc(row.model), "Open this model's graphs")}<small>${[esc(row.quant), row.mtp ? "speculative decoding on" : "", many ? `<span class="ov-bench" style="--benchmark-color:${esc(runColor(row.run.id))}">${esc(row.run.label || row.run.id)}</span>` : ""].filter(Boolean).join(" &middot; ")}</small></td>${peakCell(row, "prefill", "prefill_tps")}${peakCell(row, "decode", "decode_tps")}${trendCell(row, "prefill", "prefill_tps")}${trendCell(row, "decode", "decode_tps")}${reachCell(row)}${loadCell(row)}</tr>`).join("");
+  target.innerHTML = `<div class="ov-kpis">${kpis}</div><div class="card ov-card"><header><h3>Performance by model</h3><span class="spacer"></span><span class="hint">Click any figure to open its graph.</span></header><div class="table-wrap"><table class="ov-table"><thead><tr><th>Model</th><th class="num" title="Highest prefill speed at any prompt length, one query at a time">Peak prefill</th><th class="num" title="Highest decode speed at any prompt length, one query at a time">Peak decode</th><th title="Prefill speed from the shortest to the longest completed prompt">Prefill as prompts grow</th><th title="Decode speed from the shortest to the longest completed prompt">Decode as prompts grow</th><th title="Longest prompt that completed, and the first size that did not">Longest prompt</th>${loads ? '<th title="Total decode throughput from the fewest to the most simultaneous queries">With concurrent queries</th>' : ""}</tr></thead><tbody>${body}</tbody></table></div><p class="hint ov-foot">Speeds are for one query at a time unless stated. &#9650; and &#9660; compare the shortest prompt with the longest that completed; green is a gain, red a loss. ${many ? "Changes marked &ldquo;vs&rdquo; compare against the first benchmark listing the same model." : ""}</p></div>`;
 }
 
 async function ensureRuns(ids) {
@@ -2598,95 +3243,180 @@ async function openComparisonLink(search) {
   const models = ids.map(id=>allModelsOf([state.runCache[id]]));
   state.compare = new Set(ids); state.selected = ids[0]; state.conditions = null;
   state.visibleModels = new Set(models[0].filter(model=>models.every(list=>list.includes(model))));
-  state.mtpFilter = "all"; state.comparisonConcurrency = 1; state.comparisonLayout = "models"; state.comparisonAxis = "context";
-  state.metrics = new Set(["prefill_tps", "decode_tps"]);
-  if ($("#mtp-filter")) $("#mtp-filter").value = "all";
-  if ($("#comparison-layout")) $("#comparison-layout").value = "models";
-  $$(".comparison-concurrency").forEach(select=>{select.value="1";});
+  state.mtpFilter = "all"; state.comparisonConcurrency = 1; state.queryLevels = null; state.promptLevels = null; state.levelsTouched = true; state.metricsTouched = true;
+  state.comparisonLayout = "models"; state.comparisonAxis = "context"; state.colorBy = "benchmarks";
+  state.metrics = new Set(["prefill_tps"]);
   renderMetricSeg(); renderRunsList(); showPanel("results", false); showResultsView("compare");
   await renderResultsView();
   return true;
 }
 
-async function renderCompare() {
-  const generation = state.resultsRender;
-  const body = $("#compare-body");
-  const concurrency=$("#concurrency-comparison"),useScaling=state.comparisonAxis==="concurrency" && !!globalThis.WatteverConcurrency;
-  if (concurrency) concurrency.hidden=!useScaling;
-  if ($("#context-chart-layout")) $("#context-chart-layout").hidden=useScaling;
-  if (useScaling) {
-    if ($("#comparison-overview")) $("#comparison-overview").hidden=true;
-    body.hidden=true;
-    renderConcurrencyView(concurrency,[...state.compare].map(id=>state.runCache[id]).filter(Boolean));
-    return;
+function buildSeries(runs, models, allModels, key, axis, levels) {
+  const metric = METRICS[key], series = [], ticks = new Set();
+  const modes = state.mtpFilter === "all" ? [false, true] : [state.mtpFilter === "on"];
+  for (const run of runs) for (const mtp of modes) {
+    if (runProviderManaged(run) && (state.mtpFilter !== "all" || mtp)) continue;
+    for (const model of models) levels.forEach((level, levelIndex) => {
+      const points = axis === "context" ? pointsFor(run, model, metric, mtp, level) : pointsAcrossQueries(run, model, metric, mtp, level);
+      const failures = axis === "context" ? failuresFor(run, model, mtp, level) : failuresAcrossQueries(run, model, mtp, level);
+      if (!points.length && !failures.length) return;
+      [...points, ...failures].forEach(item => ticks.add(item.x));
+      series.push({
+        id: [run.id + (run._rowConditionKey || ""), model, key, mtp, level].join("|"), run, model, mtp, level,
+        levelName: levels.length > 1 ? (axis === "context" ? `${level} quer${level === 1 ? "y" : "ies"}` : `${fmtTokens(level)} prompt`) : null,
+        tags: {model, run: runKey(run), level, mtp},
+        ...chartAppearance(run, model, allModels, mtp, levelIndex, levels.length),
+        points: points.map(point => ({...point, unit: metric.unit})), failures,
+      });
+    });
   }
-  if ($("#comparison-overview")) $("#comparison-overview").hidden = state.comparisonLayout !== "overview";
-  body.hidden = state.comparisonLayout === "overview";
-  if (state.comparisonLayout === "overview") return renderOverview();
-  const ids = [...state.compare];
-  if (!ids.length) {
-    body.innerHTML = emptyState("Select a benchmark", "Tick one or more benchmarks in the list on the left.");
-    return;
+  // A line names its benchmark only when the same model is drawn for more than one.
+  for (const item of series) {
+    const lineups = new Set(series.filter(other => other.model === item.model).map(other => runKey(other.run)));
+    item.name = [item.model, lineups.size > 1 ? item.run.label || item.run.id : null, item.levelName, item.mtp ? "MTP" : null].filter(Boolean).join("  ·  ");
   }
-  await ensureRuns(ids);
-  if (generation !== state.resultsRender) return;
-  const runs = measurementRuns(ids.map(id => state.runCache[id]).filter(Boolean));
-  const models = allModelsOf(runs), shown = shownModels(models), keys = selectedMetricKeys();
-  if (!shown.length || !keys.length) {
-    body.innerHTML = !keys.length ? emptyState("Choose measures to display", "Select one or more measure badges above.") : emptyState("Choose models to display", "Select one or more model badges above, or click All.");
-    return;
-  }
-  const tracks = tracksFor(runs);
-  const sources = [...new Set(runs.map(run => run.power_source).filter(Boolean))];
-  const mixedPower = keys.some(key => ["j_per_1k_prefill", "j_per_token_decode", "prefill_gpu_w"].includes(key)) && sources.length > 1;
-  const note = mixedPower ? banner("warn", "Different power sensors", "These readings have different measurement boundaries. Compare them with care.") : "";
-  const incompleteNotes = ids.map(id=>state.runCache[id]).filter(Boolean).map(benchmarkIncompleteNotice).join("");
-  body.innerHTML = `${incompleteNotes}<div class="card"><header><h3>${esc(keys.map(key => METRICS[key].label).join(" + "))}</h3></header>${note}<div class="facets" id="facet-grid"></div></div>`;
-  const grid = $("#facet-grid");
-  for (const group of metricGroups(keys)) {
-    for (const model of shown) {
-      const facet = document.createElement("div");
-      facet.className = "facet";
-      facet.innerHTML = `<h4>${esc(model)}</h4><div class="sub">${esc(modelSubtitle(runs, model))}</div><div class="sub">${esc(group.keys.map(key => METRICS[key].label).join(" + "))} / ${esc(group.unit)}</div>${encodingLegend(group.keys,chartConditions(runs,[model],group.keys))}${comparisonReadout(chartConditions(runs,[model],group.keys),[model],group.keys[0])}<div class="plot"></div>`;
-      grid.appendChild(facet);
-      const modelTracks=tracks.filter(track=>conditionRows(track.run,[model]).some(row=>!!row.mtp === !!track.mtp && (row.status === "ok" ? group.keys.some(key=>Number.isFinite(METRICS[key].get(row))) : ["failed","skipped"].includes(row.status))));
-      const sizes = [...new Set(modelTracks.flatMap(track => (track.run.results || []).filter(row => row.model === model && !!row.mtp === !!track.mtp && (row.concurrency || 1) === state.comparisonConcurrency).map(row => row.target_tokens)))].sort((a, b) => a - b);
-      const series = group.keys.flatMap(key => modelTracks.map(track => ({
-        id: track.key + "|" + key, name: `${track.name} / ${METRICS[key].label}`,
-        ...measureAppearance(chartAppearance(track.run, model, models, track.mtp), key, group.keys, track.mtp),
-        points: pointsFor(track.run, model, METRICS[key], track.mtp),
-        failures: key === group.keys[0] ? failuresFor(track.run, model, track.mtp) : [],
-      })));
-      const plot = $(".plot", facet);
-      if (group.keys.length === 1 && METRICS[group.keys[0]].kind === "bars") {
-        const metric = METRICS[group.keys[0]];
-        Charts.bars(plot, {unit: group.unit, yLabel: group.unit, xLabel: "prefill tokens", height: 250,
-          groups: sizes.map(size => ({label: fmtTokens(size), bars: modelTracks.map(track => {
-            const row = pick(track.run, model, size, track.mtp, metric);
-            return {id: track.key, name: track.name, ...chartAppearance(track.run, model, models, track.mtp), value: row && row.status === "ok" ? metric.get(row) : null};
-          })})),
-        });
-      } else {
-        Charts.line(plot, {unit: group.unit, xLabel: "prefill tokens", yLabel: group.unit, xTicks: sizes, height: 250, yScale: "auto", ariaLabel: `${group.keys.map(key => METRICS[key].label).join(", ")} for ${model}`, series});
-      }
-    }
-  }
+  return {series, ticks: [...ticks].sort((a, b) => a - b), measured: series.some(item => item.points.length)};
 }
 
-function renderConcurrencyView(container,runs,summary=false) {
-  if (!container || !globalThis.WatteverConcurrency) return;
-  if (!runs.length) {container.innerHTML=emptyState("Select a benchmark","Choose a benchmark from the library to explore concurrency.");return;}
-  const measured=measurementRuns(runs),models=allModelsOf(measured);
-  const shown=summary ? models : shownModels(models);
-  container.querySelectorAll?.('.plot').forEach(plot=>Charts.release?.(plot));
-  globalThis.WatteverConcurrency.render(container,{
-    runs:measured,models:shown,summary,state:state.scaling,charts:Charts,
-    allow:(run,row)=>summary || state.mtpFilter==="all" || (!runProviderManaged(run) && !!row.mtp===(state.mtpFilter==="on")),
-    style:(group,view)=>({color:view.compareModels ? modelColor(group.model,models) : resolveColor(runColor(group.run.parent_run_id || group.run.id)),
-      dash:group.identity.mtp==="on" || group.identity.mtp?.requested==="on" ? "6 4" : null,
-      marker:markerForRun(group.run.parent_run_id || group.run.id)}),
-    openCompare:()=>{state.comparisonAxis="concurrency";showResultsView("compare");}
+const levelWords = (axis, values) => axis === "context"
+  ? `${values.join(", ")} concurrent quer${values.length === 1 && values[0] === 1 ? "y" : "ies"}`
+  : `${values.map(fmtTokens).join(", ")}-token prompts`;
+/* Every passed test is accounted for: drawn, or hidden for a stated reason with a one-click remedy. */
+function graphCoverage(runs, models, keys, axis, levels) {
+  const out = {total: 0, drawn: 0, models: 0, levels: new Map(), unrecorded: [], unrecordedAt: new Set()};
+  for (const run of runs) for (const row of run.results || []) {
+    if (row.status !== "ok") continue;
+    if (state.mtpFilter !== "all" && (runProviderManaged(run) || !!row.mtp !== (state.mtpFilter === "on"))) continue;
+    if (runProviderManaged(run) && row.mtp) continue;
+    out.total++;
+    const value = axis === "context" ? row.concurrency || 1 : row.target_tokens;
+    if (!models.includes(row.model)) out.models++;
+    else if (!levels.includes(value)) out.levels.set(value, (out.levels.get(value) || 0) + 1);
+    else if (keys.some(key => Number.isFinite(METRICS[key].get(row)))) out.drawn++;
+    else { out.unrecorded.push(row); out.unrecordedAt.add(value); }
+  }
+  // Offer the metrics that those undrawn tests did record, nearest in meaning first.
+  const order = ["per_request_decode_tps", "ttft_s", "group_output_tps", "wall_s", ...Object.keys(METRICS)];
+  out.suggest = [...new Set(order)].filter(key => !keys.includes(key) && out.unrecorded.length
+    && out.unrecorded.every(row => Number.isFinite(METRICS[key].get(row)))).slice(0, 3);
+  // Group rates need each request's start time; older multi-query records lack it.
+  out.needsOffsets = out.unrecorded.length > 0 && out.unrecorded.every(row => (row.concurrency || 1) > 1
+    && (row.requests || []).some(request => !Number.isFinite(request.start_offset_s)));
+  return out;
+}
+function coverageMarkup(coverage, keys, axis) {
+  if (!coverage.total) return "";
+  if (coverage.drawn === coverage.total) return `<p class="coverage-bar" data-complete="1"><strong>All ${coverage.total} passed test${coverage.total === 1 ? " appears" : "s appear"} in at least one chart below.</strong> A chart can hold fewer points: not every metric is recorded for every test, and repeats share one point.</p>`;
+  const parts = [], sorted = values => [...values].sort((a, b) => a - b);
+  if (coverage.levels.size) {
+    const hidden = [...coverage.levels.values()].reduce((sum, count) => sum + count, 0);
+    parts.push(`<li><b>${hidden}</b> ${hidden === 1 ? "is" : "are"} at ${esc(levelWords(axis, sorted(coverage.levels.keys())))}, not ticked above. <button type="button" class="btn-sm" data-coverage="levels">Show every ${axis === "context" ? "query count" : "prompt length"}</button></li>`);
+  }
+  if (coverage.unrecorded.length) {
+    const names = keys.map(key => METRICS[key].short).join(" or ");
+    parts.push(`<li><b>${coverage.unrecorded.length}</b> at ${esc(levelWords(axis, sorted(coverage.unrecordedAt)))} ${coverage.unrecorded.length === 1 ? "has" : "have"} no ${esc(names)} value.${coverage.needsOffsets ? " This benchmark did not record when each request started, so rates for the whole group cannot be worked out." : ""}${coverage.suggest.length ? ` Recorded for ${coverage.unrecorded.length === 1 ? "it" : "them"}: ${coverage.suggest.map(key => `<button type="button" class="btn-sm" data-coverage="metric" data-metric-add="${esc(key)}">+ ${esc(METRICS[key].short)}</button>`).join(" ")}` : ""}</li>`);
+  }
+  if (coverage.models) parts.push(`<li><b>${coverage.models}</b> belong${coverage.models === 1 ? "s" : ""} to models that are not ticked. <button type="button" class="btn-sm" data-coverage="models">Show all models</button></li>`);
+  return `<div class="coverage-bar" role="status"><strong>The charts below draw ${coverage.drawn} of ${coverage.total} passed tests.</strong><ul>${parts.join("")}</ul></div>`;
+}
+function applyCoverageAction(button) {
+  const scope = state.resultScope || {queries: [], prompts: []};
+  if (button.dataset.coverage === "metric") state.metricsTouched = true;
+  if (button.dataset.coverage === "levels") {
+    if (state.comparisonAxis === "context") state.levelsTouched = true; else state.promptsTouched = true;
+    if (state.comparisonAxis === "context") { state.queryLevels = new Set(scope.queries); state.comparisonConcurrency = scope.queries[0] ?? 1; }
+    else state.promptLevels = new Set(scope.prompts);
+  } else if (button.dataset.coverage === "models") state.visibleModels = null;
+  else if (button.dataset.coverage === "metric") state.metrics.add(button.dataset.metricAdd);
+  redrawResultsWithoutScrolling();
+}
+
+async function renderCompare() {
+  const generation = state.resultsRender;
+  const body = $("#compare-body"), keyNode = $("#chart-key"), evidence = $("#concurrency-comparison");
+  $$(".plot", body).forEach(plot => Charts.release?.(plot));
+  if (evidence) { $$(".plot", evidence).forEach(plot => Charts.release?.(plot)); evidence.hidden = true; }
+  const message = (title, text) => { body.innerHTML = emptyState(title, text); if (keyNode) keyNode.innerHTML = ""; };
+  const ids = [...state.compare];
+  if (!ids.length) return message(state.runs.length ? "Select a benchmark" : "Nothing to plot yet",
+    state.runs.length ? "Tick one or more benchmarks in the list on the left." : "Run a benchmark first, or import one. Its graphs appear here.");
+  await ensureRuns(ids);
+  if (generation !== state.resultsRender) return;
+  const source = ids.map(id => state.runCache[id]).filter(Boolean);
+  const runs = splitRowConditions(measurementRuns(source));
+  const allModels = allModelsOf(runs), models = shownModels(allModels), keys = selectedMetricKeys();
+  if (!allModels.length) return message("No tests were recorded", `${source.length === 1 ? "This benchmark" : "These benchmarks"} stopped before completing or failing a single test${source.length === 1 && source[0].status ? ` (status: ${source[0].status})` : ""}. There is nothing to plot.`);
+  if (!keys.length) return message("Choose a metric", "Tick one or more metric buttons above.");
+  if (!models.length) return message("Choose a model", "Tick one or more model buttons above, or press All.");
+  const axis = state.comparisonAxis, levels = axis === "context" ? activeQueryLevels() : activePromptLevels();
+  const perModel = state.comparisonLayout === "models";
+  const charts = keys.flatMap(key => (perModel ? models.map(model => [model]) : [models])
+    .map(group => ({key, models: group, ...buildSeries(runs, group, allModels, key, axis, levels)})));
+  const drawn = charts.filter(chart => chart.measured);
+  const missing = keys.filter(key => !drawn.some(chart => chart.key === key));
+  const sources = [...new Set(runs.map(run => run.power_source).filter(Boolean))];
+  const mixedPower = keys.some(key => ["j_per_1k_prefill", "j_per_token_decode", "prefill_gpu_w"].includes(key)) && sources.length > 1;
+  const coverage = graphCoverage(runs, models, keys, axis, levels);
+  const notes = coverageMarkup(coverage, keys, axis) + source.map(benchmarkIncompleteNotice).join("")
+    + (mixedPower ? banner("warn", "Different power sensors", "These readings have different measurement boundaries. Compare them with care.") : "")
+    + (missing.length ? `<p class="hint graph-missing">Not recorded for this selection: ${missing.map(key => esc(METRICS[key].short)).join(", ")}.</p>` : "");
+  if (!drawn.length) { body.innerHTML = notes + emptyState("Nothing recorded for this selection", "Tick another metric, model or level above. Greyed-out metric buttons were not recorded in these benchmarks."); if (keyNode) keyNode.innerHTML = ""; return; }
+  const used = {allModels, models: models.filter(model => drawn.some(chart => chart.series.some(item => item.model === model))),
+    runs: runs.filter(run => drawn.some(chart => chart.series.some(item => item.run === run))),
+    levels: levels.filter(level => drawn.some(chart => chart.series.some(item => item.level === level))),
+    mtp: new Set(drawn.flatMap(chart => chart.series.map(item => item.mtp)))};
+  if (keyNode) keyNode.innerHTML = chartKeyMarkup(used, axis);
+  const fixed = levels.length === 1 ? (axis === "context" ? `${levels[0]} concurrent quer${levels[0] === 1 ? "y" : "ies"}` : `${fmtTokens(levels[0])} prompt`) : "";
+  const direction = metric => metric.better === "high" ? "&#8593; higher is better" : metric.better === "low" ? "&#8595; lower is better" : "";
+  const single = drawn.length === 1;
+  const lacksOffsets = runs.some(run => (run.results || []).some(row => row.status === "ok" && (row.concurrency || 1) > 1
+    && (row.requests || []).some(request => !Number.isFinite(request.start_offset_s))));
+  const card = (chart, index) => {
+    const metric = METRICS[chart.key], model = perModel ? chart.models[0] : null;
+    const readout = model && axis === "context" && levels.length === 1 ? comparisonReadout(chartConditions(runs, [model], [chart.key]), [model], chart.key) : "";
+    // A ticked value with no line is either a test that failed or a metric that was not recorded there.
+    const blank = levels.filter(level => !chart.series.some(item => item.level === level && item.points.length));
+    const failed = blank.filter(level => chart.series.some(item => item.level === level && item.failures.length)
+      && !runs.some(run => (run.results || []).some(row => row.status === "ok" && chart.models.includes(row.model) && (axis === "context" ? row.concurrency || 1 : row.target_tokens) === level)));
+    const absent = blank.filter(level => !failed.includes(level));
+    const why = absent.length && axis === "context" && absent.every(level => level > 1) && ["prefill_tps", "decode_tps", "prefill_s", "decode_s"].includes(chart.key) && lacksOffsets
+      ? " A rate for the whole group needs each request's start time, which this benchmark did not record." : "";
+    let across = "";
+    if (axis === "concurrency") {
+      const counts = new Set(runs.flatMap(run => (run.results || []).filter(row => row.status === "ok" && chart.models.includes(row.model) && levels.includes(row.target_tokens)).map(row => row.concurrency || 1)));
+      const plotted = new Set(chart.series.flatMap(item => item.points.map(point => point.x)));
+      const lost = [...counts].filter(count => !plotted.has(count)).sort((a, b) => a - b);
+      if (lost.length) across = `No ${esc(metric.short)} recorded at ${esc(levelWords("context", lost))}.${lacksOffsets && lost.every(count => count > 1) && ["prefill_tps", "decode_tps", "prefill_s", "decode_s"].includes(chart.key) ? " A rate for the whole group needs each request's start time, which this benchmark did not record." : ""} The tests passed; this metric was not captured for them.`;
+    }
+    const gap = [across, absent.length ? `No ${esc(metric.short)} recorded at ${esc(levelWords(axis, absent))}.${why}` : "",
+      failed.length ? `Every test at ${esc(levelWords(axis, failed))} failed.` : ""].filter(Boolean).map(text => `<p class="hint graph-gap">${text}</p>`).join("");
+    return `<section class="card graph-card" data-metric="${esc(chart.key)}"><header><h3>${esc(model || metric.short)}</h3><span class="graph-direction">${[direction(metric), esc(metric.unit), fixed].filter(Boolean).join(" &middot; ")}</span></header><p class="hint graph-blurb">${model ? esc(modelSubtitle(runs, model)) : esc(metric.blurb)}</p>${readout}<div class="plot" data-graph="${index}"></div>${gap}</section>`;
+  };
+  body.innerHTML = notes + (perModel
+    ? keys.filter(key => !missing.includes(key)).map(key => `<h3 class="graph-section">${esc(METRICS[key].short)}<small>${esc(METRICS[key].blurb)}</small></h3><div class="graph-grid">${drawn.map((chart, index) => chart.key === key ? card(chart, index) : "").join("")}</div>`).join("")
+    : `<div class="graph-grid${single ? " single" : ""}">${drawn.map(card).join("")}</div>`)
+    + `<p class="hint graph-help">Move the pointer over a chart to compare every line at that point. &#10005; on the baseline marks a test that failed. Hover an entry in the key to pick out its lines.</p>`;
+  drawn.forEach((chart, index) => {
+    const metric = METRICS[chart.key];
+    Charts.line($(`[data-graph="${index}"]`, body), {
+      unit: metric.unit, better: metric.better, yLabel: metric.unit, yScale: "auto", series: chart.series, xTicks: chart.ticks,
+      xLabel: axis === "context" ? "prompt length (tokens)" : "concurrent queries",
+      xUnit: axis === "context" ? "prompt tokens" : "concurrent queries",
+      xScale: axis === "context" ? "log" : "linear", breakMissing: axis !== "context",
+      height: single ? 380 : 290,
+      ariaLabel: `${metric.short}${perModel ? " for " + chart.models[0] : ""} by ${axis === "context" ? "prompt length" : "concurrent queries"}`,
+    });
   });
+  // Per-request timelines stay available where queries overlap.
+  if (evidence && axis === "concurrency" && globalThis.WatteverConcurrency) {
+    const mapped = {group_output_tps: "output", decode_tps: "decode", prefill_tps: "prefill", wall_s: "batchwall", ttft_s: "ttft"}[keys.find(key => !missing.includes(key))] || "decode";
+    evidence.hidden = false;
+    globalThis.WatteverConcurrency.render(evidence, {
+      runs: measurementRuns(source), models, state: state.scaling, charts: Charts, compact: true, evidenceOnly: true, metric: mapped, prompt: levels[0],
+      allow: (run, row) => state.mtpFilter === "all" || (!runProviderManaged(run) && !!row.mtp === (state.mtpFilter === "on")),
+      style: group => chartAppearance(group.run, group.model, allModels, group.identity.mtp === "on" || group.identity.mtp?.requested === "on"),
+    });
+  }
 }
 
 function resolveColor(cssVar) {
@@ -2695,13 +3425,14 @@ function resolveColor(cssVar) {
   return getComputedStyle(document.documentElement).getPropertyValue(match[1]).trim() || "#888";
 }
 
-function pick(run, model, size, mtp, metric) {
+function pick(run, model, size, mtp, metric, concurrency = state.comparisonConcurrency) {
   const matches = (run.results || []).filter((r) => r.model === model
-    && r.target_tokens === size && !!r.mtp === !!mtp && (r.concurrency || 1) === state.comparisonConcurrency);
+    && r.target_tokens === size && !!r.mtp === !!mtp && (r.concurrency || 1) === concurrency);
+  if (new Set(matches.map(row => rowConditionFingerprint(run, row))).size > 1) return null;
   const ok = matches.filter((r) => r.status === "ok");
   if (!ok.length) return matches[0] || null;
   // several repeats: report the median so one hiccup does not define the point
-  const measured = metric ? ok.filter((r) => metric.get(r) != null) : ok;
+  const measured = metric ? ok.filter((r) => Number.isFinite(metric.get(r))) : ok;
   if (!measured.length) return ok[0];
   const sorted = measured.slice().sort((a, b) => metric ? metric.get(a) - metric.get(b) : (a.prefill_tps || 0) - (b.prefill_tps || 0));
   const representative = sorted[Math.floor(sorted.length / 2)];
@@ -2709,36 +3440,58 @@ function pick(run, model, size, mtp, metric) {
   const key = Object.keys(METRICS).find(key=>METRICS[key] === metric);
   if (!key) return representative;
   const value = (metric.get(sorted[Math.floor((sorted.length-1)/2)]) + metric.get(representative))/2;
-  const median = {...representative,summary_repeats:measured.length};
-  if (["j_per_1k_prefill","j_per_token_decode","prefill_gpu_w"].includes(key)) median.power = {...median.power,[key]:value};
+  const median = {...representative,summary_repeats:measured.length,_metricValues:{...representative._metricValues,[key]:value}};
+  if (["group_output_tps", "decode_tps", "per_request_decode_tps", "prefill_tps", "decode_s", "prefill_s"].includes(key)) { median._metricValues = {...median._metricValues, [key]:value}; if (key !== "group_output_tps") median[key] = value; }
+  else if (["j_per_1k_prefill","j_per_token_decode","prefill_gpu_w"].includes(key)) median.power = {...median.power,[key]:value};
   else median[key] = value;
   return median;
 }
 
-function pointsFor(run, model, metric, mtp) {
+function pointNote(run, r, metric) {
+  return [
+    r.summary_repeats ? `Median of ${r.summary_repeats} successful repeats` : r.prompt_tokens ? `${fmtInt(r.prompt_tokens)} actual tokens` : "",
+    run.storage_condition || "",
+    r.gpu_offload && r.gpu_offload !== "auto" ? `offload ${r.gpu_offload}` : "",
+    r.vram_peak_mb ? `${fmtInt(r.vram_peak_mb)} MB VRAM` : "",
+    ([METRICS.group_output_tps, METRICS.decode_tps].includes(metric) && (r.completion_tokens_estimated || r.aggregate_completion_tokens_estimated || r.requests?.some(request => request.completion_tokens_estimated))) ? "Output tokens and throughput estimated" : "",
+    ([METRICS.decode_tps,METRICS.per_request_decode_tps,METRICS.decode_s].includes(metric) && decodeApproximate(r)) ? "Approximate first-chunk token boundary; legacy intervals may include response-delivery tails. Inspect timing scope." : "",
+  ].filter(Boolean).join(" · ");
+}
+function pointsFor(run, model, metric, mtp, concurrency = state.comparisonConcurrency) {
   const sizes = [...new Set((run.results || []).filter((r) => r.model === model
-    && !!r.mtp === !!mtp && (r.concurrency || 1) === state.comparisonConcurrency).map((r) => r.target_tokens))].sort((a, b) => a - b);
+    && !!r.mtp === !!mtp && (r.concurrency || 1) === concurrency).map((r) => r.target_tokens))].sort((a, b) => a - b);
   const out = [];
   for (const size of sizes) {
-    const r = pick(run, model, size, mtp, metric);
+    const r = pick(run, model, size, mtp, metric, concurrency);
     if (!r || r.status !== "ok") continue;
     const value = metric.get(r);
     if (value === null || value === undefined) continue;
-    const note = [
-      r.summary_repeats ? `Median of ${r.summary_repeats} successful repeats` : r.prompt_tokens ? `${fmtInt(r.prompt_tokens)} actual tokens` : "",
-      run.storage_condition || "",
-      r.gpu_offload && r.gpu_offload !== "auto" ? `offload ${r.gpu_offload}` : "",
-      r.vram_peak_mb ? `${fmtInt(r.vram_peak_mb)} MB VRAM` : "",
-      ((metric === METRICS.decode_tps && r.completion_tokens_estimated) || (metric === METRICS.aggregate_completion_tps && r.aggregate_completion_tokens_estimated)) ? "Output tokens and throughput estimated" : "",
-    ].filter(Boolean).join(" · ");
-    out.push({ x: size, y: value, note });
+    out.push({ x: size, y: value, note: pointNote(run, r, metric) });
   }
   return out;
 }
+/* The same measurement read along the other axis: one prompt length, every query count. */
+function pointsAcrossQueries(run, model, metric, mtp, size) {
+  const counts = [...new Set((run.results || []).filter(r => r.model === model && !!r.mtp === !!mtp && r.target_tokens === size).map(r => r.concurrency || 1))].sort((a, b) => a - b);
+  const out = [];
+  for (const count of counts) {
+    const r = pick(run, model, size, mtp, metric, count);
+    if (!r || r.status !== "ok") continue;
+    const value = metric.get(r);
+    if (value === null || value === undefined) continue;
+    out.push({x: count, y: value, note: pointNote(run, r, metric)});
+  }
+  return out;
+}
+function failuresAcrossQueries(run, model, mtp, size) {
+  return (run.results || []).filter(r => r.model === model && !!r.mtp === !!mtp && r.target_tokens === size
+    && (r.status === "failed" || r.status === "skipped") && r.fail_kind !== "mtp_unsupported")
+    .map(r => ({x: r.concurrency || 1, reason: (r.fail_kind || r.status || "").replace(/_/g, " ")}));
+}
 
-function failuresFor(run, model, mtp) {
+function failuresFor(run, model, mtp, concurrency = state.comparisonConcurrency) {
   return (run.results || [])
-    .filter((r) => r.model === model && !!r.mtp === !!mtp && (r.concurrency || 1) === state.comparisonConcurrency
+    .filter((r) => r.model === model && !!r.mtp === !!mtp && (r.concurrency || 1) === concurrency
       && (r.status === "failed" || r.status === "skipped")
       && r.fail_kind !== "mtp_unsupported")
     .map((r) => ({ x: r.target_tokens, reason: (r.fail_kind || r.status || "").replace(/_/g, " ") }));
@@ -2748,19 +3501,19 @@ function failuresFor(run, model, mtp) {
  * follows the run, so MTP is distinguished by a dashed stroke and by its name
  * rather than by stealing a second hue from the categorical order. */
 function tracksFor(runs) {
-  runs = measurementRuns(runs);
+  runs = splitRowConditions(measurementRuns(runs));
   const modes = state.mtpFilter === "all" ? [false, true] : [state.mtpFilter === "on"];
   const tracks = [];
   for (const run of runs) {
     for (const mtp of modes) {
       if (runProviderManaged(run) && (state.mtpFilter !== "all" || mtp)) continue;
-      const rows = (run.results || []).filter((r) => !!r.mtp === !!mtp && (r.concurrency || 1) === state.comparisonConcurrency);
+      const rows = (run.results || []).filter((r) => !!r.mtp === !!mtp && levelOn(r.concurrency || 1));
       const meaningful = rows.some((r) => r.status === "ok" || r.fail_kind !== "mtp_unsupported");
       if (!rows.length || !meaningful) continue;
       const bothShown = modes.length > 1 && !runProviderManaged(run);
       tracks.push({
         run, mtp,
-        key: run.id + (mtp ? "::mtp" : ""),
+        key: run.id + (run._rowConditionKey || "") + (mtp ? "::mtp" : ""),
         name: (run.label || run.id) + (mtp ? "  · MTP" : (bothShown ? "  · no MTP" : "")),
         color: resolveColor(runColor(run.id)),
         dash: run.storage_alternative ? "7 4" : mtp ? "6 4" : null,
@@ -2788,38 +3541,41 @@ function modelSubtitle(runs, model) {
 }
 
 function metricEstimateMark(row, metric) {
-  if (metric === METRICS.aggregate_completion_tps) return estimatedMark(row, true);
-  return metric === METRICS.decode_tps || metric === METRICS.j_per_token_decode ? estimatedMark(row) : "";
+  if([METRICS.decode_tps,METRICS.per_request_decode_tps,METRICS.decode_s,METRICS.j_per_token_decode].includes(metric) && decodeApproximate(row))return '*';
+  if (metric === METRICS.group_output_tps || metric === METRICS.decode_tps || metric === METRICS.j_per_token_decode) {
+    return estimatedMark(row) || estimatedMark(row, true);
+  }
+  return "";
 }
 
 function tableRowColor(run, model, models) {
-  return state.colorBy === "models" ? modelColor(model, models) : resolveColor(runColor(run.id));
+  return state.colorBy !== "benchmarks" ? modelColor(model, models) : resolveColor(runColor(run.id));
 }
 
 function compareTable(tracks, models, keys = selectedMetricKeys()) {
-  const rows = [];
+  const rows = [], levels = activeQueryLevels(), several = levels.length > 1;
   for (const model of models) {
     const sizes = [...new Set(tracks.flatMap(track => (track.run.results || [])
-      .filter(row => row.model === model && !!row.mtp === !!track.mtp && (row.concurrency || 1) === state.comparisonConcurrency)
+      .filter(row => row.model === model && !!row.mtp === !!track.mtp && levels.includes(row.concurrency || 1))
       .map(row => row.target_tokens)))].sort((a, b) => a - b);
-    for (const size of sizes) {
+    for (const size of sizes) for (const level of levels) {
       for (const track of tracks) {
-        const representative = pick(track.run, model, size, track.mtp, METRICS[keys[0]]);
+        const representative = pick(track.run, model, size, track.mtp, METRICS[keys[0]], level);
         if (!representative) continue;
         const color = tableRowColor(track.run, model, models);
         const cells = keys.map(key => {
           const metric = METRICS[key];
-          const row = pick(track.run, model, size, track.mtp, metric);
+          const row = pick(track.run, model, size, track.mtp, metric, level);
           const value = row && row.status === "ok" ? metric.get(row) : null;
-          const absent = row?.fail_kind === "timeout" ? `Timeout${row.timeout_budget_s || row.wall_s ? `<small>${fmt(row.timeout_budget_s || row.wall_s,0)} s limit</small>` : ""}` : "?";
+          const absent = row?.fail_kind === "timeout" ? `Timeout${row.timeout_budget_s || row.wall_s ? `<small>${fmt(row.timeout_budget_s || row.wall_s,0)} s limit</small>` : ""}` : "\u2014";
           return `<td class="num measure-cell" data-measure="${key}">${value == null ? absent : (["wall_s","ttft_s"].includes(key) ? fmt(value,2) : n(value)) + metricEstimateMark(row, metric)}</td>`;
         }).join("");
-        rows.push(`<tr class="colored-result-row" style="--table-color:${color}" data-model="${esc(model)}" data-benchmark="${esc(track.run.id)}"><td class="model-cell">${esc(model)}<small>${esc(quantizationLabel(representative))}</small></td><td class="num">${fmtTokens(size)}</td><td class="benchmark-cell"><span class="table-benchmark-name" title="${esc(track.name)}">${esc(track.name)}</span></td>${cells}<td>${statusCell(representative)}</td></tr>`);
+        rows.push(`<tr class="colored-result-row" style="--table-color:${color}" data-model="${esc(model)}" data-benchmark="${esc(track.run.id)}"><td class="model-cell">${esc(model)}<small>${esc(quantizationLabel(representative))}</small></td><td class="num">${fmtTokens(size)}</td>${several ? `<td class="num">${level}</td>` : ""}<td class="benchmark-cell"><span class="table-benchmark-name" title="${esc(configurationFullTitle(track.run))}">${esc(track.name)}</span></td>${cells}<td>${statusCell(representative)}</td></tr>`);
       }
     }
   }
   if (!rows.length) return '<p class="dim">No measurements for the selected models and query count.</p>';
-  return `<table class="measurements-table"><thead><tr><th>Model</th><th>Prompt tokens</th><th>Benchmark</th>${keys.map(key => `<th class="num" data-measure="${key}">${esc(METRICS[key].label)} <small>(${esc(METRICS[key].unit)})</small></th>`).join("")}<th>Status</th></tr></thead><tbody>${rows.join("")}</tbody><tfoot><tr><td colspan="${4 + keys.length}">One row per model, prompt size and benchmark. Each measure reports its median successful repeat. * Estimated token counts. Cell colors follow the Color by selection.</td></tr></tfoot></table>`;
+  return `<table class="measurements-table"><thead><tr><th>Model</th><th>Prompt tokens</th>${several ? "<th>Queries</th>" : ""}<th>Benchmark</th>${keys.map(key => `<th class="num" data-measure="${key}">${esc(METRICS[key].label)} <small>(${esc(METRICS[key].unit)})</small></th>`).join("")}<th>Status</th></tr></thead><tbody>${rows.join("")}</tbody><tfoot><tr><td colspan="${4 + keys.length + (several ? 1 : 0)}">One row per model, prompt size${several ? ", query count" : ""} and benchmark${several ? "" : `, at ${levels[0]} concurrent quer${levels[0] === 1 ? "y" : "ies"}`}. Each measure reports its median successful repeat. * Estimated token counts. Cell colors follow the Color by selection.</td></tr></tfoot></table>`;
 }
 
 if (typeof window !== "undefined") window.WatteverUI = {

@@ -16,18 +16,23 @@ run['results'].extend([
 for row in run['results']:
     if row.get('concurrency', 1) == 1:
         row['ttft_s'] = 0.5
+        row['prompt_tokens'] = int(row['prefill_tps'] * .5)
+        row['decode_token_count'] = 99
+        row['decode_s'] = 99 / row['decode_tps']
         row['completion_tokens'] = 100
         row['wall_s'] = 2.5
 # Simulated concurrency evidence only; these fixtures never run a real model.
 run['config'].update(sizes=[512],concurrency_levels=[1,2,4,8])
 run['results'][1].update(aggregate_completion_tokens=200,wall_s=200/75)
 for index,request in enumerate(run['results'][1]['requests']):
-    request.update(completion_tokens=100,ttft_s=.6+index*.2,wall_s=2.5+index/6)
+    request.update(completion_tokens=100,decode_token_count=99,decode_s=99/request['decode_tps'],start_offset_s=0,ttft_s=.6+index*.2)
+    request['wall_s'] = request['ttft_s'] + request['decode_s'] + .02
+run['results'][1]['wall_s'] = max(q['wall_s'] for q in run['results'][1]['requests'])
 run['results'].extend([
     {'model':'model-a','target_tokens':512,'concurrency':4,'status':'ok','completed_requests':4,
      'aggregate_completion_tokens':400,'aggregate_completion_tps':400/6,'wall_s':6,
      'requests':[{'status':'ok','prompt_tokens':512,'completion_tokens':100,'decode_tps':25+i,
-                  'ttft_s':1.1+i*.1,'wall_s':5+i/3} for i in range(4)]},
+                  'start_offset_s':0,'ttft_s':1.1+i*.1,'wall_s':5+i/3} for i in range(4)]},
     {'model':'model-a','target_tokens':512,'concurrency':8,'status':'failed','fail_kind':'timeout',
      'completed_requests':0,'wall_s':15,'timeout_budget_s':15,
      'requests':[{'status':'failed','fail_kind':'timeout'} for _ in range(8)]},
@@ -44,7 +49,7 @@ import copy
 comparison = copy.deepcopy(run)
 comparison.update(id='comparison', label='GTX 1080 Ti 11 GB VRAM / 64 GB RAM / Intel Core i7 desktop processor', created_at='2026-10-25T12:00:00+00:00')
 comparison['gpu']['name'] = 'NVIDIA GeForce GTX 1080 Ti'
-comparison['results'][0].update(prefill_tps=70, decode_tps=30)
+comparison['results'][0].update(prefill_tps=70, prompt_tokens=35, decode_tps=30,decode_s=99/30,wall_s=.5+99/30+.02)
 comparison['results'][1]['aggregate_completion_tps'] = 50
 comparison['results'] = [row for row in comparison['results'] if row['model'] != 'model-c']
 store.save(comparison)
@@ -89,15 +94,33 @@ server._other_helper_running = lambda current_port: False
 
 class Handler(server.Handler):
     def do_GET(self):
+        if self.path == '/api/system':
+            import time
+            from datetime import datetime, timezone
+            return self._json({'timestamp': time.time(), 'source': 'fixture', 'error': None,
+                'scope': {'scope': 'benchmark_client_all_nvidia_gpus'},
+                'telemetry': {'timestamp': datetime.now(timezone.utc).isoformat(), 'sample_age_s': 0,
+                    'cpu_util_percent': 20, 'system_memory_used_bytes': 8 * 1073741824, 'system_memory_percent': 25,
+                    'gpu_w': 190, 'system_w_est': 250, 'gpu_util': 45, 'vram_mb': 18000, 'vram_percent': 56,
+                    'temp_c': 65, 'cpu_temp_c': 55,
+                    'gpus': [{'index': 0, 'name': 'NVIDIA GeForce RTX 5070 Ti', 'gpu_w': 120,
+                              'gpu_util': 50, 'vram_mb': 10000, 'vram_percent': 62.5, 'temp_c': 65, 'clock_mhz': 2700},
+                             {'index': 1, 'name': 'NVIDIA GeForce RTX 5060 Ti', 'gpu_w': 70,
+                              'gpu_util': 40, 'vram_mb': 8000, 'vram_percent': 50, 'temp_c': 59, 'clock_mhz': 2400}]}})
         if self.path == '/test/last-extension':
             return self._json(server.BENCH.last_extension)
         return super().do_GET()
     def do_POST(self):
+        if self.path == '/test/discovery-failure':
+            self.server.discovery_failure = bool(self._body().get('enabled'))
+            return self._json({'ok': True})
         if self.path == '/api/hardware/gpu-setup':
             from wattever.gpu_setup import validate
             return self._json({'saved':True,'choice':validate(self._body()),'model_started':False,'model_switched':False})
         if self.path == '/api/endpoint/check':
             self._body()
+            if getattr(self.server, 'discovery_failure', False):
+                return self._error(503, 'Fixture discovery unavailable')
             return self._json({'ok': True, 'models': [{'id': 'external/model', 'type': 'llm', 'quantization': 'IQ3_S', 'quantization_source': 'endpoint_reported', 'max_context_length': 32768}]})
         if self.path == '/test/start':
             live = copy.deepcopy(run)
@@ -110,7 +133,7 @@ class Handler(server.Handler):
         if self.path == '/test/result':
             live = server.BENCH.run
             result = {'model':'model-a', 'target_tokens':1000 + 1000 * len(live['results']), 'status':'ok', 'concurrency':1,
-                      'prefill_tps':321 + 333 * len(live['results']), 'decode_tps':42, 'ttft_s':0.5}
+                      'prefill_tps':321 + 333 * len(live['results']), 'prompt_tokens':321 + 333 * len(live['results']), 'completion_tokens':100, 'decode_token_count':99, 'decode_s':99/42, 'wall_s':1+99/42+.02, 'decode_tps':42, 'ttft_s':1}
             live['results'].append(result)
             store.save(live)
             server.BENCH.emit('result', run_id='live', result=result)

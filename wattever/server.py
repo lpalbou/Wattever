@@ -29,6 +29,7 @@ else:
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_DIR = os.path.join(ROOT, "web")
 from wattever.privacy import public_projection
+from wattever.system_monitor import SystemMonitor
 DEFAULT_PORT = 8713
 
 # The four models this was built for. Matching is loose because publishers
@@ -49,6 +50,7 @@ DEFAULT_MODEL_PATTERNS = [
 BENCH = runner.BenchRunner()
 CAP_BENCH = None
 WORK_LOCK = threading.RLock()
+SYSTEM_MONITOR = SystemMonitor()
 
 
 def build_id():
@@ -270,6 +272,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._static(route[len("/static/"):])
             if route == "/api/env":
                 return self._json(self.env_payload())
+            if route == "/api/system":
+                return self._json(SYSTEM_MONITOR.snapshot())
             if route == "/api/bench/extend-plan":
                 return self._json(BENCH.extension_options((query.get("run_id") or [None])[0]))
             if route == "/api/version":
@@ -333,7 +337,7 @@ class Handler(BaseHTTPRequestHandler):
                     run_id = run_id[:-len("/download")]
                 run = store.load(run_id)
                 if run and download:
-                    return self._send(200, json.dumps(public_projection(run), indent=1, ensure_ascii=False,
+                    return self._send(200, json.dumps(store.export_projection(run), indent=1, ensure_ascii=False,
                                                      allow_nan=False),
                                       extra={"Content-Disposition": 'attachment; filename="%s.json"' % run_id})
                 return self._json(_mark_interrupted(run)) if run else self._error(404, "no such run")
@@ -342,7 +346,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, store.to_csv(runs), "text/csv; charset=utf-8",
                                   {"Content-Disposition": "attachment; filename=gpu-bench.csv"})
             if route == "/api/export.json":
-                runs = public_projection(self._selected_runs(query))
+                runs = [store.export_projection(run) for run in self._selected_runs(query)]
                 return self._send(200, json.dumps({"runs": runs}, indent=1, default=str),
                                   "application/json; charset=utf-8",
                                   {"Content-Disposition": "attachment; filename=gpu-bench.json"})
@@ -432,7 +436,9 @@ class Handler(BaseHTTPRequestHandler):
                         store.backup(target["id"])
                         bandwidth.backfill(target, current, profile)
                         store.save(target)
-                    return self._json({"transfer_bandwidth": profile, "run_id": body.get("run_id")})
+                    coverage = bandwidth.storage_coverage(hardware.inventory(), profile)
+                    return self._json({"transfer_bandwidth": profile, "transfer_coverage": coverage,
+                                       "run_id": body.get("run_id")})
             if route == "/api/capabilities/start":
                 with WORK_LOCK:
                     conflict = self._work_conflict()
@@ -573,8 +579,30 @@ class Handler(BaseHTTPRequestHandler):
 
     def env_payload(self):
         from . import bandwidth, memory_topology, gpu_setup
+        last = store.load_config() or {}
         models = self.models_payload()
+        endpoint_connection = None
+        if last.get("provider") == "openai" and last.get("endpoint_id"):
+            base = endpoints.lookup_base_url(last.get("endpoint_id"))
+            if base and endpoints._location(base) == "local":
+                endpoint_connection = {"base_url": base, "endpoint_id": last.get("endpoint_id")}
+                try:
+                    cfg = dict(runner.DEFAULT_CONFIG, provider="openai", endpoint_base_url=base,
+                               endpoint_id=last.get("endpoint_id", ""),
+                               endpoint_label=last.get("endpoint_label", ""))
+                    if isinstance(last.get("endpoint_inference_local"), bool):
+                        cfg["endpoint_inference_local"] = last["endpoint_inference_local"]
+                    if last.get("endpoint_reasoning_effort") is not None:
+                        cfg["endpoint_reasoning_effort"] = last["endpoint_reasoning_effort"]
+                    models = endpoints.list_models(cfg)
+                    endpoints.resolve_identity(cfg, probe=False)
+                    endpoint_connection["endpoint_identity"] = cfg.get("endpoint_identity")
+                except ValueError:
+                    models = []
         selected, missing = default_selection(models)
+        if last.get("provider") == "openai" and models:
+            selected = [m["id"] for m in models if m.get("type") != "embeddings"]
+            missing = []
         cli = lmstudio.LmsCli()
         server_up = cli.server_running()
         gpu = power.gpu_info(0)
@@ -596,7 +624,8 @@ class Handler(BaseHTTPRequestHandler):
                 "needs_sudo": platform_util.IS_MAC and not gpu.get("power_readable"),
             },
             "host": store.host_info(),
-            "hardware": dict(machine, transfer_bandwidth=profile),
+            "hardware": dict(machine, transfer_bandwidth=profile,
+                             transfer_coverage=bandwidth.storage_coverage(machine, profile)),
             "hardware_follow_ups": memory_topology.pending(store.list_runs(full=True), sensors),
             "lms": {"cli": cli.available, "exe": cli.exe,
                     "server": server_up, "version": cli.version()},
@@ -613,7 +642,8 @@ class Handler(BaseHTTPRequestHandler):
             "size_presets": [512, 5000, 10000, 20000, 40000, 80000,
                              100000, 120000, 150000, 200000, 260000],
             "concurrency_presets": list(range(1, 11)) + [15, 20, 30, 40, 50, 75, 100],
-            "last_config": store.load_config(),
+            "last_config": last if last else store.load_config(),
+            "endpoint_connection": endpoint_connection,
             "running": BENCH.running,
         }
 
@@ -712,6 +742,7 @@ def main():
     except KeyboardInterrupt:
         print("\nStopping...")
     finally:
+        SYSTEM_MONITOR.stop()
         BENCH.cancel()
         if CAP_BENCH: CAP_BENCH.cancel()
         httpd.server_close()

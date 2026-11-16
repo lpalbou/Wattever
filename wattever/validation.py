@@ -83,7 +83,9 @@ def validate_gpu_power(block):
         values=[(card.get(phase) or {}).get('gpu_energy_j') if phase else card.get('gpu_energy_j') for card in cards]
         total=block.get(total_key)
         if total is not None:
-            if any(type(value) not in (int,float) or not math.isfinite(value) for value in values):
+            if type(total) not in (int,float) or not math.isfinite(total) or total < 0:
+                errors.append('Combined GPU energy must be a finite non-negative number')
+            elif any(type(value) not in (int,float) or not math.isfinite(value) or value < 0 for value in values):
                 errors.append('Combined GPU energy requires energy for every card')
             elif not math.isclose(total,sum(values),rel_tol=1e-6,abs_tol=1e-6):
                 errors.append('Combined GPU energy must equal the time-aligned per-card sum')

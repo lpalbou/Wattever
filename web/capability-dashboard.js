@@ -20,7 +20,8 @@
   }
   function suiteOrigin(suite={}){
     const id=suite.id || suite.suite_id, kind=suite.source?.kind;
-    if(kind==='bundled_original' || id==='wattever-core-v1')return{kind:'custom',label:'Custom diagnostic',description:'Original Wattever questions with strict output rules; not an established benchmark.'};
+    if(id==='wattever-core-v1')return{kind:'custom',label:'Custom diagnostic',description:'24 short, public Wattever questions with strict output rules; not an established benchmark. They do not test tool use, agent workflows, or executing generated code, and public answers may be memorized.'};
+    if(kind==='bundled_original')return{kind:'custom',label:'Custom diagnostic',description:'Original Wattever questions with strict output rules; not an established benchmark.'};
     if(id==='arc-challenge-test-chat-v1')return{kind:'published',label:'Published dataset: school science',description:'AI2 multiple-choice science questions, not ARC-AGI grid puzzles. Wattever grades generated final-answer letters.'};
     if(id==='gsm8k-test-chat-v1')return{kind:'published',label:'Published dataset: grade-school math',description:'Math word problems, graded by the generated final numeric answer. Wattever chat adaptation.'};
     if(id==='mmlu-pro-balanced64-chat-v1')return{kind:'published',label:'Published dataset: MMLU-Pro balanced sample',description:'64 fixed questions across 14 subjects, four or five per subject. Zero-shot generated letters; subject weighting differs from the full test split and the official five-shot CoT protocol.'};

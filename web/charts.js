@@ -206,7 +206,16 @@ const Charts = (() => {
       el("text", { x: m.left - 8, y: y + 4, fill: t.muted, "text-anchor": "end",
         style: `font:${FONT}` }, svg).textContent = fmtNum(tick);
     }
+    // Close-set sizes (80k, 100k, 120k on a log axis) would print over each
+    // other. Keep the last label and drop the neighbours it would touch.
+    const labelled = [];
     for (const xv of xs) {
+      const needed = (fmtTokens(xv).length + fmtTokens(labelled.length ? labelled[labelled.length - 1] : xv).length) * 3.6 + 8;
+      if (!labelled.length || sx(xv) - sx(labelled[labelled.length - 1]) >= needed) labelled.push(xv);
+      else if (xv === xs[xs.length - 1]) { labelled.pop(); labelled.push(xv); }
+    }
+    for (const xv of xs) {
+      if (!labelled.includes(xv)) { el("line", { x1: sx(xv), x2: sx(xv), y1: height - m.bottom, y2: height - m.bottom + 4, stroke: t.axis, "stroke-width": 1 }, svg); continue; }
       el("text", { x: sx(xv), y: height - m.bottom + 16, fill: t.muted,
         "text-anchor": "middle", style: `font:${FONT}` }, svg).textContent = fmtTokens(xv);
     }
@@ -220,10 +229,46 @@ const Charts = (() => {
         opts.yLabel + (useLog ? "  (log scale)" : "");
     }
 
+    // Hovering anywhere in the plot compares every series at the nearest x.
+    const xUnit = opts.xUnit || "prefill tokens";
+    const guide = el("line", { y1: m.top, y2: height - m.bottom, stroke: t.axis, "stroke-width": 1,
+      "stroke-dasharray": "3 3", visibility: "hidden", "pointer-events": "none" }, svg);
+    const compareAt = (event, focusId) => {
+      const box = svg.getBoundingClientRect();
+      const px = box.width ? (event.clientX - box.left) * (width / box.width) : m.left;
+      const x = Number.isFinite(event.clientX) && focusId === undefined
+        ? xs.reduce((best, value) => Math.abs(sx(value) - px) < Math.abs(sx(best) - px) ? value : best, xs[0])
+        : event.snapX;
+      const rows = series.map((s) => ({ s, p: (s.points || []).find((p) => p.x === x && Number.isFinite(p.y)),
+        f: (s.failures || []).find((f) => f.x === x) })).filter((row) => row.p || row.f);
+      if (!rows.length) { guide.setAttribute("visibility", "hidden"); hideTip(); return; }
+      rows.sort((a, b) => !a.p - !b.p || (a.p && b.p ? (opts.better === "low" ? a.p.y - b.p.y : b.p.y - a.p.y) : 0));
+      const limit = 14, focus = rows.find((row) => row.s.id === focusId);
+      const shown = rows.slice(0, limit);
+      if (focus && !shown.includes(focus)) shown[limit - 1] = focus;
+      guide.setAttribute("x1", sx(x)); guide.setAttribute("x2", sx(x)); guide.setAttribute("visibility", "visible");
+      showTip(`<div class="tip-head">${fmtTokens(x)} ${escape(xUnit)}</div>` + shown.map((row) =>
+        `<div class="tip-row${row.s.id === focusId ? " is-focus" : ""}"><i style="background:${escape(row.s.color)}"></i><span>${escape(row.s.name)}</span>` +
+        (row.p ? `<b>${fmtNum(row.p.y)}</b>` : `<b style="color:${t.fail}">failed</b>`) + `</div>`).join("") +
+        (rows.length > shown.length ? `<div class="tip-note">+${rows.length - shown.length} more</div>` : "") +
+        `<div class="tip-note">${escape(opts.unit || "")}${opts.better ? ` &middot; ${opts.better === "low" ? "lower" : "higher"} is better` : ""}` +
+        (focus?.p?.note ? `<br>${escape(focus.p.note)}` : focus?.f?.reason ? `<br>${escape(focus.f.reason)}` : "") + `</div>`, event);
+    };
+    const leave = () => { guide.setAttribute("visibility", "hidden"); hideTip(); svg.classList.remove("has-focus");
+      svg.querySelectorAll(".chart-series.is-focus").forEach((node) => node.classList.remove("is-focus")); };
+    const overlay = el("rect", { x: m.left, y: m.top, width: Math.max(0, width - m.left - m.right), height: Math.max(0, plotH),
+      fill: "transparent" }, svg);
+    overlay.addEventListener("mousemove", (e) => compareAt(e));
+    overlay.addEventListener("mouseleave", leave);
+
     const plot = el("g", {}, svg);
     for (const s of series) {
       const pts = (s.points || []).filter((p) => p.y !== null && p.y !== undefined && !Number.isNaN(p.y))
         .sort((a, b) => a.x - b.x);
+      // One group per series so a caller, or a hover, can dim the others.
+      const plot = el("g", { class: "chart-series", "data-series": s.id }, svg);
+      for (const [tag, value] of Object.entries(s.tags || {})) plot.setAttribute("data-tag-" + tag, String(value));
+      const focusSeries = (on) => { svg.classList.toggle("has-focus", on); plot.classList.toggle("is-focus", on); };
       if (pts.length > 1) {
         let previous=-2;
         el("path", {
@@ -249,8 +294,8 @@ const Charts = (() => {
         const rows = [`<b>${escape(s.name)}</b>`,
           `${fmtTokens(p.x)} ${escape(opts.xUnit || "prefill tokens")} &rarr; <b>${fmtNum(p.y)}</b> ${escape(p.unit || opts.unit || "")}`];
         if (p.note) rows.push(`<span class="dim">${escape(p.note)}</span>`);
-        hit.addEventListener("mousemove", (e) => showTip(rows.join("<br>"), e));
-        hit.addEventListener("mouseleave", hideTip);
+        hit.addEventListener("mousemove", (e) => { focusSeries(true); compareAt({clientX: e.clientX, clientY: e.clientY, currentTarget: hit, snapX: p.x}, s.id); });
+        hit.addEventListener("mouseleave", leave);
         hit.addEventListener("focus",e=>showTip(rows.join("<br>"),e));
         hit.addEventListener("blur",hideTip);
         if (p.onSelect) {
@@ -264,10 +309,8 @@ const Charts = (() => {
         el("path", { d: `M${x - 4},${y - 10}L${x + 4},${y - 2}M${x + 4},${y - 10}L${x - 4},${y - 2}`,
           stroke: t.fail, "stroke-width": 2, "stroke-linecap": "round" }, g);
         el("circle", { cx: x, cy: y - 6, r: 11, fill: "transparent" }, g);
-        g.addEventListener("mousemove", (e) => showTip(
-          `<b>${escape(s.name)}</b><br>${fmtTokens(f.x)} ${escape(opts.xUnit || "prefill tokens")} &rarr; <span style="color:${t.fail}">failed</span>` +
-          (f.reason ? `<br><span class="dim">${escape(f.reason)}</span>` : ""), e));
-        g.addEventListener("mouseleave", hideTip);
+        g.addEventListener("mousemove", (e) => { focusSeries(true); compareAt({clientX: e.clientX, clientY: e.clientY, currentTarget: g, snapX: f.x}, s.id); });
+        g.addEventListener("mouseleave", leave);
       }
       // direct-label the endpoint only when the panel is not crowded, and
       // never for a lone point: several single-point series share an x and

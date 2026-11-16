@@ -1032,7 +1032,8 @@ class BenchRunner:
         label = "%s @ %s%s" % (model, format(size, ","), " +MTP" if mtp else "")
         self.live.update({"phase": "prefill", "model": model, "size": size,
                           "rep": rep + 1, "reps": reps, "ttft_s": None,
-                          "tokens_out": 0, "offload": offload, "mtp": mtp})
+                          "output_chunks": 0, "decode_chunks_per_s_live": None,
+                          "offload": offload, "mtp": mtp})
         self.emit("phase", phase="prefill", model=model, size=size,
                   rep=rep + 1, reps=reps, mtp=mtp)
         self.log("Testing %s (rep %d/%d, %s chars)"
@@ -1078,8 +1079,8 @@ class BenchRunner:
 
         def on_progress(count, elapsed):
             progress["last"] = time.perf_counter()
-            self.live.update({"tokens_out": count,
-                              "decode_tps_live": (count / elapsed) if elapsed > 0 else None})
+            self.live.update({"output_chunks": count,
+                              "decode_chunks_per_s_live": ((count - 1) / elapsed) if elapsed > 0 else None})
 
         def keep_response(resp):
             with self._responses_lock:
@@ -1159,7 +1160,13 @@ class BenchRunner:
                 self._responses.clear()
 
         prefill = self.sampler.window(m["t_start"], m["t_first_token"])
-        decode = self.sampler.window(m["t_first_token"], m["t_end"])
+        # Energy and throughput must cover the same observed output interval.
+        decode_end = m.get("t_last_output")
+        if decode_end is None and m.get("decode_s") is not None:
+            decode_end = m["t_first_token"] + m["decode_s"]
+        decode = (self.sampler.window(m["t_first_token"], decode_end)
+                  if decode_end is not None else {"available": False})
+        whole_case = self.sampler.window(m["t_start"], m["t_end"])
         cpt_new = corpus.refine_chars_per_token(len(prompt), m["prompt_tokens"], cpt)
 
         prompt_tokens = m["prompt_tokens"] or 0
@@ -1179,14 +1186,17 @@ class BenchRunner:
             "metric_sources": m.get("metric_sources"),
             "reported_timings": m.get("reported_timings"),
             "timing_scope": m.get("timing_scope"),
+            "phase_protocol": (m.get("timing_scope") or {}).get("phase_protocol"),
             "decode_token_count": m.get("decode_token_count"),
             "reasoning_tokens": m["reasoning_tokens"],
             "target_error_pct": (100.0 * (prompt_tokens - size) / size) if size and m["prompt_tokens"] is not None else None,
             "ttft_s": m["ttft_s"],
             "decode_s": m["decode_s"],
             "wall_s": m["wall_s"],
+            "response_tail_s": m.get("response_tail_s"),
             "prefill_tps": m["prefill_tps"],
             "decode_tps": m["decode_tps"],
+            "group_power": whole_case,
             "finish_reason": m["finish_reason"],
             "sample_text": m["sample_text"],
             "vram_after_load_mb": vram_loaded,
@@ -1261,6 +1271,9 @@ class BenchRunner:
 
     def _concurrent_test(self, base, cfg, model, prompt, concurrency, vram_loaded, budget=None):
         """Run a group of streams together; group power covers the entire window."""
+        base["concurrency"] = concurrency
+        from . import PHASE_PROTOCOL
+        base["phase_protocol"] = PHASE_PROTOCOL
         results = [None] * concurrency
         # A unique leading nonce prevents prefix cache reuse between requests.
         prompts = []
@@ -1277,6 +1290,7 @@ class BenchRunner:
         response_lock = threading.Lock()
         responses = set()
         progress = [None] * concurrency
+        finished = [None] * concurrency
         def worker(index):
             def register(resp):
                 with response_lock:
@@ -1286,6 +1300,7 @@ class BenchRunner:
                 if cancel.is_set():
                     resp.close()
             gate.wait()
+            request_start = time.perf_counter()
             try:
                 if cancel.is_set():
                     raise lmstudio.Cancelled()
@@ -1303,6 +1318,10 @@ class BenchRunner:
                                   "fail_kind": "cancelled" if self.cancel_event.is_set() else FAIL_TIMEOUT if group_cancel.is_set() else _classify(message),
                                   "message": "Cancelled by the user." if self.cancel_event.is_set() else
                                              "Request stopped during group deadline recovery." if group_cancel.is_set() else message[:800]}
+            finally:
+                finished[index] = time.perf_counter()
+                if results[index] is not None:
+                    results[index]["start_offset_s"] = max(0.0, (m.get("t_start", request_start) if results[index]["status"] == "ok" else request_start) - start)
         threads = [threading.Thread(target=worker, args=(i,), daemon=True)
                    for i in range(concurrency)]
         for thread in threads:
@@ -1336,26 +1355,29 @@ class BenchRunner:
                 self._recover_requests(model, threads, list(responses))
             except RecoveryError as exc:
                 recovery_error = str(exc)
+        end = max((t for t in finished if t is not None), default=end) if not any(t.is_alive() for t in threads) else time.perf_counter()
         snapshot = [r if r is not None else {
             "nonce": prompts[i][1], "status": "cancelled" if self.cancel_event.is_set() else "failed",
             "fail_kind": "cancelled" if self.cancel_event.is_set() else FAIL_TIMEOUT,
             "message": "Cancelled by the user." if self.cancel_event.is_set() else "Group timed out."}
             for i, r in enumerate(results)]
         successes = [r for r in snapshot if r["status"] == "ok"]
-        counts_available = bool(successes) and all(r.get("completion_tokens") is not None for r in successes)
+        from .collective_metrics import _sum_int
+        completion_total = _sum_int(r.get("completion_tokens") for r in successes)
         window = self.sampler.window(start, end)
         wall = end - start
         base.update({"status": "cancelled" if self.cancel_event.is_set() else
                      ("ok" if len(successes) == concurrency else "failed"),
                      "requests": snapshot, "completed_requests": len(successes),
-                     "wall_s": wall, "aggregate_completion_tokens": sum(r.get("completion_tokens") or 0 for r in successes) if counts_available else None,
-                     "aggregate_completion_tps": (sum(r.get("completion_tokens") or 0 for r in successes) / wall) if wall and counts_available else None,
-                     "aggregate_completion_tokens_estimated": any(r.get("completion_tokens_estimated") for r in successes),
+                     "wall_s": wall, "aggregate_completion_tokens": completion_total,
+                     "aggregate_completion_tokens_estimated": any(r.get("completion_tokens_estimated") for r in successes) if completion_total is not None else None,
                      "vram_after_load_mb": vram_loaded,
                      "vram_peak_mb": max([v for v in (window.get('vram_mb_max'),vram_loaded) if v is not None] or [None]),
                      "group_power": window})
         if recovery_error:
             base["recovery_error"] = recovery_error
+        from .collective_metrics import enrich_result_row
+        enrich_result_row(base, partial=True)
         if base["status"] != "ok":
             failure = next((r for r in snapshot if r["status"] != "ok"), {})
             base.update({"fail_kind": FAIL_TIMEOUT if timed_out else failure.get("fail_kind", FAIL_ERROR),

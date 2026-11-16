@@ -25,6 +25,7 @@ class BandwidthApiTests(unittest.TestCase):
         for owner, key, value in ((store,'RUNS_DIR',temp.name+'/runs'),
             (server,'BENCH',SimpleNamespace(running=False)), (server,'CAP_BENCH',None),
             (server.power,'gpu_info',lambda index:copy.deepcopy(self.gpu)),
+            (server.hardware,'inventory',lambda:{'storage':[]}),
             (store,'host_info',lambda:{}), (store,'prepare_run',prepare)):
             active = patch.object(owner,key,value)
             active.start(); self.addCleanup(active.stop)

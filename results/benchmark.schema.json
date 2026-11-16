@@ -159,6 +159,12 @@
     },
     "measurement_scope": {
       "type": "object",
+      "properties": {
+        "phase_protocol": {
+          "type": "string",
+          "description": "Version of client-observed phase boundaries for this measurement session. Historical records may omit it."
+        }
+      },
       "required": [
         "power_gpu_sensor_index",
         "power_boundary",
@@ -496,11 +502,63 @@
           "minimum": 1,
           "maximum": 100
         },
+        "phase_protocol": {
+          "type": ["string", "null"],
+          "description": "Phase boundary version for this result; absent on historical results with unknown decode end."
+        },
+        "wall_s": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Client-observed elapsed seconds. For a single request, this is its request duration. For a concurrent group, this runs from group dispatch to the observed end of the group, including queueing, prefill, and failed requests. If workers cannot be stopped or server cancellation cannot be verified, it is only the locally observed interval, not proof of server completion."
+        },
         "requests": {
           "type": "array",
+          "description": "Individual client observations; provider-reported timings remain separate. Older records may omit shared-origin timing.",
           "items": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+              "start_offset_s": {
+                "type": ["number", "null"],
+                "minimum": 0,
+                "description": "Client-observed seconds from concurrent group dispatch to this request's start. Absent or null means the shared-origin start is unknown; it must not be assumed zero."
+              },
+              "ttft_s": {
+                "type": ["number", "null"],
+                "minimum": 0,
+                "description": "Client-observed seconds from this request's start to its first observed output. Add start_offset_s to place the first token on the group clock."
+              },
+              "wall_s": {
+                "type": ["number", "null"],
+                "minimum": 0,
+                "description": "Client-observed request duration in seconds, relative to this request's start; it is not the concurrent group wall time."
+              },
+              "decode_s": {
+                "type": ["number", "null"],
+                "minimum": 0,
+                "description": "For new observations, seconds from first to last nonempty output; null when there is no measurable interval. Historical values may include trailing transport."
+              },
+              "decode_token_count": {
+                "type": ["integer", "null"],
+                "minimum": 0,
+                "description": "Scoped provider token count less one as a first-output boundary estimate; the first chunk can contain multiple tokens."
+              },
+              "response_tail_s": {
+                "type": ["number", "null"],
+                "minimum": 0,
+                "description": "Time from last observed output to stream completion, when output was observed."
+              }
+            }
           }
+        },
+        "prefill_tps": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Client TTFT prefill proxy: successful prompt tokens divided by the union of request-start-to-first-observed-output intervals. Includes queueing and transport and may overlap another request's decode; not isolated engine prefill. Consult metric_sources for historical records."
+        },
+        "decode_tps": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Scoped decode tokens divided by the union of first-to-last-observed-output intervals, excluding prefill and trailing usage or response completion for new measurements. The first-chunk token count is unknown; subtracting one token is an estimate. Historical timings may include trailing transport."
         },
         "aggregate_completion_tps": {
           "type": [
@@ -510,7 +568,7 @@
           "minimum": 0
         },
         "aggregate_completion_tokens_estimated": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "group_power": {
           "type": "object"
@@ -525,12 +583,24 @@
         "metric_sources": {
           "type": "object"
         },
+        "recorded_metric_sources": {
+          "type": "object",
+          "description": "Original sources retained when explicit derivation replaces recorded rates."
+        },
+        "derived_metrics": {
+          "type": "object",
+          "description": "Explicit export-only derived rates and their scopes; null denotes insufficient evidence."
+        },
         "reported_timings": {
           "type": "object",
           "description": "Provider-reported timing fields, kept separate from client metrics."
         },
         "timing_scope": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "phase_protocol": {"type": "string"},
+            "decode_end_boundary": {"type": "string", "description": "Machine-readable observed decode endpoint; absent for older measurements."}
+          }
         },
         "decode_token_count": {
           "type": [

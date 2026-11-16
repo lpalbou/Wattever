@@ -1,6 +1,7 @@
 /* Static-page backend. Credentials remain in this closure, never in storage. */
 (function (root) {
   "use strict";
+  const phaseMetrics = globalThis.WatteverPhaseMetrics || root.WatteverPhaseMetrics || root.WatteverConcurrency?.phaseMetrics || (typeof require === "function" ? require("./phase-metrics.js") : null);
   const KEY = "wattever.browser.runs.v1";
   const HIDDEN_KEY = "wattever.browser.hidden-community.v1";
   let community = [], communityError = null, communityPromise = null, hiddenIds = null, communityGeneration = 0;
@@ -163,7 +164,45 @@
     if (!safeConfiguration(result)) throw new Error('Model identity must contain public labels and IDs only.');
     return result;
   }
-  function exportRun(run) { const copy = publicProjection(run); delete copy.community; return copy; }
+  function csvRates(row) {
+    if ((row.concurrency || 1) <= 1) {
+      const requests=Array.isArray(row.requests) && row.requests.length ? row.requests : [row];
+      const request=requests.length===1 && requests[0]?.status==='ok' ? requests[0] : null;
+      return {prefill_tps:phaseMetrics?.prefillPhase(row,{partial:true})?.tps ?? null, decode_tps:phaseMetrics?.decodePhase(row,{partial:true})?.tps ?? null, group_output_tps:phaseMetrics?.outputRate(row,{partial:true}) ?? null, completion_tokens:request && Number.isSafeInteger(request.completion_tokens) && request.completion_tokens>=0 ? request.completion_tokens : null};
+    }
+    const ok = Array.isArray(row.requests) ? row.requests.filter(item=>item && item.status==='ok') : [];
+    if (row.status === 'ok' && (!Array.isArray(row.requests) || row.requests.length !== row.concurrency || ok.length !== row.concurrency)) return {};
+    if (!ok.length) return {};
+    const sum = key => { if (!ok.every(item=>Number.isSafeInteger(item[key]) && item[key]>=0)) return null; const total=ok.reduce((n,item)=>n+item[key],0); return Number.isSafeInteger(total) ? total : null; };
+    const completion=sum('completion_tokens');
+    return {completion_tokens:completion, decode_tps:phaseMetrics?.decodePhase(row,{partial:true})?.tps ?? null, group_output_tps:phaseMetrics?.outputRate(row,{partial:true}) ?? null, prefill_tps:phaseMetrics?.prefillPhase(row,{partial:true})?.tps ?? null};
+  }
+  function csvRequestMetrics(row) {
+    const keys=['status','prompt_tokens','completion_tokens','cached_prompt_tokens','start_offset_s','wall_s','ttft_s','decode_s','response_tail_s','prefill_tps','decode_tps','completion_tokens_estimated','reasoning_tokens','decode_token_count','timing_scope'];
+    const requests=Array.isArray(row.requests) && row.requests.length ? row.requests : [row];
+    return JSON.stringify(requests.filter(item=>item && typeof item==='object').map(item=>Object.fromEntries(keys.filter(key=>item[key]!=null).map(key=>[key,item[key]]))));
+  }
+  function exportRun(run) {
+    const copy = publicProjection(run); delete copy.community;
+    function annotate(row) {
+      const rates=csvRates(row), phase=phaseMetrics?.decodePhase(row,{partial:true}) ?? null;
+      for (const key of ['prefill_tps','decode_tps','group_output_tps','aggregate_completion_tokens','aggregate_completion_tps']) {
+        const recorded='recorded_'+key;
+        if (!Object.prototype.hasOwnProperty.call(row,recorded) && Object.prototype.hasOwnProperty.call(row,key)) row[recorded]=row[key];
+      }
+      if (!Object.prototype.hasOwnProperty.call(row,'recorded_metric_sources') && row.metric_sources) row.recorded_metric_sources=row.metric_sources;
+      const sources={};
+      if (rates.prefill_tps!=null) sources.prefill_tps='prompt_tokens_over_union_of_client_request_start_to_first_output_intervals';
+      if (rates.decode_tps!=null) sources.decode_tps='scoped_decode_tokens_over_union_of_post_first_output_intervals'+(phase?.legacy_boundary ? '; historical end boundary may include trailing delivery' : '');
+      if (rates.group_output_tps!=null) sources.group_output_tps='completion_tokens_over_group_wall_s';
+      row.derived_metrics={prefill_tps:rates.prefill_tps ?? null,decode_tps:rates.decode_tps ?? null,group_output_tps:rates.group_output_tps ?? null,
+        decode_s:phase?.decode_s ?? null,decode_tokens:phase?.decode_tokens ?? null,estimated_boundary:phase?.estimated_boundary ?? null,
+        legacy_boundary:phase?.legacy_boundary ?? null,metric_sources:sources,scope:'Derived from successful recorded request observations; null indicates insufficient evidence.'};
+      if (Array.isArray(row.previous_attempts)) row.previous_attempts.filter(object).forEach(annotate);
+    }
+    (copy.results || []).forEach(annotate);
+    return copy;
+  }
   function summary(run) { const rows = run.results || []; return {community:!!run.community, id:run.id, label:run.label, notes:run.notes, created_at:run.created_at, status:run.status, gpu:run.gpu || {}, host:run.host || {}, hardware:run.hardware || {}, config:run.config || {}, models:[...new Set(rows.map(r=>r.model).filter(Boolean))], sizes:[...new Set(rows.map(r=>r.target_tokens).filter(Boolean))], concurrency_levels:[...new Set(rows.map(r=>r.concurrency || 1))], n_results:rows.length, n_ok:rows.filter(r=>r.status === "ok").length, n_failed:rows.filter(r=>r.status === "failed").length, n_skipped:rows.filter(r=>r.status === "skipped").length, n_cancelled:rows.filter(r=>r.status === "cancelled").length}; }
   function status() { return {running, cancelling, run_id:active && active.id, run:active && summary(active), live, storage_error:storageError}; }
   function emit(kind, extra) { events.push(Object.assign({kind, seq:events.length}, extra)); }
@@ -269,10 +308,10 @@
     put(run); return run;
   }
   function env() { return {endpoint_identity:displayIdentity(),gpus:[], gpu:{name:hardware.gpu || null, vram_total_mb:hardware.vram_gb ? hardware.vram_gb*1024 : null}, platform:'browser', host:{cpu:hardware.cpu || null, ram_gb:hardware.ram_gb || null}, hardware:{cpu:{name:hardware.cpu || null}, system:{memory_bytes:hardware.ram_gb ? hardware.ram_gb*1073741824 : null}, gpus:hardware.gpu ? [{name:hardware.gpu, memory_bytes:hardware.vram_gb ? hardware.vram_gb*1073741824 : null}] : [], source:'manual'}, corpus:{approx_tokens:null}, power:{source:'none', readable:false}, lms:{cli:false, server:connected, version:null}, models, default_models:models.map(m=>m.id), missing_defaults:[], defaults, capabilities:{resume:false,extend:false,context_planning:false}, size_presets:sizes, concurrency_presets:levels, last_config:null, running, storage_error:storageError}; }
-  async function stream(model, prompt, cfg) {
+  async function stream(model, prompt, cfg, groupStart) {
     const controller = new AbortController(); controllers.add(controller);
     let timedOut = false; const timer = setTimeout(() => { timedOut = true; controller.abort(); }, cfg.per_test_timeout_s * 1000);
-    const start = performance.now(); let first = null, end = null, output = '', usage = null, done = false, finish = null, outputEvents=0,emptyBefore=0,reasoningSeen=false;
+    const start = performance.now(); let first = null, end = null, usage = null, done = false, finish = null, emptyBefore=0,reasoningSeen=false, outputEvents=0;
     try {
       const body={model,messages:[{role:'user',content:prompt}],[cfg.token_limit_field]:cfg.max_tokens,stream:true,stream_options:{include_usage:true}};
       if(cfg.endpoint_reasoning_effort!=null) body.reasoning_effort=cfg.endpoint_reasoning_effort;
@@ -287,28 +326,35 @@
         let chunk; try { chunk = JSON.parse(value); } catch (_) { throw new Error('Invalid streaming response.'); }
         if (chunk.error) throw new Error('Endpoint reported a streaming error.');
         if (chunk.usage) usage = chunk.usage;
-        for (const choice of chunk.choices || []) {
-          const delta = choice.delta && (choice.delta.content || choice.delta.reasoning_content);
-          if(choice.delta?.reasoning_content) reasoningSeen=true;
-          if (typeof delta === 'string' && delta) { outputEvents++; if (first === null) first = performance.now(); output += delta; end = performance.now(); }
-          else if(first===null && object(choice.delta) && Object.keys(choice.delta).length===0 && !choice.finish_reason) emptyBefore++;
+        for (const choice of (chunk.choices || []).slice(0,1)) {
+          if (choice.delta != null && !object(choice.delta)) throw new Error('Invalid streamed output text.');
+          const delta=choice.delta || {}, content=delta.content, reasoningText=delta.reasoning_content;
+          if (content != null && typeof content !== 'string' || reasoningText != null && typeof reasoningText !== 'string') throw new Error('Invalid streamed output text.');
+          if(reasoningText) reasoningSeen=true;
+          if (content || reasoningText) { const observed = performance.now(); if (first === null) first = observed; end = observed; outputEvents++; }
+          else if(first===null && !delta.role && !choice.finish_reason) emptyBefore++;
           if (choice.finish_reason) finish = choice.finish_reason;
         }
       }
       function line(value) { if (value === '') dispatch(); else if (value.startsWith('data:')) dataLines.push(value.slice(5).replace(/^ /,'')); }
-      while (true) { const part = await reader.read(); buffer += decoder.decode(part.value || new Uint8Array(), {stream:!part.done}); let i; while ((i = buffer.indexOf('\n')) >= 0) { line(buffer.slice(0,i).replace(/\r$/, '')); buffer = buffer.slice(i+1); } if (part.done) break; }
-      if (buffer) line(buffer.replace(/\r$/, '')); dispatch();
+      while (!done) { const part = await reader.read(); buffer += decoder.decode(part.value || new Uint8Array(), {stream:!part.done}); let i; while (!done && (i = buffer.indexOf('\n')) >= 0) { line(buffer.slice(0,i).replace(/\r$/, '')); buffer = buffer.slice(i+1); } if (part.done) break; }
+      if (!done) { if (buffer) line(buffer.replace(/\r$/, '')); dispatch(); }
       if (!done || !finish || first === null) throw new Error('Streaming response ended before completion.');
-      const ttft = (first-start)/1000, decode = (end-first)/1000, elapsed = (performance.now()-start)/1000;
-      const exactPrompt = usage && Number.isSafeInteger(usage.prompt_tokens) && usage.prompt_tokens > 0 ? usage.prompt_tokens : null;
-      const exactCompletion = usage && Number.isSafeInteger(usage.completion_tokens) && usage.completion_tokens > 0 ? usage.completion_tokens : null;
-      const reportedReasoning=usage?.completion_tokens_details?.reasoning_tokens;
-      const reasoning=Number.isSafeInteger(reportedReasoning) && reportedReasoning>=0 ? reportedReasoning:null;
+      const finished=performance.now();
+      if (![groupStart,start,first,end,finished].every(Number.isFinite) || start<groupStart || first<start || end<first || finished<end) throw new Error('Invalid stream timing.');
+      try { reader.cancel?.()?.catch?.(()=>{}); } catch (_) { /* response already closed */ }
+      const ttft = (first-start)/1000, decode = end>first ? (end-first)/1000 : null, elapsed = (finished-start)/1000;
+      if (usage != null && (!object(usage) || !optionalObject(usage.completion_tokens_details) || !optionalObject(usage.prompt_tokens_details))) throw new Error('Invalid token usage.');
+      const count=(obj,key)=>{const value=obj?.[key]; if (value==null) return null; if (!Number.isSafeInteger(value) || value<0) throw new Error('Invalid token usage.'); return value;};
+      const exactPrompt = count(usage,'prompt_tokens');
+      const exactCompletion = count(usage,'completion_tokens');
+      const reasoning=count(usage?.completion_tokens_details,'reasoning_tokens');
       if(reasoning!==null && exactCompletion!==null && reasoning>exactCompletion) throw new Error('Invalid reasoning token usage.');
       let timedTokens=exactCompletion===null?null:exactCompletion-(reasoning!==null&&!reasoningSeen?reasoning:0);
-      if(outputEvents<2 || (emptyBefore && reasoning===null)) timedTokens=null;
+      if(emptyBefore && !(reasoning===0 || reasoning!==null && !reasoningSeen)) timedTokens=null;
+      if(outputEvents<2) timedTokens=null;
       const decodeTokens=timedTokens===null?null:Math.max(0,timedTokens-1);
-      return {status:'ok',prompt_tokens:exactPrompt,completion_tokens:exactCompletion,completion_tokens_estimated:false,reasoning_tokens:reasoning,cached_prompt_tokens:Number.isSafeInteger(usage?.prompt_tokens_details?.cached_tokens)?usage.prompt_tokens_details.cached_tokens:null,decode_token_count:decodeTokens,timing_scope:{boundary:'first observed nonempty content or reasoning text',empty_deltas_before_output:emptyBefore,reasoning_streamed:reasoningSeen,requested_reasoning_effort:cfg.endpoint_reasoning_effort,decode_token_scope:timedTokens===null?'unavailable; missing usage, hidden reasoning or only one observed output event':'server_usage_after_excluding_reported_unstreamed_reasoning'},metric_sources:{completion_tokens:exactCompletion===null?'unavailable':'server_usage',prefill_tps:'prompt_tokens_over_client_ttft; includes network/queue and possible hidden reasoning',decode_tps:'scoped_server_usage_over_client_output_interval'},ttft_s:ttft,wall_s:elapsed,prefill_tps:exactPrompt!==null&&ttft>0?exactPrompt/ttft:null,decode_tps:decode>0&&decodeTokens?decodeTokens/decode:null};
+      return {status:'ok',start_offset_s:(start-groupStart)/1000,prompt_tokens:exactPrompt,completion_tokens:exactCompletion,completion_tokens_estimated:false,reasoning_tokens:reasoning,cached_prompt_tokens:count(usage?.prompt_tokens_details,'cached_tokens'),decode_token_count:decodeTokens,timing_scope:{boundary:'first observed nonempty content or reasoning text',decode_end_boundary:'last_observed_nonempty_output',phase_protocol:'observed-output-phases-v2',empty_deltas_before_output:emptyBefore,reasoning_streamed:reasoningSeen,requested_reasoning_effort:cfg.endpoint_reasoning_effort,decode_token_scope:timedTokens===null?'unavailable; missing usage, ambiguous hidden reasoning or only one output event':reasoning===null?'server_usage_total; potential hidden reasoning; reasoning token count unavailable':reasoningSeen?'server_usage_total; reasoning observed in stream':'server_usage_after_excluding_reported_unstreamed_reasoning',decode_count_estimated_boundary:decodeTokens!==null,first_delta_token_count:'unknown; throughput convention subtracts one token, not one chunk'},metric_sources:{completion_tokens:exactCompletion===null?'unavailable':'server_usage',prefill_tps:'prompt_tokens_over_client_ttft; includes network/queue and possible hidden reasoning',decode_tps:'scoped_server_usage_over_client_output_interval'},ttft_s:ttft,decode_s:decode,response_tail_s:Math.max(0,elapsed-(end-start)/1000),wall_s:elapsed,prefill_tps:exactPrompt!==null&&ttft>0?exactPrompt/ttft:null,decode_tps:decode>0&&decodeTokens!==null?decodeTokens/decode:null};
     } catch (e) { if (timedOut) return {status:'failed', failure:'timeout', message:'Request timed out; later cases stopped because the provider may still be running.'}; if (e.name === 'AbortError') return {status:'cancelled', message:'Cancelled'}; return {status:'failed', failure:e.auth ? 'authentication' : 'error', message:e.message || 'Request failed.'}; }
     finally { clearTimeout(timer); controllers.delete(controller); }
   }
@@ -329,7 +375,7 @@
         const target = Math.max(0, Math.ceil(size*4.6)-64);
         const prompt = corpus.repeat(Math.ceil(target/corpus.length)).slice(0,target);
         const began = performance.now();
-        const requests = await Promise.all(Array.from({length:concurrency}, () => stream(model, 'Benchmark nonce: ' + random() + '\n' + prompt, cfg)));
+        const requests = await Promise.all(Array.from({length:concurrency}, () => stream(model, 'Benchmark nonce: ' + random() + '\n' + prompt, cfg, began)));
         const duration = (performance.now()-began)/1000, ok = requests.filter(x=>x.status === 'ok');
         const row = {model, target_tokens:size, concurrency, repeat, mtp:null, status:ok.length === concurrency ? 'ok' : (cancelling ? 'cancelled' : 'failed'), requests, completed_requests:ok.length};
         row.model_configuration=configurationByModel.get(model);row.configuration_id=row.model_configuration.configuration_id;
@@ -337,7 +383,23 @@
         Object.assign(row,{quantization:quant.value === 'unknown' ? null : quant.value,quantization_source:quant.source,
           quantization_method:quant.method || null,quantization_method_source:quant.method_source || 'unknown'});
         if (concurrency === 1) Object.assign(row, requests[0]);
-        if (ok.length === concurrency && duration > 0 && ok.every(x=>x.completion_tokens!==null)) { row.aggregate_completion_tps = ok.reduce((sum,x)=>sum+x.completion_tokens,0)/duration; row.aggregate_completion_tokens_estimated = false; }
+        if (concurrency > 1) row.wall_s = duration;
+        if (ok.length) {
+          const sumField = key => { if (!ok.every(x => Number.isSafeInteger(x[key]) && x[key] >= 0)) return null; const total=ok.reduce((sum,x) => sum+x[key],0); return Number.isSafeInteger(total) ? total : null; };
+          const completion = sumField('completion_tokens');
+          if (completion !== null) {
+            row.aggregate_completion_tokens = completion;
+            row.aggregate_completion_tokens_estimated = false;
+          }
+          if (concurrency > 1) {
+            const ttfts = ok.map(x => x.ttft_s).filter(Number.isFinite).sort((a,b)=>a-b);
+            row.prefill_tps = phaseMetrics?.prefillPhase(row,{partial:true})?.tps ?? null;
+            row.decode_tps = phaseMetrics?.decodePhase(row,{partial:true})?.tps ?? null;
+            row.group_output_tps = phaseMetrics?.outputRate(row,{partial:true}) ?? null;
+            row.ttft_s = ttfts.length===ok.length ? ttfts[Math.floor((ttfts.length-1)/2)] + (ttfts[Math.floor(ttfts.length/2)]-ttfts[Math.floor((ttfts.length-1)/2)])/2 : null;
+            row.metric_sources = {prefill_tps:'successful_prompt_tokens_over_union_of_request_start_to_first_output_intervals; client_ttft_proxy_including_queue_and_network',decode_tps:'scoped_output_tokens_over_union_of_post_first_token_intervals',group_output_tps:'successful_completion_tokens_over_group_wall_s; includes queue and prefill'};
+          }
+        }
         run.results.push(row); put(run); live.done++; emit('result',{result:row,done:live.done});
         if (requests.some(x=>x.failure === 'timeout')) { run.error = 'Stopped after a timeout; the provider may still be running.'; break outer; }
         if (requests.some(x=>x.failure === 'authentication')) { run.error = 'Endpoint rejected authorization; benchmark stopped.'; break outer; }
@@ -403,7 +465,17 @@
     if (route === '/api/runs' && method === 'GET') { await loadCommunity(); return {runs:mergedRuns().map(summary),storage_error:storageError,community_error:communityError}; }
     if (route === '/api/import' && method === 'POST') { await loadCommunity(); const items = Array.isArray(body.runs) ? body.runs : [body]; if (!items.every(valid)) throw new Error('Invalid benchmark structure or result rows.'); return {runs:items.map(importRun),storage_error:storageError}; }
     if (route === '/api/export.json' && method === 'GET') { await loadCommunity(); const ids=(url.searchParams.get('ids') || '').split(',').filter(Boolean); return {runs:mergedRuns().filter(r=>!ids.length || ids.includes(r.id)).map(exportRun)}; }
-      if (route === '/api/export.csv' && method === 'GET') { await loadCommunity(); const ids=(url.searchParams.get('ids') || '').split(',').filter(Boolean); const quote = v => '"' + String(v == null ? '' : v).replace(/"/g,'""') + '"'; return [['run_id','model','quantization','quantization_method','quantization_source','quantization_method_source','target_tokens','concurrency','status','prefill_tps','decode_tps','aggregate_completion_tps','measurement_mode','protocol_version','completion_tokens_estimated','aggregate_completion_tokens_estimated'].join(','), ...mergedRuns().filter(r=>!ids.length || ids.includes(r.id)).map(exportRun).flatMap(r=>(r.results || []).map(x=>[r.id,x.model,x.quantization,x.quantization_method,x.quantization_source,x.quantization_method_source,x.target_tokens,x.concurrency,x.status,x.prefill_tps,x.decode_tps,x.aggregate_completion_tps,r.measurement_mode || 'helper',(r.application || {}).protocol_version,x.completion_tokens_estimated,x.aggregate_completion_tokens_estimated].map(quote).join(',')))].join('\n'); }
+    if (route === '/api/export.csv' && method === 'GET') {
+      await loadCommunity();
+      const ids=(url.searchParams.get('ids') || '').split(',').filter(Boolean);
+      const quote = v => '"' + String(v == null ? '' : v).replace(/"/g,'""') + '"';
+      const fields=['run_id','model','quantization','quantization_method','quantization_source','quantization_method_source','target_tokens','concurrency','status','prefill_tps','decode_tps','measurement_mode','protocol_version','completion_tokens_estimated','aggregate_completion_tokens_estimated','recorded_prefill_tps','recorded_decode_tps','metric_sources_json','request_metrics_json','aggregate_completion_tokens','recorded_aggregate_completion_tokens','group_output_tps','recorded_group_output_tps','wall_s','recorded_aggregate_completion_tps','derived_metric_sources_json','recorded_metric_sources_json'];
+      const rows=mergedRuns().filter(r=>!ids.length || ids.includes(r.id)).map(exportRun).flatMap(r=>(r.results || []).map(x=>{
+        const rates=csvRates(x);
+        return [r.id,x.model,x.quantization,x.quantization_method,x.quantization_source,x.quantization_method_source,x.target_tokens,x.concurrency,x.status,rates.prefill_tps,rates.decode_tps,r.measurement_mode || 'helper',(r.application || {}).protocol_version,x.completion_tokens_estimated,x.aggregate_completion_tokens_estimated,x.recorded_prefill_tps,x.recorded_decode_tps,JSON.stringify(x.metric_sources || {}),csvRequestMetrics(x),rates.completion_tokens,x.recorded_aggregate_completion_tokens,rates.group_output_tps,x.recorded_group_output_tps,x.wall_s,x.recorded_aggregate_completion_tps,JSON.stringify(x.derived_metrics.metric_sources),JSON.stringify(x.recorded_metric_sources || {})].map(quote).join(',');
+      }));
+      return [fields.join(','),...rows].join('\n');
+    }
     if (route === '/api/bench/start' && method === 'POST') return start(body);
     if (route === '/api/bench/cancel' && method === 'POST') { cancelling=true; controllers.forEach(c=>c.abort()); return {ok:true}; }
     const match = route.match(/^\/api\/runs\/([^/]+)(?:\/(meta|download))?$/);

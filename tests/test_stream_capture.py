@@ -34,6 +34,43 @@ class StreamCaptureTests(unittest.TestCase):
                                                 capture_output=kwargs.pop("capture_output", True), **kwargs)
             return value, request.call_args
 
+    def test_decode_ends_at_last_output_not_delayed_usage_or_done(self):
+        chunks = [choice({"role": "assistant"}), choice({"reasoning_content": "think"}),
+                  choice({"content": "a multi-token chunk"}), choice(finish_reason="stop"),
+                  usage(11, 3, timings={"prompt_ms": 10, "predicted_ms": 20})]
+        payload = b"".join(("data: " + json.dumps(c) + "\n\n").encode() for c in chunks) + b"data: [DONE]\n\n"
+        with patch("wattever.endpoints.open_request", return_value=io.BytesIO(payload)), \
+             patch.object(lmstudio.time, "perf_counter", side_effect=[100., 102., 105., 150.]):
+            value = lmstudio.measure_completion("m", "p", 20, api_base=True)
+        self.assertEqual(value["ttft_s"], 2)
+        self.assertEqual(value["decode_s"], 3)
+        self.assertEqual(value["wall_s"], 50)
+        self.assertEqual(value["response_tail_s"], 45)
+        self.assertEqual(value["t_last_output"], 105)
+        self.assertEqual(value["decode_token_count"], 10)
+        self.assertAlmostEqual(value["decode_tps"], 10 / 3)
+        self.assertEqual(value["reported_timings"]["prompt_ms"], 10)
+        self.assertIn("multi-token", value["timing_scope"]["first_delta_token_count"])
+        self.assertTrue(value["timing_scope"]["decode_count_estimated_boundary"])
+        self.assertEqual(value["timing_scope"]["phase_protocol"], "observed-output-phases-v2")
+        self.assertEqual(value["timing_scope"]["decode_end_boundary"], "last_observed_nonempty_output")
+
+    def test_one_event_has_no_decode_duration_even_with_late_done(self):
+        value, _ = self.measure([choice({"content": "one multi-token chunk"}),
+                                 choice(finish_reason="stop"), usage(9, 0)])
+        self.assertIsNone(value["decode_s"])
+        self.assertIsNone(value["decode_token_count"])
+        self.assertIsNone(value["decode_tps"])
+        self.assertGreater(value["response_tail_s"], 0)
+
+    def test_zero_prompt_and_zero_decode_count_are_not_missing(self):
+        value, _ = self.measure([choice({"content": "a"}), choice({"content": "b"}), choice(finish_reason="stop"),
+                                 {"usage": {"prompt_tokens": 0, "completion_tokens": 1,
+                                            "completion_tokens_details": {"reasoning_tokens": 0}}}])
+        self.assertEqual(value["prefill_tps"], 0)
+        self.assertEqual(value["decode_token_count"], 0)
+        self.assertEqual(value["decode_tps"], 0)
+
     def test_speculative_counters_preserve_actual_zero_or_activity_without_inference(self):
         for offered, accepted in ((0, 0), (37, 21)):
             with self.subTest(offered=offered, accepted=accepted):
@@ -176,7 +213,7 @@ class StreamCaptureTests(unittest.TestCase):
                 self.measure(chunks, done=False)
 
     def test_completed_blank_stream_still_validates_usage(self):
-        for counts in (usage(True, 0), usage(1, 2)):
+        for counts in (usage(True, 0), usage(1, 2), usage(2**53, 0)):
             with self.subTest(counts=counts), self.assertRaises(RuntimeError):
                 self.measure([choice(finish_reason="stop"), counts])
 

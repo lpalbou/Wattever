@@ -1,0 +1,26 @@
+﻿const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const source = fs.readFileSync('web/app.js','utf8').replace(/\ninit\(\);\s*$/, '');
+const nodes = {'#system-status':{textContent:''},'#system-stats':{innerHTML:''}};
+const context = {Charts:{fmtNum:String}, document:{hidden:false,querySelector:s=>nodes[s],querySelectorAll:()=>[]},window:{},setTimeout:()=>1,clearTimeout:()=>{}};
+vm.createContext(context);vm.runInContext(source,context);
+(async()=>{
+  context.sample={timestamp:1700000000,telemetry:null,scope:{gpu_count:1},sampling_interval_ms:1000};
+  vm.runInContext('api=async()=>sample',context);
+  await vm.runInContext('pollSystem(systemPollGeneration)',context);
+  assert.match(nodes['#system-status'].textContent,/Warming up/);
+  context.sample={timestamp:1700000000,telemetry:{sample_age_s:9,cpu_util_percent:23,vram_mb:1024},scope:{gpu_count:1},error:'GPU sensor unavailable',sampling_interval_ms:1000};
+  await vm.runInContext('pollSystem(systemPollGeneration)',context);
+  assert.match(nodes['#system-status'].textContent,/Stale sample/);
+  assert.match(nodes['#system-status'].textContent,/GPU sensor unavailable/);
+  assert.doesNotMatch(nodes['#system-status'].textContent,/object Object/);
+  assert.match(nodes['#system-stats'].innerHTML,/CPU load/);
+  assert.match(nodes['#system-stats'].innerHTML,/GPU\/SoC memory used/);
+  assert.doesNotMatch(nodes['#system-stats'].innerHTML,/Monitored NVIDIA/);
+  context.window.WATTEVER_STATIC=true;
+  vm.runInContext('updateSystemPolling(true)',context);
+  assert.match(nodes['#system-status'].textContent,/desktop helper/);
+  assert.equal(nodes['#system-stats'].innerHTML,'');
+  console.log('System polling handles warmup, stale partial readings and browser mode');
+})().catch(error=>{console.error(error);process.exitCode=1});

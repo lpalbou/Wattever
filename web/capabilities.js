@@ -8,10 +8,24 @@
   const state = {runs:[],cache:new Map(),selected:new Set(),suites:[],timer:null,busy:false,active:false,focus:null,libraryQuery:'',navigation:0,liveRun:null,liveCursor:0,runnerCompatible:false};
   const COMPLETION_POLICY='finished-stream-visible-answer-v2';
   const UPDATE_MESSAGE='This benchmark helper is running an older capability runner. Relaunch Wattever to load the updated backend. Saved results remain available to browse.';
+  const preferredSuites=['mmlu-pro-balanced64-chat-v1','mmlu-pro-test-chat-v1','gsm8k-test-chat-v1','arc-challenge-test-chat-v1'];
+  const suiteId=suite=>suite.id || suite.suite_id;
   const percent = score => Number.isFinite(score?.percent) ? score.percent : Number.isFinite(score?.accuracy) ? score.accuracy*100 : null;
   const number = value => Number.isFinite(value) ? value.toFixed(1) : '—';
   const request = (path,body) => ui.api('/api/capabilities'+path,body === undefined ? {} : {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   function message(text,error=false) { $('#cap-status').textContent = text; $('#cap-status').className = error ? 'cap-error' : ''; }
+  function renderShareFiles() {
+    const parent=$('#cap-export')?.parentElement;
+    if(!parent || !document.createElement)return;
+    let list=$('#cap-share-files');
+    if(!list){list=document.createElement('div');list.id='cap-share-files';parent.insertAdjacentElement('afterend',list);}
+    const selected=state.runs.filter(run=>state.selected.has(run.id));
+    list.innerHTML=`<p class="hint">${selected.length?'Download individual selected evaluations for GitHub:':'Select evaluations in Capabilities to download individual files.'}</p><div class="btn-row">${selected.map(run=>`<button type="button" class="btn-sm" data-cap-download="${escape(run.id)}" ${run.status==='running'?'disabled title="Available after the run finishes"':''}>${escape(run.id)}.json</button>`).join('')}</div><p class="hint" data-cap-share-status role="status"></p>`;
+    list.querySelectorAll('[data-cap-download]').forEach(button=>button.addEventListener('click',()=>{
+      const id=button.dataset.capDownload,status=list.querySelector('[data-cap-share-status]');
+      download('/runs/'+encodeURIComponent(id)+'/download',id+'.json').then(()=>{status.textContent='';}).catch(error=>{status.textContent=error.message;});
+    }));
+  }
   function config() {
     const base = ui.config();
     return {...base,model:$('#cap-model').value,models:[$('#cap-model').value],suite_id:$('#cap-suite').value,endpoint_inference_local:$('#cap-local').checked,
@@ -38,13 +52,13 @@
     selection.innerHTML=choices.map(value=>`<option value="${value}">${value}</option>`).join('')+`<option value="0">Full suite${count != null ? ' ('+count+')' : ''}</option>`;
     const next = state.previousSuite === $('#cap-suite').value && [...choices,0].includes(Number(previous)) ? Number(previous) : (suite.source?.subset_algorithm ? 0 : String(suite.id || suite.suite_id).includes('core') && choices.includes(24) ? 24 : choices.includes(50) ? 50 : 0);
     selection.value=String(next); state.previousSuite=$('#cap-suite').value;
-    const origin=root.WatteverCapabilityDashboard?.suiteOrigin(suite);
+    const origin=root.WatteverCapabilityDashboard?.suiteOrigin?.(suite);
     $('#cap-suite-info').textContent = [origin?.label,origin?.description,count != null ? count+' questions' : '',suite.version ? 'version '+suite.version : '',
       counts && !Array.isArray(counts) ? Object.keys(counts).join(', ') : '',suite.sha256 || suite.digest ? 'Version fingerprint recorded' : ''].filter(Boolean).join(' · ');
   }
   const dashboard=root.WatteverCapabilityDashboard?.create({container:$('#cap-detail'),headerContainer:$('#cap-detail-header'),comparisonContainer:$('#cap-comparison'),descriptor,interval,unknownConfiguration,
     telemetryMarkup:ui.telemetryMarkup,bindTelemetry:ui.bindTelemetry,
-    download:id=>download('/runs/'+encodeURIComponent(id)+'/download','capability-'+id+'.json'),
+    download:id=>download('/runs/'+encodeURIComponent(id)+'/download',id+'.json'),
     onFocus:id=>detail(id,true).then(compare).catch(error=>message(error.message,true)),
     onClearComparison:()=>{state.selected=new Set(state.focus?[state.focus]:[]);compare().catch(error=>message(error.message,true));}});
   async function refresh() {
@@ -67,6 +81,7 @@
     $('#cap-runs').querySelectorAll('input').forEach(input=>input.addEventListener('change',async()=>{if(input.checked)state.selected.add(input.value);else state.selected.delete(input.value);try{await compare();}catch(error){message(error.message,true);}}));
     $('#cap-runs').querySelectorAll('[data-cap-run]').forEach(button=>button.addEventListener('click',()=>detail(button.dataset.capRun,true).then(compare).catch(error=>message(error.message,true))));
     $('#cap-export').href='/api/capabilities/export.json'+(state.selected.size?'?ids='+[...state.selected].map(encodeURIComponent).join(','):'');
+    renderShareFiles();
     if($('#cap-run-count'))$('#cap-run-count').textContent=String(state.runs.length);
   }
   async function load(id) {
@@ -157,14 +172,18 @@
     $('#cap-unavailable').hidden=!ui.browserMode(); $('#cap-start').disabled=true;
     if($('#cap-import-label')) $('#cap-import-label').hidden=true; identity();
     try {
+      const hadSuites=state.suites.length>0;
       const data=await request('/suites'); state.suites=Array.isArray(data)?data:data.suites || [];
+      const selectedSuite=$('#cap-suite').value;
       state.runnerCompatible=!ui.browserMode() && data.runner?.completion_policy===COMPLETION_POLICY;
       if($('#cap-import-label'))$('#cap-import-label').hidden=ui.browserMode() || !state.runnerCompatible;
       $('#cap-helper-compatibility').hidden=ui.browserMode() || state.runnerCompatible;
       $('#cap-helper-compatibility').textContent=state.runnerCompatible?'':UPDATE_MESSAGE;
-      const selectedSuite=$('#cap-suite').value;
-      $('#cap-suite').innerHTML=state.suites.map(suite=>`<option value="${escape(suite.id || suite.suite_id)}">${escape(root.WatteverCapabilityDashboard?.suiteTitle?.(suite) || suite.name || suite.label || suite.id || suite.suite_id)}</option>`).join('');
-      if(state.suites.some(suite=>(suite.id || suite.suite_id)===selectedSuite)) $('#cap-suite').value=selectedSuite; suiteInfo();
+      $('#cap-suite').innerHTML=state.suites.map(suite=>`<option value="${escape(suiteId(suite))}">${escape(suiteId(suite)==='wattever-core-v1'?'Wattever Core · diagnostic':root.WatteverCapabilityDashboard?.suiteTitle?.(suite) || suite.name || suite.label || suiteId(suite))}</option>`).join('');
+      const available=id=>state.suites.some(suite=>suiteId(suite)===id);
+      const next=hadSuites && available(selectedSuite) ? selectedSuite : preferredSuites.find(available) || suiteId(state.suites.find(suite=>suite.source?.kind==='bundled_dataset') || {}) || suiteId(state.suites[0] || {});
+      if(next) $('#cap-suite').value=next;
+      suiteInfo();
       await refresh(); if (!ui.browserMode()) await poll();
     } catch(error) {message(error.message,true);}
   }
