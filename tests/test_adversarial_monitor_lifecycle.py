@@ -1,6 +1,7 @@
 """Exercise monitor races with deterministic timers and concurrent viewers."""
 import concurrent.futures
 import threading
+import sys
 import time
 import unittest
 from unittest.mock import MagicMock, patch
@@ -91,7 +92,9 @@ class SensorFailureRegression(unittest.TestCase):
                 if result["error"] and result["telemetry"] is not None:
                     break
                 time.sleep(0.02)
-            self.assertIn("missing sensor", result["error"])
+            # macOS has no NVIDIA sampler to fail: it reports the missing wattage without starting one.
+            expected = "power measurement unavailable" if sys.platform == "darwin" else "missing sensor"
+            self.assertIn(expected, result["error"])
             self.assertEqual(result["source"], "none")
             self.assertIsNone(result["telemetry"]["gpu_w"])
             self.assertIn("cpu_util_percent", result["telemetry"])
