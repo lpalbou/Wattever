@@ -1,0 +1,634 @@
+{
+  "id": "arc-test-0095",
+  "category": "science_reasoning",
+  "cohort": "public128",
+  "suite_id": "arc-challenge-test-chat-v1",
+  "prompt_sha256": "9c878a33f6f8283612834bea93c1c4651a0c1097a26d51915788c459afce27be",
+  "request_started_unix": 1794676167.3788836,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676167.3788836
+  },
+  "started_unix": 1794676167.3788836,
+  "response_id": "resp_e4074ead4f03488b941f8633",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 77,
+    "output_tokens": 11,
+    "total_tokens": 88,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 11,
+  "non_reasoning_generated_tokens": 11,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.132701000002271,
+  "first_visible_content_s": 2.132701000002271,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 2.5636470999961603,
+  "terminal_answer_s": 2.6039307999963057,
+  "transport_wall_s": 2.60399409999809,
+  "answer": "C. properties of matter.\n\nANSWER: C",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.003213099997083191,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_e4074ead4f03488b941f8633",
+          "object": "response",
+          "created_at": 1794676167,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.0032315999997081235,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_e4074ead4f03488b941f8633",
+          "object": "response",
+          "created_at": 1794676167,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.132590399996843,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_11f0aa2553fb493791f75408",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.132645199999388,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_11f0aa2553fb493791f75408",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.132701000002271,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_11f0aa2553fb493791f75408",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "C",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.2055623999985983,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_11f0aa2553fb493791f75408",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.2562230999974418,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_11f0aa2553fb493791f75408",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " properties",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.3205433999974048,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_11f0aa2553fb493791f75408",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " of",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.3679317999994964,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_11f0aa2553fb493791f75408",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " matter",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.418340399999579,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_11f0aa2553fb493791f75408",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.445700799995393,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_11f0aa2553fb493791f75408",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.4951937000005273,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_11f0aa2553fb493791f75408",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.531272499996703,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_11f0aa2553fb493791f75408",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.5636470999961603,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_11f0aa2553fb493791f75408",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " C",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.6036306000023615,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 14,
+        "item_id": "msg_11f0aa2553fb493791f75408",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "C. properties of matter.\n\nANSWER: C",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.6036642999970354,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 15,
+        "item_id": "msg_11f0aa2553fb493791f75408",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "C. properties of matter.\n\nANSWER: C",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.6037599999981467,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 16,
+        "output_index": 0,
+        "item": {
+          "id": "msg_11f0aa2553fb493791f75408",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "C. properties of matter.\n\nANSWER: C",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.6039307999963057,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 17,
+        "response": {
+          "id": "resp_e4074ead4f03488b941f8633",
+          "object": "response",
+          "created_at": 1794676167,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_11f0aa2553fb493791f75408",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "C. properties of matter.\n\nANSWER: C",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 77,
+            "output_tokens": 11,
+            "total_tokens": 88,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676169
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "8b38453d255da2f9c6a034d8e21f225dd783f39bc96de6d2de76da0dca1ab06a",
+  "gpu": {
+    "available": true,
+    "low_confidence": true,
+    "gpu_power_complete": true,
+    "samples": 5,
+    "source": "nvidia-smi",
+    "duration_s": 2.6040541999973357,
+    "gpu_w_avg": 141.58462839566988,
+    "gpu_sampled_coverage_s": 2.0225492999961716,
+    "gpu_sampled_coverage_fraction": 0.7766924743725537,
+    "gpu_w_max": 164.32,
+    "gpu_energy_j": 368.6940462288062,
+    "system_w_est": 256.93349847175307,
+    "system_energy_j_est": 669.0687558153776,
+    "gpu_util_avg": 58.5,
+    "vram_mb_max": 30175.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 52.0,
+    "cpu_util_avg": 0.4046283143939394,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49094311936,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 71.28943461665412,
+    "system_memory_percent_max": 71.52750363980631,
+    "vram_percent_avg": 92.54431699687174,
+    "vram_percent_max": 92.54431699687174,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 5,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": true,
+        "gpu_power_complete": true,
+        "samples": 5,
+        "source": "nvidia-smi",
+        "duration_s": 2.6040541999973357,
+        "gpu_w_avg": 64.99438907987653,
+        "gpu_sampled_coverage_s": 2.0225492999961716,
+        "gpu_sampled_coverage_fraction": 0.7766924743725537,
+        "gpu_w_max": 81.43,
+        "gpu_energy_j": 169.24891185971344,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 42.0,
+        "vram_mb_max": 15591.0,
+        "clock_mhz_avg": 2984.8,
+        "temp_c_max": 52.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.63270563699932,
+        "vram_percent_max": 95.63270563699932,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 5,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": true,
+        "gpu_power_complete": true,
+        "samples": 5,
+        "source": "nvidia-smi",
+        "duration_s": 2.6040541999973357,
+        "gpu_w_avg": 76.59023931579335,
+        "gpu_sampled_coverage_s": 2.0225492999961716,
+        "gpu_sampled_coverage_fraction": 0.7766924743725537,
+        "gpu_w_max": 83.57,
+        "gpu_energy_j": 199.44513436909276,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 75.0,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 2989.2,
+        "temp_c_max": 52.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 5,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 5,
+    "errors": {},
+    "available_bytes_min": 19569352704,
+    "ram_used_percent_max": 71.5,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 161123.9430583703,
+      "max": 217391.26141985884,
+      "min": 96958.35571789539
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 1832.1132440123797,
+      "max": 2418.990954948515,
+      "min": 1065.758906353406
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 531550.5196547473,
+      "max": 867505.447666365,
+      "min": 306135.78559382644
+    },
+    "transition_faults_s": {
+      "mean": 7771.21823770208,
+      "max": 29130.756462258,
+      "min": 167.84835197601942
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7155020595.2,
+      "max": 7285280768.0,
+      "min": 7024046080.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19453467033.6,
+      "max": 19602984960.0,
+      "min": 19340914688.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 227182182.4,
+      "max": 227184640.0,
+      "min": 227180544.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 301792460.8,
+      "max": 302145536.0,
+      "min": 301654016.0
+    },
+    "committed_bytes": {
+      "mean": 80272241459.2,
+      "max": 80334553088.0,
+      "min": 80214626304.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9171905517578125,
+      "max": 1.9171905517578125,
+      "min": 1.9171905517578125
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 1315840,
+        "write_bytes": 1167360,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 1464541184,
+        "write_bytes": 0,
+        "read_time_ms": 3,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 33532915712,
+    "engine_rss_max": 33534324736,
+    "engine_faults_delta": 353
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 6,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "C",
+      "expected": "C",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676169.9830372
+  }
+}

@@ -1,0 +1,533 @@
+{
+  "scope": "Protocol only; no throughput/quality score. Background downloading may be active.",
+  "result": {
+    "started_unix": 1794674207.5424926,
+    "response_id": "resp_0fba1a1cc32d46adb8930e89",
+    "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+    "provider_status": "completed",
+    "incomplete_details": null,
+    "usage": {
+      "input_tokens": 28,
+      "output_tokens": 20,
+      "total_tokens": 48,
+      "input_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 17
+      }
+    },
+    "reasoning_tokens": 17,
+    "total_generated_tokens": 20,
+    "non_reasoning_generated_tokens": 3,
+    "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+    "first_any_output_s": 2.5295480999993742,
+    "first_visible_content_s": 3.3363329000058,
+    "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+    "last_visible_answer_s": 3.3690153999996255,
+    "terminal_answer_s": 3.409452300002158,
+    "transport_wall_s": 3.4095061000043643,
+    "answer": "1498",
+    "reasoning_text": "41*37 = 1517, minus 19 = 1498.",
+    "stream_text_matches_terminal": true,
+    "events": [
+      {
+        "elapsed_s": 0.026910100001259707,
+        "event": {
+          "type": "response.created",
+          "sequence_number": 0,
+          "response": {
+            "id": "resp_0fba1a1cc32d46adb8930e89",
+            "object": "response",
+            "created_at": 1794674207,
+            "status": "in_progress",
+            "error": null,
+            "incomplete_details": null,
+            "model": "glm-5.3-flash-maya-xs-iq1_s",
+            "output": [],
+            "instructions": null,
+            "max_output_tokens": 256,
+            "tools": [],
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "reasoning": {
+              "effort": "low",
+              "summary": null
+            },
+            "text": {
+              "format": {
+                "type": "text"
+              }
+            },
+            "temperature": 0,
+            "top_p": 1,
+            "metadata": {},
+            "store": false,
+            "background": false,
+            "previous_response_id": null,
+            "truncation": "disabled",
+            "usage": null
+          }
+        }
+      },
+      {
+        "elapsed_s": 0.02701290000550216,
+        "event": {
+          "type": "response.in_progress",
+          "sequence_number": 1,
+          "response": {
+            "id": "resp_0fba1a1cc32d46adb8930e89",
+            "object": "response",
+            "created_at": 1794674207,
+            "status": "in_progress",
+            "error": null,
+            "incomplete_details": null,
+            "model": "glm-5.3-flash-maya-xs-iq1_s",
+            "output": [],
+            "instructions": null,
+            "max_output_tokens": 256,
+            "tools": [],
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "reasoning": {
+              "effort": "low",
+              "summary": null
+            },
+            "text": {
+              "format": {
+                "type": "text"
+              }
+            },
+            "temperature": 0,
+            "top_p": 1,
+            "metadata": {},
+            "store": false,
+            "background": false,
+            "previous_response_id": null,
+            "truncation": "disabled",
+            "usage": null
+          }
+        }
+      },
+      {
+        "elapsed_s": 2.5295239000042784,
+        "event": {
+          "type": "response.output_item.added",
+          "sequence_number": 2,
+          "output_index": 0,
+          "item": {
+            "id": "rs_5be71fd67ded4e67ab6d18ba",
+            "type": "reasoning",
+            "status": "in_progress",
+            "summary": [],
+            "content": []
+          }
+        }
+      },
+      {
+        "elapsed_s": 2.5295480999993742,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 3,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": "41"
+        }
+      },
+      {
+        "elapsed_s": 2.5999308000027668,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 4,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": "*"
+        }
+      },
+      {
+        "elapsed_s": 2.6885614000057103,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 5,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": "37"
+        }
+      },
+      {
+        "elapsed_s": 2.72763130000385,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 6,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": " ="
+        }
+      },
+      {
+        "elapsed_s": 2.7714340000020457,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 7,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": " "
+        }
+      },
+      {
+        "elapsed_s": 2.809079600003315,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 8,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": "151"
+        }
+      },
+      {
+        "elapsed_s": 2.8535255000024335,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 9,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": "7"
+        }
+      },
+      {
+        "elapsed_s": 2.8909975999995368,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 10,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": ","
+        }
+      },
+      {
+        "elapsed_s": 2.9426218000007793,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 11,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": " minus"
+        }
+      },
+      {
+        "elapsed_s": 2.989026000002923,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 12,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": " "
+        }
+      },
+      {
+        "elapsed_s": 3.0222588000033284,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 13,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": "19"
+        }
+      },
+      {
+        "elapsed_s": 3.0604032000046573,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 14,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": " ="
+        }
+      },
+      {
+        "elapsed_s": 3.1207550000035553,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 15,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": " "
+        }
+      },
+      {
+        "elapsed_s": 3.151682499999879,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 16,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": "149"
+        }
+      },
+      {
+        "elapsed_s": 3.2002733000044827,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 17,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": "8"
+        }
+      },
+      {
+        "elapsed_s": 3.2374152000047616,
+        "event": {
+          "type": "response.reasoning_text.delta",
+          "sequence_number": 18,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "delta": "."
+        }
+      },
+      {
+        "elapsed_s": 3.336136900004931,
+        "event": {
+          "type": "response.reasoning_text.done",
+          "sequence_number": 19,
+          "item_id": "rs_5be71fd67ded4e67ab6d18ba",
+          "output_index": 0,
+          "content_index": 0,
+          "text": "41*37 = 1517, minus 19 = 1498."
+        }
+      },
+      {
+        "elapsed_s": 3.3361703000045964,
+        "event": {
+          "type": "response.output_item.done",
+          "sequence_number": 20,
+          "output_index": 0,
+          "item": {
+            "id": "rs_5be71fd67ded4e67ab6d18ba",
+            "type": "reasoning",
+            "status": "completed",
+            "summary": [],
+            "content": [
+              {
+                "type": "reasoning_text",
+                "text": "41*37 = 1517, minus 19 = 1498."
+              }
+            ]
+          }
+        }
+      },
+      {
+        "elapsed_s": 3.3362464000019827,
+        "event": {
+          "type": "response.output_item.added",
+          "sequence_number": 21,
+          "output_index": 1,
+          "item": {
+            "id": "msg_c6b9e71640bd4a038f5cadba",
+            "type": "message",
+            "role": "assistant",
+            "status": "in_progress",
+            "content": []
+          }
+        }
+      },
+      {
+        "elapsed_s": 3.3363074000008055,
+        "event": {
+          "type": "response.content_part.added",
+          "sequence_number": 22,
+          "item_id": "msg_c6b9e71640bd4a038f5cadba",
+          "output_index": 1,
+          "content_index": 0,
+          "part": {
+            "type": "output_text",
+            "text": "",
+            "annotations": [],
+            "logprobs": []
+          }
+        }
+      },
+      {
+        "elapsed_s": 3.3363329000058,
+        "event": {
+          "type": "response.output_text.delta",
+          "sequence_number": 23,
+          "item_id": "msg_c6b9e71640bd4a038f5cadba",
+          "output_index": 1,
+          "content_index": 0,
+          "delta": "149",
+          "logprobs": []
+        }
+      },
+      {
+        "elapsed_s": 3.3690153999996255,
+        "event": {
+          "type": "response.output_text.delta",
+          "sequence_number": 24,
+          "item_id": "msg_c6b9e71640bd4a038f5cadba",
+          "output_index": 1,
+          "content_index": 0,
+          "delta": "8",
+          "logprobs": []
+        }
+      },
+      {
+        "elapsed_s": 3.409156300003815,
+        "event": {
+          "type": "response.output_text.done",
+          "sequence_number": 25,
+          "item_id": "msg_c6b9e71640bd4a038f5cadba",
+          "output_index": 1,
+          "content_index": 0,
+          "text": "1498",
+          "logprobs": []
+        }
+      },
+      {
+        "elapsed_s": 3.409188000005088,
+        "event": {
+          "type": "response.content_part.done",
+          "sequence_number": 26,
+          "item_id": "msg_c6b9e71640bd4a038f5cadba",
+          "output_index": 1,
+          "content_index": 0,
+          "part": {
+            "type": "output_text",
+            "text": "1498",
+            "annotations": [],
+            "logprobs": []
+          }
+        }
+      },
+      {
+        "elapsed_s": 3.409261400003743,
+        "event": {
+          "type": "response.output_item.done",
+          "sequence_number": 27,
+          "output_index": 1,
+          "item": {
+            "id": "msg_c6b9e71640bd4a038f5cadba",
+            "type": "message",
+            "role": "assistant",
+            "status": "completed",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "1498",
+                "annotations": [],
+                "logprobs": []
+              }
+            ]
+          }
+        }
+      },
+      {
+        "elapsed_s": 3.409452300002158,
+        "event": {
+          "type": "response.completed",
+          "sequence_number": 28,
+          "response": {
+            "id": "resp_0fba1a1cc32d46adb8930e89",
+            "object": "response",
+            "created_at": 1794674207,
+            "status": "completed",
+            "error": null,
+            "incomplete_details": null,
+            "model": "glm-5.3-flash-maya-xs-iq1_s",
+            "output": [
+              {
+                "id": "rs_5be71fd67ded4e67ab6d18ba",
+                "type": "reasoning",
+                "status": "completed",
+                "summary": [],
+                "content": [
+                  {
+                    "type": "reasoning_text",
+                    "text": "41*37 = 1517, minus 19 = 1498."
+                  }
+                ]
+              },
+              {
+                "id": "msg_c6b9e71640bd4a038f5cadba",
+                "type": "message",
+                "role": "assistant",
+                "status": "completed",
+                "content": [
+                  {
+                    "type": "output_text",
+                    "text": "1498",
+                    "annotations": [],
+                    "logprobs": []
+                  }
+                ]
+              }
+            ],
+            "instructions": null,
+            "max_output_tokens": 256,
+            "tools": [],
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "reasoning": {
+              "effort": "low",
+              "summary": null
+            },
+            "text": {
+              "format": {
+                "type": "text"
+              }
+            },
+            "temperature": 0,
+            "top_p": 1,
+            "metadata": {},
+            "store": false,
+            "background": false,
+            "previous_response_id": null,
+            "truncation": "disabled",
+            "usage": {
+              "input_tokens": 28,
+              "output_tokens": 20,
+              "total_tokens": 48,
+              "input_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0
+              },
+              "output_tokens_details": {
+                "reasoning_tokens": 17
+              }
+            },
+            "completed_at": 1794674210
+          }
+        }
+      }
+    ],
+    "request_payload_sha256": "0953ea141870bbb94e9764a731b4923f1117e626be802c54ab14132decb55fc8"
+  },
+  "payload": {
+    "model": "glm-5.3-flash-maya-xs-iq1_s",
+    "input": "Connectivity probe: compute37 times41 minus19 and return only the integer.",
+    "max_output_tokens": 256,
+    "reasoning": {
+      "effort": "low"
+    },
+    "temperature": 0,
+    "top_p": 1,
+    "stream": true,
+    "store": false
+  }
+}

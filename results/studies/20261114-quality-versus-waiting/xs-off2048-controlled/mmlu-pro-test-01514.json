@@ -1,0 +1,814 @@
+{
+  "id": "mmlu-pro-test-01514",
+  "category": "law",
+  "cohort": "public128",
+  "suite_id": "mmlu-pro-balanced64-chat-v1",
+  "prompt_sha256": "f743d7498e5575e9c367e75c39e780a213b4fdf62dcab24beae990d1e5986c7f",
+  "request_started_unix": 1794676487.700559,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676487.700559
+  },
+  "started_unix": 1794676487.700559,
+  "response_id": "resp_40a81b9e826748b590e0b957",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 247,
+    "output_tokens": 26,
+    "total_tokens": 273,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 26,
+  "non_reasoning_generated_tokens": 26,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 3.1886643999969237,
+  "first_visible_content_s": 3.1886643999969237,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 4.689461399997526,
+  "terminal_answer_s": 4.733146799997485,
+  "transport_wall_s": 4.7332099999985076,
+  "answer": "A is least correct — a fully executory contract is when neither party has performed, not both completed.\n\nANSWER: A",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.003642099996795878,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_40a81b9e826748b590e0b957",
+          "object": "response",
+          "created_at": 1794676487,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.0036690999986603856,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_40a81b9e826748b590e0b957",
+          "object": "response",
+          "created_at": 1794676487,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.1885534999964875,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_9f58dacf287b4c28b175aaaf",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.1886078999959864,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.1886643999969237,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.3032674999994924,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.375477800000226,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " least",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5088919999980135,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " correct",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5542197999966447,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " —",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.6200773999953526,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " a",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.738708199998655,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " fully",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7942120999941835,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " execut",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.84779119999439,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ory",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9000703999990947,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " contract",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.936043999994581,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.02774589999899,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " when",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.082131699993624,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " neither",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.155308599998534,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " party",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.194265199999791,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " has",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.247805699997116,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " performed",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.313115099997958,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.372286499994516,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " not",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.431198699996457,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " both",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.485163899997133,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " completed",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.525202899996657,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.54623869999341,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.591483799995331,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.648381999999401,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.689461399997526,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.732840599994233,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 29,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "A is least correct — a fully executory contract is when neither party has performed, not both completed.\n\nANSWER: A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.732874499997706,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 30,
+        "item_id": "msg_9f58dacf287b4c28b175aaaf",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "A is least correct — a fully executory contract is when neither party has performed, not both completed.\n\nANSWER: A",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.732967399999325,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 31,
+        "output_index": 0,
+        "item": {
+          "id": "msg_9f58dacf287b4c28b175aaaf",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "A is least correct — a fully executory contract is when neither party has performed, not both completed.\n\nANSWER: A",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.733146799997485,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 32,
+        "response": {
+          "id": "resp_40a81b9e826748b590e0b957",
+          "object": "response",
+          "created_at": 1794676487,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_9f58dacf287b4c28b175aaaf",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "A is least correct — a fully executory contract is when neither party has performed, not both completed.\n\nANSWER: A",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 247,
+            "output_tokens": 26,
+            "total_tokens": 273,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676492
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "7dbf9c99c3084f2cc231dacb6e830f59973a494ffe2f4f31f8bac8ac3c9ff372",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 9,
+    "source": "nvidia-smi",
+    "duration_s": 4.733287799994287,
+    "gpu_w_avg": 126.64469700568286,
+    "gpu_sampled_coverage_s": 4.040906099995482,
+    "gpu_sampled_coverage_fraction": 0.8537207688914161,
+    "gpu_w_max": 154.95,
+    "gpu_energy_j": 599.4457992709716,
+    "system_w_est": 246.91786392005264,
+    "system_energy_j_est": 1168.7333128934347,
+    "gpu_util_avg": 48.611111111111114,
+    "vram_mb_max": 30155.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 48.0,
+    "cpu_util_avg": 0.42542226802337096,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 48761061376,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 70.60550424819948,
+    "system_memory_percent_max": 71.04197731906999,
+    "vram_percent_avg": 92.48025244160925,
+    "vram_percent_max": 92.48297859289701,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 9,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.733287799994287,
+        "gpu_w_avg": 63.538757176990735,
+        "gpu_sampled_coverage_s": 4.040906099995482,
+        "gpu_sampled_coverage_fraction": 0.8537207688914161,
+        "gpu_w_max": 79.69,
+        "gpu_energy_j": 300.7472241726497,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 41.44444444444444,
+        "vram_mb_max": 15571.0,
+        "clock_mhz_avg": 2943.222222222222,
+        "temp_c_max": 48.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.50457652647434,
+        "vram_percent_max": 95.51002882904987,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.733287799994287,
+        "gpu_w_avg": 63.10593982869213,
+        "gpu_sampled_coverage_s": 4.040906099995482,
+        "gpu_sampled_coverage_fraction": 0.8537207688914161,
+        "gpu_w_max": 80.92,
+        "gpu_energy_j": 298.698575098322,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 55.77777777777778,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 3003.1111111111113,
+        "temp_c_max": 36.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 9,
+    "errors": {},
+    "available_bytes_min": 19882602496,
+    "ram_used_percent_max": 71.0,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 145045.5072965009,
+      "max": 317056.17988967564,
+      "min": 38578.10950832386
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 1638.2740869763036,
+      "max": 3539.902018331524,
+      "min": 439.8770119308922
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 567370.505807877,
+      "max": 934749.5029844429,
+      "min": 300019.27355854906
+    },
+    "transition_faults_s": {
+      "mean": 2833.510291579969,
+      "max": 7498.345782571942,
+      "min": 13.50499598033441
+    },
+    "system_cache_resident_bytes": {
+      "mean": 6683786808.888889,
+      "max": 6994137088.0,
+      "min": 6432956416.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19953594823.11111,
+      "max": 20199596032.0,
+      "min": 19654877184.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 226381824.0,
+      "max": 226381824.0,
+      "min": 226381824.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 343588864.0,
+      "max": 345100288.0,
+      "min": 342179840.0
+    },
+    "committed_bytes": {
+      "mean": 80133850453.33333,
+      "max": 80140476416.0,
+      "min": 80128950272.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9803651173909504,
+      "max": 1.9803810119628906,
+      "min": 1.9803237915039062
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 193536,
+        "write_bytes": 1286144,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 2586955776,
+        "write_bytes": 0,
+        "read_time_ms": 6,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32661483520,
+    "engine_rss_max": 32661749760,
+    "engine_faults_delta": 73
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": false,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": false,
+    "content_success": false,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 20,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "A",
+      "expected": "H",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": false,
+      "60": false,
+      "120": false
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676492.4351401
+  }
+}

@@ -270,6 +270,116 @@ legacy one-board fields retain 76 single-client case readings with a 65°C
 maximum and 78 whole-case readings with a 68°C maximum. These historical
 boundaries remain separate from the dual-card channels.
 
+## Flash-Next expert RAM controls: 2026-11-14
+
+This separate study uses **UD-IQ4_XS on both RTX 5070 Ti cards**, the i7-5960X,
+64 GiB DDR4-2133 and a Samsung 990 Pro model volume. It is outside the historical
+180-case cohort above. The installed Strata 0.1.53 runtime uses INT8 KV, MTP
+window 4 / confidence 0.5, automatic prefill and GPU expert caching, and no
+conversation cache. The explicit reservation is **40,960 tokens**; it is a test
+condition, not a model or automatic-configuration limit.
+
+Auto requests a 47.06 GiB explicit expert-RAM allowance in this capture. The 0%
+condition uses file-backed experts and no explicit resident expert copy. Both
+retain GPU expert caching. **0% is not a total RAM limit:** model mappings,
+runtime/KV buffers and Windows file caching still consume RAM.
+
+### Complete paired timing table
+
+Each cell is **median [minimum–maximum] of three requests**, not a confidence
+interval. Within each target/repeat, both policies use the same prompt bytes and
+actual input/output counts. Sampling is temperature 0, top-p 1, seed 20261114,
+reasoning none and a 128-token output cap. Two 5k requests and one 40k request
+warm each policy before measured requests. Cached prompt tokens are zero; all
+**60/60 measured marker retrievals** pass. This verifies this retrieval workload,
+not general model quality.
+
+| Expert RAM policy | Prompt target | n | Actual prompt tk | Actual output tk | Cached tk | Native prefill time (s) | Native prefill tk/s | Native decode time (s) | Native decode tk/s | Client TTFT (s) | Client wall time (s) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Auto | 20k | 3 | 19,978 [19,978–19,979] | 128 [128–128] | 0 | 19.551 [15.356–20.361] | 1,021.89 [981.19–1,300.99] | 3.613 [3.512–6.453] | 35.43 [19.84–36.45] | 19.995 [15.855–23.570] | 26.428 [19.448–27.062] |
+| Auto | 40k | 3 | 39,978 [39,976–39,978] | 128 [128–128] | 0 | 23.735 [23.417–25.034] | 1,684.26 [1,596.95–1,707.22] | 9.690 [3.878–10.346] | 13.21 [12.37–33.01] | 24.200 [23.955–25.574] | 33.869 [29.415–34.286] |
+| 0% / file-backed | 20k | 3 | 19,978 [19,978–19,979] | 128 [128–128] | 0 | 16.174 [15.776–16.200] | 1,235.19 [1,233.21–1,266.42] | 8.260 [8.173–10.018] | 15.50 [12.78–15.66] | 16.662 [16.327–16.776] | 24.802 [24.551–26.756] |
+| 0% / file-backed | 40k | 3 | 39,978 [39,976–39,978] | 128 [128–128] | 0 | 29.511 [24.612–32.991] | 1,354.68 [1,211.72–1,624.33] | 8.394 [8.064–10.716] | 15.25 [11.94–15.87] | 30.022 [25.101–33.506] | 40.680 [33.128–41.847] |
+
+Native phases come from the engine's logged prompt/output timing counters.
+Client TTFT runs from HTTP dispatch to the first output token; client wall runs
+to stream completion, including transport and the response tail. These are
+separate timing boundaries. The UI's gateway E2E wall can additionally include
+model loading and server queueing; it must not be substituted for a native phase.
+Independent column medians can come from different requests and need not add.
+
+The 0% condition has faster median native prefill at 20k (16.174 versus 19.551 s),
+while Auto is faster at 40k (23.735 versus 29.511 s). Auto has higher median
+native decode at 20k (35.43 versus 15.50 tk/s). The wide 40k decode ranges overlap;
+three requests and uncontrolled Windows activity do not establish a universal
+winner. Auto remains the conservative default.
+
+### RAM and physical storage observations
+
+RAM and gap values below are sampled maxima/minima across the group; disk and
+logical-read cells are median [minimum–maximum] per request. D: maps to the
+Samsung NVMe's PhysicalDrive1 counter. Those OS disk counters cover the whole
+device, including unrelated reads; they are not per-process attribution.
+
+| Expert RAM policy | Target | Peak physical RAM used | Minimum available RAM (GiB) | Physical D: reads (GiB/request) | Native logical file reads (MB/request) | Longest output gap (s) |
+|---|---:|---:|---:|---:|---:|---:|
+| Auto | 20k | 91.82% | 5.227 | 5.105 [5.095–5.127] | 5,335.4 [5,335.3–5,335.4] | 2.917 |
+| Auto | 40k | 92.12% | 5.034 | 7.675 [7.674–7.704] | 8,003.0 [8,003.0–8,003.0] | 5.858 |
+| 0% / file-backed | 20k | 99.37% | 0.405 | 0.218 [0.107–0.409] | 192,961.2 [191,603.9–193,781.5] | 1.495 |
+| 0% / file-backed | 40k | 99.30% | 0.450 | 0.047 [0.034–0.052] | 297,256.9 [296,073.1–297,316.8] | 1.648 |
+
+The 0% run reaches about **99.3% physical RAM use** even though it has no explicit
+expert copy. Its warm requests perform hundreds of thousands of MB of logical
+file reads but only 0.218/0.047 GiB median physical D: reads at 20k/40k. Windows
+mmap/file caching therefore prevents interpreting this as uncached NVMe-only
+inference. No global file-cache purge was performed. Native buffered-blob
+counters also omit direct mmap faults. The first file-backed 5k warmup records
+29.10 GiB physical D: reads and 60.97 s TTFT; it is a startup observation, not a
+controlled cold-cache benchmark.
+
+No measured 0% request records page-outs in the sampled global counter. Auto's
+40k group contains a brief page-out burst lasting 0.517 s at or above 1,024
+pages/s. Global page counters cannot attribute activity to Strata, and page-ins
+or mmap faults alone do not prove pagefile thrashing.
+
+[Saved summaries, CSV and checksum manifest](../results/studies/20261114-flash-memory-controls/README.md)
+retain the measurement boundaries and exact per-group values.
+
+### Separate 131,072-context RAM allowance screen
+
+This earlier paired study reserves **131,072 tokens**, uses a 256-token output
+cap and compares conservative versus experimental aggressive explicit RAM
+allowances. It is a distinct cohort from the 40,960-context Auto-versus-0% study;
+it does not isolate context size. Prompt bytes/counts are matched between its
+own policies, with zero cached tokens and three requests per cell. All 120/120
+measured retrieval records pass, with no OOM or engine crash.
+
+The conservative 47.56 GiB request is capped to **46.85 GiB** by fresh available
+memory. The aggressive 50.99 GiB request yields **49.55 GiB actual resident
+experts**. These are observed allocations, not defaults to hardcode. The table
+reports client timing; client prefill is actual prompt tokens divided by TTFT,
+not the native prefill metric in the table above.
+
+| RAM allowance | Target | Actual prompt tk | Actual output tk | Client TTFT (s) | Client prefill tk/s | Client decode tk/s | Peak physical RAM |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Conservative | 5k | 4,979 [4,979–4,979] | 256 [256–256] | 7.689 [7.606–7.897] | 647.53 [630.48–654.61] | 25.09 [21.89–25.38] | 91.45% |
+| Conservative | 40k | 39,978 [39,976–39,978] | 236 [236–252] | 26.685 [25.986–27.112] | 1,498.05 [1,474.55–1,538.45] | 24.30 [19.54–25.74] | 91.55% |
+| Conservative | 80k | 79,979 [79,978–79,979] | 253 [250–256] | 46.093 [45.698–48.042] | 1,735.15 [1,664.78–1,750.15] | 15.16 [9.50–19.99] | 92.00% |
+| Conservative | 120k | 119,978 [119,978–119,979] | 247 [238–256] | 66.201 [65.931–68.401] | 1,812.34 [1,754.03–1,819.75] | 20.88 [14.15–21.43] | 92.40% |
+| Aggressive | 5k | 4,979 [4,979–4,979] | 256 [256–256] | 6.724 [6.431–6.735] | 740.53 [739.31–774.27] | 23.12 [20.41–26.68] | 93.84% |
+| Aggressive | 40k | 39,978 [39,976–39,978] | 242 [238–248] | 24.029 [23.904–24.156] | 1,663.71 [1,655.00–1,672.36] | 23.44 [13.72–24.32] | 93.73% |
+| Aggressive | 80k | 79,979 [79,978–79,979] | 245 [241–254] | 43.379 [43.186–43.510] | 1,843.71 [1,838.19–1,851.98] | 21.88 [13.14–26.28] | 94.12% |
+| Aggressive | 120k | 119,978 [119,978–119,979] | 256 [248–256] | 64.871 [64.247–66.361] | 1,849.48 [1,807.98–1,867.46] | 21.69 [13.42–24.71] | 94.33% |
+
+The larger allowance removes native reported expert-file traffic in these
+measured requests and reduces median TTFT, but does not remove output pauses.
+Both profiles have output gaps exceeding five seconds. Aggressive loading also
+contains a 5.144 s global page-out episode at or above 1,024 pages/s. The stated
+stability criterion is therefore not met; 150k/200k extensions in this specific
+RAM experiment were not run. That decision is not a demonstrated model context
+ceiling. Retain the hardware-adaptive production guards rather than promoting
+the observed aggressive allowance to a fixed default.
+
 ## Figures and detailed evidence
 
 The client-prefill and TTFT figures retain the transport qualification above.

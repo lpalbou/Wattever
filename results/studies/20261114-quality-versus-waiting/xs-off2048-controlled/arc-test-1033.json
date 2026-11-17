@@ -1,0 +1,526 @@
+{
+  "id": "arc-test-1033",
+  "category": "science_reasoning",
+  "cohort": "public128",
+  "suite_id": "arc-challenge-test-chat-v1",
+  "prompt_sha256": "7bd6e70083ee59767dce67cf2548821d761e30e089e358aee5f4303eb8561354",
+  "request_started_unix": 1794676233.555158,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676233.555158
+  },
+  "started_unix": 1794676233.555158,
+  "response_id": "resp_973d8082872a488d86d3e542",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 129,
+    "output_tokens": 2,
+    "total_tokens": 131,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 2,
+  "non_reasoning_generated_tokens": 2,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.5296562000003178,
+  "first_visible_content_s": 2.5296562000003178,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 2.5296562000003178,
+  "terminal_answer_s": 2.591995399998268,
+  "transport_wall_s": 2.592059100003098,
+  "answer": "D",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.011733799998182803,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_973d8082872a488d86d3e542",
+          "object": "response",
+          "created_at": 1794676233,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.011759599998185877,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_973d8082872a488d86d3e542",
+          "object": "response",
+          "created_at": 1794676233,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.5295678000038606,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_6a2f15954786429a840edc65",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.52961260000302,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_6a2f15954786429a840edc65",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.5296562000003178,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_6a2f15954786429a840edc65",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.591690399996878,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 5,
+        "item_id": "msg_6a2f15954786429a840edc65",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.5917626000009477,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 6,
+        "item_id": "msg_6a2f15954786429a840edc65",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "D",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.591828099997656,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 7,
+        "output_index": 0,
+        "item": {
+          "id": "msg_6a2f15954786429a840edc65",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "D",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.591995399998268,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 8,
+        "response": {
+          "id": "resp_973d8082872a488d86d3e542",
+          "object": "response",
+          "created_at": 1794676233,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_6a2f15954786429a840edc65",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "D",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 129,
+            "output_tokens": 2,
+            "total_tokens": 131,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676236
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "784be475f48ba16c354ea15c82aca27f38217a3e1033f887e055ca677b20cf18",
+  "gpu": {
+    "available": true,
+    "low_confidence": true,
+    "gpu_power_complete": true,
+    "samples": 5,
+    "source": "nvidia-smi",
+    "duration_s": 2.592127800002345,
+    "gpu_w_avg": 145.1424215595479,
+    "gpu_sampled_coverage_s": 2.0238717999964138,
+    "gpu_sampled_coverage_fraction": 0.7807762410459017,
+    "gpu_w_max": 163.99,
+    "gpu_energy_j": 376.2277058841638,
+    "system_w_est": 267.39206554604084,
+    "system_energy_j_est": 693.1144066019416,
+    "gpu_util_avg": 55.7,
+    "vram_mb_max": 30235.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 57.0,
+    "cpu_util_avg": 0.4429332386363637,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49280843776,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 71.72664939754097,
+    "system_memory_percent_max": 71.79926947862553,
+    "vram_percent_avg": 92.72710544071643,
+    "vram_percent_max": 92.72833220879593,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 5,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": true,
+        "gpu_power_complete": true,
+        "samples": 5,
+        "source": "nvidia-smi",
+        "duration_s": 2.592127800002345,
+        "gpu_w_avg": 69.77099305848121,
+        "gpu_sampled_coverage_s": 2.0238717999964138,
+        "gpu_sampled_coverage_fraction": 0.7807762410459017,
+        "gpu_w_max": 83.07,
+        "gpu_energy_j": 180.85533074065978,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 36.8,
+        "vram_mb_max": 15651.0,
+        "clock_mhz_avg": 2975.6,
+        "temp_c_max": 57.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.99828252468872,
+        "vram_percent_max": 96.0007360608477,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 5,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": true,
+        "gpu_power_complete": true,
+        "samples": 5,
+        "source": "nvidia-smi",
+        "duration_s": 2.592127800002345,
+        "gpu_w_avg": 75.37142850106669,
+        "gpu_sampled_coverage_s": 2.0238717999964138,
+        "gpu_sampled_coverage_fraction": 0.7807762410459017,
+        "gpu_w_max": 80.92,
+        "gpu_energy_j": 195.37237514350403,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 74.6,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 2981.6,
+        "temp_c_max": 54.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 5,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 5,
+    "errors": {},
+    "available_bytes_min": 19354632192,
+    "ram_used_percent_max": 71.8,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 71123.26663792669,
+      "max": 135341.89507412942,
+      "min": 8993.409255885279
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 824.152415372864,
+      "max": 1514.6849666174935,
+      "min": 248.05426427393652
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 516672.54078381404,
+      "max": 790874.54075327,
+      "min": 289792.75931525487
+    },
+    "transition_faults_s": {
+      "mean": 9514.692369407396,
+      "max": 28695.45570356554,
+      "min": 1152.3109682748275
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7393139916.8,
+      "max": 7465172992.0,
+      "min": 7335186432.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19158845030.4,
+      "max": 19221630976.0,
+      "min": 19125637120.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 227277209.6,
+      "max": 227352576.0,
+      "min": 227258368.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 317393305.6,
+      "max": 366653440.0,
+      "min": 302841856.0
+    },
+    "committed_bytes": {
+      "mean": 80344038604.8,
+      "max": 80425332736.0,
+      "min": 80225247232.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9169139862060547,
+      "max": 1.9169139862060547,
+      "min": 1.9169139862060547
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 349184,
+        "write_bytes": 1425408,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 736661504,
+        "write_bytes": 0,
+        "read_time_ms": 1,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 33200189440,
+    "engine_rss_max": 33566273536,
+    "engine_faults_delta": 204
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": false,
+    "completed_final_answer": true,
+    "strict_success": false,
+    "content_success": true,
+    "format_only_failure": true,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 1,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "D",
+      "expected": "D",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": false,
+      "60": false,
+      "120": false
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676236.1480756
+  }
+}

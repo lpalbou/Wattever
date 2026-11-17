@@ -1,0 +1,93 @@
+{
+  "utc": "2026-11-14T16:48:57.938229+00:00",
+  "reason": "The prompt permits Python builtins; type(value).__name__ was valid but initially rejected by an overly narrow execution-policy whitelist. Allow basic type/name introspection. Unsupported execution policies are kept separate from syntax or content failures.",
+  "inference_repeated": false,
+  "applies_to_all_candidates": true,
+  "changes": [
+    {
+      "condition": "xs-low2048-controlled",
+      "id": "coding8-stable_unique",
+      "before": {
+        "answer_content_passed": false,
+        "format_passed": false,
+        "completed_final_answer": true,
+        "strict_success": false,
+        "content_success": false,
+        "format_only_failure": false,
+        "truncated": false,
+        "answer_repetition": {
+          "words": 37,
+          "duplicate_8gram_fraction": 0.0,
+          "longest_identical_line_run": 2,
+          "suspected": false
+        },
+        "reasoning_repetition": {
+          "words": 0,
+          "duplicate_8gram_fraction": 0,
+          "longest_identical_line_run": 0,
+          "suspected": false
+        },
+        "details": {
+          "content_passed": false,
+          "format_passed": false,
+          "failure": "code_policy_or_syntax",
+          "detail": "unsupported_attribute___name__"
+        },
+        "correct_within_s": {
+          "30": false,
+          "60": false,
+          "120": false
+        }
+      },
+      "after": {
+        "answer_content_passed": true,
+        "format_passed": true,
+        "completed_final_answer": true,
+        "strict_success": true,
+        "content_success": true,
+        "format_only_failure": false,
+        "truncated": false,
+        "answer_repetition": {
+          "words": 37,
+          "duplicate_8gram_fraction": 0.0,
+          "longest_identical_line_run": 2,
+          "suspected": false
+        },
+        "reasoning_repetition": {
+          "words": 0,
+          "duplicate_8gram_fraction": 0,
+          "longest_identical_line_run": 0,
+          "suspected": false
+        },
+        "details": {
+          "content_passed": true,
+          "format_passed": true,
+          "cases": [
+            {
+              "passed": true,
+              "input_mutated": false
+            },
+            {
+              "passed": true,
+              "input_mutated": false
+            },
+            {
+              "passed": true,
+              "input_mutated": false
+            },
+            {
+              "passed": true,
+              "input_mutated": false
+            }
+          ],
+          "failure": null
+        },
+        "correct_within_s": {
+          "30": true,
+          "60": true,
+          "120": true
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,691 @@
+{
+  "scope": "Matched same-binary opt-in buffered-I/O screen; distinct from XS1.1.56 RAM40 baseline",
+  "native_binary_sha256": "ff3256f8f7dbaa06d163cc8b794609fec28641f38f4bfd5b727103019807076c",
+  "parent_commit": "027992cb1f09829488e650e466233ca351d3d6ef",
+  "groups": [
+    {
+      "buffered_io": 0,
+      "target": 512,
+      "n": 3,
+      "metrics": {
+        "prompt_tokens": {
+          "median": 512,
+          "min": 511,
+          "max": 512
+        },
+        "completion_tokens": {
+          "median": 128,
+          "min": 118,
+          "max": 128
+        },
+        "ttft_s": {
+          "median": 5.565019099998608,
+          "min": 5.459409400002187,
+          "max": 5.962016499997844
+        },
+        "prefill_tps": {
+          "median": 92.00327811994896,
+          "min": 85.87698474168683,
+          "max": 93.59986814687231
+        },
+        "decode_s": {
+          "median": 7.411037599998963,
+          "min": 7.257757900002616,
+          "max": 7.9196037000001525
+        },
+        "decode_tps": {
+          "median": 16.12068101637254,
+          "min": 16.036155950580905,
+          "max": 17.136601762756914
+        },
+        "wall_s": {
+          "median": 12.91306170000098,
+          "min": 12.900581700003386,
+          "max": 13.886958399998548
+        },
+        "engine_prefill_s": {
+          "median": 5.5246,
+          "min": 5.4415,
+          "max": 5.672899999999999
+        },
+        "engine_prefill_tps": {
+          "median": 92.7,
+          "min": 90.3,
+          "max": 93.9
+        },
+        "engine_decode_s": {
+          "median": 7.4396,
+          "min": 7.3466000000000005,
+          "max": 7.9233
+        },
+        "engine_decode_tps": {
+          "median": 16.2,
+          "min": 16.1,
+          "max": 17.2
+        },
+        "disk_d_read_gib": {
+          "median": 22.347091674804688,
+          "min": 22.279144287109375,
+          "max": 25.373764038085938
+        }
+      },
+      "ram_peak_percent": 61.62132253049205,
+      "available_min_gib": 24.55469512939453,
+      "engine_rss_max_gib": 32.82660675048828,
+      "system_cache_resident_range_gib": [
+        0.15069580078125,
+        0.16517257690429688
+      ],
+      "normal_standby_cache_range_gib": [
+        10.407577514648438,
+        10.60113525390625
+      ],
+      "mtp_acceptance_percent": {
+        "median": 89.68253968253968,
+        "min": 85.34482758620689,
+        "max": 91.26984126984127
+      },
+      "gpus": {
+        "0": {
+          "vram_mib_max": 14645.0,
+          "utilization_percent": {
+            "median": 57.91935483870968,
+            "min": 54.53731343283582,
+            "max": 58.42857142857143
+          },
+          "board_w_avg": {
+            "median": 68.97186752053948,
+            "min": 68.94425413825958,
+            "max": 69.30950974331763
+          },
+          "temperature_c_max": 55.0
+        },
+        "1": {
+          "vram_mib_max": 13834.0,
+          "utilization_percent": {
+            "median": 66.53225806451613,
+            "min": 66.38805970149254,
+            "max": 67.34920634920636
+          },
+          "board_w_avg": {
+            "median": 65.76215145189325,
+            "min": 65.73784695975087,
+            "max": 66.43556241413476
+          },
+          "temperature_c_max": 47.0
+        }
+      },
+      "sampled_pageouts_max_s": 0.0
+    },
+    {
+      "buffered_io": 0,
+      "target": 5000,
+      "n": 3,
+      "metrics": {
+        "prompt_tokens": {
+          "median": 5001,
+          "min": 5001,
+          "max": 5001
+        },
+        "completion_tokens": {
+          "median": 128,
+          "min": 128,
+          "max": 128
+        },
+        "ttft_s": {
+          "median": 8.530401799998799,
+          "min": 8.479813800000557,
+          "max": 8.863012999998318
+        },
+        "prefill_tps": {
+          "median": 586.2560893674087,
+          "min": 564.2550676616348,
+          "max": 589.753515578334
+        },
+        "decode_s": {
+          "median": 8.062233300002845,
+          "min": 7.587382100002287,
+          "max": 8.246225200000481
+        },
+        "decode_tps": {
+          "median": 15.75245906118286,
+          "min": 15.400986138480986,
+          "max": 16.738316105097926
+        },
+        "wall_s": {
+          "median": 16.620691500000248,
+          "min": 16.47842049999963,
+          "max": 16.74888590000046
+        },
+        "engine_prefill_s": {
+          "median": 8.456299999999999,
+          "min": 8.3091,
+          "max": 8.5441
+        },
+        "engine_prefill_tps": {
+          "median": 591.4,
+          "min": 585.3,
+          "max": 601.9
+        },
+        "engine_decode_s": {
+          "median": 8.089,
+          "min": 7.6137,
+          "max": 8.267700000000001
+        },
+        "engine_decode_tps": {
+          "median": 15.8,
+          "min": 15.5,
+          "max": 16.8
+        },
+        "disk_d_read_gib": {
+          "median": 31.528701782226562,
+          "min": 30.161849975585938,
+          "max": 32.33832550048828
+        }
+      },
+      "ram_peak_percent": 61.753541325504756,
+      "available_min_gib": 24.467769622802734,
+      "engine_rss_max_gib": 32.764183044433594,
+      "system_cache_resident_range_gib": [
+        0.15132522583007812,
+        0.15336227416992188
+      ],
+      "normal_standby_cache_range_gib": [
+        10.533950805664062,
+        10.95694351196289
+      ],
+      "mtp_acceptance_percent": {
+        "median": 89.68253968253968,
+        "min": 88.88888888888889,
+        "max": 89.68253968253968
+      },
+      "gpus": {
+        "0": {
+          "vram_mib_max": 14690.0,
+          "utilization_percent": {
+            "median": 58.926829268292686,
+            "min": 56.925,
+            "max": 62.41975308641975
+          },
+          "board_w_avg": {
+            "median": 80.32457973428424,
+            "min": 80.30735155709691,
+            "max": 80.52638667238662
+          },
+          "temperature_c_max": 59.0
+        },
+        "1": {
+          "vram_mib_max": 13834.0,
+          "utilization_percent": {
+            "median": 67.76829268292683,
+            "min": 64.87654320987654,
+            "max": 69.375
+          },
+          "board_w_avg": {
+            "median": 78.14414332770191,
+            "min": 78.02560011521788,
+            "max": 78.8603585319045
+          },
+          "temperature_c_max": 50.0
+        }
+      },
+      "sampled_pageouts_max_s": 0.0
+    },
+    {
+      "buffered_io": 0,
+      "target": 20000,
+      "n": 3,
+      "metrics": {
+        "prompt_tokens": {
+          "median": 20002,
+          "min": 20000,
+          "max": 20003
+        },
+        "completion_tokens": {
+          "median": 128,
+          "min": 128,
+          "max": 128
+        },
+        "ttft_s": {
+          "median": 24.897664299998723,
+          "min": 24.845851300000504,
+          "max": 25.02549799999906
+        },
+        "prefill_tps": {
+          "median": 803.3685312401383,
+          "min": 799.3047730758744,
+          "max": 804.9633622334202
+        },
+        "decode_s": {
+          "median": 7.869080500000564,
+          "min": 7.735589700001583,
+          "max": 8.006469600000855
+        },
+        "decode_tps": {
+          "median": 16.13911561839924,
+          "min": 15.862172261290599,
+          "max": 16.417623597587397
+        },
+        "wall_s": {
+          "median": 32.78089799999725,
+          "min": 32.76334710000083,
+          "max": 32.86328280000089
+        },
+        "engine_prefill_s": {
+          "median": 24.5172,
+          "min": 24.4573,
+          "max": 24.7419
+        },
+        "engine_prefill_tps": {
+          "median": 815.8,
+          "min": 808.5,
+          "max": 817.8
+        },
+        "engine_decode_s": {
+          "median": 7.881600000000001,
+          "min": 7.7362,
+          "max": 8.015699999999999
+        },
+        "engine_decode_tps": {
+          "median": 16.2,
+          "min": 16.0,
+          "max": 16.5
+        },
+        "disk_d_read_gib": {
+          "median": 74.88533020019531,
+          "min": 73.7716064453125,
+          "max": 75.54290771484375
+        }
+      },
+      "ram_peak_percent": 61.5134576306972,
+      "available_min_gib": 24.608200073242188,
+      "engine_rss_max_gib": 32.82672882080078,
+      "system_cache_resident_range_gib": [
+        0.15102386474609375,
+        0.15484619140625
+      ],
+      "normal_standby_cache_range_gib": [
+        11.052581787109375,
+        11.743003845214844
+      ],
+      "mtp_acceptance_percent": {
+        "median": 88.88888888888889,
+        "min": 85.71428571428571,
+        "max": 94.44444444444444
+      },
+      "gpus": {
+        "0": {
+          "vram_mib_max": 14747.0,
+          "utilization_percent": {
+            "median": 52.54375,
+            "min": 52.0125786163522,
+            "max": 54.45
+          },
+          "board_w_avg": {
+            "median": 91.99454204159159,
+            "min": 91.68043271855208,
+            "max": 92.12713884209761
+          },
+          "temperature_c_max": 62.0
+        },
+        "1": {
+          "vram_mib_max": 13834.0,
+          "utilization_percent": {
+            "median": 59.5625,
+            "min": 57.0125786163522,
+            "max": 63.575
+          },
+          "board_w_avg": {
+            "median": 93.5942777125211,
+            "min": 93.38132874108007,
+            "max": 94.56377353399128
+          },
+          "temperature_c_max": 50.0
+        }
+      },
+      "sampled_pageouts_max_s": 0.0
+    },
+    {
+      "buffered_io": 1,
+      "target": 512,
+      "n": 3,
+      "metrics": {
+        "prompt_tokens": {
+          "median": 512,
+          "min": 511,
+          "max": 512
+        },
+        "completion_tokens": {
+          "median": 126,
+          "min": 119,
+          "max": 128
+        },
+        "ttft_s": {
+          "median": 4.46066250000149,
+          "min": 4.316808600000513,
+          "max": 5.424491599998873
+        },
+        "prefill_tps": {
+          "median": 114.78115638648495,
+          "min": 94.386725568919,
+          "max": 118.37448618869487
+        },
+        "decode_s": {
+          "median": 7.167025800001284,
+          "min": 6.885908799999015,
+          "max": 7.265563299999485
+        },
+        "decode_tps": {
+          "median": 17.440986468888894,
+          "min": 17.13644537377795,
+          "max": 17.47971833099424
+        },
+        "wall_s": {
+          "median": 11.61707860000024,
+          "min": 11.435189899999386,
+          "max": 12.683616599999368
+        },
+        "engine_prefill_s": {
+          "median": 4.429600000000001,
+          "min": 4.2958,
+          "max": 5.07
+        },
+        "engine_prefill_tps": {
+          "median": 115.6,
+          "min": 101.0,
+          "max": 119.0
+        },
+        "engine_decode_s": {
+          "median": 7.2575,
+          "min": 6.9727,
+          "max": 7.297899999999999
+        },
+        "engine_decode_tps": {
+          "median": 17.4,
+          "min": 17.1,
+          "max": 17.5
+        },
+        "disk_d_read_gib": {
+          "median": 5.763462066650391,
+          "min": 4.727169036865234,
+          "max": 8.509086608886719
+        }
+      },
+      "ram_peak_percent": 70.55469651531625,
+      "available_min_gib": 18.898090362548828,
+      "engine_rss_max_gib": 32.82351303100586,
+      "system_cache_resident_range_gib": [
+        4.325740814208984,
+        6.217384338378906
+      ],
+      "normal_standby_cache_range_gib": [
+        18.69179916381836,
+        20.49979019165039
+      ],
+      "mtp_acceptance_percent": {
+        "median": 88.03418803418803,
+        "min": 87.3015873015873,
+        "max": 89.51612903225806
+      },
+      "gpus": {
+        "0": {
+          "vram_mib_max": 14784.0,
+          "utilization_percent": {
+            "median": 60.4,
+            "min": 59.08064516129032,
+            "max": 66.36842105263158
+          },
+          "board_w_avg": {
+            "median": 71.34133001881699,
+            "min": 67.9365429427626,
+            "max": 71.73131648372173
+          },
+          "temperature_c_max": 53.0
+        },
+        "1": {
+          "vram_mib_max": 13834.0,
+          "utilization_percent": {
+            "median": 72.7741935483871,
+            "min": 69.65454545454546,
+            "max": 75.0
+          },
+          "board_w_avg": {
+            "median": 68.5706424055437,
+            "min": 68.256999770779,
+            "max": 69.96514536532274
+          },
+          "temperature_c_max": 43.0
+        }
+      },
+      "sampled_pageouts_max_s": 0.0
+    },
+    {
+      "buffered_io": 1,
+      "target": 5000,
+      "n": 3,
+      "metrics": {
+        "prompt_tokens": {
+          "median": 5001,
+          "min": 5001,
+          "max": 5001
+        },
+        "completion_tokens": {
+          "median": 128,
+          "min": 128,
+          "max": 128
+        },
+        "ttft_s": {
+          "median": 9.936479300002247,
+          "min": 8.255131200003234,
+          "max": 10.055896699999721
+        },
+        "prefill_tps": {
+          "median": 503.2969776325976,
+          "min": 497.3201445078626,
+          "max": 605.8050294825164
+        },
+        "decode_s": {
+          "median": 7.3558944999967935,
+          "min": 7.144503100000293,
+          "max": 7.957126599998446
+        },
+        "decode_tps": {
+          "median": 17.26506545193863,
+          "min": 15.96053530177901,
+          "max": 17.775903827376712
+        },
+        "wall_s": {
+          "median": 17.206709999998566,
+          "min": 15.640002800002549,
+          "max": 17.926343900002394
+        },
+        "engine_prefill_s": {
+          "median": 9.682799999999999,
+          "min": 8.210600000000001,
+          "max": 9.7697
+        },
+        "engine_prefill_tps": {
+          "median": 516.5,
+          "min": 511.9,
+          "max": 609.1
+        },
+        "engine_decode_s": {
+          "median": 7.383,
+          "min": 7.1491999999999996,
+          "max": 7.9885
+        },
+        "engine_decode_tps": {
+          "median": 17.3,
+          "min": 16.0,
+          "max": 17.9
+        },
+        "disk_d_read_gib": {
+          "median": 19.452438354492188,
+          "min": 13.397171020507812,
+          "max": 21.20443344116211
+        }
+      },
+      "ram_peak_percent": 70.5,
+      "available_min_gib": 18.883697509765625,
+      "engine_rss_max_gib": 32.761104583740234,
+      "system_cache_resident_range_gib": [
+        2.874523162841797,
+        6.252937316894531
+      ],
+      "normal_standby_cache_range_gib": [
+        18.663414001464844,
+        22.056053161621094
+      ],
+      "mtp_acceptance_percent": {
+        "median": 90.47619047619048,
+        "min": 88.88888888888889,
+        "max": 92.06349206349206
+      },
+      "gpus": {
+        "0": {
+          "vram_mib_max": 14833.0,
+          "utilization_percent": {
+            "median": 52.904761904761905,
+            "min": 52.37931034482759,
+            "max": 60.14473684210526
+          },
+          "board_w_avg": {
+            "median": 76.97074079508968,
+            "min": 76.79941065257145,
+            "max": 81.38633131341965
+          },
+          "temperature_c_max": 60.0
+        },
+        "1": {
+          "vram_mib_max": 13834.0,
+          "utilization_percent": {
+            "median": 64.71264367816092,
+            "min": 56.892857142857146,
+            "max": 69.47368421052632
+          },
+          "board_w_avg": {
+            "median": 74.94607568652849,
+            "min": 74.8126102112862,
+            "max": 80.5115464812777
+          },
+          "temperature_c_max": 47.0
+        }
+      },
+      "sampled_pageouts_max_s": 0.0
+    },
+    {
+      "buffered_io": 1,
+      "target": 20000,
+      "n": 3,
+      "metrics": {
+        "prompt_tokens": {
+          "median": 20002,
+          "min": 20000,
+          "max": 20003
+        },
+        "completion_tokens": {
+          "median": 128,
+          "min": 128,
+          "max": 128
+        },
+        "ttft_s": {
+          "median": 22.513588900001196,
+          "min": 22.446360599999025,
+          "max": 22.64279400000305
+        },
+        "prefill_tps": {
+          "median": 888.3523674894383,
+          "min": 883.4157127427519,
+          "max": 891.1021415204774
+        },
+        "decode_s": {
+          "median": 7.646471100000781,
+          "min": 7.457059699998354,
+          "max": 7.657285399996908
+        },
+        "decode_tps": {
+          "median": 16.608968809152632,
+          "min": 16.58551214508098,
+          "max": 17.030841257718244
+        },
+        "wall_s": {
+          "median": 30.19963270000153,
+          "min": 29.91289179999876,
+          "max": 30.302446900001087
+        },
+        "engine_prefill_s": {
+          "median": 22.101200000000002,
+          "min": 22.0925,
+          "max": 22.3778
+        },
+        "engine_prefill_tps": {
+          "median": 904.9,
+          "min": 893.9,
+          "max": 905.4
+        },
+        "engine_decode_s": {
+          "median": 7.658,
+          "min": 7.464600000000001,
+          "max": 7.684
+        },
+        "engine_decode_tps": {
+          "median": 16.7,
+          "min": 16.7,
+          "max": 17.1
+        },
+        "disk_d_read_gib": {
+          "median": 20.307723999023438,
+          "min": 19.683475494384766,
+          "max": 20.665233612060547
+        }
+      },
+      "ram_peak_percent": 70.7,
+      "available_min_gib": 18.72905731201172,
+      "engine_rss_max_gib": 32.82435607910156,
+      "system_cache_resident_range_gib": [
+        2.8936004638671875,
+        6.1588134765625
+      ],
+      "normal_standby_cache_range_gib": [
+        18.49987030029297,
+        21.987262725830078
+      ],
+      "mtp_acceptance_percent": {
+        "median": 84.92063492063492,
+        "min": 82.53968253968254,
+        "max": 92.06349206349206
+      },
+      "gpus": {
+        "0": {
+          "vram_mib_max": 14709.0,
+          "utilization_percent": {
+            "median": 57.75675675675676,
+            "min": 56.40816326530612,
+            "max": 58.773972602739725
+          },
+          "board_w_avg": {
+            "median": 94.95931463317716,
+            "min": 94.93990661691144,
+            "max": 95.45313092948163
+          },
+          "temperature_c_max": 61.0
+        },
+        "1": {
+          "vram_mib_max": 13834.0,
+          "utilization_percent": {
+            "median": 66.36734693877551,
+            "min": 64.38356164383562,
+            "max": 66.41216216216216
+          },
+          "board_w_avg": {
+            "median": 98.31823135154283,
+            "min": 97.80388327312285,
+            "max": 98.55340909650258
+          },
+          "temperature_c_max": 49.0
+        }
+      },
+      "sampled_pageouts_max_s": 0.0
+    }
+  ]
+}

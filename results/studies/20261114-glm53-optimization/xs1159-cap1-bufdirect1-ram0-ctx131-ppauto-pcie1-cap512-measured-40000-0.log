@@ -1,0 +1,26 @@
+2 tokens, wall 10352 ms | the copy lane 10155 ms: copies 1935 (12.2 GB/s), ring wait 4286, gaps 2395, mixer windows 1538 | lead 118, tail 80 | pcie 23.68 GB (ram 0.18, disk 23.51) + 0.04 GB vram | experts: staged 4643, resident 1385 (488397 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 4 ms host, disk wait 0 ms, hop in 76 ms | layer lane 527.4/270.2 ms max/min
+glm prefill: CUDA1 chunk 2/2, 8192 tokens, wall 4501 ms | the copy lane 4360 ms: copies 1885 (12.3 GB/s), ring wait 363, gaps 497, mixer windows 1614 | lead 60, tail 81 | pcie 23.26 GB (ram 0.17, disk 23.09) + 0.04 GB vram | experts: staged 4561, resident 1385 (209403 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 39 ms | layer lane 160.7/121.2 ms max/min
+glm prefill: 16384 tokens in 20601.6 ms (1.26 ms/token, 795 tok/s), 2 chunks of 8192 tokens | CUDA0 10927 ms, CUDA1 14853 ms (hop in 115 ms)
+glm prefill: CUDA0 chunk 1/2, 8192 tokens, wall 4838 ms | the copy lane 4269 ms: copies 1847 (12.2 GB/s), ring wait 370, gaps 454, mixer windows 1598 | lead 566, tail 3 | pcie 22.60 GB (ram 0.19, disk 22.41) + 0.10 GB vram | experts: staged 4522, resident 1500 (390179 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 0 ms | layer lane 182.6/117.0 ms max/min
+glm prefill: CUDA1 chunk 1/2, 8192 tokens, wall 6185 ms | the copy lane 6010 ms: copies 1941 (12.0 GB/s), ring wait 1491, gaps 916, mixer windows 1662 | lead 81, tail 95 | pcie 23.23 GB (ram 0.14, disk 23.09) + 0.03 GB vram | experts: staged 4553, resident 1385 (190775 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 4 ms host, disk wait 0 ms, hop in 39 ms | layer lane 265.1/126.5 ms max/min
+glm prefill: CUDA0 chunk 2/2, 8192 tokens, wall 6357 ms | the copy lane 5959 ms: copies 1893 (11.9 GB/s), ring wait 1537, gaps 903, mixer windows 1625 | lead 395, tail 2 | pcie 22.51 GB (ram 0.19, disk 22.33) + 0.10 GB vram | experts: staged 4506, resident 1500 (388862 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 4 ms host, disk wait 0 ms, hop in 0 ms | layer lane 341.8/123.0 ms max/min
+glm prefill: CUDA1 chunk 2/2, 8192 tokens, wall 4518 ms | the copy lane 4384 ms: copies 1843 (12.4 GB/s), ring wait 350, gaps 498, mixer windows 1692 | lead 63, tail 72 | pcie 22.78 GB (ram 0.13, disk 22.65) + 0.03 GB vram | experts: staged 4465, resident 1385 (160364 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 39 ms | layer lane 155.8/116.3 ms max/min
+glm prefill: 16384 tokens in 16061.3 ms (0.98 ms/token, 1020 tok/s), 2 chunks of 8192 tokens | CUDA0 11194 ms, CUDA1 10704 ms (hop in 78 ms)
+glm prefill: CUDA0 chunk 1/1, 7235 tokens, wall 4490 ms | the copy lane 4079 ms: copies 1835 (12.3 GB/s), ring wait 296, gaps 451, mixer windows 1497 | lead 408, tail 3 | pcie 22.59 GB (ram 0.18, disk 22.41) + 0.10 GB vram | experts: staged 4520, resident 1500 (336227 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 0 ms | layer lane 170.9/113.5 ms max/min
+glm prefill: CUDA1 chunk 1/1, 7235 tokens, wall 4359 ms | the copy lane 4208 ms: copies 1871 (12.4 GB/s), ring wait 323, gaps 466, mixer windows 1547 | lead 72, tail 78 | pcie 23.12 GB (ram 0.13, disk 23.00) + 0.03 GB vram | experts: staged 4531, resident 1385 (180934 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 35 ms | layer lane 156.6/115.9 ms max/min
+glm prefill: 7235 tokens in 8986.3 ms (1.24 ms/token, 805 tok/s), 1 chunk of 7296 tokens | CUDA0 4490 ms, CUDA1 4359 ms (hop in 35 ms)
+glm vram: prompt 40004 tokens read in 46.0 s; VRAM free CUDA0 1.4 of 15.9, CUDA1 1.4 of 15.9 GB before, 1.4, 1.4 after
+glm stat: decode 101.11 ms/tok (9.89 tok/s) | vram hit 73.50% | ram fetches 1.86/tok | disk 93.79 reads/tok in 36.56 waits/tok, 122.74 ms/tok | promotions 71.28/tok | cpu lane 0.00/tok in 0.00 ms/tok | prompt 1.2 ms/tok | vram 3757/3789 ram 60/80
+glm spec: 149 of 168 drafts accepted (88.7%)
+glm kv: KV streaming: 95.97% of 1107015 block reads hit VRAM, 92.5 MiB read from RAM
+ns, 11.3 tok/s, 53 s
+[maya] answering: 87 of max 512 tokens, 10.7 tok/s, 54 s
+[maya] answering: 95 of max 512 tokens, 10.2 tok/s, 55 s
+[maya] answering: 102 of max 512 tokens, 9.8 tok/s, 56 s
+[maya] answering: 110 of max 512 tokens, 9.6 tok/s, 57 s
+[maya] answering: 119 of max 512 tokens, 9.6 tok/s, 59 s
+[maya] answering: 128 of max 512 tokens, 9.5 tok/s, 60 s
+[maya] answering: 140 of max 512 tokens, 9.7 tok/s, 61 s
+[maya] answering: 154 of max 512 tokens, 9.8 tok/s, 62 s
+[maya] answering: 165 of max 512 tokens, 9.9 tok/s, 63 s
+[maya] done: 170 tokens in 63 s (9.9 tok/s) (stop, cancel=False), expert cache 73.5% hit

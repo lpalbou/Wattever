@@ -1,7 +1,8 @@
 # Documentation
 
 - [Experiment checkpoint](experiment-status.md): historical dual-5070 performance, quality and preparation checkpoint, with links to subsequent GLM measurements.
-- [GLM-5.3-Flash comparison](glm53-flash-comparison.md): preliminary NVMe-backed Maya-XS measurements, actual pinned RAM allocation, Flash-Next comparison and optimization scope.
+- [GLM-5.3-Flash comparison](glm53-flash-comparison.md): separate AirDisk/Samsung 990 Pro Maya-XS cohorts, complete native/client timings, a matched buffered-I/O pair, RAM/cache/GPU measurements and an exact-answer quality screen.
+- [Local inference upgrades](local-inference-upgrades.md): ten ranked capacity and speed options for the dual-5070 Ti host, supported platform limits, price evidence and compatibility checks.
 
 - [Browser mode](browser.md): hosted setup, privacy, storage and measurement limits.
 - [Sharing results](sharing-results.md): shared catalog, contributions and completing a benchmark later.
@@ -15,7 +16,7 @@
 - [i7-5820K versus i7-5960X with the PNY RTX 5070 Ti](5960x-cpu-comparison.md): 156 one-repeat inference cases across the 13 established models, matched CPU comparisons, RAM/PCIe/VRAM copy probes and measured GPU arithmetic.
 - [PNY RTX 5070 Ti plus ASUS RTX 5060 Ti](5070-plus-5060-comparison.md): matched and supplemental LM Studio results, per-card and combined energy, transfer/compute probes, connection diagnostics and native Strata coverage status.
 - [Multi-GPU communication and placement study](dual-gpu-communication-and-placement.md): communication paths, transfer measurements, placement strategies, profiling evidence and separate diagnostic protocols.
-- [Two RTX 5070 Ti cards](two-5070-ti-comparison.md): 180 normal cases, matched single/mixed-card comparisons, native drafting, energy and thermal measurements.
+- [Two RTX 5070 Ti cards](two-5070-ti-comparison.md): 180 normal cases, matched single/mixed-card comparisons, native drafting, energy and thermals; separate three-repeat Flash expert-RAM tables at 40,960 and 131,072 context.
 - [Two RTX 5070 Ti placement strategies](two-5070-ti-placement.md): host/cross-card transfers, 153 screening conditions, three profiles, Gemma layout and workload-specific recommendations.
 - [Capability evaluation](capabilities.md): visual score/coverage dashboard, question-by-repeat explorer, compatible paired comparisons, offline pinned suites and audit imports.
 - [Flash-Next task accuracy](flash-next-quality.md): UD-IQ4_XS and IQ3_S on the same ARC64, GSM64 and MMLU-Pro64 samples, with full answer evidence, coverage, generation controls and source lineage.

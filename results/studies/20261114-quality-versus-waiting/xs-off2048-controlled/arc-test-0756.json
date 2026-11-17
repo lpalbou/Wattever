@@ -1,0 +1,682 @@
+{
+  "id": "arc-test-0756",
+  "category": "science_reasoning",
+  "cohort": "public128",
+  "suite_id": "arc-challenge-test-chat-v1",
+  "prompt_sha256": "c0fcb7fc2c2dfe5b60ee2b5644d8a450b43f6b218a1fb886e02ca9b6340d7447",
+  "request_started_unix": 1794676221.9989479,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676221.9989479
+  },
+  "started_unix": 1794676221.9989479,
+  "response_id": "resp_843889e31b2d41468bebf1ee",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 90,
+    "output_tokens": 15,
+    "total_tokens": 105,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 15,
+  "non_reasoning_generated_tokens": 15,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.1876106999989133,
+  "first_visible_content_s": 2.1876106999989133,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 2.8137054000035278,
+  "terminal_answer_s": 2.846214899996994,
+  "transport_wall_s": 2.8462830999997095,
+  "answer": "D. Water droplets disappear from the grass.\n\nANSWER: D",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.0025561000002198853,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_843889e31b2d41468bebf1ee",
+          "object": "response",
+          "created_at": 1794676222,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.0025819000002229586,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_843889e31b2d41468bebf1ee",
+          "object": "response",
+          "created_at": 1794676222,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.1874172000025283,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_2415ac3feb354c36a5b37fea",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.1875168999977177,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.1876106999989133,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.248669200002041,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.306248599998071,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " Water",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.3794679999991786,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " dro",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.4458551999996416,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "plets",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.475012800001423,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " disappear",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.5552255000002333,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " from",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.6101527999999234,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.635873100000026,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " grass",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.6950827999971807,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7221053000030224,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7528824000037275,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7854546000016853,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8137054000035278,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.845993399998406,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 18,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "D. Water droplets disappear from the grass.\n\nANSWER: D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8460249999989173,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 19,
+        "item_id": "msg_2415ac3feb354c36a5b37fea",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "D. Water droplets disappear from the grass.\n\nANSWER: D",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.846082399999432,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 20,
+        "output_index": 0,
+        "item": {
+          "id": "msg_2415ac3feb354c36a5b37fea",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "D. Water droplets disappear from the grass.\n\nANSWER: D",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.846214899996994,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 21,
+        "response": {
+          "id": "resp_843889e31b2d41468bebf1ee",
+          "object": "response",
+          "created_at": 1794676222,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_2415ac3feb354c36a5b37fea",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "D. Water droplets disappear from the grass.\n\nANSWER: D",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 90,
+            "output_tokens": 15,
+            "total_tokens": 105,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676224
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "4c30aec19a76ef980905cfa9a883424b9cbb5b352554f38a3a3bf3bae549a40c",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 6,
+    "source": "nvidia-smi",
+    "duration_s": 2.846348899998702,
+    "gpu_w_avg": 143.66577308977827,
+    "gpu_sampled_coverage_s": 2.533388100004231,
+    "gpu_sampled_coverage_fraction": 0.8900483352569273,
+    "gpu_w_max": 161.4,
+    "gpu_energy_j": 408.9229152015535,
+    "system_w_est": 256.4526507142884,
+    "system_energy_j_est": 729.9537202623661,
+    "gpu_util_avg": 53.916666666666664,
+    "vram_mb_max": 30221.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 58.0,
+    "cpu_util_avg": 0.38331557765151514,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49557643264,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 72.09738240085247,
+    "system_memory_percent_max": 72.20254993219878,
+    "vram_percent_avg": 92.68539532601362,
+    "vram_percent_max": 92.68539532601362,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 6,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 6,
+        "source": "nvidia-smi",
+        "duration_s": 2.846348899998702,
+        "gpu_w_avg": 68.93150986973322,
+        "gpu_sampled_coverage_s": 2.533388100004231,
+        "gpu_sampled_coverage_fraction": 0.8900483352569273,
+        "gpu_w_max": 80.0,
+        "gpu_energy_j": 196.20312729296484,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 44.0,
+        "vram_mb_max": 15637.0,
+        "clock_mhz_avg": 2974.6666666666665,
+        "temp_c_max": 56.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.91486229528307,
+        "vram_percent_max": 95.91486229528307,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 6,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 6,
+        "source": "nvidia-smi",
+        "duration_s": 2.846348899998702,
+        "gpu_w_avg": 74.73426322004504,
+        "gpu_sampled_coverage_s": 2.533388100004231,
+        "gpu_sampled_coverage_fraction": 0.8900483352569273,
+        "gpu_w_max": 83.04,
+        "gpu_energy_j": 212.71978790858864,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 63.833333333333336,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 2979.6666666666665,
+        "temp_c_max": 58.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 6,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 6,
+    "errors": {},
+    "available_bytes_min": 19092267008,
+    "ram_used_percent_max": 72.2,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 84258.88019554615,
+      "max": 176544.1781853047,
+      "min": 27672.597315366198
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 950.1021975911672,
+      "max": 1977.071095200896,
+      "min": 319.00382587983523
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 388030.3122756343,
+      "max": 686029.8856744855,
+      "min": 237218.7277300377
+    },
+    "transition_faults_s": {
+      "mean": 3950.8290029305667,
+      "max": 6179.222256857549,
+      "min": 71.3324516385257
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7726140757.333333,
+      "max": 7799394304.0,
+      "min": 7656071168.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 18925809664.0,
+      "max": 19006349312.0,
+      "min": 18862845952.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 227328000.0,
+      "max": 227328000.0,
+      "min": 227328000.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 301744128.0,
+      "max": 302469120.0,
+      "min": 301592576.0
+    },
+    "committed_bytes": {
+      "mean": 80228643498.66667,
+      "max": 80249827328.0,
+      "min": 80222670848.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.916952133178711,
+      "max": 1.916952133178711,
+      "min": 1.916952133178711
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 476672,
+        "write_bytes": 929280,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 1007517696,
+        "write_bytes": 0,
+        "read_time_ms": 3,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 33560432640,
+    "engine_rss_max": 33561550848,
+    "engine_faults_delta": 282
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 9,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "D",
+      "expected": "D",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676224.8451703
+  }
+}

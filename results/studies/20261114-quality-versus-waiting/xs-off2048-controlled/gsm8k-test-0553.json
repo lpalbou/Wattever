@@ -1,0 +1,946 @@
+{
+  "id": "gsm8k-test-0553",
+  "category": "math_word_problems",
+  "cohort": "public128",
+  "suite_id": "gsm8k-test-chat-v1",
+  "prompt_sha256": "5e46f7604d2149df1ade40d4eb75913c9dbc48a6f0c6d0a7bc252a3758541829",
+  "request_started_unix": 1794676321.7948363,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676321.7948363
+  },
+  "started_unix": 1794676321.7948363,
+  "response_id": "resp_0059523ec1b846a098a7334b",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 105,
+    "output_tokens": 37,
+    "total_tokens": 142,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 37,
+  "non_reasoning_generated_tokens": 37,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.3609078000008594,
+  "first_visible_content_s": 2.3609078000008594,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 3.880601700002444,
+  "terminal_answer_s": 3.9289014999958454,
+  "transport_wall_s": 3.9289609999977984,
+  "answer": "Bill has 2 × 24 = 48 bottles. He needs 70 × 2 = 140 bottles. 140 − 48 = 92.\n\n#### 92",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.0019813999970210716,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_0059523ec1b846a098a7334b",
+          "object": "response",
+          "created_at": 1794676321,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.0020006999984616414,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_0059523ec1b846a098a7334b",
+          "object": "response",
+          "created_at": 1794676321,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.3606594000011683,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_24ab61efcf0c4c17ab5aa533",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.360879699997895,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.3609078000008594,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "Bill",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.450930899998639,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " has",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.55435910000233,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.5893159999977797,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "2",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.634513400000287,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ×",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.695687799998268,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.728303500000038,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "24",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7612558999971952,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " =",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8039860999997472,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.85003709999728,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "48",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.888855600001989,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " bottles",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.9441227999996045,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.987855400002445,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " He",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.040955299999041,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " needs",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.101630400000431,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.1489088000016636,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "70",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.1916466999973636,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ×",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.2416918000017176,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.272533299998031,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "2",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.2999312999963877,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " =",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.328046800001175,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.3705727999986266,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "140",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.3973336999988533,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " bottles",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.433780699997442,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.4626445999965654,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5015031000002637,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "140",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5391365999967093,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " −",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.596616000002541,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.6425049000026775,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "48",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.683707600001071,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " =",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.71258189999935,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 34,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7540631000010762,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 35,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "92",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.785502599996107,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 36,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.811078999999154,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 37,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\n####",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.8524741000001086,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 38,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.880601700002444,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 39,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "92",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9285734000004595,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 40,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "Bill has 2 × 24 = 48 bottles. He needs 70 × 2 = 140 bottles. 140 − 48 = 92.\n\n#### 92",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9286482999959844,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 41,
+        "item_id": "msg_24ab61efcf0c4c17ab5aa533",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "Bill has 2 × 24 = 48 bottles. He needs 70 × 2 = 140 bottles. 140 − 48 = 92.\n\n#### 92",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.928725799996755,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 42,
+        "output_index": 0,
+        "item": {
+          "id": "msg_24ab61efcf0c4c17ab5aa533",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "Bill has 2 × 24 = 48 bottles. He needs 70 × 2 = 140 bottles. 140 − 48 = 92.\n\n#### 92",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.9289014999958454,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 43,
+        "response": {
+          "id": "resp_0059523ec1b846a098a7334b",
+          "object": "response",
+          "created_at": 1794676321,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_24ab61efcf0c4c17ab5aa533",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "Bill has 2 × 24 = 48 bottles. He needs 70 × 2 = 140 bottles. 140 − 48 = 92.\n\n#### 92",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 105,
+            "output_tokens": 37,
+            "total_tokens": 142,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676325
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "2c5764181237db949a59616793c0b7cffe177740cae811964325316933bcc220",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 8,
+    "source": "nvidia-smi",
+    "duration_s": 3.929025500001444,
+    "gpu_w_avg": 135.9104165295937,
+    "gpu_sampled_coverage_s": 3.54258850000042,
+    "gpu_sampled_coverage_fraction": 0.9016455861635712,
+    "gpu_w_max": 164.56,
+    "gpu_energy_j": 533.9954922605914,
+    "system_w_est": 250.11703817716273,
+    "system_energy_j_est": 982.7162209829071,
+    "gpu_util_avg": 57.125,
+    "vram_mb_max": 30040.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 53.0,
+    "cpu_util_avg": 0.39046963778409094,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49628504064,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 71.9277629810409,
+    "system_memory_percent_max": 72.30578991927767,
+    "vram_percent_avg": 92.12989940501748,
+    "vram_percent_max": 92.13028277004233,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 8,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 8,
+        "source": "nvidia-smi",
+        "duration_s": 3.929025500001444,
+        "gpu_w_avg": 70.19780554865993,
+        "gpu_sampled_coverage_s": 3.54258850000042,
+        "gpu_sampled_coverage_fraction": 0.9016455861635712,
+        "gpu_w_max": 84.03,
+        "gpu_energy_j": 275.80896804482774,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 51.75,
+        "vram_mb_max": 15456.0,
+        "clock_mhz_avg": 2982.0,
+        "temp_c_max": 53.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 94.80387045329081,
+        "vram_percent_max": 94.80463718334049,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 8,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 8,
+        "source": "nvidia-smi",
+        "duration_s": 3.929025500001444,
+        "gpu_w_avg": 65.71261098093379,
+        "gpu_sampled_coverage_s": 3.54258850000042,
+        "gpu_sampled_coverage_fraction": 0.9016455861635712,
+        "gpu_w_max": 82.52,
+        "gpu_energy_j": 258.18652421576377,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 62.5,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 3001.625,
+        "temp_c_max": 38.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 8,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 8,
+    "errors": {},
+    "available_bytes_min": 19028717568,
+    "ram_used_percent_max": 72.3,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 81814.83810760238,
+      "max": 155513.97388082874,
+      "min": 25810.393562528363
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 958.9116707864993,
+      "max": 1750.7151217821493,
+      "min": 445.80603514378134
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 349743.9782500938,
+      "max": 675935.6426957373,
+      "min": 114643.4799975748
+    },
+    "transition_faults_s": {
+      "mean": 8996.500755383011,
+      "max": 40501.44833010416,
+      "min": 53.490057882185965
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7632966144.0,
+      "max": 7857168384.0,
+      "min": 7478460416.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19023746048.0,
+      "max": 19184021504.0,
+      "min": 18797408256.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 78336.0,
+      "max": 626688.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 227452928.0,
+      "max": 227467264.0,
+      "min": 227352576.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 362136576.0,
+      "max": 363343872.0,
+      "min": 361725952.0
+    },
+    "committed_bytes": {
+      "mean": 79984475648.0,
+      "max": 79990095872.0,
+      "min": 79979614208.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9166851043701174,
+      "max": 1.9166851043701174,
+      "min": 1.9166851043701174
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 2404864,
+        "write_bytes": 1789440,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 1290227712,
+        "write_bytes": 0,
+        "read_time_ms": 3,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32626479104,
+    "engine_rss_max": 32626900992,
+    "engine_faults_delta": 113
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 23,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "92",
+      "expected": "92",
+      "content_rule": "final numeric expression; strict format separately requires####"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676325.7253065
+  }
+}

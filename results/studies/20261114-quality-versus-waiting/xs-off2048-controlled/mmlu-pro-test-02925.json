@@ -1,0 +1,970 @@
+{
+  "id": "mmlu-pro-test-02925",
+  "category": "biology",
+  "cohort": "public128",
+  "suite_id": "mmlu-pro-balanced64-chat-v1",
+  "prompt_sha256": "3baffecd299080ca1e9892113157047533e530a11b826d422101a17dab6aca31",
+  "request_started_unix": 1794676532.596024,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676532.596024
+  },
+  "started_unix": 1794676532.596024,
+  "response_id": "resp_2bb0482ecf9444e7a02ecb9b",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 118,
+    "output_tokens": 40,
+    "total_tokens": 158,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 40,
+  "non_reasoning_generated_tokens": 40,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.41038529999787,
+  "first_visible_content_s": 2.41038529999787,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 4.662506000000576,
+  "terminal_answer_s": 4.719033800000034,
+  "transport_wall_s": 4.71911249999539,
+  "answer": "D\n\nDarwin noted that temperate South American plants resembled tropical South American plants more than temperate European plants, supporting descent with modification from common ancestors in the same region.\n\nANSWER: D",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.0029511999964597635,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_2bb0482ecf9444e7a02ecb9b",
+          "object": "response",
+          "created_at": 1794676532,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.002968299995700363,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_2bb0482ecf9444e7a02ecb9b",
+          "object": "response",
+          "created_at": 1794676532,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.4102980000025127,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_6daed72fe3804c0fb60e491c",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.410339900001418,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.41038529999787,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.4900382999985595,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nDar",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.583979700000782,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "win",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.639638799999375,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " noted",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.705030600001919,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " that",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.766802699996333,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " temper",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.884502100001555,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ate",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.942010200000368,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " South",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.984486499997729,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " American",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.0333339999997406,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " plants",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.083393499997328,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " resembled",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.192210699999123,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " tropical",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.2992570999995223,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " South",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.332195999995747,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " American",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.3729042999984813,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " plants",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.424764600000344,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " more",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.4839715999987675,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " than",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.518490800001018,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " temper",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.556582099998195,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ate",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.58752110000205,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " European",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.6329808000009507,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " plants",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.67549219999637,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7224291999955312,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " supporting",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.822238299995661,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " descent",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9359867999955895,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " with",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.980918900000688,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " modification",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.030537799997546,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " from",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.1420593000002555,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " common",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.192682200002309,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ancestors",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.234688799995638,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " in",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.341021799998998,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 34,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.385056499995699,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 35,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " same",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.427490299996862,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 36,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " region",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.4754635999997845,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 37,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.499926799995592,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 38,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.55881319999753,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 39,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.61152679999941,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 40,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.662506000000576,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 41,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.718797000001359,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 42,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "D\n\nDarwin noted that temperate South American plants resembled tropical South American plants more than temperate European plants, supporting descent with modification from common ancestors in the same region.\n\nANSWER: D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.718830600002548,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 43,
+        "item_id": "msg_6daed72fe3804c0fb60e491c",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "D\n\nDarwin noted that temperate South American plants resembled tropical South American plants more than temperate European plants, supporting descent with modification from common ancestors in the same region.\n\nANSWER: D",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.718900699997903,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 44,
+        "output_index": 0,
+        "item": {
+          "id": "msg_6daed72fe3804c0fb60e491c",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "D\n\nDarwin noted that temperate South American plants resembled tropical South American plants more than temperate European plants, supporting descent with modification from common ancestors in the same region.\n\nANSWER: D",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.719033800000034,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 45,
+        "response": {
+          "id": "resp_2bb0482ecf9444e7a02ecb9b",
+          "object": "response",
+          "created_at": 1794676532,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_6daed72fe3804c0fb60e491c",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "D\n\nDarwin noted that temperate South American plants resembled tropical South American plants more than temperate European plants, supporting descent with modification from common ancestors in the same region.\n\nANSWER: D",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 118,
+            "output_tokens": 40,
+            "total_tokens": 158,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676537
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "137441ea7b34a9da5be240682112bbeb02691080506d5b7d869a09166ad87cfa",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 10,
+    "source": "nvidia-smi",
+    "duration_s": 4.719179799998528,
+    "gpu_w_avg": 133.62211324964704,
+    "gpu_sampled_coverage_s": 4.5593848999997135,
+    "gpu_sampled_coverage_fraction": 0.9661392642851063,
+    "gpu_w_max": 151.45,
+    "gpu_energy_j": 630.58677768085,
+    "system_w_est": 247.88519501856885,
+    "system_energy_j_est": 1169.814805050326,
+    "gpu_util_avg": 63.75,
+    "vram_mb_max": 30208.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 46.0,
+    "cpu_util_avg": 0.3878314393939394,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49414803456,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 71.60983544083146,
+    "system_memory_percent_max": 71.99444079523911,
+    "vram_percent_avg": 92.64460528737041,
+    "vram_percent_max": 92.64552536343004,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 10,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 10,
+        "source": "nvidia-smi",
+        "duration_s": 4.719179799998528,
+        "gpu_w_avg": 67.36556987698816,
+        "gpu_sampled_coverage_s": 4.5593848999997135,
+        "gpu_sampled_coverage_fraction": 0.9661392642851063,
+        "gpu_w_max": 76.09,
+        "gpu_energy_j": 317.9102365788719,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 51.8,
+        "vram_mb_max": 15624.0,
+        "clock_mhz_avg": 2981.8,
+        "temp_c_max": 46.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.83328221799668,
+        "vram_percent_max": 95.83512237011593,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 10,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 10,
+        "source": "nvidia-smi",
+        "duration_s": 4.719179799998528,
+        "gpu_w_avg": 66.25654337265894,
+        "gpu_sampled_coverage_s": 4.5593848999997135,
+        "gpu_sampled_coverage_fraction": 0.9661392642851063,
+        "gpu_w_max": 77.09,
+        "gpu_energy_j": 312.67654110197844,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 75.7,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 3005.9,
+        "temp_c_max": 36.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 10,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 9,
+    "errors": {},
+    "available_bytes_min": 19278585856,
+    "ram_used_percent_max": 71.9,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 76794.96880863348,
+      "max": 174507.8847285341,
+      "min": 6714.545147551933
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 866.0390689231209,
+      "max": 1971.7736656218897,
+      "min": 94.34958052766183
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 372247.0651913965,
+      "max": 628003.9971795749,
+      "min": 187046.2308122284
+    },
+    "transition_faults_s": {
+      "mean": 2605.886779648766,
+      "max": 5847.4095916424385,
+      "min": 38.41202388536469
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7325084330.666667,
+      "max": 7559479296.0,
+      "min": 7126855680.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19277354780.444443,
+      "max": 19481894912.0,
+      "min": 19050528768.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 175217.77777777778,
+      "max": 1576960.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 226403669.33333334,
+      "max": 226414592.0,
+      "min": 226381824.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 339597539.5555556,
+      "max": 340430848.0,
+      "min": 338309120.0
+    },
+    "committed_bytes": {
+      "mean": 80221549909.33333,
+      "max": 80247324672.0,
+      "min": 80210677760.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9757747650146484,
+      "max": 1.9758415222167969,
+      "min": 1.9757556915283203
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 744960,
+        "write_bytes": 5906944,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 1433628672,
+        "write_bytes": 0,
+        "read_time_ms": 3,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32668196864,
+    "engine_rss_max": 32668483584,
+    "engine_faults_delta": 78
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 31,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "D",
+      "expected": "D",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676537.3174615
+  }
+}

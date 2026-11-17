@@ -1,0 +1,898 @@
+{
+  "id": "arc-test-1092",
+  "category": "science_reasoning",
+  "cohort": "public128",
+  "suite_id": "arc-challenge-test-chat-v1",
+  "prompt_sha256": "6572688f594d64e62725cc2eb033a201608cda40c8a457b8a6824f220eeb8a99",
+  "request_started_unix": 1794676247.0073404,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676247.0073404
+  },
+  "started_unix": 1794676247.0073404,
+  "response_id": "resp_62adcc25e21c4960b4e8ca48",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 135,
+    "output_tokens": 33,
+    "total_tokens": 168,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 33,
+  "non_reasoning_generated_tokens": 33,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.760206599996309,
+  "first_visible_content_s": 2.760206599996309,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 4.4411655999938375,
+  "terminal_answer_s": 4.479727699996147,
+  "transport_wall_s": 4.479768499993952,
+  "answer": "A: 50 N, B: 100 N, C: 80 N, D: 60 N → greatest is B.\n\nANSWER: B",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.002246999996714294,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_62adcc25e21c4960b4e8ca48",
+          "object": "response",
+          "created_at": 1794676247,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.00226499999553198,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_62adcc25e21c4960b4e8ca48",
+          "object": "response",
+          "created_at": 1794676247,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.7599275999964448,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_a3f6c389df994bcfa99bdac5",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.7600685999932466,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.760206599996309,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.857323699994595,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.9468899999992573,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.032336899996153,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "50",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.109484499997052,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " N",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.22315399999934,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.279931499993836,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " B",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.339753099993686,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.4034431999971275,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.4429063999996288,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "100",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.513928999993368,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " N",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5770796999931918,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.627926999994088,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " C",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.679780699996627,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7307166999962647,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.760170699999435,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "80",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.8223864999963553,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " N",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.8682123999969917,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9097471999994013,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.953076699996018,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.992782299996179,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.023105299995223,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "60",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.070799099994474,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " N",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.104641499994614,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " →",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.1585018999976455,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " greatest",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.218957400000363,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.2742886999985785,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " B",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.3033580999981496,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.337697699993441,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.373341899998195,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.4099448999986635,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 34,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.4411655999938375,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 35,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " B",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.479396099995938,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 36,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "A: 50 N, B: 100 N, C: 80 N, D: 60 N → greatest is B.\n\nANSWER: B",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.47947519999434,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 37,
+        "item_id": "msg_a3f6c389df994bcfa99bdac5",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "A: 50 N, B: 100 N, C: 80 N, D: 60 N → greatest is B.\n\nANSWER: B",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.479548399998748,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 38,
+        "output_index": 0,
+        "item": {
+          "id": "msg_a3f6c389df994bcfa99bdac5",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "A: 50 N, B: 100 N, C: 80 N, D: 60 N → greatest is B.\n\nANSWER: B",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.479727699996147,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 39,
+        "response": {
+          "id": "resp_62adcc25e21c4960b4e8ca48",
+          "object": "response",
+          "created_at": 1794676247,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_a3f6c389df994bcfa99bdac5",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "A: 50 N, B: 100 N, C: 80 N, D: 60 N → greatest is B.\n\nANSWER: B",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 135,
+            "output_tokens": 33,
+            "total_tokens": 168,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676251
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "4f3351430074bf48b9daeabb2711a97e2300b77cdd6131f0fbe12b730bb18724",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 9,
+    "source": "nvidia-smi",
+    "duration_s": 4.479834099998698,
+    "gpu_w_avg": 133.1398339529016,
+    "gpu_sampled_coverage_s": 4.046324800001457,
+    "gpu_sampled_coverage_fraction": 0.9032309477716225,
+    "gpu_w_max": 146.81,
+    "gpu_energy_j": 596.444368210373,
+    "system_w_est": 250.03042902801428,
+    "system_energy_j_est": 1120.0948419970025,
+    "gpu_util_avg": 60.611111111111114,
+    "vram_mb_max": 30246.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 58.0,
+    "cpu_util_avg": 0.4063486426767677,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49609252864,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 71.73226294751277,
+    "system_memory_percent_max": 72.27774206151635,
+    "vram_percent_avg": 92.76104602424911,
+    "vram_percent_max": 92.76206833098203,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 9,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.479834099998698,
+        "gpu_w_avg": 70.18807542477577,
+        "gpu_sampled_coverage_s": 4.046324800001457,
+        "gpu_sampled_coverage_fraction": 0.9032309477716225,
+        "gpu_w_max": 81.36,
+        "gpu_energy_j": 314.43093370119107,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 62.22222222222222,
+        "vram_mb_max": 15662.0,
+        "clock_mhz_avg": 2976.222222222222,
+        "temp_c_max": 58.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 96.06616369175407,
+        "vram_percent_max": 96.0682083052199,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.479834099998698,
+        "gpu_w_avg": 62.951758528125865,
+        "gpu_sampled_coverage_s": 4.046324800001457,
+        "gpu_sampled_coverage_fraction": 0.9032309477716225,
+        "gpu_w_max": 72.89,
+        "gpu_energy_j": 282.01343450918205,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 59.0,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 2990.4444444444443,
+        "temp_c_max": 50.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 9,
+    "errors": {},
+    "available_bytes_min": 18990145536,
+    "ram_used_percent_max": 72.3,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 69183.4675845972,
+      "max": 140325.10954191705,
+      "min": 16034.623533073664
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 777.5151212988444,
+      "max": 1580.6084529432833,
+      "min": 182.27917521843287
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 486163.4491568024,
+      "max": 842156.9097974323,
+      "min": 259878.64302272518
+    },
+    "transition_faults_s": {
+      "mean": 2577.0356539520053,
+      "max": 5918.129308450641,
+      "min": 11.865103267926292
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7510088362.666667,
+      "max": 7926366208.0,
+      "min": 7285313536.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19162056931.555557,
+      "max": 19388252160.0,
+      "min": 18761515008.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 131527.11111111112,
+      "max": 1183744.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 227467264.0,
+      "max": 227467264.0,
+      "min": 227467264.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 362153301.3333333,
+      "max": 364646400.0,
+      "min": 361488384.0
+    },
+    "committed_bytes": {
+      "mean": 80233124295.11111,
+      "max": 80238215168.0,
+      "min": 80227516416.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9169139862060547,
+      "max": 1.9169139862060547,
+      "min": 1.9169139862060547
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 29184,
+        "write_bytes": 84480,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 1268699136,
+        "write_bytes": 0,
+        "read_time_ms": 3,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32577060864,
+    "engine_rss_max": 32577187840,
+    "engine_faults_delta": 40
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 18,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "B",
+      "expected": "B",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676251.4883916
+  }
+}

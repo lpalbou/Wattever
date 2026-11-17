@@ -1,0 +1,41 @@
+{
+  "checked_utc": "2026-11-14T16:37:37.789879+00:00",
+  "bios": {
+    "vendor": "American Megatrends Inc.",
+    "version": "1.03",
+    "release": "2016-03-11",
+    "UEFISecureBootEnabled": 0
+  },
+  "volumes": {
+    "D": {
+      "filesystem": "exFAT",
+      "allocation_unit_bytes": 1048576,
+      "health": "Warning",
+      "operational_status": "Full Repair Needed",
+      "free_bytes_observed": 1108136165376
+    },
+    "C": {
+      "filesystem": "NTFS",
+      "health": "Healthy"
+    }
+  },
+  "physical_drives": [
+    {
+      "model": "Samsung SSD990 PRO4TB",
+      "bus": "NVMe",
+      "health": "Healthy",
+      "operational": "OK"
+    },
+    {
+      "model": "Samsung SSD870 EVO4TB",
+      "bus": "SATA",
+      "health": "Healthy",
+      "operational": "OK"
+    }
+  ],
+  "unavailable": [
+    "fsutil dirty query: access denied",
+    "StorageReliabilityCounter: access denied"
+  ],
+  "actions": "Read only. No repair, reformat, partition, OS, driver or filesystem changes. Downloads preserved. Native Linux performance unmeasured."
+}

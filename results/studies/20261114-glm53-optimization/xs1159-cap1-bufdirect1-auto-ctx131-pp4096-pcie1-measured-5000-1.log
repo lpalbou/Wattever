@@ -1,0 +1,11 @@
+72, gaps 543, mixer windows 457 | lead 111, tail 1 | pcie 21.73 GB (ram 13.39, disk 8.34) + 0.28 GB vram | experts: staged 4386, resident 1605 (188652 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 0 ms | layer lane 223.1/95.5 ms max/min
+glm prefill: CUDA0 chunk 2/2, 2440 tokens, wall 2717 ms | the copy lane 2600 ms: copies 1800 (12.1 GB/s), ring wait 112, gaps 202, mixer windows 485 | lead 116, tail 1 | pcie 21.74 GB (ram 13.40, disk 8.34) + 0.28 GB vram | experts: staged 4388, resident 1605 (174379 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 0 ms | layer lane 119.1/88.5 ms max/min
+glm prefill: CUDA1 chunk 1/2, 2560 tokens, wall 4627 ms | the copy lane 4567 ms: copies 1888 (12.2 GB/s), ring wait 1306, gaps 890, mixer windows 482 | lead 25, tail 35 | pcie 23.00 GB (ram 13.79, disk 9.21) + 0.20 GB vram | experts: staged 4539, resident 1482 (182081 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 12 ms | layer lane 316.4/97.2 ms max/min
+glm prefill: CUDA1 chunk 2/2, 2440 tokens, wall 2709 ms | the copy lane 2668 ms: copies 1833 (12.4 GB/s), ring wait 123, gaps 213, mixer windows 498 | lead 19, tail 23 | pcie 22.81 GB (ram 13.71, disk 9.10) + 0.20 GB vram | experts: staged 4502, resident 1482 (163869 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 12 ms | layer lane 109.8/96.6 ms max/min
+glm prefill: 5000 tokens in 11032.2 ms (2.21 ms/token, 453 tok/s), 2 chunks of 2560 tokens | CUDA0 6348 ms, CUDA1 7336 ms (hop in 24 ms)
+glm vram: prompt 5001 tokens read in 11.6 s; VRAM free CUDA0 1.4 of 15.9, CUDA1 1.5 of 15.9 GB before, 1.4, 1.5 after
+glm stat: decode 56.37 ms/tok (17.74 tok/s) | vram hit 69.70% | ram fetches 96.34/tok | disk 11.74 reads/tok in 9.91 waits/tok, 14.16 ms/tok | promotions 55.25/tok | cpu lane 0.00/tok in 0.00 ms/tok | prompt 2.3 ms/tok | vram 3705/3780 ram 5326/5439
+glm spec: 113 of 126 drafts accepted (89.7%)
+glm kv: KV streaming: 98.21% of 830146 block reads hit VRAM, 30.8 MiB read from RAM
+tokens, 17.8 tok/s, 19 s
+[maya] done: 128 tokens in 19 s (17.7 tok/s) (length, cancel=False), expert cache 69.7% hit

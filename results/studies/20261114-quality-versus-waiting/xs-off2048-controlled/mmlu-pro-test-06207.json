@@ -1,0 +1,922 @@
+{
+  "id": "mmlu-pro-test-06207",
+  "category": "health",
+  "cohort": "public128",
+  "suite_id": "mmlu-pro-balanced64-chat-v1",
+  "prompt_sha256": "395edd4aa05cc8ce7c631faa623abbc20be3ef1db0b76f589943338e5b535c1b",
+  "request_started_unix": 1794676640.9198773,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676640.9198773
+  },
+  "started_unix": 1794676640.9198773,
+  "response_id": "resp_f12047423464467b9e1a444b",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 149,
+    "output_tokens": 35,
+    "total_tokens": 184,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 35,
+  "non_reasoning_generated_tokens": 35,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.446347400000377,
+  "first_visible_content_s": 2.446347400000377,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 4.389871699997457,
+  "terminal_answer_s": 4.448675999999978,
+  "transport_wall_s": 4.448739400002523,
+  "answer": "Normal adult respiratory rate is typically 12–20 breaths per minute, with 14–16 being a common reference range for a resting adult.\n\nANSWER: D",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.005148700001882389,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_f12047423464467b9e1a444b",
+          "object": "response",
+          "created_at": 1794676640,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.005213199998252094,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_f12047423464467b9e1a444b",
+          "object": "response",
+          "created_at": 1794676640,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.4461318000030587,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_a74f9ab653a0453fbba5e3f3",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.4462379999968107,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.446347400000377,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "Normal",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.575962000002619,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " adult",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.6840529999972205,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " respiratory",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.74550520000048,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " rate",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8009410000013304,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8491120999970008,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " typically",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.887834799999837,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.942864399999962,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "12",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.0011654999980237,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "–",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.0496813999998267,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "20",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.108468200000061,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " breath",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.1722163000013097,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "s",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.2161229999983334,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " per",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.257402800001728,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " minute",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.2970312000034028,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.3599711999995634,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " with",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.429163000000699,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5327184999987367,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "14",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5949025000008987,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "–",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.6227438999994774,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "16",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.658489900000859,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " being",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7057311000025948,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " a",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7621601999999257,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " common",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.806147499999497,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " reference",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9106443999990006,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " range",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9529420000035316,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " for",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.012414800003171,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " a",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.086284199998772,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " resting",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.141330799997377,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " adult",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.185760899999877,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.208777300002112,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 34,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.299940500000957,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 35,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.349202899997181,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 36,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.389871699997457,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 37,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.448338700000022,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 38,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "Normal adult respiratory rate is typically 12–20 breaths per minute, with 14–16 being a common reference range for a resting adult.\n\nANSWER: D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.448376899999857,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 39,
+        "item_id": "msg_a74f9ab653a0453fbba5e3f3",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "Normal adult respiratory rate is typically 12–20 breaths per minute, with 14–16 being a common reference range for a resting adult.\n\nANSWER: D",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.448493399999279,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 40,
+        "output_index": 0,
+        "item": {
+          "id": "msg_a74f9ab653a0453fbba5e3f3",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "Normal adult respiratory rate is typically 12–20 breaths per minute, with 14–16 being a common reference range for a resting adult.\n\nANSWER: D",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.448675999999978,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 41,
+        "response": {
+          "id": "resp_f12047423464467b9e1a444b",
+          "object": "response",
+          "created_at": 1794676640,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_a74f9ab653a0453fbba5e3f3",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "Normal adult respiratory rate is typically 12–20 breaths per minute, with 14–16 being a common reference range for a resting adult.\n\nANSWER: D",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 149,
+            "output_tokens": 35,
+            "total_tokens": 184,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676645
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "b3cf218002d2a26b9927fa2878503decf1ce8c71303972e5043a5e2f8ac811d2",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 9,
+    "source": "nvidia-smi",
+    "duration_s": 4.448835399998643,
+    "gpu_w_avg": 123.70181259001434,
+    "gpu_sampled_coverage_s": 4.0413847000017995,
+    "gpu_sampled_coverage_fraction": 0.9084140761879013,
+    "gpu_w_max": 154.86,
+    "gpu_energy_j": 550.3290028944537,
+    "system_w_est": 239.09157081398953,
+    "system_energy_j_est": 1063.679044078559,
+    "gpu_util_avg": 52.44444444444444,
+    "vram_mb_max": 30076.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 44.0,
+    "cpu_util_avg": 0.39116424663299665,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49492725760,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 71.75685289562337,
+    "system_memory_percent_max": 72.10796897525003,
+    "vram_percent_avg": 92.21751961125082,
+    "vram_percent_max": 92.24069189719684,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 9,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.448835399998643,
+        "gpu_w_avg": 65.102022741752,
+        "gpu_sampled_coverage_s": 4.0413847000017995,
+        "gpu_sampled_coverage_fraction": 0.9084140761879013,
+        "gpu_w_max": 79.01,
+        "gpu_energy_j": 289.62818338502296,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 52.333333333333336,
+        "vram_mb_max": 15492.0,
+        "clock_mhz_avg": 2988.222222222222,
+        "temp_c_max": 44.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 94.97911086575749,
+        "vram_percent_max": 95.02545543764951,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.448835399998643,
+        "gpu_w_avg": 58.59978984826236,
+        "gpu_sampled_coverage_s": 4.0413847000017995,
+        "gpu_sampled_coverage_fraction": 0.9084140761879013,
+        "gpu_w_max": 75.85,
+        "gpu_energy_j": 260.7008195094307,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 52.55555555555556,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 3014.777777777778,
+        "temp_c_max": 35.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 9,
+    "errors": {},
+    "available_bytes_min": 19166683136,
+    "ram_used_percent_max": 72.1,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 83760.65176254476,
+      "max": 170367.31321618689,
+      "min": 13477.671280958839
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 948.8409937193361,
+      "max": 1902.4674771641196,
+      "min": 157.84126811253216
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 402278.35587855603,
+      "max": 612582.9507656468,
+      "min": 209274.5487980101
+    },
+    "transition_faults_s": {
+      "mean": 2586.5473311129895,
+      "max": 6220.7770790663535,
+      "min": 17.757142662659867
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7431139328.0,
+      "max": 7644348416.0,
+      "min": 7218040832.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19146522168.88889,
+      "max": 19366064128.0,
+      "min": 18938589184.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 226435072.0,
+      "max": 226435072.0,
+      "min": 226435072.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 337919089.7777778,
+      "max": 339058688.0,
+      "min": 336183296.0
+    },
+    "committed_bytes": {
+      "mean": 80024191886.22223,
+      "max": 80049786880.0,
+      "min": 80014540800.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.97010252210829,
+      "max": 1.9701290130615234,
+      "min": 1.9700813293457031
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 800256,
+        "write_bytes": 2686464,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 1564635136,
+        "write_bytes": 0,
+        "read_time_ms": 4,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32682123264,
+    "engine_rss_max": 32682192896,
+    "engine_faults_delta": 25
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 23,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "D",
+      "expected": "D",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676645.369919
+  }
+}

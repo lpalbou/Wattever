@@ -1,0 +1,315 @@
+{
+  "label": "xs1156-ctx98-ram40-pin1024-ch4-measured",
+  "scope": "Nine measured single-client requests, three repeats per target; warmups excluded",
+  "groups": [
+    {
+      "target": 512,
+      "n": 3,
+      "metrics": {
+        "prompt_tokens": {
+          "median": 512,
+          "min": 511,
+          "max": 512
+        },
+        "completion_tokens": {
+          "median": 128,
+          "min": 120,
+          "max": 128
+        },
+        "ttft_s": {
+          "median": 6.347280799996952,
+          "min": 6.331716299999243,
+          "max": 6.688405900000362
+        },
+        "prefill_tps": {
+          "median": 80.66446343452236,
+          "min": 76.55037802056425,
+          "max": 80.7048161649411
+        },
+        "decode_s": {
+          "median": 8.055085199997848,
+          "min": 7.444970000000467,
+          "max": 8.138788300002489
+        },
+        "decode_tps": {
+          "median": 15.766437827378155,
+          "min": 15.60428841722805,
+          "max": 15.98394620797566
+        },
+        "wall_s": {
+          "median": 14.388916599997174,
+          "min": 13.854812599998695,
+          "max": 14.82923270000174
+        },
+        "engine_prefill_s": {
+          "median": 6.3214,
+          "min": 6.2906,
+          "max": 6.3485
+        },
+        "engine_prefill_tps": {
+          "median": 81.0,
+          "min": 80.6,
+          "max": 81.2
+        },
+        "engine_decode_s": {
+          "median": 8.0556,
+          "min": 7.5062,
+          "max": 8.1393
+        },
+        "engine_decode_tps": {
+          "median": 15.9,
+          "min": 15.7,
+          "max": 16.0
+        },
+        "disk_d_read_gib": {
+          "median": 24.906600952148438,
+          "min": 23.745071411132812,
+          "max": 26.644378662109375
+        }
+      },
+      "ram_peak_percent": 64.44258493115116,
+      "available_ram_min_gib": 22.79718780517578,
+      "combined_gpu_w_avg": {
+        "median": 130.9427264053539,
+        "min": 130.56135038266302,
+        "max": 131.18304330098013
+      },
+      "mtp_acceptance_percent": {
+        "median": 88.98305084745763,
+        "min": 88.88888888888889,
+        "max": 92.06349206349206
+      },
+      "decode_expert_vram_hit_percent": {
+        "median": 69.39,
+        "min": 68.89,
+        "max": 69.46
+      },
+      "logical_decode_disk_reads_per_token": {
+        "median": 17.42,
+        "min": 16.87,
+        "max": 19.38
+      },
+      "logical_decode_disk_wait_ms_per_token": {
+        "median": 31.37,
+        "min": 30.46,
+        "max": 35.43
+      },
+      "gpus": {
+        "0": {
+          "vram_mib_max": 14804.0,
+          "temperature_c_max": 55.0
+        },
+        "1": {
+          "vram_mib_max": 13832.0,
+          "temperature_c_max": 42.0
+        }
+      }
+    },
+    {
+      "target": 5000,
+      "n": 3,
+      "metrics": {
+        "prompt_tokens": {
+          "median": 5001,
+          "min": 5001,
+          "max": 5001
+        },
+        "completion_tokens": {
+          "median": 128,
+          "min": 128,
+          "max": 128
+        },
+        "ttft_s": {
+          "median": 9.600295899999765,
+          "min": 9.411017599999468,
+          "max": 9.605434699999023
+        },
+        "prefill_tps": {
+          "median": 520.9214436817643,
+          "min": 520.6427565428672,
+          "max": 531.3984324075946
+        },
+        "decode_s": {
+          "median": 8.595145199997205,
+          "min": 8.419728199998644,
+          "max": 9.038246000000072
+        },
+        "decode_tps": {
+          "median": 14.775782961763264,
+          "min": 14.051398910806254,
+          "max": 15.08362229555349
+        },
+        "wall_s": {
+          "median": 18.033855999998195,
+          "min": 18.02185449999888,
+          "max": 18.645649999998568
+        },
+        "engine_prefill_s": {
+          "median": 9.3218,
+          "min": 9.2985,
+          "max": 9.3766
+        },
+        "engine_prefill_tps": {
+          "median": 536.5,
+          "min": 533.3,
+          "max": 537.8
+        },
+        "engine_decode_s": {
+          "median": 8.6095,
+          "min": 8.432,
+          "max": 9.038799999999998
+        },
+        "engine_decode_tps": {
+          "median": 14.9,
+          "min": 14.2,
+          "max": 15.2
+        },
+        "disk_d_read_gib": {
+          "median": 31.635284423828125,
+          "min": 31.171844482421875,
+          "max": 33.59898376464844
+        }
+      },
+      "ram_peak_percent": 64.4,
+      "available_ram_min_gib": 22.775428771972656,
+      "combined_gpu_w_avg": {
+        "median": 151.98361398048715,
+        "min": 151.23466877704726,
+        "max": 153.1532621073029
+      },
+      "mtp_acceptance_percent": {
+        "median": 89.68253968253968,
+        "min": 88.0952380952381,
+        "max": 91.26984126984127
+      },
+      "decode_expert_vram_hit_percent": {
+        "median": 69.14,
+        "min": 68.87,
+        "max": 69.36
+      },
+      "logical_decode_disk_reads_per_token": {
+        "median": 19.84,
+        "min": 19.44,
+        "max": 22.58
+      },
+      "logical_decode_disk_wait_ms_per_token": {
+        "median": 36.06,
+        "min": 34.7,
+        "max": 40.6
+      },
+      "gpus": {
+        "0": {
+          "vram_mib_max": 14861.0,
+          "temperature_c_max": 60.0
+        },
+        "1": {
+          "vram_mib_max": 13832.0,
+          "temperature_c_max": 47.0
+        }
+      }
+    },
+    {
+      "target": 20000,
+      "n": 3,
+      "metrics": {
+        "prompt_tokens": {
+          "median": 20002,
+          "min": 20000,
+          "max": 20003
+        },
+        "completion_tokens": {
+          "median": 128,
+          "min": 128,
+          "max": 128
+        },
+        "ttft_s": {
+          "median": 26.24625509999896,
+          "min": 26.19167799999923,
+          "max": 26.262202799996885
+        },
+        "prefill_tps": {
+          "median": 762.0896742713131,
+          "min": 761.6649735109947,
+          "max": 763.6013240541744
+        },
+        "decode_s": {
+          "median": 8.859662500002742,
+          "min": 8.370383299999958,
+          "max": 8.928587700000207
+        },
+        "decode_tps": {
+          "median": 14.334631821467319,
+          "min": 14.22397407822931,
+          "max": 15.172542934802118
+        },
+        "wall_s": {
+          "median": 35.107963800001016,
+          "min": 34.565922599998885,
+          "max": 35.19274939999741
+        },
+        "engine_prefill_s": {
+          "median": 25.9139,
+          "min": 25.817700000000002,
+          "max": 25.951700000000002
+        },
+        "engine_prefill_tps": {
+          "median": 771.9,
+          "min": 770.8,
+          "max": 774.7
+        },
+        "engine_decode_s": {
+          "median": 8.860299999999999,
+          "min": 8.3726,
+          "max": 8.9291
+        },
+        "engine_decode_tps": {
+          "median": 14.4,
+          "min": 14.3,
+          "max": 15.3
+        },
+        "disk_d_read_gib": {
+          "median": 71.42544555664062,
+          "min": 70.31135559082031,
+          "max": 72.47704315185547
+        }
+      },
+      "ram_peak_percent": 64.31493734019061,
+      "available_ram_min_gib": 22.820377349853516,
+      "combined_gpu_w_avg": {
+        "median": 177.471874238921,
+        "min": 176.4395499912187,
+        "max": 177.8193458412507
+      },
+      "mtp_acceptance_percent": {
+        "median": 85.71428571428571,
+        "min": 84.12698412698413,
+        "max": 92.06349206349206
+      },
+      "decode_expert_vram_hit_percent": {
+        "median": 69.82,
+        "min": 69.25,
+        "max": 71.81
+      },
+      "logical_decode_disk_reads_per_token": {
+        "median": 20.84,
+        "min": 18.36,
+        "max": 22.14
+      },
+      "logical_decode_disk_wait_ms_per_token": {
+        "median": 38.14,
+        "min": 33.54,
+        "max": 39.75
+      },
+      "gpus": {
+        "0": {
+          "vram_mib_max": 14689.0,
+          "temperature_c_max": 61.0
+        },
+        "1": {
+          "vram_mib_max": 13832.0,
+          "temperature_c_max": 49.0
+        }
+      }
+    }
+  ]
+}

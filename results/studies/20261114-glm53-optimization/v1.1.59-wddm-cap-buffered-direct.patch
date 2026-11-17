@@ -1,0 +1,519 @@
+--- a/include/strata/core/glm_model.hpp
++++ b/include/strata/core/glm_model.hpp
+@@ -393,7 +393,12 @@
+         std::condition_variable cv;
+         std::vector<bool> passed, pinned;
+         int turn = 0, pin_turn = 0;
+-        explicit SplitLoad(int n) : passed((size_t) n, false), pinned((size_t) n, false) {}
++        // Opt-in Windows cap planning; published in planning order, read after wait(n).
++        std::vector<uint64_t> ram_preferred, ram_mandatory, ram_fixed, ram_caps;
++        bool wddm_attempted = false, wddm_known = false, wddm_failed = false;
++        explicit SplitLoad(int n) : passed((size_t) n, false), pinned((size_t) n, false),
++            ram_preferred((size_t) n, 0), ram_mandatory((size_t) n, 0),
++            ram_fixed((size_t) n, 0) {}
+         void wait(int part) {
+             std::unique_lock<std::mutex> lk(mu);
+             cv.wait(lk, [&] { return turn >= part; });
+@@ -462,7 +467,8 @@
+         uint64_t size = 0, data_start = 0;
+         int fd = -1;                                   // kept open for posix_fadvise reads (prefetch)
+         int fd_direct = -1;                            // O_DIRECT: expert reads that bypass the page cache
+-        void* h_direct = nullptr;                      // Windows: the same, a FILE_FLAG_NO_BUFFERING HANDLE
++        void* h_direct = nullptr;                      // Windows: overlapped expert-read HANDLE
++        bool buffered_direct_reads = false;            // Windows: explicit buffered handle + direct destination opt-in
+     };
+     std::vector<Shard> pack_shards_;
+     struct NativeLayer {
+--- a/src/core/glm_model.cu
++++ b/src/core/glm_model.cu
+@@ -2909,9 +2909,31 @@
+     s.base = (uint8_t*) v;
+     s.path = path;
+     s.data_start = data_start;
++    // Opt-in mmap-only experiment: use read_slice's existing mapped memcpy fallback.
++    // No expert ReadFile handle means pack_release_views preserves these views.
++    // This avoids mixing unbuffered reads with mapped views of the same shard.
++    if (strata::platform::env_switch("MAYA_GLM_MMAP_IO")) {
++        s.h_direct = nullptr;
++        s.buffered_direct_reads = false;
++        std::fprintf(stderr, "glm expert I/O: native 1.1.59+io-modes+warm-checks, Windows mmap-only reads "
++                             "(mapped memcpy; no ReadFile expert handle)\n");
++        return true;
++    }
++    // Experimental 1.1.59+buffered-io: allow spare physical RAM to cache expert
++    // file pages without expanding the mapped/pinned RAM tier. Off by default.
++    // Keep the same overlapped handles and read_slice's alignment/EOF checks.
++    const bool buffered = strata::platform::env_switch("MAYA_GLM_BUFFERED_IO");
++    const DWORD read_flags = FILE_FLAG_OVERLAPPED | FILE_FLAG_RANDOM_ACCESS |
++                             (buffered ? 0 : FILE_FLAG_NO_BUFFERING);
++    std::fprintf(stderr, "glm expert I/O: native 1.1.59+buffered-io, Windows %s overlapped reads, CreateFile flags 0x%08lx\n",
++                 buffered ? "buffered (OS file cache)" : "unbuffered", (unsigned long) read_flags);
+     HANDLE hd = CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
+-                            FILE_FLAG_NO_BUFFERING | FILE_FLAG_OVERLAPPED | FILE_FLAG_RANDOM_ACCESS, nullptr);
++                            read_flags, nullptr);
+     s.h_direct = hd == INVALID_HANDLE_VALUE ? nullptr : (void*) hd;
++    s.buffered_direct_reads = buffered && s.h_direct != nullptr &&
++                              strata::platform::env_switch("MAYA_GLM_BUFFERED_DIRECT");
++    if (s.buffered_direct_reads)
++        std::fprintf(stderr, "glm expert I/O: buffered direct-destination reads enabled (no aligned bounce copy)\n");
+     return true;
+ #else
+     int fd = open(path.c_str(), O_RDONLY);
+--- a/src/core/glm_fast_path.cu
++++ b/src/core/glm_fast_path.cu
+@@ -19,6 +19,7 @@
+ #include "glm_dsa_fast.hpp"   // glm-dsa B2.4
+ #include "glm_residual.hpp"   // glm-dsa B2.3
+ #include "glm_tier_numa.hpp"   // glm-dsa B8.2-B8.4
++#include "glm_wddm_plan.hpp"
+ #include "strata/core/expert_cache.hpp"
+ #include "strata/core/glm_model.hpp"
+ #include "strata/core/glm_dsa_split.hpp"   // glm-dsa B6.3
+@@ -132,6 +133,21 @@
+ #endif
+ }
+ 
++// Read-only cap query: unlike pin_room this never allocates/probes pinned memory.
++static bool glm_wddm_available(const std::vector<int>& devices, int current, uint64_t& available) {
++    available = std::numeric_limits<uint64_t>::max();
++    const std::vector<int> selected = devices.empty() ? std::vector<int>{current} : devices;
++    for (int device : selected) {
++        uint64_t budget = 0, usage = 0;
++        if (!glm_pin_budget(device, budget, usage) || budget == 0) return false;
++        const uint64_t room = budget > usage ? budget - usage : 0;
++        available = std::min(available, room);
++        std::fprintf(stderr, "glm WDDM cap: CUDA%d Budget=%llu CurrentUsage=%llu Available=%llu\n", device,
++                     (unsigned long long) budget, (unsigned long long) usage, (unsigned long long) room);
++    }
++    return true;
++}
++
+ #if defined(STRATA_USE_HIP) && defined(_WIN32)
+ // A Windows APU's room for more pinned buffers (strata/platform/gpu_shared.hpp): its shared GPU memory, less what all
+ // its users hold of it now (the desktop's, this process's pinned buffers, its device memory past the carve-out), less
+@@ -691,6 +707,70 @@
+ 
+ // [off, off + len) of a shard into dst: O_DIRECT through an aligned per-thread bounce buffer when the shard has a
+ // direct fd (no page cache), a buffered pread otherwise, the mapping as the last resort
++#ifdef _WIN32
++// BUFFERED_DIRECT_EXACT_BEGIN: host-test extraction includes this production helper verbatim.
++static bool buffered_read_exact(const Glm5Model::Shard& sh, uint64_t off, size_t len,
++                                uint8_t* dst, size_t& done, DWORD& error) {
++    done = 0;
++    error = ERROR_SUCCESS;
++    // A stale/truncated shard must fail explicitly. Never replace missing expert bytes with zeros or mmap fallback.
++    if (off > sh.size || (uint64_t) len > sh.size - off) {
++        error = ERROR_HANDLE_EOF;
++        return false;
++    }
++    if (len == 0) return true;
++    if (dst == nullptr || sh.h_direct == nullptr) {
++        error = dst == nullptr ? ERROR_INVALID_PARAMETER : ERROR_INVALID_HANDLE;
++        return false;
++    }
++    struct ReadEvent {
++        HANDLE ev = nullptr;
++        DWORD error = ERROR_SUCCESS;
++        ReadEvent() {
++            ev = CreateEventA(nullptr, TRUE, FALSE, nullptr);
++            if (ev == nullptr) error = GetLastError();
++        }
++        ~ReadEvent() { if (ev != nullptr) CloseHandle(ev); }
++    };
++    static thread_local ReadEvent event;
++    if (event.ev == nullptr) {
++        error = event.error;
++        return false;
++    }
++    while (done < len) {
++        if (!ResetEvent(event.ev)) {
++            error = GetLastError();
++            return false;
++        }
++        OVERLAPPED ov{};
++        const uint64_t at = off + (uint64_t) done;
++        ov.Offset = (DWORD) at;
++        ov.OffsetHigh = (DWORD) (at >> 32);
++        ov.hEvent = event.ev;
++        const DWORD want = (DWORD) std::min<size_t>(len - done, (size_t) 1 << 30);
++        if (!ReadFile((HANDLE) sh.h_direct, dst + done, want, nullptr, &ov)) {
++            const DWORD submitted = GetLastError();
++            if (submitted != ERROR_IO_PENDING) {
++                error = submitted;
++                return false;
++            }
++        }
++        DWORD received = 0;
++        if (!GetOverlappedResult((HANDLE) sh.h_direct, &ov, &received, TRUE)) {
++            error = GetLastError();
++            return false;
++        }
++        if (received == 0 || received > want) {
++            error = received == 0 ? ERROR_HANDLE_EOF : ERROR_INVALID_DATA;
++            return false;
++        }
++        done += (size_t) received;
++    }
++    return true;
++}
++// BUFFERED_DIRECT_EXACT_END
++#endif
++
+ void read_slice(const Glm5Model::Shard& sh, uint64_t off, size_t len, uint8_t* dst) {
+ #ifndef _WIN32
+     if (sh.fd_direct >= 0) {
+@@ -736,6 +816,16 @@
+     // Windows: the unbuffered handle the same way (sector-aligned offset, size and buffer), the mapping otherwise.
+     // The handle is overlapped (reads from many threads run at once): each read waits on this thread's own event
+     if (sh.h_direct != nullptr) {
++        if (sh.buffered_direct_reads) {
++            size_t done = 0;
++            DWORD error = ERROR_SUCCESS;
++            if (buffered_read_exact(sh, off, len, dst, done, error)) return;
++            std::fprintf(stderr, "glm fast: buffered direct read of %s failed (error %lu): "
++                                 "offset=%llu requested=%llu received=%llu; no expert bytes substituted\n",
++                         sh.path.c_str(), (unsigned long) error, (unsigned long long) off,
++                         (unsigned long long) len, (unsigned long long) done);
++            std::abort();
++        }
+         // freed and closed when its thread ends
+         struct Bounce {
+             uint8_t* p = nullptr;
+@@ -1772,6 +1862,7 @@
+         // here (estimated from this part's own sizes), and each later part measures again and leaves at least half
+         // the headroom free.
+         static int64_t total = -1, remaining = -1;
++        static bool wddm_initial_known = false;
+         static int remaining_layers = 0;
+         static int64_t unpinned = 0;   // a parallel load: the earlier parts' planned tiers, none pinned yet
+         if (g_.arch == GlmArch::GlmDsa && glmtier::budget_reset_due(part_)) total = -1, remaining = -1, remaining_layers = 0, unpinned = 0;   // glm-dsa B8.2: a reload measures again
+@@ -1783,6 +1874,17 @@
+         if (const char* h = getenv("MAYA_GLM_RAM_HEADROOM_GB")) head_gb = std::max(0.0, std::atof(h));
+         const int64_t head_b = (int64_t) (head_gb * 1073741824.0);
+         const bool fixed_ram = getenv("MAYA_GLM_RAM_GB") != nullptr;
++#if defined(_WIN32) && !defined(STRATA_USE_HIP)
++        const bool proactive_wddm = strata::platform::env_switch("MAYA_GLM_WDDM_CAP");
++#else
++        const bool proactive_wddm = false;
++#endif
++        const int64_t proactive_room_mb = getenv("MAYA_GLM_PIN_ROOM_MB") ? std::atoll(getenv("MAYA_GLM_PIN_ROOM_MB")) : -1;
++        const uint64_t proactive_reserve = (uint64_t) glmfast::pin_cap_room(false, 0, proactive_room_mb);
++        const uint64_t own_fixed = (uint64_t) g.n_exp_used * sstride +
++                                   FastState::kMaxUpd * (sizeof(int) + sizeof(unsigned long long));
++        bool proactive_active = false;
++        uint64_t proactive_cap = 0, later_mandatory = 0, later_fixed = 0;
+         if (budget < 0) {
+             if (total < 0) {
+                 if (const char* rg = getenv("MAYA_GLM_RAM_GB")) {
+@@ -1822,6 +1924,24 @@
+ #endif
+                     total = std::max<int64_t>(0, avail_kb * 1024 - head_b - unseen_pf);
+                 }
++                // In serial loading the future workspace is not present yet. Cap the
++                // global target before dividing it across parts, reserving its estimate.
++                // Parallel loading refines this with all actual plans before any tier pins.
++                if (proactive_wddm) {
++                    uint64_t available = 0;
++                    if (glm_wddm_available(split_devs_, dev_, available)) {
++                        wddm_initial_known = true;
++                        const uint64_t future = own_fixed * (uint64_t) std::max(1, n_parts_) +
++                            (uint64_t) std::max(0, n_parts_ - 1) * (pinned_pf.staging + pinned_pf.hop);
++                        const uint64_t cap = glmfast::wddm_room(available, 0, proactive_reserve, future);
++                        total = (int64_t) std::min<uint64_t>((uint64_t) std::max<int64_t>(0, total), cap);
++                        std::fprintf(stderr, "glm WDDM cap: global RAM target <= %llu bytes, reserve=%llu future=%llu; no allocation probe\n",
++                                     (unsigned long long) cap, (unsigned long long) proactive_reserve, (unsigned long long) future);
++                    } else {
++                        wddm_initial_known = false;
++                        std::fprintf(stderr, "glm WDDM cap: initial query unavailable; explicit legacy pin-guard fallback\n");
++                    }
++                }
+                 remaining = total;
+                 remaining_layers =
+                     g.n_layers - g.dense_lead + (strata::platform::env_switch("MAYA_GLM_NO_MTP") ? 0 : g.nextn);
+@@ -1904,6 +2024,14 @@
+         }
+         // parallel load: take the planned size from the budget and let the next part plan; every part pins once all
+         // have planned (a later part's measurement then sees no tier half pinned)
++        std::vector<int64_t> proactive_required(cls_n.size(), 0);
++        uint64_t mandatory_bytes = 0, preferred_bytes = 0;
++        for (size_t c = 0; c < cls_n.size(); ++c) {
++            proactive_required[c] = balanced_ram ? cls_required[c] :
++                F->ram_resident && !staging_only ? cls_cap[c] : std::min<int64_t>(16, cls_cap[c]);
++            mandatory_bytes += (uint64_t) proactive_required[c] * cls_stride[c];
++            preferred_bytes += (uint64_t) cls_n[c] * cls_stride[c];
++        }
+         if (split_load_ != nullptr) {
+             int64_t planned = 0;
+             for (size_t c = 0; c < cls_n.size(); ++c) planned += cls_n[c] * (int64_t) cls_stride[c];
+@@ -1912,12 +2040,80 @@
+                 remaining_layers -= n_moe;
+             }
+             unpinned += planned;
++            if (proactive_wddm) {
++                auto& sl = *split_load_;
++                sl.ram_preferred[(size_t) part_] = preferred_bytes;
++                sl.ram_mandatory[(size_t) part_] = mandatory_bytes;
++                sl.ram_fixed[(size_t) part_] = own_fixed;
++            }
+             split_load_->pass(part_);
+             split_load_->wait(n_parts_);
+             // ... and then pin one after another, in part order: near a pinning cap (Windows) parts pinning at once
+             // raced for the room under it - a 2x RTX 3080 box's first part shrank to 13.1 of its planned 21.5 GB while
+             // the second pinned all of its 22.5 (#105).  In turn, only the part that reaches the cap gives way
+             split_load_->wait_pin(part_);
++        }
++        if (proactive_wddm) {
++            uint64_t available = 0;
++            if (split_load_ != nullptr) {
++                auto& sl = *split_load_;
++                if (!sl.wddm_attempted) {
++                    sl.wddm_attempted = true;
++                    sl.wddm_known = glm_wddm_available(split_devs_, dev_, available);
++                    if (sl.wddm_known) {
++                        uint64_t fixed = 0;
++                        if (!glmfast::wddm_sum(sl.ram_fixed, 0, fixed) ||
++                            !glmfast::wddm_part_caps(glmfast::wddm_room(available, 0, proactive_reserve, fixed),
++                                                   sl.ram_preferred, sl.ram_mandatory, sl.ram_caps)) {
++                            sl.wddm_failed = true;
++                            err = "glm fast: WDDM cap cannot fit every part's mandatory RAM slots and disk staging";
++                            return false;
++                        }
++                    } else if (wddm_initial_known) {
++                        sl.wddm_failed = true;
++                        err = "glm fast: WDDM cap lost its authoritative global query before allocation";
++                        return false;
++                    } else std::fprintf(stderr, "glm WDDM cap: planning query unavailable; explicit legacy pin-guard fallback\n");
++                }
++                if (sl.wddm_failed) {
++                    err = "glm fast: WDDM cap failed an earlier part's mandatory-capacity check";
++                    return false;
++                }
++                proactive_active = sl.wddm_known;
++                if (proactive_active) {
++                    proactive_cap = sl.ram_caps[(size_t) part_];
++                    if (!glmfast::wddm_sum(sl.ram_mandatory, (size_t) part_ + 1, later_mandatory) ||
++                        !glmfast::wddm_sum(sl.ram_fixed, (size_t) part_ + 1, later_fixed)) {
++                        err = "glm fast: WDDM cap remaining mandatory size overflow";
++                        return false;
++                    }
++                }
++            } else if (glm_wddm_available(split_devs_, dev_, available)) {
++                proactive_active = true;
++                proactive_cap = preferred_bytes;
++                later_fixed = (uint64_t) std::max(0, n_parts_ - part_ - 1) *
++                    (own_fixed + pinned_pf.staging + pinned_pf.hop);
++            } else if (wddm_initial_known) {
++                err = "glm fast: WDDM cap lost its authoritative serial query before allocation";
++                return false;
++            } else std::fprintf(stderr, "glm WDDM cap: part query unavailable; explicit legacy pin-guard fallback\n");
++            if (proactive_active) {
++                // No pin allocations have occurred for this part yet. Account for every
++                // remaining part's mandatory capacity before spending optional cache bytes.
++                if (!glm_wddm_available(split_devs_, dev_, available)) {
++                    err = "glm fast: WDDM cap lost its authoritative query before allocation";
++                    return false;
++                }
++                const uint64_t fixed = own_fixed + later_fixed + later_mandatory;
++                proactive_cap = std::min(proactive_cap, glmfast::wddm_room(available, 0, proactive_reserve, fixed));
++                if (!glmfast::ram_class_plan(proactive_cap, cls_stride, proactive_required, cls_n, cls_n)) {
++                    err = "glm fast: WDDM cap cannot fit mandatory RAM slots before allocation";
++                    return false;
++                }
++                std::fprintf(stderr, "glm WDDM cap: CUDA%d RAM budget <= %llu bytes, mandatory=%llu later=%llu reserve=%llu; destructive probes disabled\n",
++                             dev_, (unsigned long long) proactive_cap, (unsigned long long) mandatory_bytes,
++                             (unsigned long long) (later_fixed + later_mandatory), (unsigned long long) proactive_reserve);
++            }
+         }
+         // the small pinned buffers first - the table updates and the disk reads' staging (an expert a routed entry):
+         // where the driver caps what can be pinned (Windows: an RTX 5090 Laptop with 64 GB, the cap reached at a 45.3
+@@ -2001,12 +2197,35 @@
+             int64_t n = cls_n[c];
+             const int64_t cap = cls_cap[c];
+             // Do not retry below mandatory lending/spare capacity in balanced resident mode.
+-            const int64_t least = balanced_ram ? cls_required[c] : std::min<int64_t>(16, cap);
++            const int64_t least = proactive_active ? proactive_required[c] :
++                balanced_ram ? cls_required[c] : std::min<int64_t>(16, cap);
+             if (!balanced_ram && pin_left >= 0) n = std::max(least, std::min(n, share(c)));
+             void* p = nullptr;
++            if (proactive_active) {
++                uint64_t available = 0, following_classes = 0;
++                for (size_t k = c + 1; k < cls_n.size(); ++k)
++                    following_classes += (uint64_t) proactive_required[k] * cls_stride[k];
++                if (!glm_wddm_available(split_devs_, dev_, available)) {
++                    err = "glm fast: WDDM cap lost its authoritative query before class allocation";
++                    return false;
++                }
++                const uint64_t room = glmfast::wddm_room(available, 0, proactive_reserve,
++                    later_fixed + later_mandatory + following_classes);
++                n = std::min<int64_t>(n, (int64_t) std::min<uint64_t>(room / R.stride, (uint64_t) std::numeric_limits<int>::max()));
++                if (n < least) {
++                    err = "glm fast: WDDM cap cannot fit a mandatory RAM class; no allocation was attempted";
++                    return false;
++                }
++                p = pin_tier(R, n);
++                if (p == nullptr) {
++                    cudaGetLastError();
++                    err = "glm fast: WDDM cap allocation refused despite fresh budget; no capacity probes were attempted";
++                    return false;
++                }
++            }
+             // a refusal near a pinning cap: the size measured (above), and should that be refused too, 1/32 less a
+             // try for the first four (a tier just over a cap loses ~3%, not the 12% of a 7/8 step), then 1/8 less
+-            for (int tries = 0; n >= least; ++tries) {
++            for (int tries = 0; !proactive_active && n >= least; ++tries) {
+                 RowLayout rl{R.stride, 0, 0, 0};   // (a layer of this class: its blob's parts, for ROW_HALVES)
+                 for (int il2 = l0_; il2 < lt_; ++il2)
+                     if (F->L[(size_t) il2].moe && F->layer_rc[(size_t) il2] == (int) c && !F->L[(size_t) il2].exl3) {
+@@ -4122,9 +4341,47 @@
+ // slots - all but the spares - and the rest fill the RAM tier (a few slots per class stay free for disk reads).  The
+ // first request then runs warm and the disk is touched again only for experts that fit nowhere.  MAYA_GLM_WARM=0
+ // skips it (the tiers fill on demand).
++// Diagnostic snapshots never substitute a guessed free-memory value when a query fails.
++// The existing NON_LOCAL lookup matches this CUDA device by LUID (not DXGI adapter order).
++static void glm_warm_memory_snapshot(int dev, const char* phase) {
++    const cudaError_t prior = cudaPeekAtLastError();
++    int current = -1;
++    const cudaError_t device_query = cudaGetDevice(&current);
++    size_t free = 0, total = 0;
++    const cudaError_t memory_query = cudaMemGetInfo(&free, &total);
++    uint64_t budget = 0, usage = 0;
++    const bool nonlocal = glm_pin_budget(dev, budget, usage);
++    std::fprintf(stderr,
++                 "glm warm memory: CUDA%d phase=%s current_device=%d device_query=%s prior_error=%s "
++                 "cuda_memory_query=%s free_bytes=%llu total_bytes=%llu "
++                 "wddm_nonlocal_query=%s budget_bytes=%llu usage_bytes=%llu\n",
++                 dev, phase, current, cudaGetErrorString(device_query), cudaGetErrorString(prior),
++                 cudaGetErrorString(memory_query), (unsigned long long) free, (unsigned long long) total,
++                 nonlocal ? "ok" : "unavailable", (unsigned long long) budget, (unsigned long long) usage);
++    std::fflush(stderr);
++}
++
+ bool Glm5Model::fast_warm(std::string& err) {
+     FastState* F = fast_;
+     const Glm5Geometry& g = g_;
++    // Keep the first failing operation: a pin-allocation error must not be attributed to the final table upload.
++    const cudaError_t entry_error = cudaPeekAtLastError();
++    glm_warm_memory_snapshot(dev_, "before-warm");
++    if (entry_error != cudaSuccess) {
++        err = "glm fast: CUDA" + std::to_string(dev_) + " warm entry has prior CUDA error (" +
++              cudaGetErrorString(entry_error) + ")";
++        return false;
++    }
++    const auto warm_error = [&](cudaError_t code, const char* operation, size_t batch, int il, int expert,
++                                const void* src, const void* dst, size_t bytes) {
++        std::ostringstream why;
++        why << "glm fast: CUDA" << dev_ << " warm " << operation << " failed (" << cudaGetErrorString(code)
++            << "): batch=" << batch << " layer=" << il << " expert=" << expert
++            << " src=" << src << " dst=" << dst << " bytes=" << bytes;
++        err = why.str();
++        glm_warm_memory_snapshot(dev_, "warm-failure");
++        return false;
++    };
+     // glm-dsa B8.1 (warm): MAYA_GLM_WARM_SEQ (glm-dsa default on) streams in file order on one thread, and a
+     // parallel split's parts take turns at the disk (the wait is not timed)
+     const bool seq = glmwarm::seq_on(g.arch == GlmArch::GlmDsa);
+@@ -4350,13 +4607,29 @@
+         } else {
+             F->workers->run(nb * 3, piece);
+         }
++        const void* last_src = nullptr;
++        const void* last_dst = nullptr;
++        size_t last_bytes = 0;
++        int last_layer = -1, last_expert = -1;
+         for (int k = 0; k < nb; ++k) {
+             const Job& J = jobs[b + (size_t) k];
+-            if (J.vram)
+-                cudaMemcpyAsync(J.dst, F->stage[(size_t) k], F->L[(size_t) J.il].blob, cudaMemcpyHostToDevice, F->copy);
++            if (J.vram) {
++                last_src = F->stage[(size_t) k];
++                last_dst = J.dst;
++                last_bytes = F->L[(size_t) J.il].blob;
++                last_layer = J.il;
++                last_expert = J.e;
++                const cudaError_t copy_error = cudaMemcpyAsync(J.dst, last_src, last_bytes,
++                                                               cudaMemcpyHostToDevice, F->copy);
++                if (copy_error != cudaSuccess)
++                    return warm_error(copy_error, "expert-copy", b / 8, J.il, J.e, last_src, J.dst, last_bytes);
++            }
+             done_bytes += F->L[(size_t) J.il].blob;
+         }
+-        cudaStreamSynchronize(F->copy);
++        const cudaError_t sync_error = cudaStreamSynchronize(F->copy);
++        if (sync_error != cudaSuccess)
++            return warm_error(sync_error, "batch-copy-sync (last copy shown)", b / 8,
++                              last_layer, last_expert, last_src, last_dst, last_bytes);
+         const int pct = (int) (100.0 * (double) done_bytes / (double) std::max<size_t>(1, total_bytes));
+         if (pct / 10 != last_pct / 10) {
+             last_pct = pct;
+@@ -4365,12 +4638,16 @@
+                          (double) done_bytes / 1e9, (double) total_bytes / 1e9, s);
+         }
+     }
++    if (const cudaError_t prior = cudaPeekAtLastError(); prior != cudaSuccess)
++        return warm_error(prior, "before-table-upload prior CUDA error", jobs.size() / 8, -1, -1,
++                          th.data(), F->tab, th.size() * sizeof(unsigned long long));
++    glm_warm_memory_snapshot(dev_, "before-table-upload");
+     if (const cudaError_t ue = upload_staged(F->stage.empty() ? nullptr : F->stage[0], F->stage_bytes, F->tab, th.data(),
+                                              th.size() * sizeof(unsigned long long));
+-        ue != cudaSuccess) {
+-        err = std::string("glm fast: the warmed expert tables did not upload (") + cudaGetErrorString(ue) + ")";
+-        return false;
+-    }
++        ue != cudaSuccess)
++        return warm_error(ue, "table-upload", jobs.size() / 8, -1, -1,
++                          th.data(), F->tab, th.size() * sizeof(unsigned long long));
++    glm_warm_memory_snapshot(dev_, "after-table-upload");
+     const double s = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+     // glm-dsa B8.1 (warm): the rate in MB/s (each part's ~13 MB/s printed as 0.01 GB/s) and the reads' order
+     std::string how = "slot order, parallel reads";
+--- /dev/null
++++ b/src/core/glm_wddm_plan.hpp
+@@ -0,0 +1,48 @@
++#pragma once
++#include <algorithm>
++#include <cstdint>
++#include <limits>
++#include <vector>
++
++namespace strata::core::glmfast {
++inline uint64_t wddm_room(uint64_t budget, uint64_t usage, uint64_t reserve, uint64_t future = 0) {
++    uint64_t room = budget > usage ? budget - usage : 0;
++    room -= std::min(room, reserve);
++    room -= std::min(room, future);
++    return room;
++}
++
++// Mandatory capacity first, then proportional optional capacity. Failure never changes caps.
++inline bool wddm_part_caps(uint64_t room, const std::vector<uint64_t>& preferred,
++                           const std::vector<uint64_t>& mandatory, std::vector<uint64_t>& caps) {
++    if (preferred.size() != mandatory.size()) return false;
++    std::vector<uint64_t> result(mandatory);
++    uint64_t left = room;
++    long double optional = 0;
++    for (size_t i = 0; i < preferred.size(); ++i) {
++        if (mandatory[i] > preferred[i] || mandatory[i] > left) return false;
++        left -= mandatory[i];
++        optional += static_cast<long double>(preferred[i] - mandatory[i]);
++    }
++    for (size_t i = 0; i < preferred.size() && optional > 0; ++i) {
++        const uint64_t wanted = preferred[i] - mandatory[i];
++        const long double share = static_cast<long double>(left) * wanted / optional;
++        const uint64_t extra = std::min(wanted, share >= static_cast<long double>(left) ? left :
++                                                static_cast<uint64_t>(share));
++        result[i] += extra;
++        left -= extra;
++        optional -= static_cast<long double>(wanted);
++    }
++    caps.swap(result);
++    return true;
++}
++
++inline bool wddm_sum(const std::vector<uint64_t>& values, size_t first, uint64_t& total) {
++    total = 0;
++    for (size_t i = first; i < values.size(); ++i) {
++        if (values[i] > std::numeric_limits<uint64_t>::max() - total) return false;
++        total += values[i];
++    }
++    return true;
++}
++}  // namespace strata::core::glmfast

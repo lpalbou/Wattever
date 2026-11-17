@@ -1,0 +1,27 @@
+{
+  "script": "C:\\tests\\flash-next\\untracked\\glm_optimization\\plot_results.py",
+  "sources": [
+    {
+      "label": "XS / Auto RAM / 1500 MiB reserve",
+      "file": "xs1159-cap1-bufdirect1-auto-ctx131-ppauto-pcie1-cap512.json"
+    },
+    {
+      "label": "XS / Auto RAM / 750 MiB reserve",
+      "file": "xs1159-cap1-bufdirect1-auto-ctx131-vram750-pcie1-cap512.json"
+    },
+    {
+      "label": "XS / Auto RAM / 750 MiB reserve",
+      "file": "xs1159-cap1-bufdirect1-auto-ctx131-vram750-pcie1-cap512-long.json"
+    },
+    {
+      "label": "XS / 0% optional expert RAM",
+      "file": "xs1159-cap1-bufdirect1-ram0-ctx131-ppauto-pcie1-cap512.json"
+    }
+  ],
+  "intervals": "Median and full range of three measured requests; one excluded warm-up per size.",
+  "scope": "Reasoning none, 512-token cap, no background download. Native phase rates, not client end-to-end throughput.",
+  "quality_notes": [
+    "XS / Auto RAM / 750 MiB reserve at 120k: output-cap hit"
+  ],
+  "matplotlib_version": "3.11.2"
+}

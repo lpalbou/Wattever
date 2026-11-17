@@ -1,0 +1,20 @@
+--- a/src/core/glm_model.cu
++++ b/src/core/glm_model.cu
+@@ -2909,8 +2909,16 @@
+     s.base = (uint8_t*) v;
+     s.path = path;
+     s.data_start = data_start;
++    // Experimental 1.1.59+buffered-io: allow spare physical RAM to cache expert
++    // file pages without expanding the mapped/pinned RAM tier. Off by default.
++    // Keep the same overlapped handles and read_slice's alignment/EOF checks.
++    const bool buffered = strata::platform::env_switch("MAYA_GLM_BUFFERED_IO");
++    const DWORD read_flags = FILE_FLAG_OVERLAPPED | FILE_FLAG_RANDOM_ACCESS |
++                             (buffered ? 0 : FILE_FLAG_NO_BUFFERING);
++    std::fprintf(stderr, "glm expert I/O: native 1.1.59+buffered-io, Windows %s overlapped reads, CreateFile flags 0x%08lx\n",
++                 buffered ? "buffered (OS file cache)" : "unbuffered", (unsigned long) read_flags);
+     HANDLE hd = CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
+-                            FILE_FLAG_NO_BUFFERING | FILE_FLAG_OVERLAPPED | FILE_FLAG_RANDOM_ACCESS, nullptr);
++                            read_flags, nullptr);
+     s.h_direct = hd == INVALID_HANDLE_VALUE ? nullptr : (void*) hd;
+     return true;
+ #else

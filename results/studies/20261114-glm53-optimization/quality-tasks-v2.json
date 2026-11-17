@@ -1,0 +1,231 @@
+{
+  "suite": "glm-local-exact16-v2",
+  "tokenizer": {
+    "tokenizer_directory": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156\\tokenizer",
+    "template": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.56\\serve\\glm5_chat_template.jinja",
+    "files_sha256": {
+      "vocab.json": "168e8586859e110a73372e50e742258eac5314627fddcd85957c1d6781d38ae2",
+      "merges.txt": "c9f9352db4dab0d3e0cba5923692047db4efe065ba59c5ab8a5eb2fb589f0d93",
+      "token_type.json": "3d226d66989eaa352fc8093536ece4b9398c85b57ba33860031bef042251ddb9",
+      "tokenizer.json": "74d0676146941e9ad57724515186294cfeb644ae15a300e2e0ba6d7c18cf13ab",
+      "chat_template.jinja": "a4fddbbf0b432101a296c17094f8bc5a2b0d30713b5b5cd92f86be78511aa724"
+    },
+    "render_template_sha256": "b6d092ed534ae145085b6dbb19d61bf8b383e186bdd5b5a0c0b6110f7fc6f2a0"
+  },
+  "tasks": [
+    {
+      "name": "integer-product",
+      "category": "arithmetic",
+      "prompt": "Test identifier: ab51bd6f39082ec8c593ac66.\nCompute 1337 multiplied by 7919.\nResponse format: the entire response must be one JSON integer. Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": 10587703,
+      "prompt_sha256": "a2eb193ccd7fdff7a1c9465d5174a25b7b24390be07e16a77fb00b1450a4d72e",
+      "chat_tokens": 73
+    },
+    {
+      "name": "modular-power",
+      "category": "arithmetic",
+      "prompt": "Test identifier: e4acea80357a2ed4f480af7a.\nCompute the remainder when 17 raised to the 13th power is divided by 97.\nResponse format: the entire response must be one JSON integer. Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": 21,
+      "prompt_sha256": "638a6fa321f859845c513ff321227bf6600735588682f70c5d0727e0c611e760",
+      "chat_tokens": 81
+    },
+    {
+      "name": "nested-alias",
+      "category": "python-state",
+      "prompt": "Test identifier: 9297cc276eaf725dbd24320f.\nWhat value does this Python program print? Represent it as JSON.\na = [[1], [2]]\nb = a[:]\nb[0].append(3)\nb[1] = [9]\nprint(a)\nResponse format: the entire response must be one JSON array. Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": [
+        [
+          1,
+          3
+        ],
+        [
+          2
+        ]
+      ],
+      "prompt_sha256": "088215857b6f66c24f55c3e9e8d55a140b489dde0d0b6bbea6ae3505fca3af2d",
+      "chat_tokens": 108
+    },
+    {
+      "name": "mutable-default",
+      "category": "python-state",
+      "prompt": "Test identifier: 6b8e0f949614014f6be5ed8e.\nWhat value does this Python program print?\ndef f(x, acc=[]):\n    acc.append(x)\n    return sum(acc)\nprint([f(2), f(3), f(2)])\nResponse format: the entire response must be one JSON array. Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": [
+        2,
+        5,
+        7
+      ],
+      "prompt_sha256": "7f6932a1b069ce9326dab8ff6d40e30013d85f2efd07f83ffa92ea5fe70123cb",
+      "chat_tokens": 106
+    },
+    {
+      "name": "nested-loop-else",
+      "category": "python-state",
+      "prompt": "Test identifier: 36adba5463b479af93802770.\nWhat value does this Python program print?\nout = []\nfor x in range(4):\n    for y in range(3):\n        if (x+y)%2:\n            continue\n        out.append(10*x+y)\n        if y==2:\n            break\n    else:\n        out.append(-1)\nprint(out)\nResponse format: the entire response must be one JSON array. Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": [
+        0,
+        2,
+        11,
+        -1,
+        20,
+        22,
+        31,
+        -1
+      ],
+      "prompt_sha256": "2e308f35073d7b093fcd505a5057622f4d9afff0410acade1bd54b592a47de9c",
+      "chat_tokens": 129
+    },
+    {
+      "name": "dictionary-alias",
+      "category": "python-state",
+      "prompt": "Test identifier: da702b2e1a07c209dd4f5530.\nWhat value does this Python program print? Represent the dictionary as JSON.\nd = {\"a\": [1], \"b\": [2]}\nalias = d[\"a\"]\nd[\"a\"] = [3]\nalias.append(4)\nd[\"b\"] += alias\nprint(d)\nResponse format: the entire response must be one JSON object with exactly these top-level keys: \"a\", \"b\". Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": {
+        "a": [
+          3
+        ],
+        "b": [
+          2,
+          1,
+          4
+        ]
+      },
+      "prompt_sha256": "89b6cfd17a46d5624559f82283c5985057966462722b969f172518a1d18d3257",
+      "chat_tokens": 133
+    },
+    {
+      "name": "ordered-constraints",
+      "category": "formal-constraints",
+      "prompt": "Test identifier: 560f75d25c92433c12b3fe0a.\nPlace A,B,C,D in four positions from left to right, each exactly once. A is immediately before B. C is before A. D is after B. Return the unique order as a JSON array of strings.\nResponse format: the entire response must be one JSON array. Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": [
+        "C",
+        "A",
+        "B",
+        "D"
+      ],
+      "prompt_sha256": "dfbb124dbfe97710019057f7e388376ad5ac80f0f436bb421dec4a2996e8fd5f",
+      "chat_tokens": 109
+    },
+    {
+      "name": "truth-liar",
+      "category": "formal-constraints",
+      "prompt": "Test identifier: 21ed4b066599fc2bb1b58907.\nEach of A,B,C is either a truth-teller who always speaks truth or a liar who always speaks falsely. A says B is a liar. B says C is a liar. C says A and B have the same type. Return [A_is_truth_teller,B_is_truth_teller,C_is_truth_teller] as JSON booleans.\nResponse format: the entire response must be one JSON array. Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": [
+        false,
+        true,
+        false
+      ],
+      "prompt_sha256": "adce7e43f3cdd877bd6b0ff4ea0928a5fb1e6325d0c8235a95a857ab8d90724f",
+      "chat_tokens": 134
+    },
+    {
+      "name": "modular-constraints",
+      "category": "formal-constraints",
+      "prompt": "Test identifier: 4d10a01862145af90ee4d9f7.\nFind the unique integer from 1 through 100 inclusive whose remainder modulo 5 is 3, modulo 7 is 4, and modulo 3 is 2. Return the integer.\nResponse format: the entire response must be one JSON integer. Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": 53,
+      "prompt_sha256": "891e4f2d068049d940b677a1cc4c508ba38e8691e91672c106745423f98457c3",
+      "chat_tokens": 104
+    },
+    {
+      "name": "tool-search",
+      "category": "json-tool-arguments",
+      "prompt": "Test identifier: e2b934df8d9b20ec55a887a0.\nProduce a tool-call JSON object with exactly keys name and arguments. Tool name: search_records. Arguments must be {query:\"red fox\",limit:3,include_archived:false,tags:[\"alpha\",\"beta\"]}. Use valid JSON, preserve array order and numeric/boolean types.\nResponse format: the entire response must be one JSON object with exactly these top-level keys: \"name\", \"arguments\". Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": {
+        "name": "search_records",
+        "arguments": {
+          "query": "red fox",
+          "limit": 3,
+          "include_archived": false,
+          "tags": [
+            "alpha",
+            "beta"
+          ]
+        }
+      },
+      "prompt_sha256": "3d6c4efe41cae8e8ea27776e76e6de23d3f9053ed810cdfaf1d1e3fd7c00abf5",
+      "chat_tokens": 135
+    },
+    {
+      "name": "tool-schedule",
+      "category": "json-tool-arguments",
+      "prompt": "Test identifier: 5c18aaa54d9133ec88298f96.\nProduce a tool-call JSON object with exactly keys name and arguments. Tool name: schedule_event. Arguments: title exactly `Review \"A\"`; at exactly `2026-11-14T09:30:00+01:00`; attendees exactly [\"a@example.test\",\"b@example.test\"]; duration_minutes integer 45; notes null.\nResponse format: the entire response must be one JSON object with exactly these top-level keys: \"name\", \"arguments\". Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": {
+        "name": "schedule_event",
+        "arguments": {
+          "title": "Review \"A\"",
+          "at": "2026-11-14T09:30:00+01:00",
+          "attendees": [
+            "a@example.test",
+            "b@example.test"
+          ],
+          "duration_minutes": 45,
+          "notes": null
+        }
+      },
+      "prompt_sha256": "965df127d1656f3e70f2c33279d8305d3dcf510acfc35a83f2a5fdd0bc0635e0",
+      "chat_tokens": 145
+    },
+    {
+      "name": "stable-sort",
+      "category": "data-transform",
+      "prompt": "Test identifier: 488d7469fffd815dfe4008bc.\nSort these objects by score ascending, preserving original relative order for equal scores. Return only the resulting id array: [{\"id\":\"p\",\"score\":2},{\"id\":\"q\",\"score\":1},{\"id\":\"r\",\"score\":2},{\"id\":\"s\",\"score\":1}].\nResponse format: the entire response must be one JSON array. Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": [
+        "q",
+        "s",
+        "p",
+        "r"
+      ],
+      "prompt_sha256": "2571924c69d89a748bf6b65d3c6def5a42b5d6267b23c66ac6da1900b17e3842",
+      "chat_tokens": 119
+    },
+    {
+      "name": "deduplicate-order",
+      "category": "data-transform",
+      "prompt": "Test identifier: 299dc9062d628200a1293c2b.\nRemove duplicate strings while retaining first-occurrence order: [\"b\",\"a\",\"b\",\"c\",\"a\",\"d\",\"c\"]. Return the resulting JSON array.\nResponse format: the entire response must be one JSON array. Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": [
+        "b",
+        "a",
+        "c",
+        "d"
+      ],
+      "prompt_sha256": "366c9c3146b3a9d65bbd7d7bd436256804d436ddf9209473bdcce2c67ef665dd",
+      "chat_tokens": 96
+    },
+    {
+      "name": "set-combination",
+      "category": "data-transform",
+      "prompt": "Test identifier: 6b5ec74f9377bb09070180c7.\nLet A={1,2,4,7}, B={2,3,4,8}, C={4,8,9}. Compute(A union B) minus C. Return its elements as an ascending JSON array.\nResponse format: the entire response must be one JSON array. Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": [
+        1,
+        2,
+        3,
+        7
+      ],
+      "prompt_sha256": "7bceb17539077b69b5f369479723c654bd76ce4113fb2ae4818bebaf4f8ac81c",
+      "chat_tokens": 111
+    },
+    {
+      "name": "state-transactions",
+      "category": "state-tracking",
+      "prompt": "Test identifier: 9b30f99647fb365d4eba7ed7.\nA balance starts at 100. Transactions in order: add 25; subtract 40; double the balance; add a fee refund of 7; subtract 17. Return the final integer balance.\nResponse format: the entire response must be one JSON integer. Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": 160,
+      "prompt_sha256": "a9d714be5082ffaac32938e5c6f455d157ac03b52d4e88fa58b0646a8c8a6fe2",
+      "chat_tokens": 104
+    },
+    {
+      "name": "nested-json-update",
+      "category": "state-tracking",
+      "prompt": "Test identifier: e47ca9880bdba155c2194aa7.\nStart with {\"a\":{\"x\":2,\"y\":5},\"b\":[1,3]}. Set a.x to its old value plus a.y; append the new a.x to b; delete a.y. Return the complete final JSON object.\nResponse format: the entire response must be one JSON object with exactly these top-level keys: \"a\", \"b\". Write that value directly. Include no surrounding result/answer wrapper, markdown, or explanation.",
+      "expected": {
+        "a": {
+          "x": 7
+        },
+        "b": [
+          1,
+          3,
+          7
+        ]
+      },
+      "prompt_sha256": "59e0a57e5d5c075f9a985eb5b75dfcf0ff4c1aa9862ff49ee9558ebbf3fc22d4",
+      "chat_tokens": 124
+    }
+  ]
+}

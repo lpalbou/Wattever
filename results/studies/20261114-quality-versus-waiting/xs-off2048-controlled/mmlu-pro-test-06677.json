@@ -1,0 +1,874 @@
+{
+  "id": "mmlu-pro-test-06677",
+  "category": "health",
+  "cohort": "public128",
+  "suite_id": "mmlu-pro-balanced64-chat-v1",
+  "prompt_sha256": "e920bf6fae1104a5e75e997cad8432275b6aa7d2b5768bcb4cee5da51a76dc84",
+  "request_started_unix": 1794676665.2771218,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676665.2771218
+  },
+  "started_unix": 1794676665.2771218,
+  "response_id": "resp_67881625766642f98b6e9d92",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 251,
+    "output_tokens": 31,
+    "total_tokens": 282,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 31,
+  "non_reasoning_generated_tokens": 31,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 3.192298399997526,
+  "first_visible_content_s": 3.192298399997526,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 4.678373999995529,
+  "terminal_answer_s": 4.731240999994043,
+  "transport_wall_s": 4.731290199997602,
+  "answer": "D. Third-degree (complete) AV block — AV dissociation, bradycardia, cannon a waves, prior MI.\n\nANSWER: D",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.015206099997158162,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_67881625766642f98b6e9d92",
+          "object": "response",
+          "created_at": 1794676665,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.015225199997075833,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_67881625766642f98b6e9d92",
+          "object": "response",
+          "created_at": 1794676665,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.1922129999948083,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_e5b08f5861004ebf8de993fe",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.1922403999997186,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.192298399997526,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.2693397999973968,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.3604167999947094,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " Third",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.4245557999965968,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "-degree",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.4830199999996694,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " (",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.577983699993638,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "complete",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.6268452999938745,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ")",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.669424699997762,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " AV",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7056976999956532,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " block",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.752120399993146,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " —",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.789312799999607,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " AV",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.8287158999955864,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " dissoci",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.8710504999980913,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ation",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9174290999944787,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9632473999954527,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " br",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.077165299997432,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ad",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.114248599995335,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "yc",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.15964229999372,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ardia",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.19644469999912,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.243439300000318,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " cannon",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.296445299994957,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " a",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.343975599993428,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " waves",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.378503499996441,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.406837700000324,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " prior",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.516115499995067,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " MI",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.552352499995322,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.576201500000025,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.606162299998687,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.647472299999208,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.678373999995529,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.730999999999767,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 34,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "D. Third-degree (complete) AV block — AV dissociation, bradycardia, cannon a waves, prior MI.\n\nANSWER: D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.731036399993172,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 35,
+        "item_id": "msg_e5b08f5861004ebf8de993fe",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "D. Third-degree (complete) AV block — AV dissociation, bradycardia, cannon a waves, prior MI.\n\nANSWER: D",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.73109729999851,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 36,
+        "output_index": 0,
+        "item": {
+          "id": "msg_e5b08f5861004ebf8de993fe",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "D. Third-degree (complete) AV block — AV dissociation, bradycardia, cannon a waves, prior MI.\n\nANSWER: D",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.731240999994043,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 37,
+        "response": {
+          "id": "resp_67881625766642f98b6e9d92",
+          "object": "response",
+          "created_at": 1794676665,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_e5b08f5861004ebf8de993fe",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "D. Third-degree (complete) AV block — AV dissociation, bradycardia, cannon a waves, prior MI.\n\nANSWER: D",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 251,
+            "output_tokens": 31,
+            "total_tokens": 282,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676670
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "859cc0eb727177f1c7e1f1ac2b2a8f9670a83bedac0a6c709a41be1aa70f01fc",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 9,
+    "source": "nvidia-smi",
+    "duration_s": 4.73136159999558,
+    "gpu_w_avg": 121.65457215904513,
+    "gpu_sampled_coverage_s": 4.042316500002926,
+    "gpu_sampled_coverage_fraction": 0.8543664259368174,
+    "gpu_w_max": 150.72,
+    "gpu_energy_j": 575.5917711771975,
+    "system_w_est": 240.2251304711524,
+    "system_energy_j_est": 1136.5919576651386,
+    "gpu_util_avg": 54.5,
+    "vram_mb_max": 30104.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 44.0,
+    "cpu_util_avg": 0.4124032362313612,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49311817728,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 71.30092336398951,
+    "system_memory_percent_max": 71.8443966914747,
+    "vram_percent_avg": 92.32145412909689,
+    "vram_percent_max": 92.32656566276145,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 9,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.73136159999558,
+        "gpu_w_avg": 60.778056319808904,
+        "gpu_sampled_coverage_s": 4.042316500002926,
+        "gpu_sampled_coverage_fraction": 0.8543664259368174,
+        "gpu_w_max": 76.36,
+        "gpu_energy_j": 287.5629617939125,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 50.111111111111114,
+        "vram_mb_max": 15520.0,
+        "clock_mhz_avg": 2856.5555555555557,
+        "temp_c_max": 44.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.18697990144963,
+        "vram_percent_max": 95.19720296877875,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.73136159999558,
+        "gpu_w_avg": 60.87651583923621,
+        "gpu_sampled_coverage_s": 4.042316500002926,
+        "gpu_sampled_coverage_fraction": 0.8543664259368174,
+        "gpu_w_max": 74.36,
+        "gpu_energy_j": 288.0288093832849,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 58.888888888888886,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 3009.777777777778,
+        "temp_c_max": 36.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 9,
+    "errors": {},
+    "available_bytes_min": 19238514688,
+    "ram_used_percent_max": 72.0,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 113307.26302833938,
+      "max": 252638.61186863735,
+      "min": 14947.547320569694
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 1273.9714571208706,
+      "max": 2835.298658209376,
+      "min": 165.88637533727763
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 494156.4094867391,
+      "max": 1021901.4284311791,
+      "min": 151471.9348498542
+    },
+    "transition_faults_s": {
+      "mean": 3248.510508753982,
+      "max": 7889.477017528859,
+      "min": 38.49659257035012
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7116969756.444445,
+      "max": 7552319488.0,
+      "min": 6779260928.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19442525525.333332,
+      "max": 19788886016.0,
+      "min": 18974359552.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 226443719.1111111,
+      "max": 226451456.0,
+      "min": 226394112.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 337046641.7777778,
+      "max": 340037632.0,
+      "min": 335659008.0
+    },
+    "committed_bytes": {
+      "mean": 80078670961.77777,
+      "max": 80090697728.0,
+      "min": 80067915776.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.96735594007704,
+      "max": 1.9673633575439453,
+      "min": 1.9673538208007812
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 5120,
+        "write_bytes": 4555264,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 2118189056,
+        "write_bytes": 0,
+        "read_time_ms": 4,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32684052480,
+    "engine_rss_max": 32684404736,
+    "engine_faults_delta": 94
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 16,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "D",
+      "expected": "D",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676670.0100627
+  }
+}

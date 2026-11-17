@@ -1,0 +1,145 @@
+{
+  "family": "qwen",
+  "vendor": "C:\\Users\\user\\AppData\\Local\\Strata\\terminal\\0.1.53",
+  "server_sha256": "74d4406a7329ebb13cded663d732e930381512af04a6058cf4fba77efd68e960",
+  "frontend_sha256": "e86cb90158cdf0fc85497af6e224cabceb4626c60d440aefdd27496f98b421ae",
+  "responses_sha256": "43317852ea276c79136cc11581703f76d6e97e72ebfb00476b9108b233ca4ca2",
+  "effort_mapping": {
+    "none": {
+      "accepted": true,
+      "template_kwargs": {
+        "enable_thinking": false
+      }
+    },
+    "low": {
+      "accepted": true,
+      "template_kwargs": {
+        "reasoning_effort": "low"
+      }
+    },
+    "medium": {
+      "accepted": true,
+      "template_kwargs": {
+        "reasoning_effort": "medium"
+      }
+    },
+    "high": {
+      "accepted": true,
+      "template_kwargs": {
+        "reasoning_effort": "xhigh"
+      }
+    },
+    "xhigh": {
+      "accepted": true,
+      "template_kwargs": {
+        "reasoning_effort": "xhigh"
+      }
+    },
+    "max": {
+      "accepted": true,
+      "template_kwargs": {
+        "reasoning_effort": "xhigh"
+      }
+    },
+    "auto": {
+      "accepted": false,
+      "error": "unknown reasoning effort 'auto': use none, low, medium or high"
+    },
+    "invalid": {
+      "accepted": false,
+      "error": "unknown reasoning effort 'invalid': use none, low, medium or high"
+    }
+  },
+  "parity": [
+    {
+      "template": "C:\\tests\\flash-next\\models\\packs\\iq3_s\\tokenizer\\chat_template.jinja",
+      "template_sha256": "12827f24b742ea4e80cdc12dbcf9622227056b9f797252a3149263d4f9aaadce",
+      "mode": "none",
+      "prompt_sha256": "fcbd84e92b59dfe0672549014201764f4f4503fe9518305cb5e08949abd7a338",
+      "chat_responses_render_identical": true,
+      "rendered_sha256": "36882f08c3393f0b90f36fa3ac3da47eb285b9c5174463f59ebc30deda701b41",
+      "rendered_prefix": "<|im_start|>user\nAn astronomer observes that a planet rotates faster after a meteorite impact. Which is the most likely effect of this increase in rotation?\n\nA. Planetary density will decrease.\nB. Planetary years will be",
+      "rendered_suffix": "r. End your reply with exactly ANSWER: <letter>.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+      "thinking_open_for_generation": false
+    },
+    {
+      "template": "C:\\tests\\flash-next\\models\\packs\\iq3_s\\tokenizer\\chat_template.jinja",
+      "template_sha256": "12827f24b742ea4e80cdc12dbcf9622227056b9f797252a3149263d4f9aaadce",
+      "mode": "none",
+      "prompt_sha256": "43009dbb1b1aef655cd4ded243400c3426e4f7aa5c7d329e515c4cdd868dac13",
+      "chat_responses_render_identical": true,
+      "rendered_sha256": "3924658e06720b3e339ed8b70eab7ee9e2d6c117b774d592599b45e1febdf3d8",
+      "rendered_prefix": "<|im_start|>user\nImplement this Python function: stable_unique(values): return a list retaining only the first occurrence of each integer or string, preserving order.\nReturn exactly one fenced Python code block containin",
+      "rendered_suffix": "s directly; do not write a command-line program.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+      "thinking_open_for_generation": false
+    },
+    {
+      "template": "C:\\tests\\flash-next\\models\\packs\\iq3_s\\tokenizer\\chat_template.jinja",
+      "template_sha256": "12827f24b742ea4e80cdc12dbcf9622227056b9f797252a3149263d4f9aaadce",
+      "mode": "low",
+      "prompt_sha256": "fcbd84e92b59dfe0672549014201764f4f4503fe9518305cb5e08949abd7a338",
+      "chat_responses_render_identical": true,
+      "rendered_sha256": "57a731cdc1f6eafcc1d20955585eb002493471ec9d0a8499f71dc7d3c65cc90f",
+      "rendered_prefix": "<|im_start|>system\nReasoning effort is set to low. Keep your thinking brief and focused, moving directly to the conclusion without unnecessary elaboration.<|im_end|>\n<|im_start|>user\nAn astronomer observes that a planet ",
+      "rendered_suffix": " best answer. End your reply with exactly ANSWER: <letter>.<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "thinking_open_for_generation": true
+    },
+    {
+      "template": "C:\\tests\\flash-next\\models\\packs\\iq3_s\\tokenizer\\chat_template.jinja",
+      "template_sha256": "12827f24b742ea4e80cdc12dbcf9622227056b9f797252a3149263d4f9aaadce",
+      "mode": "low",
+      "prompt_sha256": "43009dbb1b1aef655cd4ded243400c3426e4f7aa5c7d329e515c4cdd868dac13",
+      "chat_responses_render_identical": true,
+      "rendered_sha256": "1c448beb38eff093f30a7bb8bdb60d897291b414dacd6c8f2fb7d6e733b7fc6b",
+      "rendered_prefix": "<|im_start|>system\nReasoning effort is set to low. Keep your thinking brief and focused, moving directly to the conclusion without unnecessary elaboration.<|im_end|>\n<|im_start|>user\nImplement this Python function: stabl",
+      "rendered_suffix": "eturn values directly; do not write a command-line program.<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "thinking_open_for_generation": true
+    },
+    {
+      "template": "C:\\tests\\flash-next\\models\\packs\\unsloth-ud-iq4_xs\\tokenizer\\chat_template.jinja",
+      "template_sha256": "12827f24b742ea4e80cdc12dbcf9622227056b9f797252a3149263d4f9aaadce",
+      "mode": "none",
+      "prompt_sha256": "fcbd84e92b59dfe0672549014201764f4f4503fe9518305cb5e08949abd7a338",
+      "chat_responses_render_identical": true,
+      "rendered_sha256": "36882f08c3393f0b90f36fa3ac3da47eb285b9c5174463f59ebc30deda701b41",
+      "rendered_prefix": "<|im_start|>user\nAn astronomer observes that a planet rotates faster after a meteorite impact. Which is the most likely effect of this increase in rotation?\n\nA. Planetary density will decrease.\nB. Planetary years will be",
+      "rendered_suffix": "r. End your reply with exactly ANSWER: <letter>.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+      "thinking_open_for_generation": false
+    },
+    {
+      "template": "C:\\tests\\flash-next\\models\\packs\\unsloth-ud-iq4_xs\\tokenizer\\chat_template.jinja",
+      "template_sha256": "12827f24b742ea4e80cdc12dbcf9622227056b9f797252a3149263d4f9aaadce",
+      "mode": "none",
+      "prompt_sha256": "43009dbb1b1aef655cd4ded243400c3426e4f7aa5c7d329e515c4cdd868dac13",
+      "chat_responses_render_identical": true,
+      "rendered_sha256": "3924658e06720b3e339ed8b70eab7ee9e2d6c117b774d592599b45e1febdf3d8",
+      "rendered_prefix": "<|im_start|>user\nImplement this Python function: stable_unique(values): return a list retaining only the first occurrence of each integer or string, preserving order.\nReturn exactly one fenced Python code block containin",
+      "rendered_suffix": "s directly; do not write a command-line program.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+      "thinking_open_for_generation": false
+    },
+    {
+      "template": "C:\\tests\\flash-next\\models\\packs\\unsloth-ud-iq4_xs\\tokenizer\\chat_template.jinja",
+      "template_sha256": "12827f24b742ea4e80cdc12dbcf9622227056b9f797252a3149263d4f9aaadce",
+      "mode": "low",
+      "prompt_sha256": "fcbd84e92b59dfe0672549014201764f4f4503fe9518305cb5e08949abd7a338",
+      "chat_responses_render_identical": true,
+      "rendered_sha256": "57a731cdc1f6eafcc1d20955585eb002493471ec9d0a8499f71dc7d3c65cc90f",
+      "rendered_prefix": "<|im_start|>system\nReasoning effort is set to low. Keep your thinking brief and focused, moving directly to the conclusion without unnecessary elaboration.<|im_end|>\n<|im_start|>user\nAn astronomer observes that a planet ",
+      "rendered_suffix": " best answer. End your reply with exactly ANSWER: <letter>.<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "thinking_open_for_generation": true
+    },
+    {
+      "template": "C:\\tests\\flash-next\\models\\packs\\unsloth-ud-iq4_xs\\tokenizer\\chat_template.jinja",
+      "template_sha256": "12827f24b742ea4e80cdc12dbcf9622227056b9f797252a3149263d4f9aaadce",
+      "mode": "low",
+      "prompt_sha256": "43009dbb1b1aef655cd4ded243400c3426e4f7aa5c7d329e515c4cdd868dac13",
+      "chat_responses_render_identical": true,
+      "rendered_sha256": "1c448beb38eff093f30a7bb8bdb60d897291b414dacd6c8f2fb7d6e733b7fc6b",
+      "rendered_prefix": "<|im_start|>system\nReasoning effort is set to low. Keep your thinking brief and focused, moving directly to the conclusion without unnecessary elaboration.<|im_end|>\n<|im_start|>user\nImplement this Python function: stabl",
+      "rendered_suffix": "eturn values directly; do not write a command-line program.<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "thinking_open_for_generation": true
+    }
+  ],
+  "engines_started": false,
+  "budget_policy": "Strata answer_room defaults true: at2048 it caps thinking near1536 to leave answer room; Low is a prompt hint. effort_position defaults start; verify active config before measurement."
+}

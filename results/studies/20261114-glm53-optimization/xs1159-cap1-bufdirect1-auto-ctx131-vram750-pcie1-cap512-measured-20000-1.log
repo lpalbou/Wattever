@@ -1,0 +1,16 @@
+: staged 4393, resident 1646 (581311 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 0 ms | layer lane 200.2/113.9 ms max/min
+glm prefill: CUDA0 chunk 2/2, 8192 tokens, wall 4523 ms | the copy lane 4140 ms: copies 1814 (12.0 GB/s), ring wait 351, gaps 409, mixer windows 1566 | lead 381, tail 2 | pcie 21.80 GB (ram 12.86, disk 8.95) + 0.11 GB vram | experts: staged 4366, resident 1646 (448654 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 0 ms | layer lane 147.1/113.4 ms max/min
+glm prefill: CUDA1 chunk 1/2, 8192 tokens, wall 5056 ms | the copy lane 4905 ms: copies 1902 (12.1 GB/s), ring wait 873, gaps 578, mixer windows 1552 | lead 78, tail 73 | pcie 23.10 GB (ram 13.27, disk 9.83) + 0.04 GB vram | experts: staged 4529, resident 1514 (516278 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 4 ms host, disk wait 0 ms, hop in 39 ms | layer lane 240.0/123.4 ms max/min
+glm prefill: CUDA1 chunk 2/2, 8192 tokens, wall 4403 ms | the copy lane 4252 ms: copies 1819 (12.5 GB/s), ring wait 321, gaps 482, mixer windows 1630 | lead 60, tail 90 | pcie 22.71 GB (ram 13.16, disk 9.55) + 0.04 GB vram | experts: staged 4454, resident 1514 (249052 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 39 ms | layer lane 133.0/116.4 ms max/min
+glm prefill: 16384 tokens in 14309.2 ms (0.87 ms/token, 1145 tok/s), 2 chunks of 8192 tokens | CUDA0 9176 ms, CUDA1 9459 ms (hop in 78 ms)
+glm prefill: CUDA0 chunk 1/1, 3617 tokens, wall 3088 ms | the copy lane 2878 ms: copies 1729 (12.5 GB/s), ring wait 159, gaps 260, mixer windows 730 | lead 209, tail 1 | pcie 21.63 GB (ram 12.75, disk 8.88) + 0.11 GB vram | experts: staged 4331, resident 1646 (173026 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 0 ms | layer lane 123.7/95.4 ms max/min
+glm prefill: CUDA1 chunk 1/1, 3617 tokens, wall 3070 ms | the copy lane 3002 ms: copies 1775 (12.5 GB/s), ring wait 198, gaps 263, mixer windows 766 | lead 35, tail 33 | pcie 22.26 GB (ram 12.99, disk 9.27) + 0.04 GB vram | experts: staged 4365, resident 1514 (85867 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 17 ms | layer lane 113.9/99.3 ms max/min
+glm prefill: 3617 tokens in 6228.3 ms (1.72 ms/token, 581 tok/s), 1 chunk of 3648 tokens | CUDA0 3088 ms, CUDA1 3070 ms (hop in 17 ms)
+glm vram: prompt 20002 tokens read in 21.2 s; VRAM free CUDA0 0.6 of 15.9, CUDA1 0.7 of 15.9 GB before, 0.6, 0.7 after
+glm stat: decode 57.09 ms/tok (17.51 tok/s) | vram hit 73.70% | ram fetches 84.63/tok | disk 13.09 reads/tok in 11.13 waits/tok, 16.77 ms/tok | promotions 54.56/tok | cpu lane 0.00/tok in 0.00 ms/tok | prompt 1.1 ms/tok | vram 4008/4070 ram 5095/5216
+glm spec: 126 of 156 drafts accepted (80.8%)
+glm kv: KV streaming: 96.57% of 1067031 block reads hit VRAM, 75.8 MiB read from RAM
+ns, 17.1 tok/s, 28 s
+[maya] answering: 131 of max 512 tokens, 17.4 tok/s, 29 s
+[maya] answering: 149 of max 512 tokens, 17.4 tok/s, 30 s
+[maya] done: 158 tokens in 30 s (17.5 tok/s) (stop, cancel=False), expert cache 73.7% hit

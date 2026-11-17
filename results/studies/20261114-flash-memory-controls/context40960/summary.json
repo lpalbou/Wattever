@@ -1,0 +1,834 @@
+{
+  "model": "qwen3.8-flash-next-unsloth-ud-iq4_xs",
+  "hardware": {
+    "gpus": "2xRTX5070Ti16303MiB",
+    "cpu": "i7-5960X8cores16threads",
+    "ram": "4x16GiB DDR4-2133 in DIMM_A1/B1/C1/D1",
+    "driver": "617.42",
+    "host_to_device_probe_gb_s": 13.8,
+    "model_volume": "D:/StrataModels, Samsung990ProNVMe"
+  },
+  "protocol": {
+    "reserved_context": 40960,
+    "max_output_tokens": 128,
+    "repeats": 3,
+    "sampling": {
+      "temperature": 0,
+      "top_p": 1,
+      "seed": 20261114,
+      "max_tokens": 128,
+      "reasoning_effort": "none"
+    },
+    "exact_paired_prompts_and_actual_counts": true,
+    "prefix_reuse_tokens": 0,
+    "retrieval_records_correct": 60,
+    "warmups": "Two 5k and one 40k request per configuration, excluded from measured medians",
+    "lifecycle": "Only Strata Control loads; HTTP-only clients; no simultaneous inference workloads"
+  },
+  "notes": [
+    "0% disables only the explicit expert copy. Dense/KV/runtime/GPU buffers and Windows mmap/file cache still use RAM.",
+    "File-backed mode is not uncached physical-NVMe-only execution. Its warm file reads mostly hit Windows RAM; no global cache purge was performed.",
+    "Native file-read byte counters are logical traffic, not physical disk reads. Native buffered-blob counts omit direct mmap faults. PhysicalDrive1 counters independently measure D: disk activity, including other system reads.",
+    "Engine prefill/decode phases are separate from client TTFT. Client wall runs from HTTP dispatch to completed stream, including local transport/usage tail. UI gateway E2E wall includes server model loading and queueing but excludes client network transit.",
+    "Statistics are median [min,max] of three repeats. Per-column medians can come from different requests and need not add. Background Windows activity/clocks were not fixed; wide decode ranges overlap at 40k.",
+    "The first file-backed 5k warmup is a startup observation, not a controlled cold-cache benchmark; it read 29.10 GiB from D: and had 60.97 s TTFT.",
+    "Public results are firsthand reports on different CPU/RAM/link/KV/sampling/context combinations; no online row replays our exact workload."
+  ],
+  "phases": [
+    {
+      "label": "auto-40960",
+      "reserved_context": 40960,
+      "ram_cache_mode": "auto",
+      "ram_budget_bytes": 50530689230,
+      "resident_budget_flag_gib": "47.06",
+      "flags": [
+        "--native",
+        "D:\\StrataModels\\models\\unsloth-UD-IQ4_XS\\Qwen3.8-Flash-Next-UD-IQ4_XS-00001-of-00003.gguf",
+        "--prefill",
+        "auto",
+        "--pack",
+        "D:\\StrataModels\\packs\\unsloth-ud-iq4_xs",
+        "--expert-profile",
+        "C:\\Users\\user\\AppData\\Local\\Strata\\terminal\\0.1.53\\data\\expert-profile.bin",
+        "--mtp",
+        "D:\\StrataModels\\mtp\\rt",
+        "--kv",
+        "int8",
+        "--expert-cache",
+        "auto",
+        "--spec",
+        "4",
+        "--spec-min-p",
+        "0.5",
+        "--max-context",
+        "40960",
+        "--vram-reserve-mib",
+        "1222",
+        "--vram-reserve-later-mib",
+        "1222",
+        "--resident-budget-gib",
+        "47.06",
+        "--conversation-cache-mib",
+        "0"
+      ],
+      "groups": [
+        {
+          "profile": "auto-40960",
+          "target": 20000,
+          "n": 3,
+          "metrics": {
+            "prompt_tokens": {
+              "median": 19978,
+              "min": 19978,
+              "max": 19979
+            },
+            "completion_tokens": {
+              "median": 128,
+              "min": 128,
+              "max": 128
+            },
+            "ttft_s": {
+              "median": 19.994652400000632,
+              "min": 15.854961000000912,
+              "max": 23.57004810000035
+            },
+            "prefill_tps": {
+              "median": 999.2171706870668,
+              "min": 847.6011552984359,
+              "max": 1260.0472495642753
+            },
+            "decode_s": {
+              "median": 3.5917348000002676,
+              "min": 3.491251599998577,
+              "max": 6.433046399999512
+            },
+            "decode_tps": {
+              "median": 35.35895801660817,
+              "min": 19.741813147812774,
+              "max": 36.376639254544635
+            },
+            "wall_s": {
+              "median": 26.42830900000081,
+              "min": 19.447519700001067,
+              "max": 27.062139300000126
+            },
+            "engine_prefill_s": {
+              "median": 19.551,
+              "min": 15.356,
+              "max": 20.361
+            },
+            "engine_prefill_tps": {
+              "median": 1021.8914633522583,
+              "min": 981.1895290015225,
+              "max": 1300.9898411044544
+            },
+            "engine_decode_s": {
+              "median": 3.613,
+              "min": 3.512,
+              "max": 6.453
+            },
+            "engine_decode_tps": {
+              "median": 35.42762247439801,
+              "min": 19.835735316906863,
+              "max": 36.44646924829157
+            },
+            "disk_d_read_gib": {
+              "median": 5.105419158935547,
+              "min": 5.094596862792969,
+              "max": 5.127204895019531
+            },
+            "native_logical_file_read_mb_delta": {
+              "median": 5335.4000000000015,
+              "min": 5335.299999999999,
+              "max": 5335.4000000000015
+            },
+            "mtp_acceptance_percent": {
+              "median": 82.6923076923077,
+              "min": 81.55339805825243,
+              "max": 85.85858585858585
+            }
+          },
+          "cached_tokens": [
+            0,
+            0,
+            0
+          ],
+          "retrieved_records": 15,
+          "physical_ram_peak_percent": 91.8230707713692,
+          "available_ram_min_gib": 5.226951599121094,
+          "native_expert_cache_hit_percent": {
+            "median": 83.2,
+            "min": 82.2,
+            "max": 83.4
+          },
+          "pageouts_peak_s": 0.0,
+          "heavy_pageouts_longest_s": 0,
+          "max_stream_gap_s": 2.9173164000003453,
+          "gpus": {
+            "0": {
+              "vram_mb_max": {
+                "median": 15302.0,
+                "min": 15286.0,
+                "max": 15315.0
+              },
+              "gpu_util_avg": {
+                "median": 47.357723577235774,
+                "min": 34.91472868217054,
+                "max": 51.92391304347826
+              },
+              "gpu_w_avg": {
+                "median": 73.17455608871187,
+                "min": 71.74914639065315,
+                "max": 86.1670165590183
+              }
+            },
+            "1": {
+              "vram_mb_max": {
+                "median": 14486.0,
+                "min": 14486.0,
+                "max": 14486.0
+              },
+              "gpu_util_avg": {
+                "median": 34.36434108527132,
+                "min": 33.90243902439025,
+                "max": 48.31521739130435
+              },
+              "gpu_w_avg": {
+                "median": 62.72380162221695,
+                "min": 61.94022358873276,
+                "max": 79.59496851649416
+              }
+            }
+          }
+        },
+        {
+          "profile": "auto-40960",
+          "target": 40000,
+          "n": 3,
+          "metrics": {
+            "prompt_tokens": {
+              "median": 39978,
+              "min": 39976,
+              "max": 39978
+            },
+            "completion_tokens": {
+              "median": 128,
+              "min": 128,
+              "max": 128
+            },
+            "ttft_s": {
+              "median": 24.200446299999385,
+              "min": 23.95529549999992,
+              "max": 25.574415899998712
+            },
+            "prefill_tps": {
+              "median": 1651.8703624073667,
+              "min": 1563.2028569615156,
+              "max": 1668.8585619826786
+            },
+            "decode_s": {
+              "median": 9.66777489999913,
+              "min": 3.79727610000009,
+              "max": 10.330242300000464
+            },
+            "decode_tps": {
+              "median": 13.13642501130342,
+              "min": 12.294000112658955,
+              "max": 33.44502655469192
+            },
+            "wall_s": {
+              "median": 33.86870219999946,
+              "min": 29.414797099998395,
+              "max": 34.285710300000574
+            },
+            "engine_prefill_s": {
+              "median": 23.735,
+              "min": 23.417,
+              "max": 25.034
+            },
+            "engine_prefill_tps": {
+              "median": 1684.2637455234885,
+              "min": 1596.9481505152992,
+              "max": 1707.2212495195797
+            },
+            "engine_decode_s": {
+              "median": 9.69,
+              "min": 3.878,
+              "max": 10.346
+            },
+            "engine_decode_tps": {
+              "median": 13.209494324045409,
+              "min": 12.371931181132805,
+              "max": 33.00670448684889
+            },
+            "disk_d_read_gib": {
+              "median": 7.675468444824219,
+              "min": 7.674121856689453,
+              "max": 7.703529357910156
+            },
+            "native_logical_file_read_mb_delta": {
+              "median": 8003.0,
+              "min": 8003.0,
+              "max": 8003.0
+            },
+            "mtp_acceptance_percent": {
+              "median": 80.76923076923077,
+              "min": 72.56637168141593,
+              "max": 82.82828282828282
+            }
+          },
+          "cached_tokens": [
+            0,
+            0,
+            0
+          ],
+          "retrieved_records": 15,
+          "physical_ram_peak_percent": 92.12440024579472,
+          "available_ram_min_gib": 5.034309387207031,
+          "native_expert_cache_hit_percent": {
+            "median": 82.6,
+            "min": 82.4,
+            "max": 82.7
+          },
+          "pageouts_peak_s": 25844.616763884205,
+          "heavy_pageouts_longest_s": 0.517258200001379,
+          "max_stream_gap_s": 5.857896999999866,
+          "gpus": {
+            "0": {
+              "vram_mb_max": {
+                "median": 15172.0,
+                "min": 15135.0,
+                "max": 15206.0
+              },
+              "gpu_util_avg": {
+                "median": 48.48148148148148,
+                "min": 47.666666666666664,
+                "max": 51.419117647058826
+              },
+              "gpu_w_avg": {
+                "median": 84.48712351040578,
+                "min": 84.47093942908835,
+                "max": 92.25260423013327
+              }
+            },
+            "1": {
+              "vram_mb_max": {
+                "median": 14486.0,
+                "min": 14486.0,
+                "max": 14486.0
+              },
+              "gpu_util_avg": {
+                "median": 45.80246913580247,
+                "min": 44.9874213836478,
+                "max": 52.3235294117647
+              },
+              "gpu_w_avg": {
+                "median": 77.46569712857391,
+                "min": 77.37830770097844,
+                "max": 83.86515298759564
+              }
+            }
+          }
+        }
+      ],
+      "warmups": [
+        {
+          "prompt_tokens": 4985,
+          "ttft_s": 7.707766100000299,
+          "engine_prefill_s": 7.247,
+          "decode_tps": 12.912835947636044,
+          "disk_d_read_gib": 0.5136947631835938,
+          "retrieval": {
+            "passed": true,
+            "matched": 5,
+            "expected": {
+              "A": "amber-falcon-4317",
+              "B": "silver-maple-8264",
+              "C": "violet-otter-5928",
+              "D": "cobalt-willow-1746",
+              "E": "ivory-badger-3682"
+            },
+            "actual": {
+              "A": "amber-falcon-4317",
+              "B": "silver-maple-8264",
+              "C": "violet-otter-5928",
+              "D": "cobalt-willow-1746",
+              "E": "ivory-badger-3682"
+            }
+          }
+        },
+        {
+          "prompt_tokens": 4985,
+          "ttft_s": 6.211156699999265,
+          "engine_prefill_s": 5.911,
+          "decode_tps": 12.433278694456773,
+          "disk_d_read_gib": 0.12487411499023438,
+          "retrieval": {
+            "passed": true,
+            "matched": 5,
+            "expected": {
+              "A": "amber-falcon-4317",
+              "B": "silver-maple-8264",
+              "C": "violet-otter-5928",
+              "D": "cobalt-willow-1746",
+              "E": "ivory-badger-3682"
+            },
+            "actual": {
+              "A": "amber-falcon-4317",
+              "B": "silver-maple-8264",
+              "C": "violet-otter-5928",
+              "D": "cobalt-willow-1746",
+              "E": "ivory-badger-3682"
+            }
+          }
+        },
+        {
+          "prompt_tokens": 39982,
+          "ttft_s": 24.651105399998414,
+          "engine_prefill_s": 24.116,
+          "decode_tps": 31.595254343039652,
+          "disk_d_read_gib": 7.839134216308594,
+          "retrieval": {
+            "passed": true,
+            "matched": 5,
+            "expected": {
+              "A": "amber-falcon-4317",
+              "B": "silver-maple-8264",
+              "C": "violet-otter-5928",
+              "D": "cobalt-willow-1746",
+              "E": "ivory-badger-3682"
+            },
+            "actual": {
+              "A": "amber-falcon-4317",
+              "B": "silver-maple-8264",
+              "C": "violet-otter-5928",
+              "D": "cobalt-willow-1746",
+              "E": "ivory-badger-3682"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label": "file-40960",
+      "reserved_context": 40960,
+      "ram_cache_mode": "file",
+      "ram_budget_bytes": 0,
+      "resident_budget_flag_gib": null,
+      "flags": [
+        "--native",
+        "D:\\StrataModels\\models\\unsloth-UD-IQ4_XS\\Qwen3.8-Flash-Next-UD-IQ4_XS-00001-of-00003.gguf",
+        "--prefill",
+        "auto",
+        "--pack",
+        "D:\\StrataModels\\packs\\unsloth-ud-iq4_xs",
+        "--expert-profile",
+        "C:\\Users\\user\\AppData\\Local\\Strata\\terminal\\0.1.53\\data\\expert-profile.bin",
+        "--mtp",
+        "D:\\StrataModels\\mtp\\rt",
+        "--kv",
+        "int8",
+        "--expert-cache",
+        "auto",
+        "--spec",
+        "4",
+        "--spec-min-p",
+        "0.5",
+        "--max-context",
+        "40960",
+        "--vram-reserve-mib",
+        "1222",
+        "--vram-reserve-later-mib",
+        "1222",
+        "--conversation-cache-mib",
+        "0",
+        "--mmap-experts"
+      ],
+      "groups": [
+        {
+          "profile": "file-40960",
+          "target": 20000,
+          "n": 3,
+          "metrics": {
+            "prompt_tokens": {
+              "median": 19978,
+              "min": 19978,
+              "max": 19979
+            },
+            "completion_tokens": {
+              "median": 128,
+              "min": 128,
+              "max": 128
+            },
+            "ttft_s": {
+              "median": 16.661975700000767,
+              "min": 16.326888199997484,
+              "max": 16.77629000000161
+            },
+            "prefill_tps": {
+              "median": 1199.0174730598774,
+              "min": 1190.8473208318458,
+              "max": 1223.6869485027207
+            },
+            "decode_s": {
+              "median": 8.223604700000578,
+              "min": 8.13924059999772,
+              "max": 9.979312799998297
+            },
+            "decode_tps": {
+              "median": 15.443349313712886,
+              "min": 12.726327207623122,
+              "max": 15.603421282328917
+            },
+            "wall_s": {
+              "median": 24.80202669999926,
+              "min": 24.551286300000356,
+              "max": 26.75624130000142
+            },
+            "engine_prefill_s": {
+              "median": 16.174,
+              "min": 15.776,
+              "max": 16.2
+            },
+            "engine_prefill_tps": {
+              "median": 1235.192283912452,
+              "min": 1233.20987654321,
+              "max": 1266.4173427991886
+            },
+            "engine_decode_s": {
+              "median": 8.26,
+              "min": 8.173,
+              "max": 10.018
+            },
+            "engine_decode_tps": {
+              "median": 15.49636803874092,
+              "min": 12.777001397484527,
+              "max": 15.661323871283495
+            },
+            "disk_d_read_gib": {
+              "median": 0.21787261962890625,
+              "min": 0.10663604736328125,
+              "max": 0.40854644775390625
+            },
+            "native_logical_file_read_mb_delta": {
+              "median": 192961.20000000007,
+              "min": 191603.90000000002,
+              "max": 193781.5
+            },
+            "mtp_acceptance_percent": {
+              "median": 82.6923076923077,
+              "min": 78.18181818181819,
+              "max": 86.0
+            }
+          },
+          "cached_tokens": [
+            0,
+            0,
+            0
+          ],
+          "retrieved_records": 15,
+          "physical_ram_peak_percent": 99.36617212325804,
+          "available_ram_min_gib": 0.4051628112792969,
+          "native_expert_cache_hit_percent": {
+            "median": 82.9,
+            "min": 81.4,
+            "max": 83.1
+          },
+          "pageouts_peak_s": 0.0,
+          "heavy_pageouts_longest_s": 0,
+          "max_stream_gap_s": 1.495062300000427,
+          "gpus": {
+            "0": {
+              "vram_mb_max": {
+                "median": 14914.0,
+                "min": 14913.0,
+                "max": 14919.0
+              },
+              "gpu_util_avg": {
+                "median": 52.130434782608695,
+                "min": 47.20338983050848,
+                "max": 55.62096774193548
+              },
+              "gpu_w_avg": {
+                "median": 78.85679668278847,
+                "min": 77.5619433209964,
+                "max": 78.92752817918822
+              }
+            },
+            "1": {
+              "vram_mb_max": {
+                "median": 14486.0,
+                "min": 14486.0,
+                "max": 14486.0
+              },
+              "gpu_util_avg": {
+                "median": 44.279661016949156,
+                "min": 38.33064516129032,
+                "max": 49.052173913043475
+              },
+              "gpu_w_avg": {
+                "median": 68.82385286862103,
+                "min": 68.75505854231524,
+                "max": 69.95195937617514
+              }
+            }
+          }
+        },
+        {
+          "profile": "file-40960",
+          "target": 40000,
+          "n": 3,
+          "metrics": {
+            "prompt_tokens": {
+              "median": 39978,
+              "min": 39976,
+              "max": 39978
+            },
+            "completion_tokens": {
+              "median": 128,
+              "min": 128,
+              "max": 128
+            },
+            "ttft_s": {
+              "median": 30.021949899997708,
+              "min": 25.10145179999745,
+              "max": 33.506433200000174
+            },
+            "prefill_tps": {
+              "median": 1331.625698302929,
+              "min": 1193.0843179094275,
+              "max": 1592.6568836948334
+            },
+            "decode_s": {
+              "median": 8.339846799997758,
+              "min": 7.973343500001647,
+              "max": 10.57642720000149
+            },
+            "decode_tps": {
+              "median": 15.22809747536779,
+              "min": 12.007835689540046,
+              "max": 15.928073335856377
+            },
+            "wall_s": {
+              "median": 40.68024859999787,
+              "min": 33.12787079999907,
+              "max": 41.84695119999742
+            },
+            "engine_prefill_s": {
+              "median": 29.511,
+              "min": 24.612,
+              "max": 32.991
+            },
+            "engine_prefill_tps": {
+              "median": 1354.6813052759987,
+              "min": 1211.7244096874906,
+              "max": 1624.3295953193565
+            },
+            "engine_decode_s": {
+              "median": 8.394,
+              "min": 8.064,
+              "max": 10.716
+            },
+            "engine_decode_tps": {
+              "median": 15.248987371932332,
+              "min": 11.944755505785741,
+              "max": 15.873015873015873
+            },
+            "disk_d_read_gib": {
+              "median": 0.046543121337890625,
+              "min": 0.033695220947265625,
+              "max": 0.051593780517578125
+            },
+            "native_logical_file_read_mb_delta": {
+              "median": 297256.90000000014,
+              "min": 296073.09999999986,
+              "max": 297316.7999999998
+            },
+            "mtp_acceptance_percent": {
+              "median": 81.73076923076923,
+              "min": 77.98165137614679,
+              "max": 81.9047619047619
+            }
+          },
+          "cached_tokens": [
+            0,
+            0,
+            0
+          ],
+          "retrieved_records": 15,
+          "physical_ram_peak_percent": 99.29617779907028,
+          "available_ram_min_gib": 0.4499053955078125,
+          "native_expert_cache_hit_percent": {
+            "median": 82.7,
+            "min": 81.8,
+            "max": 83.0
+          },
+          "pageouts_peak_s": 0.0,
+          "heavy_pageouts_longest_s": 0,
+          "max_stream_gap_s": 1.64816620000056,
+          "gpus": {
+            "0": {
+              "vram_mb_max": {
+                "median": 14923.0,
+                "min": 14918.0,
+                "max": 14931.0
+              },
+              "gpu_util_avg": {
+                "median": 45.1139896373057,
+                "min": 44.826530612244895,
+                "max": 53.98039215686274
+              },
+              "gpu_w_avg": {
+                "median": 79.36900414732148,
+                "min": 75.21741014773694,
+                "max": 89.2779189983654
+              }
+            },
+            "1": {
+              "vram_mb_max": {
+                "median": 14488.0,
+                "min": 14486.0,
+                "max": 14488.0
+              },
+              "gpu_util_avg": {
+                "median": 46.25388601036269,
+                "min": 41.61734693877551,
+                "max": 51.62091503267974
+              },
+              "gpu_w_avg": {
+                "median": 71.35083279650367,
+                "min": 66.67697990702388,
+                "max": 81.64131395686431
+              }
+            }
+          }
+        }
+      ],
+      "warmups": [
+        {
+          "prompt_tokens": 4985,
+          "ttft_s": 60.9684359999992,
+          "engine_prefill_s": 60.361,
+          "decode_tps": 7.082419882410199,
+          "disk_d_read_gib": 29.098861694335938,
+          "retrieval": {
+            "passed": true,
+            "matched": 5,
+            "expected": {
+              "A": "amber-falcon-4317",
+              "B": "silver-maple-8264",
+              "C": "violet-otter-5928",
+              "D": "cobalt-willow-1746",
+              "E": "ivory-badger-3682"
+            },
+            "actual": {
+              "A": "amber-falcon-4317",
+              "B": "silver-maple-8264",
+              "C": "violet-otter-5928",
+              "D": "cobalt-willow-1746",
+              "E": "ivory-badger-3682"
+            }
+          }
+        },
+        {
+          "prompt_tokens": 4985,
+          "ttft_s": 19.20389040000009,
+          "engine_prefill_s": 18.594,
+          "decode_tps": 8.730645713813347,
+          "disk_d_read_gib": 2.388702392578125,
+          "retrieval": {
+            "passed": true,
+            "matched": 5,
+            "expected": {
+              "A": "amber-falcon-4317",
+              "B": "silver-maple-8264",
+              "C": "violet-otter-5928",
+              "D": "cobalt-willow-1746",
+              "E": "ivory-badger-3682"
+            },
+            "actual": {
+              "A": "amber-falcon-4317",
+              "B": "silver-maple-8264",
+              "C": "violet-otter-5928",
+              "D": "cobalt-willow-1746",
+              "E": "ivory-badger-3682"
+            }
+          }
+        },
+        {
+          "prompt_tokens": 39982,
+          "ttft_s": 35.217801700000564,
+          "engine_prefill_s": 34.511,
+          "decode_tps": 9.55032964692488,
+          "disk_d_read_gib": 1.3431320190429688,
+          "retrieval": {
+            "passed": true,
+            "matched": 5,
+            "expected": {
+              "A": "amber-falcon-4317",
+              "B": "silver-maple-8264",
+              "C": "violet-otter-5928",
+              "D": "cobalt-willow-1746",
+              "E": "ivory-badger-3682"
+            },
+            "actual": {
+              "A": "amber-falcon-4317",
+              "B": "silver-maple-8264",
+              "C": "violet-otter-5928",
+              "D": "cobalt-willow-1746",
+              "E": "ivory-badger-3682"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "online_comparison_file": "online-comparison.json",
+  "validation": {
+    "tests_passed": 341,
+    "deselected": 1,
+    "warnings_are_errors": true,
+    "real_gateway_wall_probe": "105.286s gateway vs16.598s backend for cold firstrequest; exacttraceIDjoin"
+  },
+  "documentation": {
+    "updated": "MODEL_ROUTING.md",
+    "package_agent_skill": "Not added: this local desktop workspace uses the standard OpenAI client contract; Control is the user lifecycle surface."
+  },
+  "cleanup": {
+    "state": "Server ready",
+    "backend": "absent",
+    "process_roles": [
+      "gateway",
+      "gateway"
+    ],
+    "ram_policy": "auto",
+    "context_preference": "Auto",
+    "desktop_only": true,
+    "gpu_preference_preserved": true,
+    "experimental_zero_launch_config_removed": true,
+    "normal_window_close_smoke": {
+      "normal_window_close": true,
+      "api_and_model_stopped_before_close": true
+    },
+    "no_model_restored": true,
+    "normal_plan_preview": {
+      "context": 262144,
+      "ram_mode": "auto",
+      "gpus": [
+        0,
+        1
+      ]
+    },
+    "core_sha256": {
+      "hardware_planner.py": "32996259cc97cf16b3a0f62d92983d1941c86b65fd2e2fcb200458c9ca0f09f1",
+      "strata_desktop.py": "d5add0830e5e13fc9777671dbf233747c0a36af47645b303ff5018782bf1fa86",
+      "strata_app.py": "4714a97dff3ee50d6f6fa76331fb2aa39b20aca5fb7f6e7d01ac09a63fd7179e",
+      "advanced_params.py": "8a4b5d9d9874a0949b3e839d03250587469be20f004b0a1147a43651bd96812b",
+      "gateway.py": "6f15bd13c57764d0abab2c7e1d8ecd7608483f175f7cf4da4e87cb71df005ab5",
+      "gateway_timings.py": "006ecea87f35478d98a6bbfde98e8275d6c5aee6c6d9be90d7f6dc4dc5c24a83",
+      "desktop_backend.py": "f2e577c536d4a95e11d7e57674c7237162e6058d4565a5bf7efaabd0d323aca6",
+      "live_monitor.py": "8d80c1d26c3d089b5fb873e62c2a9f44a03dbf7d1f8bd92303740f4f307701a5",
+      "control_widgets.py": "fac658f4b1bb6fff0e766e103b0317bfce39b7d8fe9437b7b75d62a297ec5c1a"
+    }
+  }
+}

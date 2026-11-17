@@ -1,0 +1,11 @@
+1.72 GB (ram 13.35, disk 8.37) + 0.28 GB vram | experts: staged 4385, resident 1605 (170205 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 0 ms | layer lane 212.8/96.1 ms max/min
+glm prefill: CUDA0 chunk 2/2, 2440 tokens, wall 2716 ms | the copy lane 2599 ms: copies 1795 (12.1 GB/s), ring wait 116, gaps 199, mixer windows 489 | lead 116, tail 2 | pcie 21.67 GB (ram 13.37, disk 8.29) + 0.28 GB vram | experts: staged 4374, resident 1605 (157161 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 4 ms host, disk wait 0 ms, hop in 0 ms | layer lane 119.4/85.3 ms max/min
+glm prefill: CUDA1 chunk 1/2, 2560 tokens, wall 4616 ms | the copy lane 4558 ms: copies 1890 (12.1 GB/s), ring wait 1334, gaps 856, mixer windows 478 | lead 25, tail 33 | pcie 22.92 GB (ram 13.78, disk 9.14) + 0.20 GB vram | experts: staged 4524, resident 1482 (163475 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 12 ms | layer lane 289.9/101.0 ms max/min
+glm prefill: CUDA1 chunk 2/2, 2440 tokens, wall 2720 ms | the copy lane 2678 ms: copies 1839 (12.4 GB/s), ring wait 130, gaps 207, mixer windows 503 | lead 19, tail 23 | pcie 22.79 GB (ram 13.68, disk 9.11) + 0.20 GB vram | experts: staged 4499, resident 1482 (147849 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 12 ms | layer lane 110.2/98.1 ms max/min
+glm prefill: 5000 tokens in 11040.8 ms (2.21 ms/token, 453 tok/s), 2 chunks of 2560 tokens | CUDA0 6357 ms, CUDA1 7335 ms (hop in 24 ms)
+glm vram: prompt 5001 tokens read in 11.6 s; VRAM free CUDA0 1.4 of 15.9, CUDA1 1.5 of 15.9 GB before, 1.4, 1.5 after
+glm stat: decode 58.96 ms/tok (16.96 tok/s) | vram hit 68.86% | ram fetches 94.63/tok | disk 15.25 reads/tok in 12.52 waits/tok, 20.42 ms/tok | promotions 56.05/tok | cpu lane 0.00/tok in 0.00 ms/tok | prompt 2.3 ms/tok | vram 3682/3780 ram 5350/5439
+glm spec: 116 of 126 drafts accepted (92.1%)
+glm kv: KV streaming: 98.18% of 820924 block reads hit VRAM, 31.0 MiB read from RAM
+kens, 16.6 tok/s, 18 s
+[maya] done: 128 tokens in 19 s (17.0 tok/s) (length, cancel=False), expert cache 68.9% hit

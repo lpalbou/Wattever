@@ -1,0 +1,1294 @@
+{
+  "id": "mmlu-pro-test-01764",
+  "category": "law",
+  "cohort": "public128",
+  "suite_id": "mmlu-pro-balanced64-chat-v1",
+  "prompt_sha256": "1e1ead883c5e37061d43daeeb16596751559354d06c1e3cb9e0ba51825227633",
+  "request_started_unix": 1794676492.6640344,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676492.6640344
+  },
+  "started_unix": 1794676492.6640344,
+  "response_id": "resp_1d20eb8d5b084a2180c93ba3",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 379,
+    "output_tokens": 66,
+    "total_tokens": 445,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 66,
+  "non_reasoning_generated_tokens": 66,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 3.665767999998934,
+  "first_visible_content_s": 3.665767999998934,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 7.6477138999980525,
+  "terminal_answer_s": 7.732530399996904,
+  "transport_wall_s": 7.732592199994542,
+  "answer": "J. The agreement is enforceable in all respects: the salary increase is valid consideration for continued employment, the termination notice provision is reasonable, the non-compete is reasonable in scope/duration/geography (ancillary to employment), and the $1,500 liquidated damages clause is a reasonable penalty.\n\nANSWER: J",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.005083899995952379,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_1d20eb8d5b084a2180c93ba3",
+          "object": "response",
+          "created_at": 1794676492,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.005101999995531514,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_1d20eb8d5b084a2180c93ba3",
+          "object": "response",
+          "created_at": 1794676492,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.6656062999973074,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_2fe1a17eeeab496a84d618d8",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.6657310999944457,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.665767999998934,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "J",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7426337999932002,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7963847999999416,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " The",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.8780582999970648,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " agreement",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.966603499997291,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.003815099997155,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " enforce",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.096269599998777,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "able",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.13436720000027,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " in",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.205565199998091,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " all",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.252152799999749,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " respects",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.276878799995757,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.314877999997407,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.411570699994627,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " salary",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.466028399998322,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " increase",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.520837799995206,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.610509999998612,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " valid",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.662785499996971,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " consideration",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.713651999998547,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " for",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.8142835999969975,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " continued",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.927787799999351,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " employment",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.976904799994372,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.011318699995172,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.044672699994408,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " termination",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.146371199996793,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " notice",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.226224599995476,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " provision",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.25723989999824,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.286384999999427,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " reasonable",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.358072199996968,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.398028199997498,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.4736443999936455,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " non",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.523745999998937,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 34,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "-comp",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.567979199993715,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 35,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ete",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.60599579999689,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 36,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.669177799994941,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 37,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " reasonable",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.711018299996795,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 38,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " in",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.810592999994697,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 39,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " scope",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.861673999999766,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 40,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "/d",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.933538699995552,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 41,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "uration",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.9807538999957615,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 42,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "/ge",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.058245299995178,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 43,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ography",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.094296799994481,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 44,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " (",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.149930599996878,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 45,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "anc",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.234205599997949,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 46,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "illary",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.332195899994986,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 47,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " to",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.437041799996223,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 48,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " employment",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.480975499995111,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 49,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "),",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.564666799997212,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 50,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " and",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.5955357999991975,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 51,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.626261499994143,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 52,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " $",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.720793399996182,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 53,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "1",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.795651699998416,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 54,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.834593599996879,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 55,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "500",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.8780621999976574,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 56,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " liquid",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.960188099998049,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 57,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ated",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.992456199994194,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 58,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " damages",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.0280365999933565,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 59,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " clause",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.10912969999481,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 60,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.14730569999665,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 61,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " a",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.198709299998882,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 62,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " reasonable",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.268882199998188,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 63,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " penalty",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.325812099996256,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 64,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.439735699997982,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 65,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.526236999998218,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 66,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.598519499995746,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 67,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.6477138999980525,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 68,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " J",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.732295599998906,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 69,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "J. The agreement is enforceable in all respects: the salary increase is valid consideration for continued employment, the termination notice provision is reasonable, the non-compete is reasonable in scope/duration/geography (ancillary to employment), and the $1,500 liquidated damages clause is a reasonable penalty.\n\nANSWER: J",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.732328799997049,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 70,
+        "item_id": "msg_2fe1a17eeeab496a84d618d8",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "J. The agreement is enforceable in all respects: the salary increase is valid consideration for continued employment, the termination notice provision is reasonable, the non-compete is reasonable in scope/duration/geography (ancillary to employment), and the $1,500 liquidated damages clause is a reasonable penalty.\n\nANSWER: J",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 7.732394299993757,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 71,
+        "output_index": 0,
+        "item": {
+          "id": "msg_2fe1a17eeeab496a84d618d8",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "J. The agreement is enforceable in all respects: the salary increase is valid consideration for continued employment, the termination notice provision is reasonable, the non-compete is reasonable in scope/duration/geography (ancillary to employment), and the $1,500 liquidated damages clause is a reasonable penalty.\n\nANSWER: J",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 7.732530399996904,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 72,
+        "response": {
+          "id": "resp_1d20eb8d5b084a2180c93ba3",
+          "object": "response",
+          "created_at": 1794676492,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_2fe1a17eeeab496a84d618d8",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "J. The agreement is enforceable in all respects: the salary increase is valid consideration for continued employment, the termination notice provision is reasonable, the non-compete is reasonable in scope/duration/geography (ancillary to employment), and the $1,500 liquidated damages clause is a reasonable penalty.\n\nANSWER: J",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 379,
+            "output_tokens": 66,
+            "total_tokens": 445,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676500
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "75c0dcbcea7fc55ffb684b629d9998f22cfd0b89f17e6767f188ffea9f03c8c4",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 15,
+    "source": "nvidia-smi",
+    "duration_s": 7.732675299994298,
+    "gpu_w_avg": 137.08042839804617,
+    "gpu_sampled_coverage_s": 7.079822500003502,
+    "gpu_sampled_coverage_fraction": 0.9155721953059017,
+    "gpu_w_max": 158.97,
+    "gpu_energy_j": 1059.9984427862087,
+    "system_w_est": 260.99110982846753,
+    "system_energy_j_est": 2018.15950848869,
+    "gpu_util_avg": 62.1,
+    "vram_mb_max": 30169.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 48.0,
+    "cpu_util_avg": 0.4500819314468211,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 48958676992,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 70.73556461799743,
+    "system_memory_percent_max": 71.32989156280455,
+    "vram_percent_avg": 92.52019055797501,
+    "vram_percent_max": 92.52591547567933,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 15,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 15,
+        "source": "nvidia-smi",
+        "duration_s": 7.732675299994298,
+        "gpu_w_avg": 67.73229952608295,
+        "gpu_sampled_coverage_s": 7.079822500003502,
+        "gpu_sampled_coverage_fraction": 0.9155721953059017,
+        "gpu_w_max": 82.24,
+        "gpu_energy_j": 523.7518795571572,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 55.6,
+        "vram_mb_max": 15585.0,
+        "clock_mhz_avg": 2822.866666666667,
+        "temp_c_max": 48.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.58445275920586,
+        "vram_percent_max": 95.59590259461449,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 15,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 15,
+        "source": "nvidia-smi",
+        "duration_s": 7.732675299994298,
+        "gpu_w_avg": 69.3481288719632,
+        "gpu_sampled_coverage_s": 7.079822500003502,
+        "gpu_sampled_coverage_fraction": 0.9155721953059017,
+        "gpu_w_max": 84.0,
+        "gpu_energy_j": 536.2465632290513,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 68.6,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 3005.3333333333335,
+        "temp_c_max": 39.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 15,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 15,
+    "errors": {},
+    "available_bytes_min": 19680751616,
+    "ram_used_percent_max": 71.3,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 101434.74552458222,
+      "max": 252787.50747126286,
+      "min": 18424.909034565677
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 1291.9420663333606,
+      "max": 2951.9426053068005,
+      "min": 202.10137880693614
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 484285.6939512475,
+      "max": 994276.7575630348,
+      "min": 180343.79623691077
+    },
+    "transition_faults_s": {
+      "mean": 7148.442998918528,
+      "max": 35107.57453003818,
+      "min": 27.057966087478018
+    },
+    "system_cache_resident_bytes": {
+      "mean": 6733655790.933333,
+      "max": 7169343488.0,
+      "min": 6091923456.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19847214421.333332,
+      "max": 20529532928.0,
+      "min": 19453313024.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 226350148.26666668,
+      "max": 226381824.0,
+      "min": 226283520.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 342845849.6,
+      "max": 344469504.0,
+      "min": 341684224.0
+    },
+    "committed_bytes": {
+      "mean": 80203684249.6,
+      "max": 80429608960.0,
+      "min": 80150945792.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9779364267985027,
+      "max": 1.9803237915039062,
+      "min": 1.9765472412109373
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 24414720,
+        "write_bytes": 10170880,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 3123752960,
+        "write_bytes": 0,
+        "read_time_ms": 7,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32662462464,
+    "engine_rss_max": 32663080960,
+    "engine_faults_delta": 159
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": false,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": false,
+    "content_success": false,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 44,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "J",
+      "expected": "A",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": false,
+      "60": false,
+      "120": false
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676500.3984659
+  }
+}

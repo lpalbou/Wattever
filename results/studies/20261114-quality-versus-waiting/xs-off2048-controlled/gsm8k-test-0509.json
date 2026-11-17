@@ -1,0 +1,1030 @@
+{
+  "id": "gsm8k-test-0509",
+  "category": "math_word_problems",
+  "cohort": "public128",
+  "suite_id": "gsm8k-test-chat-v1",
+  "prompt_sha256": "68ae2c26acfe4e5ece04bf2469cbc57320dc27f25958763e1fdd9df0cf15e737",
+  "request_started_unix": 1794676307.1559665,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676307.1559665
+  },
+  "started_unix": 1794676307.1559665,
+  "response_id": "resp_a32680215bef459580979d7e",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 88,
+    "output_tokens": 45,
+    "total_tokens": 133,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 45,
+  "non_reasoning_generated_tokens": 45,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.193029599999136,
+  "first_visible_content_s": 2.193029599999136,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 4.18689810000069,
+  "terminal_answer_s": 4.236724900001718,
+  "transport_wall_s": 4.236761200001638,
+  "answer": "Rose bought 4 times what Sophia bought, so Sophia bought 12/4 = 3 onions and 4/4 = 1 potato.\n\nTotal: 3 + 1 = 4\n\n#### 4",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.02675230000022566,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_a32680215bef459580979d7e",
+          "object": "response",
+          "created_at": 1794676307,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.02677209999819752,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_a32680215bef459580979d7e",
+          "object": "response",
+          "created_at": 1794676307,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.1929603000025963,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_ca939ce1938842189aa7358c",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.193000300001586,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.193029599999136,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "Rose",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.277115999997477,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " bought",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.3483099000004586,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.374720300002082,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "4",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.428809099998034,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " times",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.488955900000292,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " what",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.6051751999984845,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " Sophia",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.642386699997587,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " bought",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.688081799999054,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7532824000008986,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " so",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8027395000026445,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " Sophia",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8387876999986474,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " bought",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.882352400003583,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.918358000002627,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "12",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.9661309000002802,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "/",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.017287299997406,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "4",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.052256499999203,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " =",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.0847713999974076,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.132565500003693,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "3",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.1733144000027096,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " onions",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.211645800001861,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " and",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.2772248000037507,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.305648599998676,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "4",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.3492817000005743,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "/",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.41284760000417,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "4",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.447336600002018,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " =",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.4885324999995646,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5348121999995783,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "1",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.569528200001514,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " potato",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.6135341999979573,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.6411321999985375,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 34,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nTotal",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.760913800004346,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 35,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.801445800003421,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 36,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.8379198999973596,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 37,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "3",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.87296420000348,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 38,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " +",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9235685000021476,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 39,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.961106700000528,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 40,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "1",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9913476000001538,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 41,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " =",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.015444999997271,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 42,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.047091000000364,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 43,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "4",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.09915980000369,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 44,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\n####",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.14767959999881,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 45,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.18689810000069,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 46,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "4",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.236462300003041,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 47,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "Rose bought 4 times what Sophia bought, so Sophia bought 12/4 = 3 onions and 4/4 = 1 potato.\n\nTotal: 3 + 1 = 4\n\n#### 4",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.236492399999406,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 48,
+        "item_id": "msg_ca939ce1938842189aa7358c",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "Rose bought 4 times what Sophia bought, so Sophia bought 12/4 = 3 onions and 4/4 = 1 potato.\n\nTotal: 3 + 1 = 4\n\n#### 4",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.236572200003138,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 49,
+        "output_index": 0,
+        "item": {
+          "id": "msg_ca939ce1938842189aa7358c",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "Rose bought 4 times what Sophia bought, so Sophia bought 12/4 = 3 onions and 4/4 = 1 potato.\n\nTotal: 3 + 1 = 4\n\n#### 4",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.236724900001718,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 50,
+        "response": {
+          "id": "resp_a32680215bef459580979d7e",
+          "object": "response",
+          "created_at": 1794676307,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_ca939ce1938842189aa7358c",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "Rose bought 4 times what Sophia bought, so Sophia bought 12/4 = 3 onions and 4/4 = 1 potato.\n\nTotal: 3 + 1 = 4\n\n#### 4",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 88,
+            "output_tokens": 45,
+            "total_tokens": 133,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676311
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "0d0fc1b8a754d4bfb0a5e6cfc08729c6418eec736087611824cc0f2741b1dac1",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 9,
+    "source": "nvidia-smi",
+    "duration_s": 4.236821999998938,
+    "gpu_w_avg": 142.13148731999027,
+    "gpu_sampled_coverage_s": 4.051759900001343,
+    "gpu_sampled_coverage_fraction": 0.9563205393104453,
+    "gpu_w_max": 170.6,
+    "gpu_energy_j": 602.1858123699049,
+    "system_w_est": 254.7996552293657,
+    "system_energy_j_est": 1079.540784867921,
+    "gpu_util_avg": 64.38888888888889,
+    "vram_mb_max": 30038.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 53.0,
+    "cpu_util_avg": 0.3789128261784512,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49630687232,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 72.15759975901918,
+    "system_memory_percent_max": 72.30897066570039,
+    "vram_percent_avg": 92.12108200944611,
+    "vram_percent_max": 92.12414892964485,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 9,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.236821999998938,
+        "gpu_w_avg": 73.26163760776976,
+        "gpu_sampled_coverage_s": 4.051759900001343,
+        "gpu_sampled_coverage_fraction": 0.9563205393104453,
+        "gpu_w_max": 86.83,
+        "gpu_energy_j": 310.39651797254845,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 55.333333333333336,
+        "vram_mb_max": 15454.0,
+        "clock_mhz_avg": 2979.1111111111113,
+        "temp_c_max": 53.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 94.78623566214807,
+        "vram_percent_max": 94.79236950254554,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.236821999998938,
+        "gpu_w_avg": 68.86984971222054,
+        "gpu_sampled_coverage_s": 4.051759900001343,
+        "gpu_sampled_coverage_fraction": 0.9563205393104453,
+        "gpu_w_max": 83.77,
+        "gpu_energy_j": 291.7892943973565,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 73.44444444444444,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 3001.4444444444443,
+        "temp_c_max": 39.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 8,
+    "errors": {},
+    "available_bytes_min": 19037020160,
+    "ram_used_percent_max": 72.3,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 55877.35022440952,
+      "max": 81205.58794067454,
+      "min": 31196.241639731237
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 629.8311204139918,
+      "max": 912.4223364120735,
+      "min": 366.4246977960519
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 314429.0642406749,
+      "max": 560842.0692930088,
+      "min": 230590.37315478438
+    },
+    "transition_faults_s": {
+      "mean": 2878.77753206639,
+      "max": 5758.65340852111,
+      "min": 9.87629935063332
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7774196224.0,
+      "max": 7873269760.0,
+      "min": 7678521344.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 18884727808.0,
+      "max": 18982572032.0,
+      "min": 18808487936.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 643584.0,
+      "max": 5148672.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 227467264.0,
+      "max": 227467264.0,
+      "min": 227467264.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 362667008.0,
+      "max": 364433408.0,
+      "min": 361639936.0
+    },
+    "committed_bytes": {
+      "mean": 79979082240.0,
+      "max": 79983087616.0,
+      "min": 79975710720.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9166946411132812,
+      "max": 1.9166946411132812,
+      "min": 1.9166946411132812
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 5120,
+        "write_bytes": 1598976,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 880332800,
+        "write_bytes": 0,
+        "read_time_ms": 2,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32625127424,
+    "engine_rss_max": 32625442816,
+    "engine_faults_delta": 86
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 27,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "4",
+      "expected": "4",
+      "content_rule": "final numeric expression; strict format separately requires####"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676311.3935966
+  }
+}

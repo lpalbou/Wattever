@@ -1,0 +1,31 @@
+{
+  "utc": "2026-11-14T16:51:14.311735+00:00",
+  "reason": "Interval-pair and node-order wording does not require Python list rather than tuple for equivalent ordered values. JSON fixtures cannot represent tuples. Accept equivalent Python sequences; retain explicit outer-list contracts where requested, exact scalar types and input-immutability checks. Applies uniformly to all candidates. No question or inference changed.",
+  "inference_repeated": false,
+  "changes": [
+    {
+      "condition": "xs-low2048-controlled",
+      "id": "coding8-stable_unique",
+      "strict_before": true,
+      "strict_after": true
+    },
+    {
+      "condition": "xs-low2048-controlled",
+      "id": "coding8-merge_intervals",
+      "strict_before": false,
+      "strict_after": true
+    },
+    {
+      "condition": "xs-off2048-controlled",
+      "id": "coding8-stable_unique",
+      "strict_before": true,
+      "strict_after": true
+    },
+    {
+      "condition": "xs-off2048-controlled",
+      "id": "coding8-merge_intervals",
+      "strict_before": false,
+      "strict_after": true
+    }
+  ]
+}

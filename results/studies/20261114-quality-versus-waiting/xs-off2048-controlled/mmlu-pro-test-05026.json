@@ -1,0 +1,982 @@
+{
+  "id": "mmlu-pro-test-05026",
+  "category": "history",
+  "cohort": "public128",
+  "suite_id": "mmlu-pro-balanced64-chat-v1",
+  "prompt_sha256": "4962611fb7d04b0b8fcc904459d272cd19655780d5046990c86e042b7fd95771",
+  "request_started_unix": 1794676607.2363966,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676607.2363966
+  },
+  "started_unix": 1794676607.2363966,
+  "response_id": "resp_9a78875f0e06435b9419c200",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 537,
+    "output_tokens": 40,
+    "total_tokens": 577,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 40,
+  "non_reasoning_generated_tokens": 40,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 4.028558699996211,
+  "first_visible_content_s": 4.028558699996211,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 6.2750857999999425,
+  "terminal_answer_s": 6.338984999994864,
+  "transport_wall_s": 6.3390470999947865,
+  "answer": "I is the best answer. The Tang relied heavily on the emperor's ability to project military power on the frontier—hence the constant conscription campaigns described in the poem.\n\nANSWER: I",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.006026399998518173,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_9a78875f0e06435b9419c200",
+          "object": "response",
+          "created_at": 1794676607,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.006045599999197293,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_9a78875f0e06435b9419c200",
+          "object": "response",
+          "created_at": 1794676607,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.028466699994169,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_26be4519c87d4c6f96f278d3",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.028513199998997,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.028558699996211,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "I",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.136165799995069,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.234075000000303,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.2758863999988534,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " best",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.33234149999771,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " answer",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.367477199994028,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.412100599998666,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " The",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.444817499999772,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " Tang",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.493883600000117,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " relied",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.599236800000654,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " heavily",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.6876903000011225,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " on",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.737264399998821,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.769351299997652,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " emperor",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.829232299998694,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "'s",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.865157100000943,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ability",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.931036800000584,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " to",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.9722857999950065,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " project",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.028803299996071,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " military",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.090440199994191,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " power",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.132628899998963,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " on",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.195583199994871,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.220626299997093,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " frontier",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.279846499994164,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "—",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.365965500001039,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "h",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.485354999997071,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ence",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.525076400001126,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.5614140999969095,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " constant",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.62159740000061,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " cons",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.676560799998697,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "cription",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.721283899998525,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " campaigns",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.812301699996169,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 34,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " described",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.9328524000011384,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 35,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " in",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.990413999999873,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 36,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.0293247000008705,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 37,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " poem",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.0672438999972655,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 38,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.103972899996734,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 39,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.1827539000005345,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 40,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.233033099997556,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 41,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.2750857999999425,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 42,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " I",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.338732500000333,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 43,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "I is the best answer. The Tang relied heavily on the emperor's ability to project military power on the frontier—hence the constant conscription campaigns described in the poem.\n\nANSWER: I",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.33876859999873,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 44,
+        "item_id": "msg_26be4519c87d4c6f96f278d3",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "I is the best answer. The Tang relied heavily on the emperor's ability to project military power on the frontier—hence the constant conscription campaigns described in the poem.\n\nANSWER: I",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 6.338844699996116,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 45,
+        "output_index": 0,
+        "item": {
+          "id": "msg_26be4519c87d4c6f96f278d3",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "I is the best answer. The Tang relied heavily on the emperor's ability to project military power on the frontier—hence the constant conscription campaigns described in the poem.\n\nANSWER: I",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 6.338984999994864,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 46,
+        "response": {
+          "id": "resp_9a78875f0e06435b9419c200",
+          "object": "response",
+          "created_at": 1794676607,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_26be4519c87d4c6f96f278d3",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "I is the best answer. The Tang relied heavily on the emperor's ability to project military power on the frontier—hence the constant conscription campaigns described in the poem.\n\nANSWER: I",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 537,
+            "output_tokens": 40,
+            "total_tokens": 577,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676613
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "db2388d28a1fb264cceba27067685e9148612b0949baed35ce6123ad335cf018",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 12,
+    "source": "nvidia-smi",
+    "duration_s": 6.339142199998605,
+    "gpu_w_avg": 130.54171710189337,
+    "gpu_sampled_coverage_s": 5.545610700006364,
+    "gpu_sampled_coverage_fraction": 0.8748203660753318,
+    "gpu_w_max": 153.79,
+    "gpu_energy_j": 827.5225077408919,
+    "system_w_est": 253.88632324670226,
+    "system_energy_j_est": 1609.421505695657,
+    "gpu_util_avg": 55.416666666666664,
+    "vram_mb_max": 30038.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 48.0,
+    "cpu_util_avg": 0.4479758522727273,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 48778194944,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 70.49529920887734,
+    "system_memory_percent_max": 71.06693991247755,
+    "vram_percent_avg": 92.11341470894928,
+    "vram_percent_max": 92.12414892964485,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 12,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 12,
+        "source": "nvidia-smi",
+        "duration_s": 6.339142199998605,
+        "gpu_w_avg": 64.52604285999854,
+        "gpu_sampled_coverage_s": 5.545610700006364,
+        "gpu_sampled_coverage_fraction": 0.8748203660753318,
+        "gpu_w_max": 85.86,
+        "gpu_energy_j": 409.0397612927354,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 46.666666666666664,
+        "vram_mb_max": 15454.0,
+        "clock_mhz_avg": 2778.5833333333335,
+        "temp_c_max": 48.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 94.77090106115439,
+        "vram_percent_max": 94.79236950254554,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 12,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 12,
+        "source": "nvidia-smi",
+        "duration_s": 6.339142199998605,
+        "gpu_w_avg": 66.01567424189481,
+        "gpu_sampled_coverage_s": 5.545610700006364,
+        "gpu_sampled_coverage_fraction": 0.8748203660753318,
+        "gpu_w_max": 82.54,
+        "gpu_energy_j": 418.4827464481563,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 64.16666666666667,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 3008.0,
+        "temp_c_max": 37.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 12,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 12,
+    "errors": {},
+    "available_bytes_min": 19832217600,
+    "ram_used_percent_max": 71.1,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 130041.19343169883,
+      "max": 300770.03126586956,
+      "min": 16812.804992599085
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 1573.876848997301,
+      "max": 3797.552477428297,
+      "min": 207.05624460347568
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 554840.026918246,
+      "max": 983333.6925265238,
+      "min": 284175.11658236803
+    },
+    "transition_faults_s": {
+      "mean": 8983.23329572246,
+      "max": 37589.68032102245,
+      "min": 11.836310921738903
+    },
+    "system_cache_resident_bytes": {
+      "mean": 6545395370.666667,
+      "max": 6963478528.0,
+      "min": 6099980288.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 20011971925.333332,
+      "max": 20477566976.0,
+      "min": 19604074496.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 226406058.66666666,
+      "max": 226414592.0,
+      "min": 226320384.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 341808810.6666667,
+      "max": 343572480.0,
+      "min": 340135936.0
+    },
+    "committed_bytes": {
+      "mean": 80023577600.0,
+      "max": 80127238144.0,
+      "min": 79999680512.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9705645243326824,
+      "max": 1.9706535339355469,
+      "min": 1.9705009460449219
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 105363456,
+        "write_bytes": 2451968,
+        "read_time_ms": 25,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 3133374464,
+        "write_bytes": 0,
+        "read_time_ms": 7,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32676417536,
+    "engine_rss_max": 32679690240,
+    "engine_faults_delta": 807
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 30,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "I",
+      "expected": "I",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676613.5763686
+  }
+}

@@ -1,0 +1,15 @@
+1.13, disk 10.64) + 0.26 GB vram | experts: staged 4308, resident 1406 (295451 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 93 ms | layer lane 239.2/142.9 ms max/min
+glm prefill: 5000 tokens in 10726.7 ms (2.15 ms/token, 466 tok/s), 1 chunk of 5056 tokens | CUDA0 5544 ms, CUDA1 4923 ms (hop in 93 ms)
+glm dsa scores: CUDA0 on the original kernels
+glm dsa scores: CUDA1 on the original kernels
+glm fast: CUDA0 disk misses stream to the GPU behind their reads (4 chunks a part; MAYA_GLM_STREAM_FETCH=0 turns it off)
+glm vram: prompt 5001 tokens read in 11.0 s; VRAM free CUDA0 1.5 of 15.9, CUDA1 1.5 of 15.9 GB before, 1.4, 1.5 after
+glm stat: decode 73.35 ms/tok (13.63 tok/s) | vram hit 69.53% | ram fetches 72.25/tok | disk 36.97 reads/tok in 23.55 waits/tok, 52.00 ms/tok | promotions 58.54/tok | cpu lane 0.00/tok in 0.00 ms/tok | prompt 2.2 ms/tok | vram 3732/3775 ram 4632/4738
+glm spec: 130 of 145 drafts accepted (89.7%)
+glm kv: KV streaming: 98.42% of 953217 block reads hit VRAM, 31.2 MiB read from RAM
+ns, 13.4 tok/s, 17 s
+[maya] answering: 98 of max 512 tokens, 13.2 tok/s, 18 s
+[maya] answering: 111 of max 512 tokens, 13.1 tok/s, 19 s
+[maya] answering: 129 of max 512 tokens, 13.6 tok/s, 21 s
+[maya] answering: 144 of max 512 tokens, 13.7 tok/s, 22 s
+[maya] done: 147 tokens in 22 s (13.6 tok/s) (stop, cancel=False), expert cache 69.5% hit

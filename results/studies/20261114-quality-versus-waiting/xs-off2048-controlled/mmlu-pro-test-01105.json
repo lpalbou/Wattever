@@ -1,0 +1,1522 @@
+{
+  "id": "mmlu-pro-test-01105",
+  "category": "law",
+  "cohort": "public128",
+  "suite_id": "mmlu-pro-balanced64-chat-v1",
+  "prompt_sha256": "ba6f1f05301d8fbe4e6c0db36da88db56749635b1fa2b4fecc5e681d2b5c9824",
+  "request_started_unix": 1794676476.8315282,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676476.8315282
+  },
+  "started_unix": 1794676476.8315282,
+  "response_id": "resp_46f22e55154446998c4bc737",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 436,
+    "output_tokens": 85,
+    "total_tokens": 521,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 85,
+  "non_reasoning_generated_tokens": 85,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 4.967977499996778,
+  "first_visible_content_s": 4.967977499996778,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 10.629274899998563,
+  "terminal_answer_s": 10.696157799997309,
+  "transport_wall_s": 10.696224499995878,
+  "answer": "The customer's answer repeats hearsay from the girlfriend, but the question was asked by the supermarket's attorney — the party who would be harmed by it. Under the \"invited by the opposing party\" principle (evidentiary rules don't apply where the party inviting the answer would be the one harmed), the answer stands because it was invited by the question from the supermarket's own attorney.\n\nANSWER: B",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.020968999997421633,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_46f22e55154446998c4bc737",
+          "object": "response",
+          "created_at": 1794676476,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.021516099994187243,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_46f22e55154446998c4bc737",
+          "object": "response",
+          "created_at": 1794676476,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.967743999994127,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_21cc61eb9cd44621abc43ed7",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.96796429999813,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.967977499996778,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "The",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.11532339999394,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " customer",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.275963199994294,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "'s",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.341802499999176,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " answer",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.406437999998161,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " repeats",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.545298499993805,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " hears",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.692213199996331,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ay",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.751206900000398,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " from",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.827493400000094,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.934071199997561,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " girlfriend",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.994862799998373,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.100179799999751,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " but",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.227078999996593,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.281210099994496,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " question",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.38663319999614,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " was",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.518585899997561,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " asked",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.619870399998035,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " by",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.675630999998248,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.7264023999960045,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " supermarket",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.76602339999954,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "'s",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.8026561999940895,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " attorney",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.831429099998786,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " —",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.9145242999948096,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.99431779999577,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " party",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.080700499995146,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " who",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.161778699999559,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " would",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.273993199996767,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " be",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.360133700000006,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " harmed",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.4474799999952666,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " by",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.482717699997011,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " it",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.561120699996536,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 34,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.606820900000457,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 35,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " Under",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.669330999997328,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 36,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.702853899994807,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 37,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " \"",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.740926599995873,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 38,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "inv",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.796438699995633,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 39,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ited",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.833360699994955,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 40,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " by",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.860269799995876,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 41,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.94232319999719,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 42,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " opposing",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.03311759999633,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 43,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " party",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.072000499996648,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 44,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\"",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.125338999998348,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 45,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " principle",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.20738849999907,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 46,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " (",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.244832999997016,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 47,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "e",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.304713799996534,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 48,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "vid",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.405598599994846,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 49,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "enti",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.444570999999996,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 50,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ary",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.476949799995054,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 51,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " rules",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.577245000000403,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 52,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " don",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.690995199998724,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 53,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "'t",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.729742199997418,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 54,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " apply",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.787411400000565,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 55,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " where",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.869291899995005,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 56,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.89182879999862,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 57,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " party",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.92190059999848,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 58,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " inviting",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.000237699998252,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 59,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.079158799999277,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 60,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " answer",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.11265160000039,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 61,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " would",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.192158799996832,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 62,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " be",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.232696399994893,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 63,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.290524299998651,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 64,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " one",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.33185119999689,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 65,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " harmed",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.405514799997036,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 66,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "),",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.438872499995341,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 67,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.47408279999945,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 68,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " answer",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.516302399999404,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 69,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " stands",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.61138999999821,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 70,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " because",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.702530700000352,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 71,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " it",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.783412199998565,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 72,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " was",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.825112099999387,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 73,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " invited",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.856957500000135,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 74,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " by",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.905753599996387,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 75,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.966462399999727,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 76,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " question",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 10.037622199997713,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 77,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " from",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 10.112181399999827,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 78,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 10.152118399993924,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 79,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " supermarket",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 10.204035399998247,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 80,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "'s",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 10.254164499994658,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 81,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " own",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 10.341010599993751,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 82,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " attorney",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 10.38487869999517,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 83,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 10.426483399998688,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 84,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 10.497024899996177,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 85,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 10.558274999995774,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 86,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 10.629274899998563,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 87,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " B",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 10.695911399998295,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 88,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "The customer's answer repeats hearsay from the girlfriend, but the question was asked by the supermarket's attorney — the party who would be harmed by it. Under the \"invited by the opposing party\" principle (evidentiary rules don't apply where the party inviting the answer would be the one harmed), the answer stands because it was invited by the question from the supermarket's own attorney.\n\nANSWER: B",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 10.695976899995003,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 89,
+        "item_id": "msg_21cc61eb9cd44621abc43ed7",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "The customer's answer repeats hearsay from the girlfriend, but the question was asked by the supermarket's attorney — the party who would be harmed by it. Under the \"invited by the opposing party\" principle (evidentiary rules don't apply where the party inviting the answer would be the one harmed), the answer stands because it was invited by the question from the supermarket's own attorney.\n\nANSWER: B",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 10.696009899998899,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 90,
+        "output_index": 0,
+        "item": {
+          "id": "msg_21cc61eb9cd44621abc43ed7",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "The customer's answer repeats hearsay from the girlfriend, but the question was asked by the supermarket's attorney — the party who would be harmed by it. Under the \"invited by the opposing party\" principle (evidentiary rules don't apply where the party inviting the answer would be the one harmed), the answer stands because it was invited by the question from the supermarket's own attorney.\n\nANSWER: B",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 10.696157799997309,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 91,
+        "response": {
+          "id": "resp_46f22e55154446998c4bc737",
+          "object": "response",
+          "created_at": 1794676476,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_21cc61eb9cd44621abc43ed7",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "The customer's answer repeats hearsay from the girlfriend, but the question was asked by the supermarket's attorney — the party who would be harmed by it. Under the \"invited by the opposing party\" principle (evidentiary rules don't apply where the party inviting the answer would be the one harmed), the answer stands because it was invited by the question from the supermarket's own attorney.\n\nANSWER: B",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 436,
+            "output_tokens": 85,
+            "total_tokens": 521,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676487
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "c7489589f03f48317a7022562596fd7bd45cde4184d74842d89f0a6a1080c6af",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 21,
+    "source": "nvidia-smi",
+    "duration_s": 10.696313000000373,
+    "gpu_w_avg": 131.0283334284303,
+    "gpu_sampled_coverage_s": 10.103464100000565,
+    "gpu_sampled_coverage_fraction": 0.9445744622469642,
+    "gpu_w_max": 165.36,
+    "gpu_energy_j": 1401.5200662189025,
+    "system_w_est": 252.02396075329938,
+    "system_energy_j_est": 2695.7271677170997,
+    "gpu_util_avg": 57.095238095238095,
+    "vram_mb_max": 30154.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 47.0,
+    "cpu_util_avg": 0.43476900703463206,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49485725696,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 70.38088078645103,
+    "system_memory_percent_max": 72.09777029675767,
+    "vram_percent_avg": 92.47626057722358,
+    "vram_percent_max": 92.47991167269828,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 21,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 21,
+        "source": "nvidia-smi",
+        "duration_s": 10.696313000000373,
+        "gpu_w_avg": 66.39154894859716,
+        "gpu_sampled_coverage_s": 10.103464100000565,
+        "gpu_sampled_coverage_fraction": 0.9445744622469642,
+        "gpu_w_max": 85.88,
+        "gpu_energy_j": 710.144788109041,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 48.38095238095238,
+        "vram_mb_max": 15570.0,
+        "clock_mhz_avg": 2814.904761904762,
+        "temp_c_max": 47.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.49659279770302,
+        "vram_percent_max": 95.50389498865239,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 21,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 21,
+        "source": "nvidia-smi",
+        "duration_s": 10.696313000000373,
+        "gpu_w_avg": 64.63678447983315,
+        "gpu_sampled_coverage_s": 10.103464100000565,
+        "gpu_sampled_coverage_fraction": 0.9445744622469642,
+        "gpu_w_max": 83.19,
+        "gpu_energy_j": 691.3752781098617,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 65.80952380952381,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 2795.9523809523807,
+        "temp_c_max": 37.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 21,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 21,
+    "errors": {},
+    "available_bytes_min": 19273535488,
+    "ram_used_percent_max": 71.9,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 214875.34478501164,
+      "max": 545872.8417741162,
+      "min": 27342.60652123945
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 2491.020112289833,
+      "max": 6303.359285696387,
+      "min": 300.7178311522446
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 475177.5778280214,
+      "max": 783785.305639964,
+      "min": 210285.63613795312
+    },
+    "transition_faults_s": {
+      "mean": 7558.267153397731,
+      "max": 29156.51832574011,
+      "min": 28.75400830875824
+    },
+    "system_cache_resident_bytes": {
+      "mean": 6524642255.238095,
+      "max": 7568789504.0,
+      "min": 5332656128.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 20102557500.95238,
+      "max": 21308059648.0,
+      "min": 19043041280.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 1950.4761904761904,
+      "max": 40960.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 226368755.80952382,
+      "max": 226381824.0,
+      "min": 226209792.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 340679533.71428573,
+      "max": 345014272.0,
+      "min": 339300352.0
+    },
+    "committed_bytes": {
+      "mean": 80142473508.57143,
+      "max": 80253214720.0,
+      "min": 80123367424.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9805890037899925,
+      "max": 1.980733871459961,
+      "min": 1.9805145263671875
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 112399360,
+        "write_bytes": 6634496,
+        "read_time_ms": 26,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 9352085504,
+        "write_bytes": 0,
+        "read_time_ms": 20,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32656109568,
+    "engine_rss_max": 32661286912,
+    "engine_faults_delta": 1274
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 66,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "B",
+      "expected": "B",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676487.5296571
+  }
+}

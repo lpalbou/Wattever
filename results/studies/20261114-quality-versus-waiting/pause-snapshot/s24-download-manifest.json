@@ -1,0 +1,56 @@
+{
+  "verified_at": "2026-11-14",
+  "repo": "peasantsmith/GLM-5.3-Flash-Maya-GGUF",
+  "revision": "5ca1df1d2436bd1ab270b169c5ea6c47aad23641",
+  "folder": "Maya-S24",
+  "metadata_url": "https://huggingface.co/api/models/peasantsmith/GLM-5.3-Flash-Maya-GGUF/tree/5ca1df1d2436bd1ab270b169c5ea6c47aad23641/Maya-S24?expand=true",
+  "destination": "D:/StrataModels/models/GLM-5.3-Flash-Maya-S24",
+  "total_bytes": 94701676224,
+  "files": [
+    {
+      "name": "GLM-5.3-Flash-Maya-S24-IQ2_XXS_S-00001-of-00003.gguf",
+      "bytes": 46886573024,
+      "sha256": "8ebd5c74bcf65ece2a8699b7b6fd2b8d177f350ed252cee252fdd99b86a0138c",
+      "url": "https://huggingface.co/peasantsmith/GLM-5.3-Flash-Maya-GGUF/resolve/5ca1df1d2436bd1ab270b169c5ea6c47aad23641/Maya-S24/GLM-5.3-Flash-Maya-S24-IQ2_XXS_S-00001-of-00003.gguf?download=true"
+    },
+    {
+      "name": "GLM-5.3-Flash-Maya-S24-IQ2_XXS_S-00002-of-00003.gguf",
+      "bytes": 46982144736,
+      "sha256": "4bd445da3a0128a9c5b32228c924e0a622aa4a132c7a8dc9a2c207a4beea8e34",
+      "url": "https://huggingface.co/peasantsmith/GLM-5.3-Flash-Maya-GGUF/resolve/5ca1df1d2436bd1ab270b169c5ea6c47aad23641/Maya-S24/GLM-5.3-Flash-Maya-S24-IQ2_XXS_S-00002-of-00003.gguf?download=true"
+    },
+    {
+      "name": "GLM-5.3-Flash-Maya-S24-IQ2_XXS_S-00003-of-00003.gguf",
+      "bytes": 832958464,
+      "sha256": "a6fd4e88007ac49b431c7d02be34e43ab7a09224d53a0c52782327613cb41917",
+      "url": "https://huggingface.co/peasantsmith/GLM-5.3-Flash-Maya-GGUF/resolve/5ca1df1d2436bd1ab270b169c5ea6c47aad23641/Maya-S24/GLM-5.3-Flash-Maya-S24-IQ2_XXS_S-00003-of-00003.gguf?download=true"
+    }
+  ],
+  "compatible_engine": "Project Maya 1.1.59",
+  "converter": "experimental-maya/source-1.1.59/tools/iq_pack.py --gguf <S24 shard1> --out <S24 model folder>/pack --compat-bf16",
+  "converter_env": "MAYA_GGUF_PY points to this installation's llama.cpp/gguf-py; use its prepared Python environment with numpy/gguf available.",
+  "pack_reuse": false,
+  "why_fresh_pack": "GLM pack_step always selects --compat-bf16; iq_pack.py:368 explicitly rejects combining it with --base. S24 expert formats, offsets and MTP weights differ from XS. Build a separate pack after all three whole-shard hashes pass; keep XS intact.",
+  "source_evidence": [
+    "experimental-maya/source-1.1.59/maya.py:160 S24 release metadata and expected hashes",
+    "experimental-maya/source-1.1.59/maya.py:3305 pack_step checks source filename/staleness",
+    "experimental-maya/source-1.1.59/maya.py:3339 GLM invokes --compat-bf16",
+    "experimental-maya/source-1.1.59/tools/iq_pack.py:368 --base incompatibility",
+    "experimental-maya/source-1.1.59/tools/iq_pack.py:383 glm5-next and glm5next accepted",
+    "experimental-maya/source-1.1.59/include/strata/kernels/cpu/glm_lane_row4.hpp:15 S24 expert/MTP type IDs supported"
+  ],
+  "format_compatibility": "Source-level support verified: trunk expert IQ2_XXS/IQ2_S/IQ3_XXS, MTP Q2_K/Q3_K, dense/shared Q4_K/Q6_K plus BF16/F32. No model conversion or runtime functional test performed in this subtask.",
+  "quality_reason": "Quantizer reports S24 retaining97.7% versus XS92.4% of FP8 aggregate accuracy on limited zero-shot multiple-choice tasks; justifies a trial, not a guarantee for agent/coding quality.",
+  "sources": [
+    "https://huggingface.co/peasantsmith/GLM-5.3-Flash-Maya-GGUF",
+    "https://raw.githubusercontent.com/mw00/project-maya/v1.1.59/docs/MODELS.md"
+  ],
+  "download_control": {
+    "pause_marker": "untracked/glm_optimization/download.pause",
+    "acknowledgement": "untracked/glm_optimization/download.paused.json",
+    "stop_marker": "untracked/glm_optimization/s24-download.stop",
+    "receipt": "untracked/glm_optimization/s24-download-receipt.json",
+    "session_id": 13299,
+    "pid": 812
+  }
+}

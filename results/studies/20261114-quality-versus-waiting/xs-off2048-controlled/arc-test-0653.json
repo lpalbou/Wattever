@@ -1,0 +1,730 @@
+{
+  "id": "arc-test-0653",
+  "category": "science_reasoning",
+  "cohort": "public128",
+  "suite_id": "arc-challenge-test-chat-v1",
+  "prompt_sha256": "51a803ab1a63c67d4955b76b6f1e3b2ca6422565dc5e0f224e9f3ae574a1c629",
+  "request_started_unix": 1794676219.1155894,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676219.1155894
+  },
+  "started_unix": 1794676219.1155894,
+  "response_id": "resp_a5065519bd314555a2e14985",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 74,
+    "output_tokens": 19,
+    "total_tokens": 93,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 19,
+  "non_reasoning_generated_tokens": 19,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 1.918192099998123,
+  "first_visible_content_s": 1.918192099998123,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 2.7786570000025677,
+  "terminal_answer_s": 2.8143568000014056,
+  "transport_wall_s": 2.814422100003867,
+  "answer": "A. Air is a mixture of gases, not chemically combined. ANSWER: A",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.018902000003436115,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_a5065519bd314555a2e14985",
+          "object": "response",
+          "created_at": 1794676219,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.01892210000369232,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_a5065519bd314555a2e14985",
+          "object": "response",
+          "created_at": 1794676219,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 1.9180704000027617,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_740253c9684940829cd25d53",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 1.9181219000020064,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 1.918192099998123,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 1.9937753999984125,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.0740311999979895,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " Air",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.1563466000006883,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.187360100004298,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " a",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.2133467000021483,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " mixture",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.252580799999123,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " of",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.2880923000047915,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " gases",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.327774400000635,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.40169550000428,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " not",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.456921400000283,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " chem",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.544622100002016,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ically",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.577271900001506,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " combined",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.6258400000006077,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.655251500000304,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ANSW",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.6986163000037777,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.744650799999363,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7786570000025677,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.814135599997826,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 22,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "A. Air is a mixture of gases, not chemically combined. ANSWER: A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8141680999979144,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 23,
+        "item_id": "msg_740253c9684940829cd25d53",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "A. Air is a mixture of gases, not chemically combined. ANSWER: A",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.8142235999985132,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 24,
+        "output_index": 0,
+        "item": {
+          "id": "msg_740253c9684940829cd25d53",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "A. Air is a mixture of gases, not chemically combined. ANSWER: A",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.8143568000014056,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 25,
+        "response": {
+          "id": "resp_a5065519bd314555a2e14985",
+          "object": "response",
+          "created_at": 1794676219,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_740253c9684940829cd25d53",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "A. Air is a mixture of gases, not chemically combined. ANSWER: A",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 74,
+            "output_tokens": 19,
+            "total_tokens": 93,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676221
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "f7c6616b8402b874f9b6bde141d4b80f6804254aa83fb2f85ad8ba29b2032549",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 6,
+    "source": "nvidia-smi",
+    "duration_s": 2.8144880999971065,
+    "gpu_w_avg": 149.39762273569508,
+    "gpu_sampled_coverage_s": 2.5314858999990975,
+    "gpu_sampled_coverage_fraction": 0.8994480737018217,
+    "gpu_w_max": 172.32,
+    "gpu_energy_j": 420.47783135747096,
+    "system_w_est": 262.60710051666035,
+    "system_energy_j_est": 739.1045593788846,
+    "gpu_util_avg": 51.583333333333336,
+    "vram_mb_max": 30221.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 58.0,
+    "cpu_util_avg": 0.375167692550505,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49697173504,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 72.18265584528595,
+    "system_memory_percent_max": 72.40583722467521,
+    "vram_percent_avg": 92.68539532601362,
+    "vram_percent_max": 92.68539532601362,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 6,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 6,
+        "source": "nvidia-smi",
+        "duration_s": 2.8144880999971065,
+        "gpu_w_avg": 70.40036858607166,
+        "gpu_sampled_coverage_s": 2.5314858999990975,
+        "gpu_sampled_coverage_fraction": 0.8994480737018217,
+        "gpu_w_max": 83.51,
+        "gpu_energy_j": 198.14099962090881,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 39.0,
+        "vram_mb_max": 15637.0,
+        "clock_mhz_avg": 2974.6666666666665,
+        "temp_c_max": 57.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.91486229528307,
+        "vram_percent_max": 95.91486229528307,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 6,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 6,
+        "source": "nvidia-smi",
+        "duration_s": 2.8144880999971065,
+        "gpu_w_avg": 78.99725414962339,
+        "gpu_sampled_coverage_s": 2.5314858999990975,
+        "gpu_sampled_coverage_fraction": 0.8994480737018217,
+        "gpu_w_max": 88.86,
+        "gpu_energy_j": 222.33683173656206,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 64.16666666666667,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 2979.6666666666665,
+        "temp_c_max": 58.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 6,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 6,
+    "errors": {},
+    "available_bytes_min": 18925965312,
+    "ram_used_percent_max": 72.4,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 76253.76311417292,
+      "max": 145850.3597219039,
+      "min": 43929.736090231796
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 840.8545066677251,
+      "max": 1625.4371822908024,
+      "min": 483.22117999850894
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 326058.91525533126,
+      "max": 654930.5619958944,
+      "min": 174896.2760195083
+    },
+    "transition_faults_s": {
+      "mean": 2050.3954123086273,
+      "max": 5997.5072675036545,
+      "min": 13.85579443385026
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7797066410.666667,
+      "max": 7963254784.0,
+      "min": 7698608128.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 18863221418.666668,
+      "max": 18967777280.0,
+      "min": 18697113600.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 227328000.0,
+      "max": 227328000.0,
+      "min": 227328000.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 301871104.0,
+      "max": 302448640.0,
+      "min": 301580288.0
+    },
+    "committed_bytes": {
+      "mean": 80223894869.33333,
+      "max": 80225693696.0,
+      "min": 80222277632.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.916961669921875,
+      "max": 1.916961669921875,
+      "min": 1.916961669921875
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 65536,
+        "write_bytes": 1065472,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 845070336,
+        "write_bytes": 0,
+        "read_time_ms": 2,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 33559052288,
+    "engine_rss_max": 33560276992,
+    "engine_faults_delta": 309
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": false,
+    "completed_final_answer": true,
+    "strict_success": false,
+    "content_success": true,
+    "format_only_failure": true,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 12,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "A",
+      "expected": "A",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": false,
+      "60": false,
+      "120": false
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676221.9309864
+  }
+}

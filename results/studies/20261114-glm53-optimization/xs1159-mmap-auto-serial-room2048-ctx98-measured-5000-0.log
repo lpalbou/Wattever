@@ -1,0 +1,9 @@
+) + 0.47 GB vram | experts: staged 4831, resident 1487 (317917 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 0 ms | layer lane 150.1/98.0 ms max/min
+glm prefill: CUDA1 chunk 1/1, 5000 tokens, wall 3779 ms | the copy lane 3684 ms: copies 1874 (11.6 GB/s), ring wait 427, gaps 486, mixer windows 897 | lead 48, tail 46 | pcie 21.77 GB (ram 0.15, disk 21.62) + 0.31 GB vram | experts: staged 4319, resident 1420 (292079 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 24 ms | layer lane 216.5/112.9 ms max/min
+glm prefill: 5000 tokens in 7547.9 ms (1.51 ms/token, 662 tok/s), 1 chunk of 5056 tokens | CUDA0 3659 ms, CUDA1 3779 ms (hop in 24 ms)
+glm vram: prompt 5001 tokens read in 8.0 s; VRAM free CUDA0 1.4 of 15.9, CUDA1 1.5 of 15.9 GB before, 1.4, 1.5 after
+glm stat: decode 76.41 ms/tok (13.09 tok/s) | vram hit 72.81% | ram fetches 40.30/tok | disk 38.20 reads/tok in 17.81 waits/tok, 22.28 ms/tok | promotions 58.64/tok | cpu lane 18.96/tok in 40.95 ms/tok | prompt 1.6 ms/tok | vram 3696/3795 ram 3819/4070
+glm spec: 113 of 126 drafts accepted (89.7%)
+glm kv: KV streaming: 98.21% of 830158 block reads hit VRAM, 30.9 MiB read from RAM
+glm fast: CUDA0 CPU lane timed again in decode: an expert 2.162 ms (planned with 0.823) -> RAM-tier experts to the CPU, of 0..8: 0 0 0 0 0 0 1 1 1 (PCIe share 0.95)
+s (13.1 tok/s) (length, cancel=False), expert cache 72.8% hit

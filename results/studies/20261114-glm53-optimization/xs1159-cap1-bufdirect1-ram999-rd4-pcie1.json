@@ -1,0 +1,4122 @@
+{
+  "label": "xs1159-cap1-bufdirect1-ram999-rd4-pcie1",
+  "model": "glm-5.3-flash-maya-xs-iq1_s",
+  "context": 98304,
+  "started_unix": 1794660659.6146839,
+  "sampling": {
+    "temperature": 0,
+    "top_p": 1,
+    "seed": 20261114,
+    "max_tokens": 128,
+    "reasoning_effort": "none"
+  },
+  "tokenizer": {
+    "tokenizer_directory": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156\\tokenizer",
+    "template": "experimental-maya\\source-1.1.59\\serve\\glm5_chat_template.jinja",
+    "files_sha256": {
+      "vocab.json": "168e8586859e110a73372e50e742258eac5314627fddcd85957c1d6781d38ae2",
+      "merges.txt": "c9f9352db4dab0d3e0cba5923692047db4efe065ba59c5ab8a5eb2fb589f0d93",
+      "token_type.json": "3d226d66989eaa352fc8093536ece4b9398c85b57ba33860031bef042251ddb9",
+      "tokenizer.json": "74d0676146941e9ad57724515186294cfeb644ae15a300e2e0ba6d7c18cf13ab",
+      "chat_template.jinja": "a4fddbbf0b432101a296c17094f8bc5a2b0d30713b5b5cd92f86be78511aa724"
+    },
+    "render_template_sha256": "2614a3c896d53e265f564c23701173c0049f985dacfbae79fc4bcd9f5ba083f4",
+    "vendor_root": "experimental-maya\\source-1.1.59",
+    "frontend_sha256": "410120bf020ce1c1b5f688c5aaa65217cb24c4bb4536a891c713451727a48459",
+    "tokenizer_implementation_sha256": "af56ee7206118fd7eae2641266f780940cd0f821dabeacaae6bceffe26e0b539"
+  },
+  "frozen_tokenizer": {
+    "tokenizer_directory": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156\\tokenizer",
+    "template": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.56\\serve\\glm5_chat_template.jinja",
+    "files_sha256": {
+      "vocab.json": "168e8586859e110a73372e50e742258eac5314627fddcd85957c1d6781d38ae2",
+      "merges.txt": "c9f9352db4dab0d3e0cba5923692047db4efe065ba59c5ab8a5eb2fb589f0d93",
+      "token_type.json": "3d226d66989eaa352fc8093536ece4b9398c85b57ba33860031bef042251ddb9",
+      "tokenizer.json": "74d0676146941e9ad57724515186294cfeb644ae15a300e2e0ba6d7c18cf13ab",
+      "chat_template.jinja": "a4fddbbf0b432101a296c17094f8bc5a2b0d30713b5b5cd92f86be78511aa724"
+    },
+    "render_template_sha256": "b6d092ed534ae145085b6dbb19d61bf8b383e186bdd5b5a0c0b6110f7fc6f2a0"
+  },
+  "renderer": {
+    "renderer_id": "611e8b9fcb7eef5ffab68b8bcde4f7e24bd58e9299071ae4eb9d77b8d4d34f6a",
+    "render_template_sha256": "2614a3c896d53e265f564c23701173c0049f985dacfbae79fc4bcd9f5ba083f4",
+    "frontend_sha256": "410120bf020ce1c1b5f688c5aaa65217cb24c4bb4536a891c713451727a48459",
+    "reasoning_effort": "none",
+    "tokenizer_files_digest": "473366c622d34e78b7a6b96fdeafc96e09d00ca3f33dea48a9068afa210b2dff"
+  },
+  "engine_configuration": {
+    "exe": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.59\\build\\maya.exe",
+    "args": [
+      "--glm-pack",
+      "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156",
+      "--expert-cache",
+      "auto",
+      "--prefill",
+      "auto",
+      "--expert-profile",
+      "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156\\expert-profile-seed.bin",
+      "--max-context",
+      "98304",
+      "--parallel",
+      "1",
+      "--kv",
+      "int8",
+      "--kv-streaming",
+      "on",
+      "--vram-reserve-mib",
+      "1500",
+      "--layer-split",
+      "25"
+    ],
+    "cwd": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.56",
+    "tokenizer": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156\\tokenizer",
+    "model_name": "glm-5.3-flash-maya-xs-iq1_s",
+    "gpu": "1,0",
+    "sampling": {
+      "temperature": 0,
+      "top_p": 1,
+      "seed": 73129
+    },
+    "reasoning_effort": "none",
+    "thinking_budget": 0,
+    "loop_guard": false,
+    "env": {
+      "MAYA_GLM_SPEC_WIN": "0",
+      "MAYA_GLM_RAM_RESIDENT": "0",
+      "MAYA_GLM_DISK_SKIP_W": "0",
+      "MAYA_GLM_DISK_SKIP_FROM": "8",
+      "MAYA_GLM_MISS_SKIP_W": "0",
+      "MAYA_GLM_MISS_SKIP_FROM": "0",
+      "MAYA_GLM_READ_CHUNKS": "4",
+      "MAYA_GLM_PIN_PIECE_MB": "1024",
+      "STRATA_GLM_PIN_PIECE_MB": "1024",
+      "STRATA_GLM_READ_CHUNKS": "4",
+      "MAYA_GLM_PREFILL_STABLE": "0",
+      "STRATA_GLM_PREFILL_STABLE": "0",
+      "MAYA_GLM_BUFFERED_IO": "1",
+      "STRATA_GLM_BUFFERED_IO": "1",
+      "MAYA_GLM_MMAP_IO": "0",
+      "STRATA_GLM_MMAP_IO": "0",
+      "MAYA_GLM_PIN_ROOM_MB": "512",
+      "STRATA_GLM_PIN_ROOM_MB": "512",
+      "MAYA_GLM_PARALLEL_LOAD": "1",
+      "STRATA_GLM_PARALLEL_LOAD": "1",
+      "MAYA_GLM_SLOTS": "0",
+      "STRATA_GLM_SLOTS": "0",
+      "MAYA_GLM_WDDM_CAP": "1",
+      "STRATA_GLM_WDDM_CAP": "1",
+      "MAYA_GLM_BUFFERED_DIRECT": "1",
+      "STRATA_GLM_BUFFERED_DIRECT": "1",
+      "STRATA_GLM_DISK_SKIP_W": "0",
+      "STRATA_GLM_MISS_SKIP_W": "0",
+      "MAYA_GLM_RAM_GB": "46.2285",
+      "MAYA_GLM_RAM_HEADROOM_GB": "12",
+      "MAYA_GLM_KV_RESIDENT": "32768",
+      "MAYA_GLM_MTP": "1",
+      "MAYA_GLM_SPLIT": "25",
+      "MAYA_GLM_SEQ_CTX": "98304"
+    },
+    "model_management": false,
+    "idle_unload_s": 0,
+    "host": "0.0.0.0",
+    "port": 8097,
+    "open_browser": false,
+    "cors_origins": [
+      "*"
+    ],
+    "lib_dirs": [
+      "C:\\tests\\flash-next\\experimental-maya\\cuda-13.4.3\\bin",
+      "C:\\tests\\flash-next\\experimental-maya\\cuda-13.4.3\\bin\\x64"
+    ],
+    "log": "C:\\tests\\flash-next\\experimental-maya\\engine.log",
+    "vision": null,
+    "mcp_servers": null,
+    "fit_max_tokens": false,
+    "control_vram_reserve_mib": 1500,
+    "layer_split": "25",
+    "control_mtp_enabled": true,
+    "control_condition": {
+      "backend": "project-maya",
+      "runtime_revision": "027992cb1f09829488e650e466233ca351d3d6ef",
+      "base_model": "zai-org/GLM-5.3-Flash",
+      "model_revision": "6728cf78a5b198a6a6f84b7fb88956a17ec56521",
+      "quantization": "Maya-XS IQ1_S + IQ2_XXS + BF16-compat (F32 selection bias)",
+      "requested_mtp": true,
+      "gpu_order": "1,0",
+      "layer_split": "25",
+      "context": 98304,
+      "parallel": 1,
+      "kv": "int8",
+      "reasoning": "none",
+      "sampling": {
+        "temperature": 0,
+        "top_p": 1,
+        "seed": 73129
+      },
+      "loop_guard": false,
+      "kv_streaming": "on",
+      "kv_resident_requested_positions": 32768,
+      "mtp_decode_policy_requested": "vendor-default; head included",
+      "thinking_budget": 0,
+      "pack_policy": "vendor-standard BF16-compat with F32 expert-selection bias",
+      "ram_tier_gib_requested": "46.2285",
+      "per_slot_context_tokens_requested": 98304,
+      "memory_policy_requested": {
+        "ram_tier_policy": "manual",
+        "vram_reserve_mib": 1500,
+        "ram_tier_global_gib": 46.2285,
+        "ram_headroom_min_gib": 12.0,
+        "ram_resident_required": false,
+        "target_disk_skip_weight": 0.0,
+        "target_disk_skip_rank_from": 8,
+        "target_miss_skip_weight": 0.0,
+        "additional_sequence_context_tokens": 98304,
+        "kv_streaming": "on"
+      },
+      "ram_tier_percent_requested": 99.9,
+      "ram_tier_budget_resolution": {
+        "mode": "percent",
+        "requested_percent": 99.9,
+        "entry_memory_snapshot": {
+          "available_phys_gib": 58.274784088134766,
+          "available_commit_gib": 93.20548629760742,
+          "at": 1794660004.359208
+        },
+        "reserved_headroom_gib": 12,
+        "eligible_ram_gib": 46.274784088134766,
+        "resolved_upper_budget_gib": 46.22850930404664,
+        "scope": "percentage_of_fresh_min_physical_commit_after_headroom",
+        "native_budget_state": "pending",
+        "actual_native_cache_gib": null
+      },
+      "hardware_plan": {
+        "requested": "auto",
+        "gpu_order": "1,0",
+        "cards": [
+          {
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 5070 Ti",
+            "memory_mib": 16303.0,
+            "compute_capability": 12.0,
+            "power_limit_w": 300.0,
+            "free_mib": 15994.0,
+            "uuid": "GPU-a896427b-982e-03be-26b8-50adaf7c9ff8"
+          },
+          {
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 5070 Ti",
+            "memory_mib": 16303.0,
+            "compute_capability": 12.0,
+            "power_limit_w": 300.0,
+            "free_mib": 14780.0,
+            "uuid": "GPU-9478f846-71cd-479b-0c6b-c60e57d29815"
+          }
+        ],
+        "vram_reserve_mib": 1500
+      }
+    },
+    "control_preflight": {
+      "available_phys_gib": 58.274784088134766,
+      "ram_tier_global_gib": 46.2285,
+      "reserved_headroom_gib": 12.0,
+      "required_available_gib": 58.2285,
+      "result": "pass",
+      "at": 1794660004.364207
+    }
+  },
+  "initial_status": {
+    "service": "maya",
+    "model": "glm-5.3-flash-maya-xs-iq1_s",
+    "engine": null,
+    "started": 1794660040,
+    "uptime_s": 618,
+    "cache_max_tokens": 98304,
+    "context": {
+      "native": 98304,
+      "max_positions": 98304
+    },
+    "concurrency": {
+      "serving": 1,
+      "requested": 1
+    },
+    "dialects": [
+      "/v1/chat/completions",
+      "/v1/responses",
+      "/v1/messages"
+    ],
+    "responses": {
+      "cache": {
+        "hits": 0,
+        "misses": 0,
+        "writes": 0,
+        "expired": 0,
+        "evicted": 0,
+        "deleted": 0,
+        "rejected": 0,
+        "assembly_rejected": 0,
+        "write_seconds": 0,
+        "read_seconds": 0,
+        "lock_wait_seconds": 0.0004482000003918074,
+        "lock_hold_seconds": 0.004548500022792723,
+        "entries": 0,
+        "blocks": 0,
+        "bytes": 0,
+        "inflight_bytes": 0,
+        "peak_inflight_bytes": 0,
+        "max_entries": 128,
+        "max_bytes": 67108864,
+        "ttl_s": 3600
+      },
+      "jobs": {
+        "records": 0,
+        "running": 0,
+        "queued": 0,
+        "readers": 0,
+        "event_bytes": 0
+      },
+      "structured_outputs": {
+        "mode": "validate-before-publish",
+        "schema_draft": "2020-12",
+        "constrained_decoding": false
+      }
+    },
+    "vision": {
+      "enabled": false,
+      "available": false,
+      "error": null
+    },
+    "memory_note": null,
+    "activity": {
+      "requests": 12,
+      "in_flight": 0,
+      "queue": {
+        "waiting": 0,
+        "first_waited_s": 0.0,
+        "places": 1
+      },
+      "last_request_at": 1794660556
+    },
+    "last_timings": {
+      "cache_n": 0,
+      "prompt_n": 5001,
+      "prompt_ms": 9463.9,
+      "prompt_per_token_ms": 1.892,
+      "prompt_per_second": 528.4,
+      "predicted_n": 128,
+      "predicted_ms": 7915.8,
+      "predicted_per_token_ms": 61.842,
+      "predicted_per_second": 16.2,
+      "draft_n": 126,
+      "draft_n_accepted": 112,
+      "at": 1794660556
+    },
+    "machine": {
+      "at": 1794660659,
+      "gpu": {
+        "name": "NVIDIA GeForce RTX 5070 Ti + NVIDIA GeForce RTX 5070 Ti",
+        "used_mib": 29239.0,
+        "total_mib": 32606.0,
+        "util_pct": 0.5,
+        "temp_c": 42,
+        "power_w": 15.201
+      },
+      "ram": {
+        "used_gib": 41.7,
+        "total_gib": 63.9
+      }
+    },
+    "loaded": true,
+    "auto_load": false,
+    "model_routing": "active-only",
+    "backend": "project-maya-experimental",
+    "model_management": false,
+    "engine_info": {
+      "version": null,
+      "context": 98304,
+      "kv": "int8",
+      "kv_resident": 32768,
+      "expert_slots": 3783,
+      "expert_cache_mib": 19677,
+      "engine_kind": "glm-fast",
+      "experts": 12096,
+      "vram_slots": 3783,
+      "vram_gb": "19.2",
+      "ram_slots": 5255,
+      "ram_gb": "26.6",
+      "mtp": 1,
+      "dflash": 0,
+      "vision_lend": 0,
+      "cpu_threads": 4,
+      "cpu_threads_max": 4,
+      "pcie_share": "0.69",
+      "logit_bias": 1,
+      "kv_ctx": 98304,
+      "kv_gb": 0.58
+    },
+    "gpu_placement": [
+      {
+        "dev": 0,
+        "pci": "0000:02:00",
+        "total": 17066033152,
+        "free": 1571815424,
+        "weights": 2977960704,
+        "kv": 318603264,
+        "kv_ram": 320864256,
+        "act": 50362968,
+        "drafter": 0,
+        "window": 0,
+        "pool": 10291194400,
+        "tail": 2258036000,
+        "borrow": 2169795328,
+        "vision": 0,
+        "slots": 1905,
+        "ctx": 98304,
+        "layers": [
+          0,
+          25
+        ]
+      },
+      {
+        "dev": 1,
+        "pci": "0000:01:00",
+        "total": 17066033152,
+        "free": 1690972160,
+        "weights": 2649627904,
+        "kv": 300646400,
+        "kv_ram": 320864256,
+        "act": 54557272,
+        "drafter": 149254400,
+        "window": 0,
+        "pool": 10342609200,
+        "tail": 2195244800,
+        "borrow": 2176246528,
+        "vision": 0,
+        "slots": 1878,
+        "ctx": 98304,
+        "layers": [
+          25,
+          45
+        ]
+      }
+    ],
+    "expert_tier_statistics": {
+      "tok_s": 16.19,
+      "ms_tok": 61.75,
+      "vram_hit": 0.6905,
+      "ram_fetch": 81.688,
+      "disk": 16.188,
+      "promo": 57.508,
+      "vram_used": 3697.0,
+      "vram_slots": 3783.0,
+      "ram_used": 5166.0,
+      "ram_slots": 5255.0,
+      "ram_gb": 26.6,
+      "vram_gb": 19.2,
+      "disk_gb": 17.0,
+      "draft_acc": 112.0,
+      "draft_off": 126.0,
+      "time": 1794660556.8191528
+    },
+    "expert_tier_statistics_scope": "Latest native STAT snapshot, emitted every8tokens; rounded per-token rates for the current/last request, not raw transferred bytes or lifetime totals.",
+    "recorded_condition": {
+      "backend": "project-maya",
+      "runtime_revision": "027992cb1f09829488e650e466233ca351d3d6ef",
+      "base_model": "zai-org/GLM-5.3-Flash",
+      "model_revision": "6728cf78a5b198a6a6f84b7fb88956a17ec56521",
+      "quantization": "Maya-XS IQ1_S + IQ2_XXS + BF16-compat (F32 selection bias)",
+      "requested_mtp": true,
+      "gpu_order": "1,0",
+      "layer_split": "25",
+      "context": 98304,
+      "parallel": 1,
+      "kv": "int8",
+      "reasoning": "none",
+      "sampling": {
+        "temperature": 0,
+        "top_p": 1,
+        "seed": 73129
+      },
+      "loop_guard": false,
+      "kv_streaming": "on",
+      "kv_resident_requested_positions": 32768,
+      "mtp_decode_policy_requested": "vendor-default; head included",
+      "thinking_budget": 0,
+      "pack_policy": "vendor-standard BF16-compat with F32 expert-selection bias",
+      "ram_tier_gib_requested": "46.2285",
+      "per_slot_context_tokens_requested": 98304,
+      "memory_policy_requested": {
+        "ram_tier_policy": "manual",
+        "vram_reserve_mib": 1500,
+        "ram_tier_global_gib": 46.2285,
+        "ram_headroom_min_gib": 12.0,
+        "ram_resident_required": false,
+        "target_disk_skip_weight": 0.0,
+        "target_disk_skip_rank_from": 8,
+        "target_miss_skip_weight": 0.0,
+        "additional_sequence_context_tokens": 98304,
+        "kv_streaming": "on"
+      },
+      "ram_tier_percent_requested": 99.9,
+      "ram_tier_budget_resolution": {
+        "mode": "percent",
+        "requested_percent": 99.9,
+        "entry_memory_snapshot": {
+          "available_phys_gib": 58.274784088134766,
+          "available_commit_gib": 93.20548629760742,
+          "at": 1794660004.359208
+        },
+        "reserved_headroom_gib": 12,
+        "eligible_ram_gib": 46.274784088134766,
+        "resolved_upper_budget_gib": 46.22850930404664,
+        "scope": "percentage_of_fresh_min_physical_commit_after_headroom",
+        "native_budget_state": "pending",
+        "actual_native_cache_gib": null
+      },
+      "hardware_plan": {
+        "requested": "auto",
+        "gpu_order": "1,0",
+        "cards": [
+          {
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 5070 Ti",
+            "memory_mib": 16303.0,
+            "compute_capability": 12.0,
+            "power_limit_w": 300.0,
+            "free_mib": 15994.0,
+            "uuid": "GPU-a896427b-982e-03be-26b8-50adaf7c9ff8"
+          },
+          {
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 5070 Ti",
+            "memory_mib": 16303.0,
+            "compute_capability": 12.0,
+            "power_limit_w": 300.0,
+            "free_mib": 14780.0,
+            "uuid": "GPU-9478f846-71cd-479b-0c6b-c60e57d29815"
+          }
+        ],
+        "vram_reserve_mib": 1500
+      }
+    }
+  },
+  "request_strata_tune": {
+    "pcie_frac": 1.0
+  },
+  "prepared_profile": {
+    "schema": "maya-control-prepared-v1",
+    "model_id": "glm-5.3-flash-maya-xs-iq1_s",
+    "revision": "027992cb1f09829488e650e466233ca351d3d6ef",
+    "model_revision": "6728cf78a5b198a6a6f84b7fb88956a17ec56521",
+    "vendor_root": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.59",
+    "python": "C:\\tests\\flash-next\\experimental-maya\\source\\.venv\\Scripts\\python.exe",
+    "base_python": "C:\\Users\\user\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe",
+    "config": "C:\\tests\\flash-next\\experimental-maya\\optimization-config.json",
+    "server_sha256": "e4fe26f1f5379d199847d4cf2bbec6229f0c31c7ca62768790c9ecd1a1d44469",
+    "python_sha256": "f9475ecd98ef320792a4946b80b1915500a318e9ad537097b8188c28fd659928",
+    "base_python_sha256": "407de1f8feb303d3249bb835e5ff7f543daada4e229c2c496d24a5b99fdba9ec",
+    "config_sha256": "2f78b6e6be0cd80522f0af5a899db4f69b48d762a287c37994b2cb7a5e1e57e6",
+    "exe_sha256": "bf3bd7baeed0fa7aad3e365aab4cc510fa8fa19f922bd1446219d17ca4748283",
+    "model_files": [
+      {
+        "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\GLM-5.3-Flash-Maya-XS-IQ1_S-00001-of-00002.gguf",
+        "bytes": 47584640960,
+        "mtime_ns": 1794638918000000000,
+        "sha256": "711b427e55fa6da1cbe28933eb00174424f6201f0210b5e4a216d5e33b6222c7",
+        "sha256_verified": true,
+        "verified_utc": "2026-11-04T05:12:52.267957+00:00",
+        "backup_path": "C:\\tests\\models\\GLM-5.3-Flash-Maya-XS\\verified-backup\\GLM-5.3-Flash-Maya-XS-IQ1_S-00001-of-00002.gguf",
+        "backup_sha256_verified": true
+      },
+      {
+        "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\GLM-5.3-Flash-Maya-XS-IQ1_S-00002-of-00002.gguf",
+        "bytes": 25826748128,
+        "mtime_ns": 1794639096000000000,
+        "sha256": "a9841bc37abef5e3e5bc84e49e753b67f7e249098e8e9bc3dd17415104112885",
+        "sha256_verified": true,
+        "verified_utc": "2026-11-04T04:32:17.565695+00:00",
+        "backup_path": "C:\\tests\\models\\GLM-5.3-Flash-Maya-XS\\verified-backup\\GLM-5.3-Flash-Maya-XS-IQ1_S-00002-of-00002.gguf",
+        "backup_sha256_verified": true,
+        "backup_mtime_ns": 1793766641199369000,
+        "reused_unchanged_full_LFS_verification": {
+          "path": "C:\\tests\\gpu-bench\\untracked\\dual-5070-investigation\\glm53-flash\\assembly-shard2-state.json",
+          "sha256": "5762163a5d587b979b6ae04b0e90affecc310eb40358ec9e796ef8c20f3f0340"
+        }
+      }
+    ],
+    "pack_files": [
+      {
+        "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156\\compat-bf16.json",
+        "relative": "compat-bf16.json",
+        "bytes": 87946,
+        "mtime_ns": 1794638704000000000,
+        "sha256": "1642066b959daf34bb58a082baec1924fc7cf6766b32648fc920533debfd03ee",
+        "sha256_verified": true,
+        "baseline_sha256": "65eb937e0144b0a3ccac1c823a19e1bbe01c00aba1da7f0ddb3074bdbccba1bf",
+        "baseline_byte_identical": false
+      },
+      {
+        "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156\\dense.bin",
+        "relative": "dense.bin",
+        "bytes": 943935232,
+        "mtime_ns": 1794638704000000000,
+        "sha256": "ca7aea5d3c894b2bd521f6da6e6506c0ee503d93dea3fbbb1afb782b0b3d0f24",
+        "sha256_verified": true,
+        "baseline_sha256": "ca7aea5d3c894b2bd521f6da6e6506c0ee503d93dea3fbbb1afb782b0b3d0f24",
+        "baseline_byte_identical": true
+      },
+      {
+        "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156\\expert-profile-seed.bin",
+        "relative": "expert-profile-seed.bin",
+        "bytes": 106008,
+        "mtime_ns": 1794638706000000000,
+        "sha256": "53b03a13482b6fedc599d149be2d69f88c38d9edc4611a740da46314ab1dc5a7",
+        "sha256_verified": true,
+        "baseline_sha256": "53b03a13482b6fedc599d149be2d69f88c38d9edc4611a740da46314ab1dc5a7",
+        "baseline_byte_identical": true
+      },
+      {
+        "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156\\index.txt",
+        "relative": "index.txt",
+        "bytes": 105675,
+        "mtime_ns": 1794638704000000000,
+        "sha256": "d08cb3c796fd694cc23e957be7f1122fcdddf4f302cc2b43e65d617f2da0774f",
+        "sha256_verified": true,
+        "baseline_sha256": "d08cb3c796fd694cc23e957be7f1122fcdddf4f302cc2b43e65d617f2da0774f",
+        "baseline_byte_identical": true
+      },
+      {
+        "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156\\native_experts.txt",
+        "relative": "native_experts.txt",
+        "bytes": 3756,
+        "mtime_ns": 1794638706000000000,
+        "sha256": "eb602a8be73e22d2edaab83bf75a80bd3e5112b9acef59a2f7cabf37e8cd5d95",
+        "sha256_verified": true,
+        "baseline_sha256": "eb602a8be73e22d2edaab83bf75a80bd3e5112b9acef59a2f7cabf37e8cd5d95",
+        "baseline_byte_identical": true
+      },
+      {
+        "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156\\tokenizer\\chat_template.jinja",
+        "relative": "tokenizer/chat_template.jinja",
+        "bytes": 10648,
+        "mtime_ns": 1794638706000000000,
+        "sha256": "a4fddbbf0b432101a296c17094f8bc5a2b0d30713b5b5cd92f86be78511aa724",
+        "sha256_verified": true,
+        "baseline_sha256": "a4fddbbf0b432101a296c17094f8bc5a2b0d30713b5b5cd92f86be78511aa724",
+        "baseline_byte_identical": true
+      },
+      {
+        "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156\\tokenizer\\merges.txt",
+        "relative": "tokenizer/merges.txt",
+        "bytes": 4189984,
+        "mtime_ns": 1794638706000000000,
+        "sha256": "c9f9352db4dab0d3e0cba5923692047db4efe065ba59c5ab8a5eb2fb589f0d93",
+        "sha256_verified": true,
+        "baseline_sha256": "c9f9352db4dab0d3e0cba5923692047db4efe065ba59c5ab8a5eb2fb589f0d93",
+        "baseline_byte_identical": true
+      },
+      {
+        "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156\\tokenizer\\token_type.json",
+        "relative": "tokenizer/token_type.json",
+        "bytes": 464640,
+        "mtime_ns": 1794638706000000000,
+        "sha256": "3d226d66989eaa352fc8093536ece4b9398c85b57ba33860031bef042251ddb9",
+        "sha256_verified": true,
+        "baseline_sha256": "3d226d66989eaa352fc8093536ece4b9398c85b57ba33860031bef042251ddb9",
+        "baseline_byte_identical": true
+      },
+      {
+        "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156\\tokenizer\\tokenizer.json",
+        "relative": "tokenizer/tokenizer.json",
+        "bytes": 729,
+        "mtime_ns": 1794638706000000000,
+        "sha256": "74d0676146941e9ad57724515186294cfeb644ae15a300e2e0ba6d7c18cf13ab",
+        "sha256_verified": true,
+        "baseline_sha256": "74d0676146941e9ad57724515186294cfeb644ae15a300e2e0ba6d7c18cf13ab",
+        "baseline_byte_identical": true
+      },
+      {
+        "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS\\pack-f32-1156\\tokenizer\\vocab.json",
+        "relative": "tokenizer/vocab.json",
+        "bytes": 3186346,
+        "mtime_ns": 1794638706000000000,
+        "sha256": "168e8586859e110a73372e50e742258eac5314627fddcd85957c1d6781d38ae2",
+        "sha256_verified": true,
+        "baseline_sha256": "168e8586859e110a73372e50e742258eac5314627fddcd85957c1d6781d38ae2",
+        "baseline_byte_identical": true
+      }
+    ],
+    "preparation_utc": "2026-11-06T21:08:15.037779+00:00",
+    "model_assembly_receipt": {
+      "path": "C:\\tests\\gpu-bench\\untracked\\dual-5070-investigation\\glm53-flash\\assembly-state.json",
+      "sha256": "c193c159479595409a86c7494edf214d28e7c8f75fd9445308a6f254a7cce005"
+    },
+    "pack_receipt": {
+      "path": "C:\\tests\\gpu-bench\\untracked\\glm-tests-20261106\\f32-pack-receipt.json",
+      "sha256": "0e6f34388e1883195d0c632c335da5d9048c429ecf0ea82724d49fe8f014e083"
+    },
+    "compatibility_policy": "vendor-standard BF16-compat with F32 expert-selection bias",
+    "control_files": [
+      {
+        "path": "C:\\tests\\flash-next\\maya_backend.py",
+        "sha256": "60086efd18914e18a5402768e5e1c9fda277ac5d897c936cf2c806cb86c84409"
+      },
+      {
+        "path": "C:\\tests\\flash-next\\maya_control.py",
+        "sha256": "2ff34ddddaca7d62d1814f3c049b92bf397316735f77e4c4c46d0b3b7795e90e"
+      },
+      {
+        "path": "C:\\tests\\flash-next\\maya_panel.py",
+        "sha256": "c179ebc96136aa0e9f3bd477158005492803bf62f4ddc2d860f99eabc81b273d"
+      },
+      {
+        "path": "C:\\tests\\flash-next\\legacy_window.py",
+        "sha256": "9996e44f06e203008c091814388b0926263060754e142bbf1a9494a8ff2c65f1"
+      },
+      {
+        "path": "C:\\tests\\flash-next\\strata_app.py",
+        "sha256": "e186784f7a343ce40216ad11095293d49d152094469e8e9fcbb0ad77785ee138"
+      },
+      {
+        "path": "C:\\tests\\flash-next\\strata_desktop.py",
+        "sha256": "6bf886b188f9c10d1809e9451e0e0b003691e4e8c0dfe2147f2779dbcad074f2"
+      },
+      {
+        "path": "C:\\tests\\flash-next\\desktop_policy.py",
+        "sha256": "380bf4237884bf1320527399154a94d7cc6d7859aab5f338255e1ea06806c257"
+      },
+      {
+        "path": "C:\\tests\\flash-next\\maya_hardware.py",
+        "sha256": "400fd80312034b196c227365cf7ac12f592077825792bef7190af8a94c32491f"
+      },
+      {
+        "path": "C:\\tests\\flash-next\\maya_startup.py",
+        "sha256": "b1ba0bf9ef4c3d9175d0cfbb93eafe3d2ec7b31f7498bac7f875766d714bcef6"
+      },
+      {
+        "path": "C:\\tests\\flash-next\\desktop_backend.py",
+        "sha256": "f2e577c536d4a95e11d7e57674c7237162e6058d4565a5bf7efaabd0d323aca6"
+      },
+      {
+        "path": "C:\\tests\\flash-next\\gateway_timings.py",
+        "sha256": "006ecea87f35478d98a6bbfde98e8275d6c5aee6c6d9be90d7f6dc4dc5c24a83"
+      },
+      {
+        "path": "C:\\tests\\flash-next\\control_lifecycle.py",
+        "sha256": "d022b3d934ed0300928b965d2c78f3daa004e5d357c8f0d1d0266730aa0b6860"
+      }
+    ],
+    "native_quality_handoff": {
+      "path": "C:\\tests\\gpu-bench\\untracked\\dual-5070-investigation\\glm53-flash\\native-quality-storage-handoff.json",
+      "sha256": "d954e8b0f13fd06891dadb065fd83316c70a3b8141ba510493f8e72a4a7e5e03",
+      "handoff": {
+        "schema": "native-quality-storage-handoff-v1",
+        "created_utc": "2026-11-04T04:24:43.314860+00:00",
+        "all_requested_native_quality_finished": true,
+        "gui_unloaded": true,
+        "optional_storage_field_cleared": true,
+        "optional_storage_verification": "Foreground quality_native_ui.py clear-storage succeeded; native entry was visibly blank in maya-view-proof-20261104T042146Z/fresh-control.png (the first, occluded Maya screenshot actually shows the native storage entry).",
+        "source_commands": [
+          "capture_native_post.py iq3 final192",
+          "quality_native_ui.py unload",
+          "quality_native_preset.py ud4 restore",
+          "quality_native_preset.py iq3 restore",
+          "quality_native_ui.py clear-storage"
+        ],
+        "condition_completion_receipts": [
+          {
+            "condition_id": "ud4",
+            "path": "C:\\tests\\gpu-bench\\untracked\\dual-5070-investigation\\glm53-flash\\quality\\ud4\\condition-completion.json",
+            "sha256": "e5b4c4b793fae5de2c1d4aa8b990e89a499be20002f72d486dbf2cb467b758a7"
+          },
+          {
+            "condition_id": "iq3",
+            "path": "C:\\tests\\gpu-bench\\untracked\\dual-5070-investigation\\glm53-flash\\quality\\iq3\\condition-completion.json",
+            "sha256": "544c78b8d5f687856637d4c4bd9a4280b2eb8642dc7eb764f28e29a84583841d"
+          }
+        ],
+        "actual_native_observation": {
+          "state": "Server ready",
+          "detail": "Choose a model below, then click Load model.",
+          "model": null,
+          "context": null,
+          "activity": null,
+          "backend": {
+            "state": "absent"
+          },
+          "gateway": {
+            "state": "up",
+            "data": {
+              "status": "ok",
+              "service": "strata",
+              "model_routing": "active-only"
+            }
+          },
+          "processes": [
+            {
+              "pid": 3392,
+              "born": 1793733505.5545995,
+              "role": "gateway",
+              "exe": "C:\\Users\\user\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe"
+            },
+            {
+              "pid": 15540,
+              "born": 1793733505.4611557,
+              "role": "gateway",
+              "exe": "C:\\tests\\flash-next\\.venv\\Scripts\\python.exe"
+            }
+          ],
+          "uncertain": false,
+          "checked": 1793766283.3128622,
+          "monotonic": 33937.109
+        },
+        "quality_scope": "Three64-question suites per condition; UD4 GSM retained original59ERROR plus exact missing5 continuation; no successful-question repeats",
+        "model_restart_performed": false,
+        "existing_API_preserved": true,
+        "storage_consequence": "After verified duplicate eviction, native UD4 defaults to original C/SATA assets; no junction and no retroactive change to historical F/NVMe results"
+      }
+    },
+    "actual_model_engine_started": false,
+    "legacy_window_receipt": {
+      "path": "C:\\tests\\flash-next\\experimental-maya\\legacy-native-window.json",
+      "sha256": "1ae9a1c0146008bcdf4c2f503b3ca1e4068856d1f6843719be70bbeb4395748e"
+    },
+    "quantization": "Maya-XS IQ1_S + IQ2_XXS + BF16-compat (F32 selection bias)",
+    "runtime_version": "1.1.59+wddm-cap+buffered-direct",
+    "build_receipt": {
+      "path": "C:\\tests\\flash-next\\experimental-maya\\software-provenance\\v1.1.59-wddm-cap-buffered-direct.json",
+      "sha256": "bfdb9996f598ea7ec8fa5f93d64fb2fb039761a3a7a0682dcba476e636b3f14b"
+    },
+    "treatment": "Maya1.1.56 new pack preserving source F32 bias; expert GGUF files unchanged",
+    "model_context_tokens": 1048576,
+    "auto_context": 98304,
+    "runtime_patches": [
+      {
+        "path": "C:\\tests\\flash-next\\experimental-maya\\software-provenance\\v1.1.59-wddm-cap-buffered-direct.json",
+        "sha256": "bfdb9996f598ea7ec8fa5f93d64fb2fb039761a3a7a0682dcba476e636b3f14b",
+        "variant": "1.1.59+wddm-cap+buffered-direct",
+        "enabled": true,
+        "flags": {
+          "buffered_io": true,
+          "mmap_io": false,
+          "wddm_cap": true,
+          "buffered_direct": true,
+          "warm_checks": true
+        }
+      }
+    ],
+    "optimization_review": {
+      "utc": "2026-11-14T12:39:50.613180+00:00",
+      "runtime": "1.1.59",
+      "pin_piece_mib": 1024,
+      "read_chunks": 4,
+      "prefill_stable": false,
+      "buffered_io": 1,
+      "mmap_io": 0,
+      "pin_room_mib": 512,
+      "parallel_load": 1,
+      "conversation_disk_cache_slots": 0,
+      "wddm_cap": 1,
+      "buffered_direct": 1,
+      "prefill": "auto",
+      "vram_reserve_mib": 1500,
+      "cpu_lane": null,
+      "pcie_share": null,
+      "no_weight_skipping": true,
+      "nvme": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-XS"
+    }
+  },
+  "prepared_profile_snapshot": {
+    "source": "C:\\tests\\flash-next\\experimental-maya\\prepared.json",
+    "sha256": "6665790a522c474d951e2988537d8c3db0db2d0b8a516377073efc6acb748613",
+    "scope": "Read-only prepared receipt snapshot; model/binary files are not rehashed by this client."
+  },
+  "request_tuning_scope": "Request decode read_chunks is separate from prefill environment read chunks; requested values are not proof of effective native settings.",
+  "functional": [],
+  "warmups": [
+    {
+      "t_start": 43229.4881213,
+      "t_first_token": 43239.111835,
+      "t_last_output": 43246.5580688,
+      "t_end": 43246.5922384,
+      "ttft_s": 9.623713700006192,
+      "decode_s": 7.446233799993934,
+      "wall_s": 17.10411710000335,
+      "response_tail_s": 0.03416960000322433,
+      "prompt_tokens": 5001,
+      "completion_tokens": 128,
+      "completion_tokens_estimated": false,
+      "reasoning_tokens": null,
+      "decode_token_count": 127,
+      "timing_scope": {
+        "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+        "phase_protocol": "observed-output-phases-v2",
+        "decode_end_boundary": "last_observed_nonempty_output",
+        "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+        "first_output_kind": "content",
+        "observed_output_kinds": [
+          "content"
+        ],
+        "empty_deltas_before_output": 0,
+        "reasoning_streamed": false,
+        "reasoning_token_count_source": "unavailable",
+        "requested_reasoning_effort": "none",
+        "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+        "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+        "decode_count_estimated_boundary": true,
+        "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+      },
+      "deltas": 127,
+      "cached_prompt_tokens": 0,
+      "metric_sources": {
+        "ttft_s": "client_monotonic_clock_to_first_observed_output",
+        "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+        "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+        "completion_tokens": "server_usage"
+      },
+      "reported_timings": {
+        "cache_n": 0,
+        "prompt_n": 5001,
+        "prompt_ms": 9543.2,
+        "prompt_per_second": 524.0,
+        "predicted_n": 128,
+        "predicted_ms": 7478.6,
+        "predicted_per_second": 17.1,
+        "draft_n": 126,
+        "draft_n_accepted": 114
+      },
+      "prefill_tps": 519.6538629361743,
+      "decode_tps": 17.05560198769255,
+      "finish_reason": "length",
+      "sample_text": "```json\n{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n```\n\nSyn",
+      "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+      "output_text": "```json\n{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n```\n\nSynthetic 2026 reference report on agentic AI: dominant architecture is a single model in a tight tool loop with retries, sandboxing, and human gates. Covers context engineering, evaluation, reliability, security (prompt injection), economics, local open-weight inference, orchestration, multi-agent patterns, enterprise adoption, and governance, with illustr",
+      "output_capture": {
+        "scope": "visible content only; streamed reasoning excluded",
+        "limit_chars": 200000,
+        "truncated": false,
+        "visible_content_observed": true,
+        "visible_answer_present": true,
+        "reasoning_observed": false,
+        "observable_output_present": true,
+        "stream_complete": true
+      },
+      "engine_log": {
+        "chunk_prefill": [
+          {
+            "tokens": 5000,
+            "ms": 8667.9
+          }
+        ],
+        "decode": {
+          "ms_per_token": 58.43,
+          "tokens_per_second": 17.12,
+          "vram_hit_percent": 69.27,
+          "ram_fetches_per_token": 94.51,
+          "disk_reads_per_token": 14.98,
+          "disk_waits_per_token": 12.38,
+          "disk_ms_per_token": 17.99
+        },
+        "mtp": {
+          "accepted": 114,
+          "offered": 126,
+          "acceptance_percent": 90.5
+        },
+        "kv": {
+          "hit_percent": 98.19,
+          "block_reads": 827074,
+          "ram_read_mib": 31.0
+        },
+        "device_stages": [
+          "glm prefill: CUDA1 chunk 1/1, 5000 tokens, wall 4025 ms | the copy lane 3928 ms: copies 1773 (12.3 GB/s), ring wait 651, gaps 608, mixer windows 896 | lead 49, tail 47 | pcie 21.84 GB (ram 12.76, disk 9.09) + 0.31 GB vram | experts: staged 4334, resident 1409 (331625 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 24 ms | layer lane 264.4/107.0 ms max/min"
+        ],
+        "prompt_read": {
+          "tokens": 5001,
+          "seconds_rounded": 9.5
+        },
+        "logical_io_interpretation": "Engine disk/read counters are logical path operations; physical drive reads are separate OS counters."
+      },
+      "renderer": {
+        "renderer_id": "611e8b9fcb7eef5ffab68b8bcde4f7e24bd58e9299071ae4eb9d77b8d4d34f6a",
+        "render_template_sha256": "2614a3c896d53e265f564c23701173c0049f985dacfbae79fc4bcd9f5ba083f4",
+        "frontend_sha256": "410120bf020ce1c1b5f688c5aaa65217cb24c4bb4536a891c713451727a48459",
+        "reasoning_effort": "none",
+        "tokenizer_files_digest": "473366c622d34e78b7a6b96fdeafc96e09d00ca3f33dea48a9068afa210b2dff"
+      },
+      "request_strata_tune": {
+        "pcie_frac": 1.0
+      },
+      "native_timings_source": "provider reported_timings",
+      "engine_prefill_s": 9.5432,
+      "engine_prefill_tps": 524.0,
+      "engine_decode_s": 7.4786,
+      "engine_decode_tps": 17.1,
+      "gpu": {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 83,
+        "source": "nvidia-smi",
+        "duration_s": 17.10411710000335,
+        "gpu_w_avg": 144.77156496185995,
+        "gpu_sampled_coverage_s": 16.872256700000435,
+        "gpu_sampled_coverage_fraction": 0.9864441760631497,
+        "gpu_w_max": 187.62,
+        "gpu_energy_j": 2476.1897998583945,
+        "system_w_est": 264.5715865985452,
+        "system_energy_j_est": 4525.263398515194,
+        "gpu_util_avg": 59.53012048192771,
+        "vram_mb_max": 28643.0,
+        "clock_mhz_avg": null,
+        "temp_c_max": 55.0,
+        "cpu_util_avg": 0.4276209232534534,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": 47217917952,
+        "system_memory_total_bytes": 68636971008,
+        "system_memory_percent_avg": 65.77508825208834,
+        "system_memory_percent_max": 68.79370878195732,
+        "vram_percent_avg": 87.83825727987087,
+        "vram_percent_max": 87.84579525240753,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 83,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_all_nvidia_gpus",
+        "gpu_indices": [
+          0,
+          1
+        ],
+        "inventory_complete": true,
+        "gpus": [
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 83,
+            "source": "nvidia-smi",
+            "duration_s": 17.10411710000335,
+            "gpu_w_avg": 72.31509814139518,
+            "gpu_sampled_coverage_s": 16.872256700000435,
+            "gpu_sampled_coverage_fraction": 0.9864441760631497,
+            "gpu_w_max": 137.74,
+            "gpu_energy_j": 1236.8859067086578,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 58.506024096385545,
+            "vram_mb_max": 14809.0,
+            "clock_mhz_avg": 2493.4698795180725,
+            "temp_c_max": 55.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 90.82096650110225,
+            "vram_percent_max": 90.83604244617555,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 83,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          },
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 83,
+            "source": "nvidia-smi",
+            "duration_s": 17.10411710000335,
+            "gpu_w_avg": 72.45646682046478,
+            "gpu_sampled_coverage_s": 16.872256700000435,
+            "gpu_sampled_coverage_fraction": 0.9864441760631497,
+            "gpu_w_max": 140.87,
+            "gpu_energy_j": 1239.303893149737,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 60.55421686746988,
+            "vram_mb_max": 13834.0,
+            "clock_mhz_avg": 2568.6746987951806,
+            "temp_c_max": 45.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 84.85554805863951,
+            "vram_percent_max": 84.85554805863951,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 83,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          }
+        ]
+      },
+      "paging": {
+        "available": true,
+        "samples": 32,
+        "errors": {},
+        "available_bytes_min": 21542662144,
+        "ram_used_percent_max": 68.6,
+        "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+        "pages_input_s": {
+          "mean": 269145.84794406977,
+          "max": 585798.5934310494,
+          "min": 58.003365004519544
+        },
+        "pages_output_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_reads_s": {
+          "mean": 2998.887501635314,
+          "max": 6468.645740736369,
+          "min": 9.442408256549694
+        },
+        "page_writes_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_faults_s": {
+          "mean": 483199.3228817628,
+          "max": 780190.865656007,
+          "min": 43378.423530589294
+        },
+        "transition_faults_s": {
+          "mean": 6026.905287368357,
+          "max": 41834.48009142364,
+          "min": 11.842938943728274
+        },
+        "system_cache_resident_bytes": {
+          "mean": 3992768128.0,
+          "max": 5854875648.0,
+          "min": 2862694400.0
+        },
+        "standby_cache_normal_bytes": {
+          "mean": 23232441600.0,
+          "max": 24429043712.0,
+          "min": 21311574016.0
+        },
+        "standby_cache_reserve_bytes": {
+          "mean": 53990144.0,
+          "max": 867495936.0,
+          "min": 0.0
+        },
+        "standby_cache_core_bytes": {
+          "mean": 228936192.0,
+          "max": 228954112.0,
+          "min": 228892672.0
+        },
+        "modified_page_list_bytes": {
+          "mean": 370454272.0,
+          "max": 371732480.0,
+          "min": 370237440.0
+        },
+        "committed_bytes": {
+          "mean": 77737610112.0,
+          "max": 77883539456.0,
+          "min": 77717430272.0
+        },
+        "commit_limit_bytes": {
+          "mean": 111586643968.0,
+          "max": 111586643968.0,
+          "min": 111586643968.0
+        },
+        "pagefile_usage_percent": {
+          "mean": 1.4922279119491577,
+          "max": 1.4928817749023438,
+          "min": 1.4914512634277344
+        },
+        "longest_pageouts_ge_1024_pages_s_seconds": 0,
+        "disk_deltas": {
+          "PhysicalDrive0": {
+            "read_bytes": 7293440,
+            "write_bytes": 991744,
+            "read_time_ms": 0,
+            "write_time_ms": 0
+          },
+          "PhysicalDrive1": {
+            "read_bytes": 18187874304,
+            "write_bytes": 0,
+            "read_time_ms": 37,
+            "write_time_ms": 0
+          }
+        },
+        "engine_rss_min": 32414199808,
+        "engine_rss_max": 32414740480,
+        "engine_faults_delta": 140
+      },
+      "disk_d_read_gib": 16.938777923583984,
+      "stream_gaps": {
+        "max_s": 0.1339737000016612,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "target": 5000,
+      "repeat": 0,
+      "prompt_sha256": "4f34f16b842190bb778ad40e0d674cc67bc600ef522508bcf5c0d730cf1c99c4",
+      "retrieval": {
+        "passed": true,
+        "matched": 5,
+        "expected": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        },
+        "actual": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        }
+      }
+    },
+    {
+      "t_start": 43246.7620156,
+      "t_first_token": 43268.8885076,
+      "t_last_output": 43276.5897006,
+      "t_end": 43276.616598,
+      "ttft_s": 22.126492000003054,
+      "decode_s": 7.701193000000785,
+      "wall_s": 29.854582400002982,
+      "response_tail_s": 0.02689739999914309,
+      "prompt_tokens": 20002,
+      "completion_tokens": 128,
+      "completion_tokens_estimated": false,
+      "reasoning_tokens": null,
+      "decode_token_count": 127,
+      "timing_scope": {
+        "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+        "phase_protocol": "observed-output-phases-v2",
+        "decode_end_boundary": "last_observed_nonempty_output",
+        "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+        "first_output_kind": "content",
+        "observed_output_kinds": [
+          "content"
+        ],
+        "empty_deltas_before_output": 0,
+        "reasoning_streamed": false,
+        "reasoning_token_count_source": "unavailable",
+        "requested_reasoning_effort": "none",
+        "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+        "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+        "decode_count_estimated_boundary": true,
+        "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+      },
+      "deltas": 128,
+      "cached_prompt_tokens": 0,
+      "metric_sources": {
+        "ttft_s": "client_monotonic_clock_to_first_observed_output",
+        "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+        "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+        "completion_tokens": "server_usage"
+      },
+      "reported_timings": {
+        "cache_n": 0,
+        "prompt_n": 20002,
+        "prompt_ms": 22094.5,
+        "prompt_per_second": 905.3,
+        "predicted_n": 128,
+        "predicted_ms": 7726.5,
+        "predicted_per_second": 16.6,
+        "draft_n": 126,
+        "draft_n_accepted": 107
+      },
+      "prefill_tps": 903.9842375373936,
+      "decode_tps": 16.490951466868452,
+      "finish_reason": "length",
+      "sample_text": "{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n\nSummary: A synthetic October",
+      "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+      "output_text": "{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n\nSummary: A synthetic October 2026 reference report on agentic AI, describing the dominant single-model tool-calling loop, context engineering, evaluation, security (prompt injection), economics, local inference, and enterprise adoption. It includes 65 illustrative vendor platform profiles (Appendix A) with synthetic metrics, plus embedded BENCH_LEDGER records used as benchmark fixtures",
+      "output_capture": {
+        "scope": "visible content only; streamed reasoning excluded",
+        "limit_chars": 200000,
+        "truncated": false,
+        "visible_content_observed": true,
+        "visible_answer_present": true,
+        "reasoning_observed": false,
+        "observable_output_present": true,
+        "stream_complete": true
+      },
+      "engine_log": {
+        "chunk_prefill": [
+          {
+            "tokens": 16384,
+            "ms": 15028.8
+          },
+          {
+            "tokens": 3617,
+            "ms": 6366.2
+          }
+        ],
+        "decode": {
+          "ms_per_token": 60.36,
+          "tokens_per_second": 16.57,
+          "vram_hit_percent": 70.23,
+          "ram_fetches_per_token": 93.88,
+          "disk_reads_per_token": 14.98,
+          "disk_waits_per_token": 12.29,
+          "disk_ms_per_token": 17.49
+        },
+        "mtp": {
+          "accepted": 107,
+          "offered": 126,
+          "acceptance_percent": 84.9
+        },
+        "kv": {
+          "hit_percent": 96.1,
+          "block_reads": 848601,
+          "ram_read_mib": 68.7
+        },
+        "device_stages": [
+          "glm prefill: CUDA0 chunk 2/2, 8192 tokens, wall 4831 ms | the copy lane 4446 ms: copies 1992 (12.1 GB/s), ring wait 327, gaps 506, mixer windows 1621 | lead 382, tail 3 | pcie 24.15 GB (ram 13.56, disk 10.59) + 0.11 GB vram | experts: staged 4830, resident 1487 (421384 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 4 ms host, disk wait 0 ms, hop in 0 ms | layer lane 152.6/118.3 ms max/min",
+          "glm prefill: CUDA1 chunk 1/2, 8192 tokens, wall 5304 ms | the copy lane 5030 ms: copies 1818 (12.2 GB/s), ring wait 1008, gaps 721, mixer windows 1484 | lead 196, tail 77 | pcie 22.22 GB (ram 12.74, disk 9.48) + 0.00 GB vram | experts: staged 4346, resident 1409 (490452 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 77 ms | layer lane 318.3/123.6 ms max/min",
+          "glm prefill: CUDA1 chunk 2/2, 8192 tokens, wall 4220 ms | the copy lane 4085 ms: copies 1734 (12.6 GB/s), ring wait 309, gaps 475, mixer windows 1566 | lead 60, tail 75 | pcie 21.82 GB (ram 12.62, disk 9.20) + 0.00 GB vram | experts: staged 4269, resident 1409 (209871 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 39 ms | layer lane 132.2/120.1 ms max/min",
+          "glm prefill: CUDA0 chunk 1/1, 3617 tokens, wall 3333 ms | the copy lane 3125 ms: copies 1911 (12.5 GB/s), ring wait 179, gaps 279, mixer windows 757 | lead 206, tail 1 | pcie 23.95 GB (ram 13.48, disk 10.47) + 0.11 GB vram | experts: staged 4791, resident 1487 (159880 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 0 ms | layer lane 131.0/99.5 ms max/min",
+          "glm prefill: CUDA1 chunk 1/1, 3617 tokens, wall 2963 ms | the copy lane 2889 ms: copies 1700 (12.6 GB/s), ring wait 195, gaps 262, mixer windows 732 | lead 37, tail 37 | pcie 21.42 GB (ram 12.44, disk 8.98) + 0.00 GB vram | experts: staged 4190, resident 1409 (71305 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 17 ms | layer lane 116.9/100.8 ms max/min"
+        ],
+        "prompt_read": {
+          "tokens": 20002,
+          "seconds_rounded": 22.1
+        },
+        "logical_io_interpretation": "Engine disk/read counters are logical path operations; physical drive reads are separate OS counters."
+      },
+      "renderer": {
+        "renderer_id": "611e8b9fcb7eef5ffab68b8bcde4f7e24bd58e9299071ae4eb9d77b8d4d34f6a",
+        "render_template_sha256": "2614a3c896d53e265f564c23701173c0049f985dacfbae79fc4bcd9f5ba083f4",
+        "frontend_sha256": "410120bf020ce1c1b5f688c5aaa65217cb24c4bb4536a891c713451727a48459",
+        "reasoning_effort": "none",
+        "tokenizer_files_digest": "473366c622d34e78b7a6b96fdeafc96e09d00ca3f33dea48a9068afa210b2dff"
+      },
+      "request_strata_tune": {
+        "pcie_frac": 1.0
+      },
+      "native_timings_source": "provider reported_timings",
+      "engine_prefill_s": 22.0945,
+      "engine_prefill_tps": 905.3,
+      "engine_decode_s": 7.7265,
+      "engine_decode_tps": 16.6,
+      "gpu": {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 146,
+        "source": "nvidia-smi",
+        "duration_s": 29.854582400002982,
+        "gpu_w_avg": 196.35583362095653,
+        "gpu_sampled_coverage_s": 29.80457960000058,
+        "gpu_sampled_coverage_fraction": 0.9983251214392335,
+        "gpu_w_max": 322.64,
+        "gpu_energy_j": 5862.1214145581225,
+        "system_w_est": 319.9515009832191,
+        "system_energy_j_est": 9552.01845010815,
+        "gpu_util_avg": 62.3013698630137,
+        "vram_mb_max": 28671.0,
+        "clock_mhz_avg": null,
+        "temp_c_max": 62.0,
+        "cpu_util_avg": 0.4543563744386157,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": 47588409344,
+        "system_memory_total_bytes": 68636971008,
+        "system_memory_percent_avg": 66.38097005120788,
+        "system_memory_percent_max": 69.33349278838853,
+        "vram_percent_avg": 87.88320747757157,
+        "vram_percent_max": 87.93166901797215,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 146,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_all_nvidia_gpus",
+        "gpu_indices": [
+          0,
+          1
+        ],
+        "inventory_complete": true,
+        "gpus": [
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 146,
+            "source": "nvidia-smi",
+            "duration_s": 29.854582400002982,
+            "gpu_w_avg": 95.84047386502738,
+            "gpu_sampled_coverage_s": 29.80457960000058,
+            "gpu_sampled_coverage_fraction": 0.9983251214392335,
+            "gpu_w_max": 174.77,
+            "gpu_energy_j": 2861.2773242587923,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 55.657534246575345,
+            "vram_mb_max": 14837.0,
+            "clock_mhz_avg": 2593.7602739726026,
+            "temp_c_max": 62.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 90.91086689650363,
+            "vram_percent_max": 91.0077899773048,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 146,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          },
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 146,
+            "source": "nvidia-smi",
+            "duration_s": 29.854582400002982,
+            "gpu_w_avg": 100.51535975592918,
+            "gpu_sampled_coverage_s": 29.80457960000058,
+            "gpu_sampled_coverage_fraction": 0.9983251214392335,
+            "gpu_w_max": 178.44,
+            "gpu_energy_j": 3000.8440902993316,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 68.94520547945206,
+            "vram_mb_max": 13834.0,
+            "clock_mhz_avg": 2664.5753424657532,
+            "temp_c_max": 53.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 84.85554805863951,
+            "vram_percent_max": 84.85554805863951,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 146,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          }
+        ]
+      },
+      "paging": {
+        "available": true,
+        "samples": 58,
+        "errors": {},
+        "available_bytes_min": 21132754944,
+        "ram_used_percent_max": 69.2,
+        "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+        "pages_input_s": {
+          "mean": 156795.89629674001,
+          "max": 584090.9382017102,
+          "min": 0.0
+        },
+        "pages_output_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_reads_s": {
+          "mean": 1769.8010707778758,
+          "max": 6461.52300008572,
+          "min": 0.0
+        },
+        "page_writes_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_faults_s": {
+          "mean": 617553.1505675163,
+          "max": 1453416.6278085234,
+          "min": 33069.14176204865
+        },
+        "transition_faults_s": {
+          "mean": 3721.2166527654913,
+          "max": 27427.634500103708,
+          "min": 7.93961919601431
+        },
+        "system_cache_resident_bytes": {
+          "mean": 4421061737.931034,
+          "max": 6394220544.0,
+          "min": 3234177024.0
+        },
+        "standby_cache_normal_bytes": {
+          "mean": 22843426533.517242,
+          "max": 24052809728.0,
+          "min": 20901769216.0
+        },
+        "standby_cache_reserve_bytes": {
+          "mean": 29943.172413793105,
+          "max": 364544.0,
+          "min": 0.0
+        },
+        "standby_cache_core_bytes": {
+          "mean": 229098390.06896552,
+          "max": 229314560.0,
+          "min": 228900864.0
+        },
+        "modified_page_list_bytes": {
+          "mean": 370719002.48275864,
+          "max": 374890496.0,
+          "min": 370294784.0
+        },
+        "committed_bytes": {
+          "mean": 77752188433.65517,
+          "max": 77933305856.0,
+          "min": 77721546752.0
+        },
+        "commit_limit_bytes": {
+          "mean": 111586643968.0,
+          "max": 111586643968.0,
+          "min": 111586643968.0
+        },
+        "pagefile_usage_percent": {
+          "mean": 1.4911781508347084,
+          "max": 1.491403579711914,
+          "min": 1.490936279296875
+        },
+        "longest_pageouts_ge_1024_pages_s_seconds": 0,
+        "disk_deltas": {
+          "PhysicalDrive0": {
+            "read_bytes": 102802432,
+            "write_bytes": 5303808,
+            "read_time_ms": 26,
+            "write_time_ms": 0
+          },
+          "PhysicalDrive1": {
+            "read_bytes": 19066130432,
+            "write_bytes": 0,
+            "read_time_ms": 40,
+            "write_time_ms": 0
+          }
+        },
+        "engine_rss_min": 32414793728,
+        "engine_rss_max": 32415137792,
+        "engine_faults_delta": 135
+      },
+      "disk_d_read_gib": 17.756717681884766,
+      "stream_gaps": {
+        "max_s": 0.16567570000188425,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "target": 20000,
+      "repeat": 0,
+      "prompt_sha256": "65377ebad94933311ff9cc95509f75b753b266957c73aecc908b5e63cc1a7be9",
+      "retrieval": {
+        "passed": true,
+        "matched": 5,
+        "expected": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        },
+        "actual": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        }
+      }
+    }
+  ],
+  "results": [
+    {
+      "t_start": 43276.787333,
+      "t_first_token": 43286.0702625,
+      "t_last_output": 43293.9286365,
+      "t_end": 43293.9579024,
+      "ttft_s": 9.282929499997408,
+      "decode_s": 7.858374000003096,
+      "wall_s": 17.170569399997476,
+      "response_tail_s": 0.02926589999697171,
+      "prompt_tokens": 5001,
+      "completion_tokens": 128,
+      "completion_tokens_estimated": false,
+      "reasoning_tokens": null,
+      "decode_token_count": 127,
+      "timing_scope": {
+        "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+        "phase_protocol": "observed-output-phases-v2",
+        "decode_end_boundary": "last_observed_nonempty_output",
+        "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+        "first_output_kind": "content",
+        "observed_output_kinds": [
+          "content"
+        ],
+        "empty_deltas_before_output": 0,
+        "reasoning_streamed": false,
+        "reasoning_token_count_source": "unavailable",
+        "requested_reasoning_effort": "none",
+        "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+        "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+        "decode_count_estimated_boundary": true,
+        "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+      },
+      "deltas": 127,
+      "cached_prompt_tokens": 0,
+      "metric_sources": {
+        "ttft_s": "client_monotonic_clock_to_first_observed_output",
+        "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+        "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+        "completion_tokens": "server_usage"
+      },
+      "reported_timings": {
+        "cache_n": 0,
+        "prompt_n": 5001,
+        "prompt_ms": 9262.9,
+        "prompt_per_second": 539.9,
+        "predicted_n": 128,
+        "predicted_ms": 7886.1,
+        "predicted_per_second": 16.2,
+        "draft_n": 126,
+        "draft_n_accepted": 115
+      },
+      "prefill_tps": 538.7307961351421,
+      "decode_tps": 16.161104065542055,
+      "finish_reason": "length",
+      "sample_text": "```json\n{\n\"A\": \"amber-falcon-4317\",\n\"B\": \"silver-maple-8264\",\n\"C\": \"violet-otter-5928\",\n\"D\": \"cobalt-willow-1746\",\n\"E\": \"ivory-badger-368",
+      "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+      "output_text": "```json\n{\n\"A\": \"amber-falcon-4317\",\n\"B\": \"silver-maple-8264\",\n\"C\": \"violet-otter-5928\",\n\"D\": \"cobalt-willow-1746\",\n\"E\": \"ivory-badger-3682\"\n}\n```\n\nBy 2026, agentic AI has consolidated around a single capable model in a tight loop with few, well-described tools, engineered context, and human escalation. Practice centers on context engineering, tiered autonomy, trajectory-level evaluation, reliability engineering, and architectural defenses against prompt injection. Local open-weight models serve",
+      "output_capture": {
+        "scope": "visible content only; streamed reasoning excluded",
+        "limit_chars": 200000,
+        "truncated": false,
+        "visible_content_observed": true,
+        "visible_answer_present": true,
+        "reasoning_observed": false,
+        "observable_output_present": true,
+        "stream_complete": true
+      },
+      "engine_log": {
+        "chunk_prefill": [
+          {
+            "tokens": 5000,
+            "ms": 8634.0
+          }
+        ],
+        "decode": {
+          "ms_per_token": 61.61,
+          "tokens_per_second": 16.23,
+          "vram_hit_percent": 68.21,
+          "ram_fetches_per_token": 93.79,
+          "disk_reads_per_token": 19.0,
+          "disk_waits_per_token": 15.05,
+          "disk_ms_per_token": 24.62
+        },
+        "mtp": {
+          "accepted": 115,
+          "offered": 126,
+          "acceptance_percent": 91.3
+        },
+        "kv": {
+          "hit_percent": 98.18,
+          "block_reads": 823990,
+          "ram_read_mib": 31.1
+        },
+        "device_stages": [
+          "glm prefill: CUDA1 chunk 1/1, 5000 tokens, wall 4017 ms | the copy lane 3918 ms: copies 1766 (12.4 GB/s), ring wait 650, gaps 607, mixer windows 896 | lead 50, tail 50 | pcie 21.87 GB (ram 12.73, disk 9.15) + 0.30 GB vram | experts: staged 4337, resident 1409 (293617 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 24 ms | layer lane 251.3/106.9 ms max/min"
+        ],
+        "prompt_read": {
+          "tokens": 5001,
+          "seconds_rounded": 9.3
+        },
+        "logical_io_interpretation": "Engine disk/read counters are logical path operations; physical drive reads are separate OS counters."
+      },
+      "renderer": {
+        "renderer_id": "611e8b9fcb7eef5ffab68b8bcde4f7e24bd58e9299071ae4eb9d77b8d4d34f6a",
+        "render_template_sha256": "2614a3c896d53e265f564c23701173c0049f985dacfbae79fc4bcd9f5ba083f4",
+        "frontend_sha256": "410120bf020ce1c1b5f688c5aaa65217cb24c4bb4536a891c713451727a48459",
+        "reasoning_effort": "none",
+        "tokenizer_files_digest": "473366c622d34e78b7a6b96fdeafc96e09d00ca3f33dea48a9068afa210b2dff"
+      },
+      "request_strata_tune": {
+        "pcie_frac": 1.0
+      },
+      "native_timings_source": "provider reported_timings",
+      "engine_prefill_s": 9.2629,
+      "engine_prefill_tps": 539.9,
+      "engine_decode_s": 7.886100000000001,
+      "engine_decode_tps": 16.2,
+      "gpu": {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 83,
+        "source": "nvidia-smi",
+        "duration_s": 17.170569399997476,
+        "gpu_w_avg": 155.51771047585763,
+        "gpu_sampled_coverage_s": 16.875735800000257,
+        "gpu_sampled_coverage_fraction": 0.9828291308733615,
+        "gpu_w_max": 194.64999999999998,
+        "gpu_energy_j": 2670.327640654428,
+        "system_w_est": 278.6189308796675,
+        "system_energy_j_est": 4784.045688822431,
+        "gpu_util_avg": 61.30722891566265,
+        "vram_mb_max": 28694.0,
+        "clock_mhz_avg": null,
+        "temp_c_max": 59.0,
+        "cpu_util_avg": 0.44974265192638685,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": 47596433408,
+        "system_memory_total_bytes": 68636971008,
+        "system_memory_percent_avg": 67.51014685178878,
+        "system_memory_percent_max": 69.34518337420862,
+        "vram_percent_avg": 87.98199606990805,
+        "vram_percent_max": 88.00220818254309,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 83,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_all_nvidia_gpus",
+        "gpu_indices": [
+          0,
+          1
+        ],
+        "inventory_complete": true,
+        "gpus": [
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 83,
+            "source": "nvidia-smi",
+            "duration_s": 17.170569399997476,
+            "gpu_w_avg": 79.30929231988934,
+            "gpu_sampled_coverage_s": 16.875735800000257,
+            "gpu_sampled_coverage_fraction": 0.9828291308733615,
+            "gpu_w_max": 149.33,
+            "gpu_energy_j": 1361.7857078433467,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 61.024096385542165,
+            "vram_mb_max": 14860.0,
+            "clock_mhz_avg": 2615.867469879518,
+            "temp_c_max": 59.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 91.10844408117657,
+            "vram_percent_max": 91.14886830644667,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 83,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          },
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 83,
+            "source": "nvidia-smi",
+            "duration_s": 17.170569399997476,
+            "gpu_w_avg": 76.20841815596832,
+            "gpu_sampled_coverage_s": 16.875735800000257,
+            "gpu_sampled_coverage_fraction": 0.9828291308733615,
+            "gpu_w_max": 144.67,
+            "gpu_energy_j": 1308.5419328110816,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 61.59036144578313,
+            "vram_mb_max": 13834.0,
+            "clock_mhz_avg": 2662.590361445783,
+            "temp_c_max": 48.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 84.85554805863951,
+            "vram_percent_max": 84.85554805863951,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 83,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          }
+        ]
+      },
+      "paging": {
+        "available": true,
+        "samples": 34,
+        "errors": {},
+        "available_bytes_min": 21040537600,
+        "ram_used_percent_max": 69.3,
+        "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+        "pages_input_s": {
+          "mean": 271635.2081440969,
+          "max": 582884.8432499474,
+          "min": 38.41631064350778
+        },
+        "pages_output_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_reads_s": {
+          "mean": 3098.2820565329516,
+          "max": 6549.040986674719,
+          "min": 38.41631064350778
+        },
+        "page_writes_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_faults_s": {
+          "mean": 498698.6584288135,
+          "max": 825427.1059715317,
+          "min": 902.7833001224328
+        },
+        "transition_faults_s": {
+          "mean": 4130.603568198763,
+          "max": 30743.140392492944,
+          "min": 15.801186313565458
+        },
+        "system_cache_resident_bytes": {
+          "mean": 5219406908.235294,
+          "max": 6478499840.0,
+          "min": 3436969984.0
+        },
+        "standby_cache_normal_bytes": {
+          "mean": 22051950712.47059,
+          "max": 23850127360.0,
+          "min": 20809953280.0
+        },
+        "standby_cache_reserve_bytes": {
+          "mean": 67463.5294117647,
+          "max": 2269184.0,
+          "min": 0.0
+        },
+        "standby_cache_core_bytes": {
+          "mean": 229318174.11764705,
+          "max": 229347328.0,
+          "min": 229232640.0
+        },
+        "modified_page_list_bytes": {
+          "mean": 371095672.4705882,
+          "max": 372391936.0,
+          "min": 370659328.0
+        },
+        "committed_bytes": {
+          "mean": 77805139606.58824,
+          "max": 77979168768.0,
+          "min": 77764661248.0
+        },
+        "commit_limit_bytes": {
+          "mean": 111586643968.0,
+          "max": 111586643968.0,
+          "min": 111586643968.0
+        },
+        "pagefile_usage_percent": {
+          "mean": 1.4907598495483398,
+          "max": 1.490926742553711,
+          "min": 1.490488052368164
+        },
+        "longest_pageouts_ge_1024_pages_s_seconds": 0,
+        "disk_deltas": {
+          "PhysicalDrive0": {
+            "read_bytes": 51247616,
+            "write_bytes": 5251072,
+            "read_time_ms": 4,
+            "write_time_ms": 0
+          },
+          "PhysicalDrive1": {
+            "read_bytes": 19134439424,
+            "write_bytes": 0,
+            "read_time_ms": 40,
+            "write_time_ms": 0
+          }
+        },
+        "engine_rss_min": 32415125504,
+        "engine_rss_max": 32415645696,
+        "engine_faults_delta": 136
+      },
+      "disk_d_read_gib": 17.820335388183594,
+      "stream_gaps": {
+        "max_s": 0.1681038999959128,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "target": 5000,
+      "repeat": 0,
+      "prompt_sha256": "4f0ebf4fb03677656058788a37b2ab3dcb57fa36e20e427d91f3e5cbfc27aaaf",
+      "retrieval": {
+        "passed": true,
+        "matched": 5,
+        "expected": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        },
+        "actual": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        }
+      }
+    },
+    {
+      "t_start": 43294.1242741,
+      "t_first_token": 43303.453118,
+      "t_last_output": 43311.2021455,
+      "t_end": 43311.230735,
+      "ttft_s": 9.328843899995263,
+      "decode_s": 7.74902750000183,
+      "wall_s": 17.106460899995,
+      "response_tail_s": 0.028589499997906387,
+      "prompt_tokens": 5001,
+      "completion_tokens": 128,
+      "completion_tokens_estimated": false,
+      "reasoning_tokens": null,
+      "decode_token_count": 127,
+      "timing_scope": {
+        "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+        "phase_protocol": "observed-output-phases-v2",
+        "decode_end_boundary": "last_observed_nonempty_output",
+        "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+        "first_output_kind": "content",
+        "observed_output_kinds": [
+          "content"
+        ],
+        "empty_deltas_before_output": 0,
+        "reasoning_streamed": false,
+        "reasoning_token_count_source": "unavailable",
+        "requested_reasoning_effort": "none",
+        "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+        "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+        "decode_count_estimated_boundary": true,
+        "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+      },
+      "deltas": 127,
+      "cached_prompt_tokens": 0,
+      "metric_sources": {
+        "ttft_s": "client_monotonic_clock_to_first_observed_output",
+        "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+        "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+        "completion_tokens": "server_usage"
+      },
+      "reported_timings": {
+        "cache_n": 0,
+        "prompt_n": 5001,
+        "prompt_ms": 9295.1,
+        "prompt_per_second": 538.0,
+        "predicted_n": 128,
+        "predicted_ms": 7775.5,
+        "predicted_per_second": 16.5,
+        "draft_n": 126,
+        "draft_n_accepted": 114
+      },
+      "prefill_tps": 536.0792884531533,
+      "decode_tps": 16.389153348593744,
+      "finish_reason": "length",
+      "sample_text": "```json\n{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n```\n\nThe",
+      "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+      "output_text": "```json\n{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n```\n\nThe source is a synthetic October 2026 reference report on agentic AI. It describes the dominant architecture \u2014 a single model in a tight tool loop with retries, sandboxing, and human escalation gates \u2014 plus context engineering, evaluation, reliability, security (prompt injection), economics, local open-weight inference, orchestration stacks, multi-agent patterns",
+      "output_capture": {
+        "scope": "visible content only; streamed reasoning excluded",
+        "limit_chars": 200000,
+        "truncated": false,
+        "visible_content_observed": true,
+        "visible_answer_present": true,
+        "reasoning_observed": false,
+        "observable_output_present": true,
+        "stream_complete": true
+      },
+      "engine_log": {
+        "chunk_prefill": [
+          {
+            "tokens": 5000,
+            "ms": 8688.2
+          }
+        ],
+        "decode": {
+          "ms_per_token": 60.75,
+          "tokens_per_second": 16.46,
+          "vram_hit_percent": 68.75,
+          "ram_fetches_per_token": 95.52,
+          "disk_reads_per_token": 15.9,
+          "disk_waits_per_token": 12.82,
+          "disk_ms_per_token": 20.97
+        },
+        "mtp": {
+          "accepted": 114,
+          "offered": 126,
+          "acceptance_percent": 90.5
+        },
+        "kv": {
+          "hit_percent": 98.19,
+          "block_reads": 827080,
+          "ram_read_mib": 31.0
+        },
+        "device_stages": [
+          "glm prefill: CUDA1 chunk 1/1, 5000 tokens, wall 3922 ms | the copy lane 3828 ms: copies 1763 (12.4 GB/s), ring wait 590, gaps 576, mixer windows 899 | lead 48, tail 46 | pcie 21.84 GB (ram 12.76, disk 9.08) + 0.31 GB vram | experts: staged 4332, resident 1409 (344067 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 24 ms | layer lane 218.1/105.1 ms max/min"
+        ],
+        "prompt_read": {
+          "tokens": 5001,
+          "seconds_rounded": 9.3
+        },
+        "logical_io_interpretation": "Engine disk/read counters are logical path operations; physical drive reads are separate OS counters."
+      },
+      "renderer": {
+        "renderer_id": "611e8b9fcb7eef5ffab68b8bcde4f7e24bd58e9299071ae4eb9d77b8d4d34f6a",
+        "render_template_sha256": "2614a3c896d53e265f564c23701173c0049f985dacfbae79fc4bcd9f5ba083f4",
+        "frontend_sha256": "410120bf020ce1c1b5f688c5aaa65217cb24c4bb4536a891c713451727a48459",
+        "reasoning_effort": "none",
+        "tokenizer_files_digest": "473366c622d34e78b7a6b96fdeafc96e09d00ca3f33dea48a9068afa210b2dff"
+      },
+      "request_strata_tune": {
+        "pcie_frac": 1.0
+      },
+      "native_timings_source": "provider reported_timings",
+      "engine_prefill_s": 9.2951,
+      "engine_prefill_tps": 538.0,
+      "engine_decode_s": 7.7755,
+      "engine_decode_tps": 16.5,
+      "gpu": {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 83,
+        "source": "nvidia-smi",
+        "duration_s": 17.106460899995,
+        "gpu_w_avg": 154.95657806063915,
+        "gpu_sampled_coverage_s": 16.832795200003602,
+        "gpu_sampled_coverage_fraction": 0.9840022023496703,
+        "gpu_w_max": 200.13,
+        "gpu_energy_j": 2650.7586437913465,
+        "system_w_est": 275.8952516813581,
+        "system_energy_j_est": 4719.591335381432,
+        "gpu_util_avg": 58.74096385542169,
+        "vram_mb_max": 28703.0,
+        "clock_mhz_avg": null,
+        "temp_c_max": 57.0,
+        "cpu_util_avg": 0.43413902864204074,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": 47630856192,
+        "system_memory_total_bytes": 68636971008,
+        "system_memory_percent_avg": 67.43222313002806,
+        "system_memory_percent_max": 69.39533533093757,
+        "vram_percent_avg": 88.01200015667159,
+        "vram_percent_max": 88.02981046433172,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 83,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_all_nvidia_gpus",
+        "gpu_indices": [
+          0,
+          1
+        ],
+        "inventory_complete": true,
+        "gpus": [
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 83,
+            "source": "nvidia-smi",
+            "duration_s": 17.106460899995,
+            "gpu_w_avg": 78.01966160649957,
+            "gpu_sampled_coverage_s": 16.832795200003602,
+            "gpu_sampled_coverage_fraction": 0.9840022023496703,
+            "gpu_w_max": 144.79,
+            "gpu_energy_j": 1334.640290702426,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 55.75903614457831,
+            "vram_mb_max": 14869.0,
+            "clock_mhz_avg": 2577.0602409638554,
+            "temp_c_max": 57.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 91.16845225470367,
+            "vram_percent_max": 91.20407287002392,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 83,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          },
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 83,
+            "source": "nvidia-smi",
+            "duration_s": 17.106460899995,
+            "gpu_w_avg": 76.9369164541395,
+            "gpu_sampled_coverage_s": 16.832795200003602,
+            "gpu_sampled_coverage_fraction": 0.9840022023496703,
+            "gpu_w_max": 149.03,
+            "gpu_energy_j": 1316.1183530889193,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 61.72289156626506,
+            "vram_mb_max": 13834.0,
+            "clock_mhz_avg": 2691.421686746988,
+            "temp_c_max": 44.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 84.85554805863951,
+            "vram_percent_max": 84.85554805863951,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 83,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          }
+        ]
+      },
+      "paging": {
+        "available": true,
+        "samples": 33,
+        "errors": {},
+        "available_bytes_min": 21007216640,
+        "ram_used_percent_max": 69.4,
+        "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+        "pages_input_s": {
+          "mean": 297283.5138955493,
+          "max": 607203.7422932937,
+          "min": 1.9616709120494655
+        },
+        "pages_output_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_reads_s": {
+          "mean": 3455.1187977426853,
+          "max": 6987.605137134144,
+          "min": 1.9616709120494655
+        },
+        "page_writes_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_faults_s": {
+          "mean": 475432.8060054915,
+          "max": 779653.9185723258,
+          "min": 1906.7441265120806
+        },
+        "transition_faults_s": {
+          "mean": 5244.838175350338,
+          "max": 27247.38793074972,
+          "min": 17.28177297165271
+        },
+        "system_cache_resident_bytes": {
+          "mean": 5166648351.030303,
+          "max": 6485532672.0,
+          "min": 3438161920.0
+        },
+        "standby_cache_normal_bytes": {
+          "mean": 22118207736.242424,
+          "max": 23866265600.0,
+          "min": 20769972224.0
+        },
+        "standby_cache_reserve_bytes": {
+          "mean": 3599.5151515151515,
+          "max": 118784.0,
+          "min": 0.0
+        },
+        "standby_cache_core_bytes": {
+          "mean": 229486343.75757575,
+          "max": 229728256.0,
+          "min": 229113856.0
+        },
+        "modified_page_list_bytes": {
+          "mean": 378677930.6666667,
+          "max": 383516672.0,
+          "min": 371425280.0
+        },
+        "committed_bytes": {
+          "mean": 77790610028.60606,
+          "max": 77880066048.0,
+          "min": 77764468736.0
+        },
+        "commit_limit_bytes": {
+          "mean": 111586643968.0,
+          "max": 111586643968.0,
+          "min": 111586643968.0
+        },
+        "pagefile_usage_percent": {
+          "mean": 1.4898279941443242,
+          "max": 1.490478515625,
+          "min": 1.489248275756836
+        },
+        "longest_pageouts_ge_1024_pages_s_seconds": 0,
+        "disk_deltas": {
+          "PhysicalDrive0": {
+            "read_bytes": 162322432,
+            "write_bytes": 1440256,
+            "read_time_ms": 33,
+            "write_time_ms": 0
+          },
+          "PhysicalDrive1": {
+            "read_bytes": 20386631680,
+            "write_bytes": 0,
+            "read_time_ms": 42,
+            "write_time_ms": 0
+          }
+        },
+        "engine_rss_min": 32415645696,
+        "engine_rss_max": 32416088064,
+        "engine_faults_delta": 116
+      },
+      "disk_d_read_gib": 18.986530303955078,
+      "stream_gaps": {
+        "max_s": 0.14706579999619862,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "target": 5000,
+      "repeat": 1,
+      "prompt_sha256": "d68e1d5e5ddbbd2482c93d222e8af646b29391722fc27cfab199629108dc5caf",
+      "retrieval": {
+        "passed": true,
+        "matched": 5,
+        "expected": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        },
+        "actual": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        }
+      }
+    },
+    {
+      "t_start": 43311.4006281,
+      "t_first_token": 43320.8913378,
+      "t_last_output": 43328.4544837,
+      "t_end": 43328.4707248,
+      "ttft_s": 9.490709700003208,
+      "decode_s": 7.563145899999654,
+      "wall_s": 17.07009670000116,
+      "response_tail_s": 0.016241099998296704,
+      "prompt_tokens": 5001,
+      "completion_tokens": 128,
+      "completion_tokens_estimated": false,
+      "reasoning_tokens": null,
+      "decode_token_count": 127,
+      "timing_scope": {
+        "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+        "phase_protocol": "observed-output-phases-v2",
+        "decode_end_boundary": "last_observed_nonempty_output",
+        "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+        "first_output_kind": "content",
+        "observed_output_kinds": [
+          "content"
+        ],
+        "empty_deltas_before_output": 0,
+        "reasoning_streamed": false,
+        "reasoning_token_count_source": "unavailable",
+        "requested_reasoning_effort": "none",
+        "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+        "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+        "decode_count_estimated_boundary": true,
+        "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+      },
+      "deltas": 127,
+      "cached_prompt_tokens": 0,
+      "metric_sources": {
+        "ttft_s": "client_monotonic_clock_to_first_observed_output",
+        "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+        "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+        "completion_tokens": "server_usage"
+      },
+      "reported_timings": {
+        "cache_n": 0,
+        "prompt_n": 5001,
+        "prompt_ms": 9472.1,
+        "prompt_per_second": 528.0,
+        "predicted_n": 128,
+        "predicted_ms": 7577.9,
+        "predicted_per_second": 16.9,
+        "draft_n": 126,
+        "draft_n_accepted": 113
+      },
+      "prefill_tps": 526.9363575622074,
+      "decode_tps": 16.79195425808271,
+      "finish_reason": "length",
+      "sample_text": "```json\n{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n```\n\nA",
+      "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+      "output_text": "```json\n{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n```\n\nA 2026 survey of agentic AI describes the dominant architecture: one capable model in a tight loop with few coarse tools, engineered context, and human escalation gates. Key themes include context engineering (compaction, retrieval, memory tiers, sub-agents), inference-time compute, trajectory-level evaluation, reliability patterns like idempotency and",
+      "output_capture": {
+        "scope": "visible content only; streamed reasoning excluded",
+        "limit_chars": 200000,
+        "truncated": false,
+        "visible_content_observed": true,
+        "visible_answer_present": true,
+        "reasoning_observed": false,
+        "observable_output_present": true,
+        "stream_complete": true
+      },
+      "engine_log": {
+        "chunk_prefill": [
+          {
+            "tokens": 5000,
+            "ms": 8897.9
+          }
+        ],
+        "decode": {
+          "ms_per_token": 59.2,
+          "tokens_per_second": 16.89,
+          "vram_hit_percent": 69.08,
+          "ram_fetches_per_token": 96.09,
+          "disk_reads_per_token": 14.57,
+          "disk_waits_per_token": 11.8,
+          "disk_ms_per_token": 18.05
+        },
+        "mtp": {
+          "accepted": 113,
+          "offered": 126,
+          "acceptance_percent": 89.7
+        },
+        "kv": {
+          "hit_percent": 98.2,
+          "block_reads": 830146,
+          "ram_read_mib": 31.1
+        },
+        "device_stages": [
+          "glm prefill: CUDA1 chunk 1/1, 5000 tokens, wall 4113 ms | the copy lane 4019 ms: copies 1777 (12.4 GB/s), ring wait 704, gaps 648, mixer windows 890 | lead 49, tail 46 | pcie 21.95 GB (ram 12.70, disk 9.25) + 0.30 GB vram | experts: staged 4351, resident 1409 (327795 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 24 ms | layer lane 244.3/109.9 ms max/min"
+        ],
+        "prompt_read": {
+          "tokens": 5001,
+          "seconds_rounded": 9.5
+        },
+        "logical_io_interpretation": "Engine disk/read counters are logical path operations; physical drive reads are separate OS counters."
+      },
+      "renderer": {
+        "renderer_id": "611e8b9fcb7eef5ffab68b8bcde4f7e24bd58e9299071ae4eb9d77b8d4d34f6a",
+        "render_template_sha256": "2614a3c896d53e265f564c23701173c0049f985dacfbae79fc4bcd9f5ba083f4",
+        "frontend_sha256": "410120bf020ce1c1b5f688c5aaa65217cb24c4bb4536a891c713451727a48459",
+        "reasoning_effort": "none",
+        "tokenizer_files_digest": "473366c622d34e78b7a6b96fdeafc96e09d00ca3f33dea48a9068afa210b2dff"
+      },
+      "request_strata_tune": {
+        "pcie_frac": 1.0
+      },
+      "native_timings_source": "provider reported_timings",
+      "engine_prefill_s": 9.472100000000001,
+      "engine_prefill_tps": 528.0,
+      "engine_decode_s": 7.5779,
+      "engine_decode_tps": 16.9,
+      "gpu": {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 83,
+        "source": "nvidia-smi",
+        "duration_s": 17.07009670000116,
+        "gpu_w_avg": 154.44310852362938,
+        "gpu_sampled_coverage_s": 16.842869000000064,
+        "gpu_sampled_coverage_fraction": 0.9866885522680677,
+        "gpu_w_max": 192.08999999999997,
+        "gpu_energy_j": 2636.3587971471266,
+        "system_w_est": 272.6518988213718,
+        "system_energy_j_est": 4654.194278319748,
+        "gpu_util_avg": 60.24698795180723,
+        "vram_mb_max": 28703.0,
+        "clock_mhz_avg": null,
+        "temp_c_max": 55.0,
+        "cpu_util_avg": 0.41650185908469045,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": 47546277888,
+        "system_memory_total_bytes": 68636971008,
+        "system_memory_percent_avg": 67.2544063984421,
+        "system_memory_percent_max": 69.27210975329642,
+        "vram_percent_avg": 87.42592279194679,
+        "vram_percent_max": 88.02981046433172,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 83,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_all_nvidia_gpus",
+        "gpu_indices": [
+          0,
+          1
+        ],
+        "inventory_complete": true,
+        "gpus": [
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 83,
+            "source": "nvidia-smi",
+            "duration_s": 17.07009670000116,
+            "gpu_w_avg": 77.67369758941635,
+            "gpu_sampled_coverage_s": 16.842869000000064,
+            "gpu_sampled_coverage_fraction": 0.9866885522680677,
+            "gpu_w_max": 146.25,
+            "gpu_energy_j": 1325.8975288979839,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 55.204819277108435,
+            "vram_mb_max": 14869.0,
+            "clock_mhz_avg": 2574.2048192771085,
+            "temp_c_max": 55.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 89.99629752525406,
+            "vram_percent_max": 91.20407287002392,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 83,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          },
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 83,
+            "source": "nvidia-smi",
+            "duration_s": 17.07009670000116,
+            "gpu_w_avg": 76.76941093421313,
+            "gpu_sampled_coverage_s": 16.842869000000064,
+            "gpu_sampled_coverage_fraction": 0.9866885522680677,
+            "gpu_w_max": 142.04,
+            "gpu_energy_j": 1310.4612682491443,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 65.28915662650603,
+            "vram_mb_max": 13834.0,
+            "clock_mhz_avg": 2623.6626506024095,
+            "temp_c_max": 47.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 84.85554805863951,
+            "vram_percent_max": 84.85554805863951,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 83,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          }
+        ]
+      },
+      "paging": {
+        "available": true,
+        "samples": 33,
+        "errors": {},
+        "available_bytes_min": 21086560256,
+        "ram_used_percent_max": 69.3,
+        "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+        "pages_input_s": {
+          "mean": 291761.83818279346,
+          "max": 583951.6371832715,
+          "min": 1019.8511254531519
+        },
+        "pages_output_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_reads_s": {
+          "mean": 3303.162150106359,
+          "max": 6473.683171558991,
+          "min": 146.13465192937159
+        },
+        "page_writes_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_faults_s": {
+          "mean": 464719.992825442,
+          "max": 743722.6561880088,
+          "min": 134539.31387736727
+        },
+        "transition_faults_s": {
+          "mean": 3332.7444210771737,
+          "max": 10547.555541105081,
+          "min": 23.81933510707982
+        },
+        "system_cache_resident_bytes": {
+          "mean": 5029644474.181818,
+          "max": 6261469184.0,
+          "min": 3511898112.0
+        },
+        "standby_cache_normal_bytes": {
+          "mean": 22253553726.060608,
+          "max": 23784222720.0,
+          "min": 20835753984.0
+        },
+        "standby_cache_reserve_bytes": {
+          "mean": 1489.4545454545455,
+          "max": 49152.0,
+          "min": 0.0
+        },
+        "standby_cache_core_bytes": {
+          "mean": 229644598.3030303,
+          "max": 229650432.0,
+          "min": 229556224.0
+        },
+        "modified_page_list_bytes": {
+          "mean": 383445302.3030303,
+          "max": 387207168.0,
+          "min": 382615552.0
+        },
+        "committed_bytes": {
+          "mean": 77588146982.78787,
+          "max": 77981663232.0,
+          "min": 77474824192.0
+        },
+        "commit_limit_bytes": {
+          "mean": 111586643968.0,
+          "max": 111586643968.0,
+          "min": 111586643968.0
+        },
+        "pagefile_usage_percent": {
+          "mean": 1.4882824637673118,
+          "max": 1.489248275756836,
+          "min": 1.4879798889160156
+        },
+        "longest_pageouts_ge_1024_pages_s_seconds": 0,
+        "disk_deltas": {
+          "PhysicalDrive0": {
+            "read_bytes": 14572544,
+            "write_bytes": 5536256,
+            "read_time_ms": 0,
+            "write_time_ms": 0
+          },
+          "PhysicalDrive1": {
+            "read_bytes": 20200235008,
+            "write_bytes": 0,
+            "read_time_ms": 42,
+            "write_time_ms": 0
+          }
+        },
+        "engine_rss_min": 32416088064,
+        "engine_rss_max": 32416563200,
+        "engine_faults_delta": 124
+      },
+      "disk_d_read_gib": 18.81293487548828,
+      "stream_gaps": {
+        "max_s": 0.14277040000160923,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "target": 5000,
+      "repeat": 2,
+      "prompt_sha256": "6851779d25c3f876b9b9755a4f78105a52c7b03426339d7290848c28ff8df022",
+      "retrieval": {
+        "passed": true,
+        "matched": 5,
+        "expected": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        },
+        "actual": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        }
+      }
+    },
+    {
+      "t_start": 43328.6520822,
+      "t_first_token": 43350.9757638,
+      "t_last_output": 43358.4838613,
+      "t_end": 43358.5570711,
+      "ttft_s": 22.323681599998963,
+      "decode_s": 7.508097500001895,
+      "wall_s": 29.90498889999435,
+      "response_tail_s": 0.0732097999934922,
+      "prompt_tokens": 20003,
+      "completion_tokens": 122,
+      "completion_tokens_estimated": false,
+      "reasoning_tokens": null,
+      "decode_token_count": 121,
+      "timing_scope": {
+        "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+        "phase_protocol": "observed-output-phases-v2",
+        "decode_end_boundary": "last_observed_nonempty_output",
+        "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+        "first_output_kind": "content",
+        "observed_output_kinds": [
+          "content"
+        ],
+        "empty_deltas_before_output": 0,
+        "reasoning_streamed": false,
+        "reasoning_token_count_source": "unavailable",
+        "requested_reasoning_effort": "none",
+        "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+        "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+        "decode_count_estimated_boundary": true,
+        "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+      },
+      "deltas": 121,
+      "cached_prompt_tokens": 0,
+      "metric_sources": {
+        "ttft_s": "client_monotonic_clock_to_first_observed_output",
+        "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+        "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+        "completion_tokens": "server_usage"
+      },
+      "reported_timings": {
+        "cache_n": 0,
+        "prompt_n": 20003,
+        "prompt_ms": 22296.1,
+        "prompt_per_second": 897.2,
+        "predicted_n": 122,
+        "predicted_ms": 7579.4,
+        "predicted_per_second": 16.1,
+        "draft_n": 120,
+        "draft_n_accepted": 101
+      },
+      "prefill_tps": 896.0439571939123,
+      "decode_tps": 16.115933497130193,
+      "finish_reason": "stop",
+      "sample_text": "{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n\nThe source is a synthetic",
+      "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+      "output_text": "{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n\nThe source is a synthetic October 2026 reference report on agentic AI. It describes the dominant single-model tool-calling loop, context engineering, security concerns like prompt injection, evaluation practices, local inference economics, and multi-agent patterns. Appendix A profiles ~65 synthetic platform vendors with deployment tiers, pricing, and observed metrics.",
+      "output_capture": {
+        "scope": "visible content only; streamed reasoning excluded",
+        "limit_chars": 200000,
+        "truncated": false,
+        "visible_content_observed": true,
+        "visible_answer_present": true,
+        "reasoning_observed": false,
+        "observable_output_present": true,
+        "stream_complete": true
+      },
+      "engine_log": {
+        "chunk_prefill": [
+          {
+            "tokens": 16384,
+            "ms": 15151.1
+          },
+          {
+            "tokens": 3618,
+            "ms": 6382.3
+          }
+        ],
+        "decode": {
+          "ms_per_token": 62.13,
+          "tokens_per_second": 16.1,
+          "vram_hit_percent": 70.51,
+          "ram_fetches_per_token": 91.07,
+          "disk_reads_per_token": 17.19,
+          "disk_waits_per_token": 13.64,
+          "disk_ms_per_token": 20.39
+        },
+        "mtp": {
+          "accepted": 101,
+          "offered": 120,
+          "acceptance_percent": 84.2
+        },
+        "kv": {
+          "hit_percent": 95.77,
+          "block_reads": 811678,
+          "ram_read_mib": 71.3
+        },
+        "device_stages": [
+          "glm prefill: CUDA0 chunk 2/2, 8192 tokens, wall 4824 ms | the copy lane 4441 ms: copies 1991 (12.1 GB/s), ring wait 340, gaps 489, mixer windows 1621 | lead 381, tail 3 | pcie 24.14 GB (ram 13.56, disk 10.58) + 0.10 GB vram | experts: staged 4828, resident 1487 (402593 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 0 ms | layer lane 153.0/120.6 ms max/min",
+          "glm prefill: CUDA1 chunk 1/2, 8192 tokens, wall 5446 ms | the copy lane 5098 ms: copies 1820 (12.2 GB/s), ring wait 1054, gaps 738, mixer windows 1486 | lead 260, tail 88 | pcie 22.23 GB (ram 12.64, disk 9.59) + 0.00 GB vram | experts: staged 4349, resident 1409 (492919 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 76 ms | layer lane 319.0/122.2 ms max/min",
+          "glm prefill: CUDA1 chunk 2/2, 8192 tokens, wall 4211 ms | the copy lane 4064 ms: copies 1734 (12.6 GB/s), ring wait 295, gaps 482, mixer windows 1553 | lead 61, tail 86 | pcie 21.84 GB (ram 12.50, disk 9.34) + 0.00 GB vram | experts: staged 4272, resident 1409 (226267 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 39 ms | layer lane 135.0/118.2 ms max/min",
+          "glm prefill: CUDA0 chunk 1/1, 3618 tokens, wall 3344 ms | the copy lane 3130 ms: copies 1916 (12.5 GB/s), ring wait 181, gaps 278, mixer windows 755 | lead 213, tail 1 | pcie 24.02 GB (ram 13.51, disk 10.52) + 0.10 GB vram | experts: staged 4804, resident 1487 (150837 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 0 ms | layer lane 132.8/99.9 ms max/min",
+          "glm prefill: CUDA1 chunk 1/1, 3618 tokens, wall 2968 ms | the copy lane 2897 ms: copies 1700 (12.6 GB/s), ring wait 194, gaps 261, mixer windows 742 | lead 38, tail 33 | pcie 21.41 GB (ram 12.33, disk 9.08) + 0.00 GB vram | experts: staged 4189, resident 1409 (74759 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 17 ms | layer lane 114.5/98.3 ms max/min"
+        ],
+        "prompt_read": {
+          "tokens": 20003,
+          "seconds_rounded": 22.3
+        },
+        "logical_io_interpretation": "Engine disk/read counters are logical path operations; physical drive reads are separate OS counters."
+      },
+      "renderer": {
+        "renderer_id": "611e8b9fcb7eef5ffab68b8bcde4f7e24bd58e9299071ae4eb9d77b8d4d34f6a",
+        "render_template_sha256": "2614a3c896d53e265f564c23701173c0049f985dacfbae79fc4bcd9f5ba083f4",
+        "frontend_sha256": "410120bf020ce1c1b5f688c5aaa65217cb24c4bb4536a891c713451727a48459",
+        "reasoning_effort": "none",
+        "tokenizer_files_digest": "473366c622d34e78b7a6b96fdeafc96e09d00ca3f33dea48a9068afa210b2dff"
+      },
+      "request_strata_tune": {
+        "pcie_frac": 1.0
+      },
+      "native_timings_source": "provider reported_timings",
+      "engine_prefill_s": 22.2961,
+      "engine_prefill_tps": 897.2,
+      "engine_decode_s": 7.5794,
+      "engine_decode_tps": 16.1,
+      "gpu": {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 146,
+        "source": "nvidia-smi",
+        "duration_s": 29.90498889999435,
+        "gpu_w_avg": 194.96124920272192,
+        "gpu_sampled_coverage_s": 29.7764645999996,
+        "gpu_sampled_coverage_fraction": 0.9957022455208209,
+        "gpu_w_max": 322.0,
+        "gpu_energy_j": 5830.313993336431,
+        "system_w_est": 320.8333729657181,
+        "system_energy_j_est": 9594.518457287548,
+        "gpu_util_avg": 59.95205479452055,
+        "vram_mb_max": 28529.0,
+        "clock_mhz_avg": null,
+        "temp_c_max": 61.0,
+        "cpu_util_avg": 0.469688487881981,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": 47690833920,
+        "system_memory_total_bytes": 68636971008,
+        "system_memory_percent_avg": 66.697692575825,
+        "system_memory_percent_max": 69.48271932693734,
+        "vram_percent_avg": 87.40262528369011,
+        "vram_percent_max": 87.49616634975158,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 146,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_all_nvidia_gpus",
+        "gpu_indices": [
+          0,
+          1
+        ],
+        "inventory_complete": true,
+        "gpus": [
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 146,
+            "source": "nvidia-smi",
+            "duration_s": 29.90498889999435,
+            "gpu_w_avg": 95.88548812384701,
+            "gpu_sampled_coverage_s": 29.7764645999996,
+            "gpu_sampled_coverage_fraction": 0.9957022455208209,
+            "gpu_w_max": 175.35,
+            "gpu_energy_j": 2867.454458014185,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 53.97260273972603,
+            "vram_mb_max": 14695.0,
+            "clock_mhz_avg": 2590.328767123288,
+            "temp_c_max": 61.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 89.94970250874073,
+            "vram_percent_max": 90.13678464086364,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 146,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          },
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 146,
+            "source": "nvidia-smi",
+            "duration_s": 29.90498889999435,
+            "gpu_w_avg": 99.07576107887485,
+            "gpu_sampled_coverage_s": 29.7764645999996,
+            "gpu_sampled_coverage_fraction": 0.9957022455208209,
+            "gpu_w_max": 181.86,
+            "gpu_energy_j": 2962.8595353222445,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 65.93150684931507,
+            "vram_mb_max": 13834.0,
+            "clock_mhz_avg": 2642.5342465753424,
+            "temp_c_max": 48.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 84.85554805863951,
+            "vram_percent_max": 84.85554805863951,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 146,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          }
+        ]
+      },
+      "paging": {
+        "available": true,
+        "samples": 59,
+        "errors": {},
+        "available_bytes_min": 20946526208,
+        "ram_used_percent_max": 69.5,
+        "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+        "pages_input_s": {
+          "mean": 169072.13030177253,
+          "max": 585249.8278461205,
+          "min": 0.0
+        },
+        "pages_output_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_reads_s": {
+          "mean": 2046.0754204607556,
+          "max": 7237.105213432146,
+          "min": 0.0
+        },
+        "page_writes_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_faults_s": {
+          "mean": 638613.2621914465,
+          "max": 1398144.564172358,
+          "min": 1111.528262675413
+        },
+        "transition_faults_s": {
+          "mean": 6979.228555724855,
+          "max": 52139.994909706475,
+          "min": 11.78576311244718
+        },
+        "system_cache_resident_bytes": {
+          "mean": 4640464201.762712,
+          "max": 6557888512.0,
+          "min": 3371716608.0
+        },
+        "standby_cache_normal_bytes": {
+          "mean": 22545408763.66102,
+          "max": 23910387712.0,
+          "min": 20715462656.0
+        },
+        "standby_cache_reserve_bytes": {
+          "mean": 6356158.915254237,
+          "max": 29937664.0,
+          "min": 0.0
+        },
+        "standby_cache_core_bytes": {
+          "mean": 229630021.42372882,
+          "max": 229650432.0,
+          "min": 229507072.0
+        },
+        "modified_page_list_bytes": {
+          "mean": 384323236.88135594,
+          "max": 387596288.0,
+          "min": 383016960.0
+        },
+        "committed_bytes": {
+          "mean": 77586128757.15254,
+          "max": 78047907840.0,
+          "min": 77494071296.0
+        },
+        "commit_limit_bytes": {
+          "mean": 111586643968.0,
+          "max": 111586643968.0,
+          "min": 111586643968.0
+        },
+        "pagefile_usage_percent": {
+          "mean": 1.4873776193392478,
+          "max": 1.4879703521728516,
+          "min": 1.4869022369384766
+        },
+        "longest_pageouts_ge_1024_pages_s_seconds": 0,
+        "disk_deltas": {
+          "PhysicalDrive0": {
+            "read_bytes": 213066240,
+            "write_bytes": 7187968,
+            "read_time_ms": 32,
+            "write_time_ms": 0
+          },
+          "PhysicalDrive1": {
+            "read_bytes": 20630818816,
+            "write_bytes": 0,
+            "read_time_ms": 43,
+            "write_time_ms": 0
+          }
+        },
+        "engine_rss_min": 32416563200,
+        "engine_rss_max": 32416808960,
+        "engine_faults_delta": 112
+      },
+      "disk_d_read_gib": 19.213947296142578,
+      "stream_gaps": {
+        "max_s": 0.1862148000000161,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "target": 20000,
+      "repeat": 0,
+      "prompt_sha256": "007631dedf0627546da545aef5ddd7521a88c5a7ef028d13fc47e18f1507daa1",
+      "retrieval": {
+        "passed": true,
+        "matched": 5,
+        "expected": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        },
+        "actual": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        }
+      }
+    },
+    {
+      "t_start": 43358.7267859,
+      "t_first_token": 43380.8453171,
+      "t_last_output": 43388.1099843,
+      "t_end": 43388.1353843,
+      "ttft_s": 22.1185312000016,
+      "decode_s": 7.264667199997348,
+      "wall_s": 29.40859840000485,
+      "response_tail_s": 0.025400000005902257,
+      "prompt_tokens": 20002,
+      "completion_tokens": 128,
+      "completion_tokens_estimated": false,
+      "reasoning_tokens": null,
+      "decode_token_count": 127,
+      "timing_scope": {
+        "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+        "phase_protocol": "observed-output-phases-v2",
+        "decode_end_boundary": "last_observed_nonempty_output",
+        "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+        "first_output_kind": "content",
+        "observed_output_kinds": [
+          "content"
+        ],
+        "empty_deltas_before_output": 0,
+        "reasoning_streamed": false,
+        "reasoning_token_count_source": "unavailable",
+        "requested_reasoning_effort": "none",
+        "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+        "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+        "decode_count_estimated_boundary": true,
+        "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+      },
+      "deltas": 128,
+      "cached_prompt_tokens": 0,
+      "metric_sources": {
+        "ttft_s": "client_monotonic_clock_to_first_observed_output",
+        "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+        "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+        "completion_tokens": "server_usage"
+      },
+      "reported_timings": {
+        "cache_n": 0,
+        "prompt_n": 20002,
+        "prompt_ms": 22088.3,
+        "prompt_per_second": 905.5,
+        "predicted_n": 128,
+        "predicted_ms": 7288.4,
+        "predicted_per_second": 17.6,
+        "draft_n": 126,
+        "draft_n_accepted": 110
+      },
+      "prefill_tps": 904.3095953857259,
+      "decode_tps": 17.48187446219785,
+      "finish_reason": "length",
+      "sample_text": "{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n\nSummary: A synthetic October",
+      "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+      "output_text": "{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n\nSummary: A synthetic October 2026 reference report on agentic AI, describing the dominant single-model tool-calling loop, context engineering, evaluation, reliability, security (prompt injection), economics, local/open-weight inference, multi-agent patterns, enterprise adoption, governance, and labour effects. It includes synthetic vendor profiles (Appendix A) with illustrative metrics, marked",
+      "output_capture": {
+        "scope": "visible content only; streamed reasoning excluded",
+        "limit_chars": 200000,
+        "truncated": false,
+        "visible_content_observed": true,
+        "visible_answer_present": true,
+        "reasoning_observed": false,
+        "observable_output_present": true,
+        "stream_complete": true
+      },
+      "engine_log": {
+        "chunk_prefill": [
+          {
+            "tokens": 16384,
+            "ms": 15006.5
+          },
+          {
+            "tokens": 3617,
+            "ms": 6355.8
+          }
+        ],
+        "decode": {
+          "ms_per_token": 56.94,
+          "tokens_per_second": 17.56,
+          "vram_hit_percent": 71.19,
+          "ram_fetches_per_token": 92.38,
+          "disk_reads_per_token": 11.79,
+          "disk_waits_per_token": 9.92,
+          "disk_ms_per_token": 13.56
+        },
+        "mtp": {
+          "accepted": 110,
+          "offered": 126,
+          "acceptance_percent": 87.3
+        },
+        "kv": {
+          "hit_percent": 96.06,
+          "block_reads": 839379,
+          "ram_read_mib": 68.6
+        },
+        "device_stages": [
+          "glm prefill: CUDA0 chunk 2/2, 8192 tokens, wall 4818 ms | the copy lane 4436 ms: copies 1981 (12.2 GB/s), ring wait 369, gaps 457, mixer windows 1628 | lead 380, tail 3 | pcie 24.16 GB (ram 13.57, disk 10.59) + 0.10 GB vram | experts: staged 4832, resident 1487 (427809 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 0 ms | layer lane 150.4/118.4 ms max/min",
+          "glm prefill: CUDA1 chunk 1/2, 8192 tokens, wall 5288 ms | the copy lane 5005 ms: copies 1816 (12.2 GB/s), ring wait 984, gaps 721, mixer windows 1483 | lead 208, tail 76 | pcie 22.24 GB (ram 12.72, disk 9.52) + 0.00 GB vram | experts: staged 4350, resident 1409 (482791 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 5 ms host, disk wait 0 ms, hop in 76 ms | layer lane 307.2/124.3 ms max/min",
+          "glm prefill: CUDA1 chunk 2/2, 8192 tokens, wall 4212 ms | the copy lane 4076 ms: copies 1732 (12.6 GB/s), ring wait 319, gaps 471, mixer windows 1554 | lead 59, tail 77 | pcie 21.80 GB (ram 12.57, disk 9.23) + 0.00 GB vram | experts: staged 4265, resident 1409 (222532 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 39 ms | layer lane 133.1/118.8 ms max/min",
+          "glm prefill: CUDA0 chunk 1/1, 3617 tokens, wall 3332 ms | the copy lane 3122 ms: copies 1909 (12.6 GB/s), ring wait 178, gaps 276, mixer windows 758 | lead 210, tail 1 | pcie 23.97 GB (ram 13.47, disk 10.50) + 0.10 GB vram | experts: staged 4793, resident 1487 (162345 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 0 ms | layer lane 129.9/99.0 ms max/min",
+          "glm prefill: CUDA1 chunk 1/1, 3617 tokens, wall 2953 ms | the copy lane 2883 ms: copies 1693 (12.6 GB/s), ring wait 186, gaps 264, mixer windows 740 | lead 37, tail 33 | pcie 21.33 GB (ram 12.38, disk 8.95) + 0.00 GB vram | experts: staged 4172, resident 1409 (76194 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 17 ms | layer lane 116.8/99.2 ms max/min"
+        ],
+        "prompt_read": {
+          "tokens": 20002,
+          "seconds_rounded": 22.1
+        },
+        "logical_io_interpretation": "Engine disk/read counters are logical path operations; physical drive reads are separate OS counters."
+      },
+      "renderer": {
+        "renderer_id": "611e8b9fcb7eef5ffab68b8bcde4f7e24bd58e9299071ae4eb9d77b8d4d34f6a",
+        "render_template_sha256": "2614a3c896d53e265f564c23701173c0049f985dacfbae79fc4bcd9f5ba083f4",
+        "frontend_sha256": "410120bf020ce1c1b5f688c5aaa65217cb24c4bb4536a891c713451727a48459",
+        "reasoning_effort": "none",
+        "tokenizer_files_digest": "473366c622d34e78b7a6b96fdeafc96e09d00ca3f33dea48a9068afa210b2dff"
+      },
+      "request_strata_tune": {
+        "pcie_frac": 1.0
+      },
+      "native_timings_source": "provider reported_timings",
+      "engine_prefill_s": 22.0883,
+      "engine_prefill_tps": 905.5,
+      "engine_decode_s": 7.288399999999999,
+      "engine_decode_tps": 17.6,
+      "gpu": {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 143,
+        "source": "nvidia-smi",
+        "duration_s": 29.40859840000485,
+        "gpu_w_avg": 196.63901987996704,
+        "gpu_sampled_coverage_s": 29.167704100000265,
+        "gpu_sampled_coverage_fraction": 0.9918087119716475,
+        "gpu_w_max": 342.85,
+        "gpu_energy_j": 5782.87796542052,
+        "system_w_est": 319.83433630985184,
+        "system_energy_j_est": 9405.879551068521,
+        "gpu_util_avg": 62.44055944055944,
+        "vram_mb_max": 28562.0,
+        "clock_mhz_avg": null,
+        "temp_c_max": 60.0,
+        "cpu_util_avg": 0.4504509913163759,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": 47709462528,
+        "system_memory_total_bytes": 68636971008,
+        "system_memory_percent_avg": 66.76969090099355,
+        "system_memory_percent_max": 69.5098601050434,
+        "vram_percent_avg": 87.53592907736316,
+        "vram_percent_max": 87.59737471630989,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 143,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_all_nvidia_gpus",
+        "gpu_indices": [
+          0,
+          1
+        ],
+        "inventory_complete": true,
+        "gpus": [
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 143,
+            "source": "nvidia-smi",
+            "duration_s": 29.40859840000485,
+            "gpu_w_avg": 96.76893468042711,
+            "gpu_sampled_coverage_s": 29.167704100000265,
+            "gpu_sampled_coverage_fraction": 0.9918087119716475,
+            "gpu_w_max": 177.54,
+            "gpu_energy_j": 2845.838737612982,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 58.34265734265734,
+            "vram_mb_max": 14728.0,
+            "clock_mhz_avg": 2573.6503496503497,
+            "temp_c_max": 60.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 90.21631009608683,
+            "vram_percent_max": 90.33920137398025,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 143,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          },
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 143,
+            "source": "nvidia-smi",
+            "duration_s": 29.40859840000485,
+            "gpu_w_avg": 99.87008519953986,
+            "gpu_sampled_coverage_s": 29.167704100000265,
+            "gpu_sampled_coverage_fraction": 0.9918087119716475,
+            "gpu_w_max": 168.04,
+            "gpu_energy_j": 2937.0392278075356,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 66.53846153846153,
+            "vram_mb_max": 13834.0,
+            "clock_mhz_avg": 2666.3916083916083,
+            "temp_c_max": 49.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 84.85554805863951,
+            "vram_percent_max": 84.85554805863951,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 143,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          }
+        ]
+      },
+      "paging": {
+        "available": true,
+        "samples": 57,
+        "errors": {},
+        "available_bytes_min": 20924166144,
+        "ram_used_percent_max": 69.5,
+        "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+        "pages_input_s": {
+          "mean": 161671.07810444938,
+          "max": 608711.5962829633,
+          "min": 0.0
+        },
+        "pages_output_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_reads_s": {
+          "mean": 1871.97687607756,
+          "max": 8024.035319550309,
+          "min": 0.0
+        },
+        "page_writes_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_faults_s": {
+          "mean": 611503.718298943,
+          "max": 1518076.9454397801,
+          "min": 925.5876937973956
+        },
+        "transition_faults_s": {
+          "mean": 4113.083092040172,
+          "max": 26162.416974321746,
+          "min": 9.834479804207309
+        },
+        "system_cache_resident_bytes": {
+          "mean": 4670016673.684211,
+          "max": 6554112000.0,
+          "min": 3579232256.0
+        },
+        "standby_cache_normal_bytes": {
+          "mean": 22558985952.561405,
+          "max": 23690035200.0,
+          "min": 20690513920.0
+        },
+        "standby_cache_reserve_bytes": {
+          "mean": 1009915.5087719298,
+          "max": 12767232.0,
+          "min": 0.0
+        },
+        "standby_cache_core_bytes": {
+          "mean": 229628371.0877193,
+          "max": 229638144.0,
+          "min": 229543936.0
+        },
+        "modified_page_list_bytes": {
+          "mean": 385282622.877193,
+          "max": 389025792.0,
+          "min": 383668224.0
+        },
+        "committed_bytes": {
+          "mean": 77615519276.91228,
+          "max": 77804187648.0,
+          "min": 77580591104.0
+        },
+        "commit_limit_bytes": {
+          "mean": 111586643968.0,
+          "max": 111586643968.0,
+          "min": 111586643968.0
+        },
+        "pagefile_usage_percent": {
+          "mean": 1.4866290176123904,
+          "max": 1.4869022369384766,
+          "min": 1.4862918853759766
+        },
+        "longest_pageouts_ge_1024_pages_s_seconds": 0,
+        "disk_deltas": {
+          "PhysicalDrive0": {
+            "read_bytes": 152276992,
+            "write_bytes": 7716864,
+            "read_time_ms": 30,
+            "write_time_ms": 0
+          },
+          "PhysicalDrive1": {
+            "read_bytes": 19306577920,
+            "write_bytes": 0,
+            "read_time_ms": 40,
+            "write_time_ms": 0
+          }
+        },
+        "engine_rss_min": 32416804864,
+        "engine_rss_max": 32417103872,
+        "engine_faults_delta": 119
+      },
+      "disk_d_read_gib": 17.98065185546875,
+      "stream_gaps": {
+        "max_s": 0.1471090999984881,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "target": 20000,
+      "repeat": 1,
+      "prompt_sha256": "66e23b8d4c8df8ea6f77b7418d583aa9b90e592e09931e319c895f3c7de5e2fa",
+      "retrieval": {
+        "passed": true,
+        "matched": 5,
+        "expected": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        },
+        "actual": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        }
+      }
+    },
+    {
+      "t_start": 43388.3115128,
+      "t_first_token": 43409.8717165,
+      "t_last_output": 43416.9276375,
+      "t_end": 43416.9439172,
+      "ttft_s": 21.560203699998965,
+      "decode_s": 7.055920999999216,
+      "wall_s": 28.63240439999936,
+      "response_tail_s": 0.016279700001177844,
+      "prompt_tokens": 20000,
+      "completion_tokens": 128,
+      "completion_tokens_estimated": false,
+      "reasoning_tokens": null,
+      "decode_token_count": 127,
+      "timing_scope": {
+        "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+        "phase_protocol": "observed-output-phases-v2",
+        "decode_end_boundary": "last_observed_nonempty_output",
+        "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+        "first_output_kind": "content",
+        "observed_output_kinds": [
+          "content"
+        ],
+        "empty_deltas_before_output": 0,
+        "reasoning_streamed": false,
+        "reasoning_token_count_source": "unavailable",
+        "requested_reasoning_effort": "none",
+        "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+        "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+        "decode_count_estimated_boundary": true,
+        "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+      },
+      "deltas": 128,
+      "cached_prompt_tokens": 0,
+      "metric_sources": {
+        "ttft_s": "client_monotonic_clock_to_first_observed_output",
+        "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+        "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+        "completion_tokens": "server_usage"
+      },
+      "reported_timings": {
+        "cache_n": 0,
+        "prompt_n": 20000,
+        "prompt_ms": 21496.2,
+        "prompt_per_second": 930.4,
+        "predicted_n": 128,
+        "predicted_ms": 7070.7,
+        "predicted_per_second": 18.1,
+        "draft_n": 126,
+        "draft_n_accepted": 111
+      },
+      "prefill_tps": 927.6350204428245,
+      "decode_tps": 17.999067733328378,
+      "finish_reason": "length",
+      "sample_text": "{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n\nSummary: A synthetic October",
+      "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+      "output_text": "{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n\nSummary: A synthetic October 2026 reference report on agentic AI, describing the dominant single-model tool-calling loop, context engineering, evaluation, reliability, security (prompt injection), economics, local/open-weight inference, orchestration stacks, multi-agent patterns, enterprise adoption, governance, labour effects, and research frontiers. It includes synthetic vendor profiles (Appendix",
+      "output_capture": {
+        "scope": "visible content only; streamed reasoning excluded",
+        "limit_chars": 200000,
+        "truncated": false,
+        "visible_content_observed": true,
+        "visible_answer_present": true,
+        "reasoning_observed": false,
+        "observable_output_present": true,
+        "stream_complete": true
+      },
+      "engine_log": {
+        "chunk_prefill": [
+          {
+            "tokens": 16384,
+            "ms": 14423.7
+          },
+          {
+            "tokens": 3615,
+            "ms": 6352.5
+          }
+        ],
+        "decode": {
+          "ms_per_token": 55.24,
+          "tokens_per_second": 18.1,
+          "vram_hit_percent": 71.75,
+          "ram_fetches_per_token": 91.3,
+          "disk_reads_per_token": 10.54,
+          "disk_waits_per_token": 8.96,
+          "disk_ms_per_token": 12.47
+        },
+        "mtp": {
+          "accepted": 111,
+          "offered": 126,
+          "acceptance_percent": 88.1
+        },
+        "kv": {
+          "hit_percent": 96.13,
+          "block_reads": 836277,
+          "ram_read_mib": 67.2
+        },
+        "device_stages": [
+          "glm prefill: CUDA0 chunk 2/2, 8192 tokens, wall 4821 ms | the copy lane 4438 ms: copies 1988 (12.1 GB/s), ring wait 357, gaps 469, mixer windows 1624 | lead 380, tail 3 | pcie 24.14 GB (ram 13.55, disk 10.59) + 0.10 GB vram | experts: staged 4827, resident 1487 (427982 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 0 ms | layer lane 153.3/118.1 ms max/min",
+          "glm prefill: CUDA1 chunk 1/2, 8192 tokens, wall 5342 ms | the copy lane 5039 ms: copies 1823 (12.2 GB/s), ring wait 998, gaps 734, mixer windows 1485 | lead 228, tail 74 | pcie 22.28 GB (ram 12.67, disk 9.61) + 0.00 GB vram | experts: staged 4357, resident 1409 (476766 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 4 ms host, disk wait 0 ms, hop in 48 ms | layer lane 326.9/124.2 ms max/min",
+          "glm prefill: CUDA1 chunk 2/2, 8192 tokens, wall 4218 ms | the copy lane 4080 ms: copies 1734 (12.6 GB/s), ring wait 298, gaps 487, mixer windows 1562 | lead 60, tail 78 | pcie 21.84 GB (ram 12.54, disk 9.30) + 0.00 GB vram | experts: staged 4273, resident 1409 (230157 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 39 ms | layer lane 134.5/118.7 ms max/min",
+          "glm prefill: CUDA0 chunk 1/1, 3615 tokens, wall 3328 ms | the copy lane 3120 ms: copies 1911 (12.5 GB/s), ring wait 179, gaps 276, mixer windows 754 | lead 207, tail 1 | pcie 23.97 GB (ram 13.46, disk 10.51) + 0.10 GB vram | experts: staged 4793, resident 1487 (164110 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 0 ms | layer lane 132.0/99.8 ms max/min",
+          "glm prefill: CUDA1 chunk 1/1, 3615 tokens, wall 2954 ms | the copy lane 2885 ms: copies 1703 (12.6 GB/s), ring wait 190, gaps 269, mixer windows 723 | lead 37, tail 33 | pcie 21.44 GB (ram 12.32, disk 9.13) + 0.00 GB vram | experts: staged 4195, resident 1409 (75976 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 17 ms | layer lane 115.3/98.9 ms max/min"
+        ],
+        "prompt_read": {
+          "tokens": 20000,
+          "seconds_rounded": 21.5
+        },
+        "logical_io_interpretation": "Engine disk/read counters are logical path operations; physical drive reads are separate OS counters."
+      },
+      "renderer": {
+        "renderer_id": "611e8b9fcb7eef5ffab68b8bcde4f7e24bd58e9299071ae4eb9d77b8d4d34f6a",
+        "render_template_sha256": "2614a3c896d53e265f564c23701173c0049f985dacfbae79fc4bcd9f5ba083f4",
+        "frontend_sha256": "410120bf020ce1c1b5f688c5aaa65217cb24c4bb4536a891c713451727a48459",
+        "reasoning_effort": "none",
+        "tokenizer_files_digest": "473366c622d34e78b7a6b96fdeafc96e09d00ca3f33dea48a9068afa210b2dff"
+      },
+      "request_strata_tune": {
+        "pcie_frac": 1.0
+      },
+      "native_timings_source": "provider reported_timings",
+      "engine_prefill_s": 21.4962,
+      "engine_prefill_tps": 930.4,
+      "engine_decode_s": 7.0706999999999995,
+      "engine_decode_tps": 18.1,
+      "gpu": {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 140,
+        "source": "nvidia-smi",
+        "duration_s": 28.63240439999936,
+        "gpu_w_avg": 199.570474772133,
+        "gpu_sampled_coverage_s": 28.58111430000281,
+        "gpu_sampled_coverage_fraction": 0.9982086694753253,
+        "gpu_w_max": 322.65999999999997,
+        "gpu_energy_j": 5714.182539975582,
+        "system_w_est": 322.6091819824803,
+        "system_energy_j_est": 9237.076561675363,
+        "gpu_util_avg": 64.75,
+        "vram_mb_max": 28592.0,
+        "clock_mhz_avg": null,
+        "temp_c_max": 62.0,
+        "cpu_util_avg": 0.4494799843014129,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": 47386066944,
+        "system_memory_total_bytes": 68636971008,
+        "system_memory_percent_avg": 66.60410928737801,
+        "system_memory_percent_max": 69.03869190042916,
+        "vram_percent_avg": 87.63271001831389,
+        "vram_percent_max": 87.68938232227197,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 140,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_all_nvidia_gpus",
+        "gpu_indices": [
+          0,
+          1
+        ],
+        "inventory_complete": true,
+        "gpus": [
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 140,
+            "source": "nvidia-smi",
+            "duration_s": 28.63240439999936,
+            "gpu_w_avg": 98.90553978688563,
+            "gpu_sampled_coverage_s": 28.58111430000281,
+            "gpu_sampled_coverage_fraction": 0.9982086694753253,
+            "gpu_w_max": 176.95,
+            "gpu_energy_j": 2831.9034125783355,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 58.57142857142857,
+            "vram_mb_max": 14758.0,
+            "clock_mhz_avg": 2619.9142857142856,
+            "temp_c_max": 62.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 90.40987197798827,
+            "vram_percent_max": 90.52321658590444,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 140,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          },
+          {
+            "available": true,
+            "low_confidence": false,
+            "gpu_power_complete": true,
+            "samples": 140,
+            "source": "nvidia-smi",
+            "duration_s": 28.63240439999936,
+            "gpu_w_avg": 100.6649349852474,
+            "gpu_sampled_coverage_s": 28.58111430000281,
+            "gpu_sampled_coverage_fraction": 0.9982086694753253,
+            "gpu_w_max": 182.7,
+            "gpu_energy_j": 2882.279127397247,
+            "system_w_est": null,
+            "system_energy_j_est": null,
+            "gpu_util_avg": 70.92857142857143,
+            "vram_mb_max": 13834.0,
+            "clock_mhz_avg": 2644.9928571428572,
+            "temp_c_max": 48.0,
+            "cpu_util_avg": null,
+            "cpu_w_avg": null,
+            "system_memory_used_bytes_max": null,
+            "system_memory_total_bytes": null,
+            "system_memory_percent_avg": null,
+            "system_memory_percent_max": null,
+            "vram_percent_avg": 84.85554805863951,
+            "vram_percent_max": 84.85554805863951,
+            "cpu_temp_c_max": null,
+            "telemetry_samples": 140,
+            "raw_retention_truncated": false,
+            "scope": "benchmark_client_gpu",
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 5070 Ti"
+          }
+        ]
+      },
+      "paging": {
+        "available": true,
+        "samples": 55,
+        "errors": {},
+        "available_bytes_min": 21250904064,
+        "ram_used_percent_max": 69.0,
+        "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+        "pages_input_s": {
+          "mean": 117990.1282914662,
+          "max": 509082.2462769817,
+          "min": 0.0
+        },
+        "pages_output_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_reads_s": {
+          "mean": 1391.0849906150177,
+          "max": 5897.459986878744,
+          "min": 0.0
+        },
+        "page_writes_s": {
+          "mean": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "page_faults_s": {
+          "mean": 624906.429679146,
+          "max": 1404606.146235375,
+          "min": 1547.7703322040268
+        },
+        "transition_faults_s": {
+          "mean": 4279.127698601637,
+          "max": 32191.289285807336,
+          "min": 9.594286410556785
+        },
+        "system_cache_resident_bytes": {
+          "mean": 4534230220.8,
+          "max": 6237450240.0,
+          "min": 3503644672.0
+        },
+        "standby_cache_normal_bytes": {
+          "mean": 22701647387.927273,
+          "max": 23769141248.0,
+          "min": 20998131712.0
+        },
+        "standby_cache_reserve_bytes": {
+          "mean": 38278.98181818182,
+          "max": 430080.0,
+          "min": 0.0
+        },
+        "standby_cache_core_bytes": {
+          "mean": 229645740.21818182,
+          "max": 229724160.0,
+          "min": 229539840.0
+        },
+        "modified_page_list_bytes": {
+          "mean": 384462699.05454546,
+          "max": 387813376.0,
+          "min": 383721472.0
+        },
+        "committed_bytes": {
+          "mean": 77650947947.05455,
+          "max": 77850894336.0,
+          "min": 77620985856.0
+        },
+        "commit_limit_bytes": {
+          "mean": 111586643968.0,
+          "max": 111586643968.0,
+          "min": 111586643968.0
+        },
+        "pagefile_usage_percent": {
+          "mean": 1.486039941961115,
+          "max": 1.4862918853759766,
+          "min": 1.4858341217041016
+        },
+        "longest_pageouts_ge_1024_pages_s_seconds": 0,
+        "disk_deltas": {
+          "PhysicalDrive0": {
+            "read_bytes": 148817920,
+            "write_bytes": 5548032,
+            "read_time_ms": 30,
+            "write_time_ms": 0
+          },
+          "PhysicalDrive1": {
+            "read_bytes": 13539467264,
+            "write_bytes": 0,
+            "read_time_ms": 29,
+            "write_time_ms": 0
+          }
+        },
+        "engine_rss_min": 32417071104,
+        "engine_rss_max": 32417341440,
+        "engine_faults_delta": 113
+      },
+      "disk_d_read_gib": 12.609611511230469,
+      "stream_gaps": {
+        "max_s": 0.1419873999984702,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "target": 20000,
+      "repeat": 2,
+      "prompt_sha256": "bcd0851a2be47c6b8d891ad67091d7713ce3c05aaec2a8d2b203e3e46be7ea46",
+      "retrieval": {
+        "passed": true,
+        "matched": 5,
+        "expected": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        },
+        "actual": {
+          "A": "amber-falcon-4317",
+          "B": "silver-maple-8264",
+          "C": "violet-otter-5928",
+          "D": "cobalt-willow-1746",
+          "E": "ivory-badger-3682"
+        }
+      }
+    }
+  ],
+  "timing_notes": "Native phases use provider timings, client TTFT/wall are separate. Disk counters are systemwide; warm file reads can hit OS cache.",
+  "last_request": {
+    "t_start": 43388.3115128,
+    "t_first_token": 43409.8717165,
+    "t_last_output": 43416.9276375,
+    "t_end": 43416.9439172,
+    "ttft_s": 21.560203699998965,
+    "decode_s": 7.055920999999216,
+    "wall_s": 28.63240439999936,
+    "response_tail_s": 0.016279700001177844,
+    "prompt_tokens": 20000,
+    "completion_tokens": 128,
+    "completion_tokens_estimated": false,
+    "reasoning_tokens": null,
+    "decode_token_count": 127,
+    "timing_scope": {
+      "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+      "phase_protocol": "observed-output-phases-v2",
+      "decode_end_boundary": "last_observed_nonempty_output",
+      "decode_end": "last observed nonempty content or reasoning text; excludes terminal usage and transport completion",
+      "first_output_kind": "content",
+      "observed_output_kinds": [
+        "content"
+      ],
+      "empty_deltas_before_output": 0,
+      "reasoning_streamed": false,
+      "reasoning_token_count_source": "unavailable",
+      "requested_reasoning_effort": "none",
+      "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+      "decode_token_scope": "server_usage_total; potential hidden reasoning; reasoning token count unavailable",
+      "decode_count_estimated_boundary": true,
+      "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk; multi-token first chunks can overstate decode throughput"
+    },
+    "deltas": 128,
+    "cached_prompt_tokens": 0,
+    "metric_sources": {
+      "ttft_s": "client_monotonic_clock_to_first_observed_output",
+      "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+      "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+      "completion_tokens": "server_usage"
+    },
+    "reported_timings": {
+      "cache_n": 0,
+      "prompt_n": 20000,
+      "prompt_ms": 21496.2,
+      "prompt_per_second": 930.4,
+      "predicted_n": 128,
+      "predicted_ms": 7070.7,
+      "predicted_per_second": 18.1,
+      "draft_n": 126,
+      "draft_n_accepted": 111
+    },
+    "prefill_tps": 927.6350204428245,
+    "decode_tps": 17.999067733328378,
+    "finish_reason": "length",
+    "sample_text": "{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n\nSummary: A synthetic October",
+    "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+    "output_text": "{\"A\":\"amber-falcon-4317\",\"B\":\"silver-maple-8264\",\"C\":\"violet-otter-5928\",\"D\":\"cobalt-willow-1746\",\"E\":\"ivory-badger-3682\"}\n\nSummary: A synthetic October 2026 reference report on agentic AI, describing the dominant single-model tool-calling loop, context engineering, evaluation, reliability, security (prompt injection), economics, local/open-weight inference, orchestration stacks, multi-agent patterns, enterprise adoption, governance, labour effects, and research frontiers. It includes synthetic vendor profiles (Appendix",
+    "output_capture": {
+      "scope": "visible content only; streamed reasoning excluded",
+      "limit_chars": 200000,
+      "truncated": false,
+      "visible_content_observed": true,
+      "visible_answer_present": true,
+      "reasoning_observed": false,
+      "observable_output_present": true,
+      "stream_complete": true
+    },
+    "engine_log": {
+      "chunk_prefill": [
+        {
+          "tokens": 16384,
+          "ms": 14423.7
+        },
+        {
+          "tokens": 3615,
+          "ms": 6352.5
+        }
+      ],
+      "decode": {
+        "ms_per_token": 55.24,
+        "tokens_per_second": 18.1,
+        "vram_hit_percent": 71.75,
+        "ram_fetches_per_token": 91.3,
+        "disk_reads_per_token": 10.54,
+        "disk_waits_per_token": 8.96,
+        "disk_ms_per_token": 12.47
+      },
+      "mtp": {
+        "accepted": 111,
+        "offered": 126,
+        "acceptance_percent": 88.1
+      },
+      "kv": {
+        "hit_percent": 96.13,
+        "block_reads": 836277,
+        "ram_read_mib": 67.2
+      },
+      "device_stages": [
+        "glm prefill: CUDA0 chunk 2/2, 8192 tokens, wall 4821 ms | the copy lane 4438 ms: copies 1988 (12.1 GB/s), ring wait 357, gaps 469, mixer windows 1624 | lead 380, tail 3 | pcie 24.14 GB (ram 13.55, disk 10.59) + 0.10 GB vram | experts: staged 4827, resident 1487 (427982 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 0 ms | layer lane 153.3/118.1 ms max/min",
+        "glm prefill: CUDA1 chunk 1/2, 8192 tokens, wall 5342 ms | the copy lane 5039 ms: copies 1823 (12.2 GB/s), ring wait 998, gaps 734, mixer windows 1485 | lead 228, tail 74 | pcie 22.28 GB (ram 12.67, disk 9.61) + 0.00 GB vram | experts: staged 4357, resident 1409 (476766 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 4 ms host, disk wait 0 ms, hop in 48 ms | layer lane 326.9/124.2 ms max/min",
+        "glm prefill: CUDA1 chunk 2/2, 8192 tokens, wall 4218 ms | the copy lane 4080 ms: copies 1734 (12.6 GB/s), ring wait 298, gaps 487, mixer windows 1562 | lead 60, tail 78 | pcie 21.84 GB (ram 12.54, disk 9.30) + 0.00 GB vram | experts: staged 4273, resident 1409 (230157 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 39 ms | layer lane 134.5/118.7 ms max/min",
+        "glm prefill: CUDA0 chunk 1/1, 3615 tokens, wall 3328 ms | the copy lane 3120 ms: copies 1911 (12.5 GB/s), ring wait 179, gaps 276, mixer windows 754 | lead 207, tail 1 | pcie 23.97 GB (ram 13.46, disk 10.51) + 0.10 GB vram | experts: staged 4793, resident 1487 (164110 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 3 ms host, disk wait 0 ms, hop in 0 ms | layer lane 132.0/99.8 ms max/min",
+        "glm prefill: CUDA1 chunk 1/1, 3615 tokens, wall 2954 ms | the copy lane 2885 ms: copies 1703 (12.6 GB/s), ring wait 190, gaps 269, mixer windows 723 | lead 37, tail 33 | pcie 21.44 GB (ram 12.32, disk 9.13) + 0.00 GB vram | experts: staged 4195, resident 1409 (75976 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 17 ms | layer lane 115.3/98.9 ms max/min"
+      ],
+      "prompt_read": {
+        "tokens": 20000,
+        "seconds_rounded": 21.5
+      },
+      "logical_io_interpretation": "Engine disk/read counters are logical path operations; physical drive reads are separate OS counters."
+    },
+    "renderer": {
+      "renderer_id": "611e8b9fcb7eef5ffab68b8bcde4f7e24bd58e9299071ae4eb9d77b8d4d34f6a",
+      "render_template_sha256": "2614a3c896d53e265f564c23701173c0049f985dacfbae79fc4bcd9f5ba083f4",
+      "frontend_sha256": "410120bf020ce1c1b5f688c5aaa65217cb24c4bb4536a891c713451727a48459",
+      "reasoning_effort": "none",
+      "tokenizer_files_digest": "473366c622d34e78b7a6b96fdeafc96e09d00ca3f33dea48a9068afa210b2dff"
+    },
+    "request_strata_tune": {
+      "pcie_frac": 1.0
+    },
+    "native_timings_source": "provider reported_timings",
+    "engine_prefill_s": 21.4962,
+    "engine_prefill_tps": 930.4,
+    "engine_decode_s": 7.0706999999999995,
+    "engine_decode_tps": 18.1,
+    "gpu": {
+      "available": true,
+      "low_confidence": false,
+      "gpu_power_complete": true,
+      "samples": 140,
+      "source": "nvidia-smi",
+      "duration_s": 28.63240439999936,
+      "gpu_w_avg": 199.570474772133,
+      "gpu_sampled_coverage_s": 28.58111430000281,
+      "gpu_sampled_coverage_fraction": 0.9982086694753253,
+      "gpu_w_max": 322.65999999999997,
+      "gpu_energy_j": 5714.182539975582,
+      "system_w_est": 322.6091819824803,
+      "system_energy_j_est": 9237.076561675363,
+      "gpu_util_avg": 64.75,
+      "vram_mb_max": 28592.0,
+      "clock_mhz_avg": null,
+      "temp_c_max": 62.0,
+      "cpu_util_avg": 0.4494799843014129,
+      "cpu_w_avg": null,
+      "system_memory_used_bytes_max": 47386066944,
+      "system_memory_total_bytes": 68636971008,
+      "system_memory_percent_avg": 66.60410928737801,
+      "system_memory_percent_max": 69.03869190042916,
+      "vram_percent_avg": 87.63271001831389,
+      "vram_percent_max": 87.68938232227197,
+      "cpu_temp_c_max": null,
+      "telemetry_samples": 140,
+      "raw_retention_truncated": false,
+      "scope": "benchmark_client_all_nvidia_gpus",
+      "gpu_indices": [
+        0,
+        1
+      ],
+      "inventory_complete": true,
+      "gpus": [
+        {
+          "available": true,
+          "low_confidence": false,
+          "gpu_power_complete": true,
+          "samples": 140,
+          "source": "nvidia-smi",
+          "duration_s": 28.63240439999936,
+          "gpu_w_avg": 98.90553978688563,
+          "gpu_sampled_coverage_s": 28.58111430000281,
+          "gpu_sampled_coverage_fraction": 0.9982086694753253,
+          "gpu_w_max": 176.95,
+          "gpu_energy_j": 2831.9034125783355,
+          "system_w_est": null,
+          "system_energy_j_est": null,
+          "gpu_util_avg": 58.57142857142857,
+          "vram_mb_max": 14758.0,
+          "clock_mhz_avg": 2619.9142857142856,
+          "temp_c_max": 62.0,
+          "cpu_util_avg": null,
+          "cpu_w_avg": null,
+          "system_memory_used_bytes_max": null,
+          "system_memory_total_bytes": null,
+          "system_memory_percent_avg": null,
+          "system_memory_percent_max": null,
+          "vram_percent_avg": 90.40987197798827,
+          "vram_percent_max": 90.52321658590444,
+          "cpu_temp_c_max": null,
+          "telemetry_samples": 140,
+          "raw_retention_truncated": false,
+          "scope": "benchmark_client_gpu",
+          "index": 0,
+          "name": "NVIDIA GeForce RTX 5070 Ti"
+        },
+        {
+          "available": true,
+          "low_confidence": false,
+          "gpu_power_complete": true,
+          "samples": 140,
+          "source": "nvidia-smi",
+          "duration_s": 28.63240439999936,
+          "gpu_w_avg": 100.6649349852474,
+          "gpu_sampled_coverage_s": 28.58111430000281,
+          "gpu_sampled_coverage_fraction": 0.9982086694753253,
+          "gpu_w_max": 182.7,
+          "gpu_energy_j": 2882.279127397247,
+          "system_w_est": null,
+          "system_energy_j_est": null,
+          "gpu_util_avg": 70.92857142857143,
+          "vram_mb_max": 13834.0,
+          "clock_mhz_avg": 2644.9928571428572,
+          "temp_c_max": 48.0,
+          "cpu_util_avg": null,
+          "cpu_w_avg": null,
+          "system_memory_used_bytes_max": null,
+          "system_memory_total_bytes": null,
+          "system_memory_percent_avg": null,
+          "system_memory_percent_max": null,
+          "vram_percent_avg": 84.85554805863951,
+          "vram_percent_max": 84.85554805863951,
+          "cpu_temp_c_max": null,
+          "telemetry_samples": 140,
+          "raw_retention_truncated": false,
+          "scope": "benchmark_client_gpu",
+          "index": 1,
+          "name": "NVIDIA GeForce RTX 5070 Ti"
+        }
+      ]
+    },
+    "paging": {
+      "available": true,
+      "samples": 55,
+      "errors": {},
+      "available_bytes_min": 21250904064,
+      "ram_used_percent_max": 69.0,
+      "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+      "pages_input_s": {
+        "mean": 117990.1282914662,
+        "max": 509082.2462769817,
+        "min": 0.0
+      },
+      "pages_output_s": {
+        "mean": 0.0,
+        "max": 0.0,
+        "min": 0.0
+      },
+      "page_reads_s": {
+        "mean": 1391.0849906150177,
+        "max": 5897.459986878744,
+        "min": 0.0
+      },
+      "page_writes_s": {
+        "mean": 0.0,
+        "max": 0.0,
+        "min": 0.0
+      },
+      "page_faults_s": {
+        "mean": 624906.429679146,
+        "max": 1404606.146235375,
+        "min": 1547.7703322040268
+      },
+      "transition_faults_s": {
+        "mean": 4279.127698601637,
+        "max": 32191.289285807336,
+        "min": 9.594286410556785
+      },
+      "system_cache_resident_bytes": {
+        "mean": 4534230220.8,
+        "max": 6237450240.0,
+        "min": 3503644672.0
+      },
+      "standby_cache_normal_bytes": {
+        "mean": 22701647387.927273,
+        "max": 23769141248.0,
+        "min": 20998131712.0
+      },
+      "standby_cache_reserve_bytes": {
+        "mean": 38278.98181818182,
+        "max": 430080.0,
+        "min": 0.0
+      },
+      "standby_cache_core_bytes": {
+        "mean": 229645740.21818182,
+        "max": 229724160.0,
+        "min": 229539840.0
+      },
+      "modified_page_list_bytes": {
+        "mean": 384462699.05454546,
+        "max": 387813376.0,
+        "min": 383721472.0
+      },
+      "committed_bytes": {
+        "mean": 77650947947.05455,
+        "max": 77850894336.0,
+        "min": 77620985856.0
+      },
+      "commit_limit_bytes": {
+        "mean": 111586643968.0,
+        "max": 111586643968.0,
+        "min": 111586643968.0
+      },
+      "pagefile_usage_percent": {
+        "mean": 1.486039941961115,
+        "max": 1.4862918853759766,
+        "min": 1.4858341217041016
+      },
+      "longest_pageouts_ge_1024_pages_s_seconds": 0,
+      "disk_deltas": {
+        "PhysicalDrive0": {
+          "read_bytes": 148817920,
+          "write_bytes": 5548032,
+          "read_time_ms": 30,
+          "write_time_ms": 0
+        },
+        "PhysicalDrive1": {
+          "read_bytes": 13539467264,
+          "write_bytes": 0,
+          "read_time_ms": 29,
+          "write_time_ms": 0
+        }
+      },
+      "engine_rss_min": 32417071104,
+      "engine_rss_max": 32417341440,
+      "engine_faults_delta": 113
+    },
+    "disk_d_read_gib": 12.609611511230469,
+    "stream_gaps": {
+      "max_s": 0.1419873999984702,
+      "over_1s": 0,
+      "over_5s": 0
+    },
+    "target": 20000,
+    "repeat": 2,
+    "prompt_sha256": "bcd0851a2be47c6b8d891ad67091d7713ce3c05aaec2a8d2b203e3e46be7ea46",
+    "retrieval": {
+      "passed": true,
+      "matched": 5,
+      "expected": {
+        "A": "amber-falcon-4317",
+        "B": "silver-maple-8264",
+        "C": "violet-otter-5928",
+        "D": "cobalt-willow-1746",
+        "E": "ivory-badger-3682"
+      },
+      "actual": {
+        "A": "amber-falcon-4317",
+        "B": "silver-maple-8264",
+        "C": "violet-otter-5928",
+        "D": "cobalt-willow-1746",
+        "E": "ivory-badger-3682"
+      }
+    }
+  },
+  "summary": {
+    "5000": {
+      "n": 3,
+      "metrics": {
+        "prompt_tokens": {
+          "median": 5001,
+          "min": 5001,
+          "max": 5001
+        },
+        "completion_tokens": {
+          "median": 128,
+          "min": 128,
+          "max": 128
+        },
+        "ttft_s": {
+          "median": 9.328843899995263,
+          "min": 9.282929499997408,
+          "max": 9.490709700003208
+        },
+        "prefill_tps": {
+          "median": 536.0792884531533,
+          "min": 526.9363575622074,
+          "max": 538.7307961351421
+        },
+        "decode_s": {
+          "median": 7.74902750000183,
+          "min": 7.563145899999654,
+          "max": 7.858374000003096
+        },
+        "decode_tps": {
+          "median": 16.389153348593744,
+          "min": 16.161104065542055,
+          "max": 16.79195425808271
+        },
+        "wall_s": {
+          "median": 17.106460899995,
+          "min": 17.07009670000116,
+          "max": 17.170569399997476
+        },
+        "engine_prefill_s": {
+          "median": 9.2951,
+          "min": 9.2629,
+          "max": 9.472100000000001
+        },
+        "engine_prefill_tps": {
+          "median": 538.0,
+          "min": 528.0,
+          "max": 539.9
+        },
+        "engine_decode_s": {
+          "median": 7.7755,
+          "min": 7.5779,
+          "max": 7.886100000000001
+        },
+        "engine_decode_tps": {
+          "median": 16.5,
+          "min": 16.2,
+          "max": 16.9
+        },
+        "disk_d_read_gib": {
+          "median": 18.81293487548828,
+          "min": 17.820335388183594,
+          "max": 18.986530303955078
+        }
+      },
+      "retrieval_passes": 3,
+      "retrieved_records": 15
+    },
+    "20000": {
+      "n": 3,
+      "metrics": {
+        "prompt_tokens": {
+          "median": 20002,
+          "min": 20000,
+          "max": 20003
+        },
+        "completion_tokens": {
+          "median": 128,
+          "min": 122,
+          "max": 128
+        },
+        "ttft_s": {
+          "median": 22.1185312000016,
+          "min": 21.560203699998965,
+          "max": 22.323681599998963
+        },
+        "prefill_tps": {
+          "median": 904.3095953857259,
+          "min": 896.0439571939123,
+          "max": 927.6350204428245
+        },
+        "decode_s": {
+          "median": 7.264667199997348,
+          "min": 7.055920999999216,
+          "max": 7.508097500001895
+        },
+        "decode_tps": {
+          "median": 17.48187446219785,
+          "min": 16.115933497130193,
+          "max": 17.999067733328378
+        },
+        "wall_s": {
+          "median": 29.40859840000485,
+          "min": 28.63240439999936,
+          "max": 29.90498889999435
+        },
+        "engine_prefill_s": {
+          "median": 22.0883,
+          "min": 21.4962,
+          "max": 22.2961
+        },
+        "engine_prefill_tps": {
+          "median": 905.5,
+          "min": 897.2,
+          "max": 930.4
+        },
+        "engine_decode_s": {
+          "median": 7.288399999999999,
+          "min": 7.0706999999999995,
+          "max": 7.5794
+        },
+        "engine_decode_tps": {
+          "median": 17.6,
+          "min": 16.1,
+          "max": 18.1
+        },
+        "disk_d_read_gib": {
+          "median": 17.98065185546875,
+          "min": 12.609611511230469,
+          "max": 19.213947296142578
+        }
+      },
+      "retrieval_passes": 3,
+      "retrieved_records": 15
+    }
+  },
+  "finished_unix": 1794660847.7691684
+}

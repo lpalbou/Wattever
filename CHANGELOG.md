@@ -8,6 +8,7 @@
 - Stops failed or skipped tests from appearing as separate recorded conditions, and names a condition as a variant only when another one measured the same model. Provenance labels and a session's test plan no longer split one model into several configurations.
 - Accounts for every passed test in Graphs: a banner states how many the current toggles draw and offers one-click remedies for the rest, each chart names the values it could not draw and why, and untouched defaults choose query counts, metrics and colours that show everything while the chart stays readable. Library cards say "N tests passed" and list the model count.
 - Reports complete concurrent-batch prefill and output rates using recorded batch timing, while preserving per-request evidence and unavailable timing.
+- Documents the Samsung 990 PRO GLM-5.3-Flash tuning campaign with separate native/client phase timings, memory/cache telemetry, long retrieval, frozen accuracy screens and ranked upgrade options; the higher-quant comparison remains in progress.
 
 ## 2.6.1 - 2026-11-06
 

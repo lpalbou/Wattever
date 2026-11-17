@@ -1,0 +1,694 @@
+{
+  "id": "mmlu-pro-test-05789",
+  "category": "other",
+  "cohort": "public128",
+  "suite_id": "mmlu-pro-balanced64-chat-v1",
+  "prompt_sha256": "1dc858a57819b74dd570e53b88d7ac4980778d7ae8108a55f5f8e30e13001d0c",
+  "request_started_unix": 1794676635.2734964,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676635.2734964
+  },
+  "started_unix": 1794676635.2734964,
+  "response_id": "resp_45af8656ac5b4d888300925c",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 80,
+    "output_tokens": 16,
+    "total_tokens": 96,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 16,
+  "non_reasoning_generated_tokens": 16,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.0253512999988743,
+  "first_visible_content_s": 2.0253512999988743,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 2.8312332999994396,
+  "terminal_answer_s": 2.876689599994279,
+  "transport_wall_s": 2.876751299998432,
+  "answer": "H. Turkey — Turkey has the largest Kurdish population.\n\nANSWER: H",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.0038544999988516793,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_45af8656ac5b4d888300925c",
+          "object": "response",
+          "created_at": 1794676635,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.0038905999972485006,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_45af8656ac5b4d888300925c",
+          "object": "response",
+          "created_at": 1794676635,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.0252602999971714,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_abe70de6334c478987998300",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.025305399998615,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.0253512999988743,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "H",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.141428499999165,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.1973642999946605,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " Turkey",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.2641979999971227,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " —",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.3190354999969713,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " Turkey",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.370189699999173,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " has",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.422257099999115,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.4653703999938443,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " largest",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.5287955999956466,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " Kurdish",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.5776706999968155,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " population",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.622618599998532,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7016815999959363,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7531954999940353,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7996330999958445,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8312332999994396,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " H",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.876446499998565,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 19,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "H. Turkey — Turkey has the largest Kurdish population.\n\nANSWER: H",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8764824999962,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 20,
+        "item_id": "msg_abe70de6334c478987998300",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "H. Turkey — Turkey has the largest Kurdish population.\n\nANSWER: H",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.8765470999933314,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 21,
+        "output_index": 0,
+        "item": {
+          "id": "msg_abe70de6334c478987998300",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "H. Turkey — Turkey has the largest Kurdish population.\n\nANSWER: H",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.876689599994279,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 22,
+        "response": {
+          "id": "resp_45af8656ac5b4d888300925c",
+          "object": "response",
+          "created_at": 1794676635,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_abe70de6334c478987998300",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "H. Turkey — Turkey has the largest Kurdish population.\n\nANSWER: H",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 80,
+            "output_tokens": 16,
+            "total_tokens": 96,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676638
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "06ffc22d4d6407f73965869756922a16904c24af5b2f589428379bf934762814",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 6,
+    "source": "nvidia-smi",
+    "duration_s": 2.8768302999960724,
+    "gpu_w_avg": 123.8748665690385,
+    "gpu_sampled_coverage_s": 2.52425289999519,
+    "gpu_sampled_coverage_fraction": 0.8774424059697357,
+    "gpu_w_max": 147.41000000000003,
+    "gpu_energy_j": 356.36696955378045,
+    "system_w_est": 235.0101061304681,
+    "system_energy_j_est": 676.0841941214234,
+    "gpu_util_avg": 59.666666666666664,
+    "vram_mb_max": 30066.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 44.0,
+    "cpu_util_avg": 0.3662532129329004,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49551249408,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 72.03486651079616,
+    "system_memory_percent_max": 72.19323446284443,
+    "vram_percent_avg": 92.20286654807909,
+    "vram_percent_max": 92.21002269520947,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 6,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 6,
+        "source": "nvidia-smi",
+        "duration_s": 2.8768302999960724,
+        "gpu_w_avg": 61.54224038226637,
+        "gpu_sampled_coverage_s": 2.52425289999519,
+        "gpu_sampled_coverage_fraction": 0.8774424059697357,
+        "gpu_w_max": 73.1,
+        "gpu_energy_j": 177.04658186134577,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 47.0,
+        "vram_mb_max": 15482.0,
+        "clock_mhz_avg": 2992.5,
+        "temp_c_max": 44.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 94.949804739414,
+        "vram_percent_max": 94.96411703367478,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 6,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 6,
+        "source": "nvidia-smi",
+        "duration_s": 2.8768302999960724,
+        "gpu_w_avg": 62.33262618677212,
+        "gpu_sampled_coverage_s": 2.52425289999519,
+        "gpu_sampled_coverage_fraction": 0.8774424059697357,
+        "gpu_w_max": 74.65,
+        "gpu_energy_j": 179.32038769243468,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 72.33333333333333,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 3011.0,
+        "temp_c_max": 35.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 6,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 6,
+    "errors": {},
+    "available_bytes_min": 19092074496,
+    "ram_used_percent_max": 72.2,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 100335.21020233241,
+      "max": 248912.74174146386,
+      "min": 21017.004458829808
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 1125.366978847326,
+      "max": 2815.1043750321564,
+      "min": 227.34510777208862
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 400189.06517781946,
+      "max": 726355.6175221956,
+      "min": 218537.87292478335
+    },
+    "transition_faults_s": {
+      "mean": 3801.1897426034616,
+      "max": 11358.014866250684,
+      "min": 49.672040353565585
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7617872554.666667,
+      "max": 7723470848.0,
+      "min": 7550537728.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 18963184981.333332,
+      "max": 19036979200.0,
+      "min": 18863448064.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 226435072.0,
+      "max": 226435072.0,
+      "min": 226435072.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 338733056.0,
+      "max": 340226048.0,
+      "min": 338010112.0
+    },
+    "committed_bytes": {
+      "mean": 80020781056.0,
+      "max": 80044523520.0,
+      "min": 80007208960.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.97020689646403,
+      "max": 1.970252990722656,
+      "min": 1.9701576232910154
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 168960,
+        "write_bytes": 2478080,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 1217880064,
+        "write_bytes": 0,
+        "read_time_ms": 3,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32681721856,
+    "engine_rss_max": 32681828352,
+    "engine_faults_delta": 34
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 11,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "H",
+      "expected": "H",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676638.1513557
+  }
+}

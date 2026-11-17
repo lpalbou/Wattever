@@ -1,0 +1,251 @@
+{
+  "checked_date": "2026-11-14",
+  "scope": "Firsthand GLM-5.3-Flash 321B Project Maya reports involving RTX 5070 / 5070 Ti; not Qwen Flash-Next or full 744B GLM-5.3.",
+  "exact_equivalent_found": false,
+  "conclusion": "No verified public benchmark with exactly two RTX 5070 Ti, i7-5960X, 64 GiB DDR4 and the same XS/S24 workload was found. Closest 32 GB VRAM report uses a 5070 Ti plus 5060 Ti, 96 GB DDR5 and a much newer CPU. Treat these as capacity and bottleneck evidence, not a target TPS guarantee.",
+  "searches": [
+    "GitHub API repo:mw00/project-maya 5070 (13 issues)",
+    "GLM-5.3-Flash 5070 Ti benchmark",
+    "project-maya 2x 5070 GLM",
+    "GLM-5.3 5070Ti Maya",
+    "Firsthand author blogs and linked issue attachments"
+  ],
+  "reports": [
+    {
+      "id": "mixed-5070ti-5060ti-s24",
+      "primary_url": "https://github.com/mw00/project-maya/issues/417#issuecomment-6382885384",
+      "author": "air-terminal",
+      "gpu": [
+        "RTX 5060 Ti 16 GB, PCIe 4.0 x4 OCuLink, display attached",
+        "RTX 5070 Ti 16 GB, PCIe 5.0 x16"
+      ],
+      "cpu": "Core Ultra 7 265, 8P+12E",
+      "ram": "96 GB DDR5, four DIMMs, 4400 MT/s",
+      "os_driver_cuda": "Windows 11 26H2 / Studio 616.92 / CUDA 12.8",
+      "model": "GLM-5.3-Flash Maya-S24",
+      "reserved_context_tokens": 98304,
+      "actual_prefill_tokens": 2048,
+      "kv": "int8",
+      "mtp": "enabled, drafting",
+      "sampling": "greedy bundled --bench",
+      "output_tokens_per_answer": null,
+      "warmup": "not explicitly stated",
+      "results": [
+        {
+          "version": "1.1.21",
+          "decode_tps_runs": [
+            28.5,
+            27.2
+          ],
+          "decode_tps_mean": 27.85,
+          "prefill_tps_2k_approx": 462
+        },
+        {
+          "version": "1.1.26 default 1 GB pin pieces",
+          "decode_tps_runs": [
+            25.8,
+            26.1
+          ],
+          "decode_tps_mean": 25.95,
+          "prefill_tps_2k_approx": 450
+        },
+        {
+          "version": "1.1.26 PIN_PIECE_MB=0",
+          "decode_tps_runs": [
+            27.0,
+            27.5,
+            27.6
+          ],
+          "decode_tps_mean": 27.4,
+          "prefill_tps_2k_approx": 459
+        }
+      ],
+      "resident_host_gb": 67.7,
+      "disk_reads_per_token": 0,
+      "configuration": "CPU_SHARED=1, CPU_LANE=16, PCIE_SHARE=0, SPLIT=19, gpu=[0,1]",
+      "limit": "Reserved 96K does not mean 96K actual benchmark input. Host resident tier alone exceeds this machine's total 64 GiB RAM. Different CPU and PCIe topology. No exact two-5070-Ti equivalence."
+    },
+    {
+      "id": "same-author-blog-single-comparison",
+      "primary_url": "https://note.com/r_terminal/n/na5c167994aee",
+      "author": "ryota",
+      "date": "2026-10-22",
+      "same_experiment_as": "mixed-5070ti-5060ti-s24",
+      "version": "1.1.21",
+      "setup": "5070 Ti + 5060 Ti / Core Ultra 7 265 / 96 GB DDR5-4400 / Windows 11 / S24 / reserved 98304 / int8 KV",
+      "method": "Bundled --bench, at least two repeats per configuration, greedy; actual prefill 2K.",
+      "default_decode_tps_approx": 20.2,
+      "tuned_decode_tps_approx": 27.9,
+      "default_prefill_tps_2k_approx": 366,
+      "tuned_prefill_tps_2k_approx": 463,
+      "single_5070_ti_statement": "Exact values inspected in embedded author chart; approximate values are printed by the author, not inferred from ratios.",
+      "resident_host_gb_approx": 67.6,
+      "limit": "Same author/hardware as issue comment, not independent corroboration. Output length and warmup not printed. Manual split and CPU-lane settings cannot be copied universally.",
+      "embedded_chart_url": "https://assets.st-note.com/img/1792638729-UltCP9kRuXepKN51IOGWdz0f.png?width=1200",
+      "local_chart": "ryota-chart-2.png",
+      "single_5070_ti_fresh_setup": {
+        "decode_tps_approx": 17.25,
+        "prefill_2k_tps_approx": 835,
+        "prefill_8k_tps_approx": 1347
+      },
+      "tuned_dual_5070ti_5060ti": {
+        "decode_tps_approx": 27.85,
+        "prefill_2k_tps_approx": 463,
+        "prefill_8k_tps_approx": 786
+      },
+      "comparison_caveat": "Same host and quant, but dual configuration was tuned and single card used fresh setup defaults. Dual decode improved while prefill declined. Reserved96K is not actual96K input."
+    },
+    {
+      "id": "5070ti-3060-low-ram",
+      "primary_url": "https://github.com/mw00/project-maya/issues/341",
+      "benchmark_attachment_url": "https://github.com/user-attachments/files/33762715/maya-bench.txt",
+      "author": "nikich340",
+      "date": "2026-10-21",
+      "gpu": [
+        "5070 Ti 16 GB, PCIe 4.0 x16",
+        "3060 12 GB, PCIe 4.0 x4"
+      ],
+      "cpu": "Ryzen 9700X 8C/16T, AVX-512",
+      "ram": "30.9 GB DDR5, 23.9 GB available; 32 GB pagefile",
+      "os_driver_cuda": "Windows 11 26200 / driver 616.64 / engine CUDA 13.2",
+      "model": "Maya-S-v2-IQ2_XXS, 96.5 GB",
+      "version": "1.1.15 / a4e1ff0",
+      "issue_reserved_context_tokens": 65536,
+      "attachment_reserved_context_tokens": 131072,
+      "decode_tps": 4.1,
+      "decode_method": "Three greedy 256-token answers, thinking off",
+      "prefill_tps": {
+        "2048": 94,
+        "8192": 317
+      },
+      "mtp": "Draft layer allocated; explicit enabled/disabled flag not printed",
+      "warmup": "not explicitly stated",
+      "real_coding": {
+        "requests": 5,
+        "total_prompt_tokens": 275545,
+        "reused_prompt_tokens": 216698,
+        "fresh_input_tps": 549,
+        "output_tokens": 5591,
+        "output_tps": 4.1
+      },
+      "limit": "Attached bench reserves 131K despite issue's 64K setup statement. Many per-token disk misses (66-101 in attached stats); capacity-limited, not a pure GPU speed test. Both GPUs undervolted/overclocked."
+    },
+    {
+      "id": "5070ti-4070tis-early-fixes",
+      "primary_url": "https://github.com/mw00/project-maya/issues/13",
+      "author": "tanutanu56",
+      "gpu": [
+        "4070 Ti SUPER 16 GB, PCIe 3.0 x4",
+        "5070 Ti 16 GB, PCIe 4.0 x16"
+      ],
+      "cpu": "Ryzen 3700X 8C/16T",
+      "ram": "128 GB DDR4",
+      "os_cuda": "Windows 11 / CUDA 12.9",
+      "model": "Maya-S-v2-IQ2_XXS",
+      "reserved_context_tokens": 32768,
+      "version": "1.0.11 plus author fixes, later merged",
+      "bundled_bench": [
+        {
+          "setup": "stock",
+          "decode_tps": 7.1,
+          "prefill_2k_tps": 138,
+          "prefill_8k_tps": 157
+        },
+        {
+          "setup": "two fixes and default split",
+          "decode_tps": 9.8,
+          "prefill_2k_tps": 140,
+          "prefill_8k_tps": 155
+        },
+        {
+          "setup": "fixes, split17, CPU lanes6/2",
+          "decode_tps": 14.6,
+          "prefill_2k_tps": 204,
+          "prefill_8k_tps": 259
+        }
+      ],
+      "live_600_token_decode_tps_range": [
+        15.8,
+        17.8
+      ],
+      "mtp": "not explicitly stated",
+      "warmup_output_length": "Bundled bench output length and warmup not explicitly stated",
+      "finding": "Idle PCIe calibration and re-reading experts whose RAM demotion was still in flight caused avoidable stalls. Fixed run reports zero disk reads/token.",
+      "limit": "Old release and asymmetric slow PCIe link; modern source already incorporates fixes. Outputs looked correct but author did not run formal token-identical comparison."
+    },
+    {
+      "id": "single-5070-not-ti",
+      "primary_url": "https://github.com/mw00/project-maya/issues/755",
+      "author": "hugou74130",
+      "gpu": "RTX 5070 NON-Ti 12 GB, PCIe 4.0 x16",
+      "cpu": "EPYC 7302 16C/32T, Zen2, no AVX-512",
+      "ram": "126 GB ECC DDR4, four of eight channels; measured read45.8 GB/s",
+      "os_driver_cuda": "Ubuntu 24.04 / 595.99 / CUDA13.0",
+      "model": "Maya-S24",
+      "version": "1.1.45 plus PR752",
+      "reserved_context_tokens": 65536,
+      "kv": "int8; kv-resident20480; 672 VRAM expert slots",
+      "method": "Three greedy256-token answers, thinking off; actual prefill2K/8K; warmup unstated",
+      "mtp": "Baseline explicit setting not printed; separate DFlash2 draft test reported",
+      "stock": {
+        "decode_tps": 16.6,
+        "prefill_2k_tps": 309,
+        "prefill_8k_tps": 323
+      },
+      "prefill_cpu_gate_0": {
+        "decode_tps": 17.1,
+        "prefill_2k_tps": 404,
+        "prefill_8k_tps": 428
+      },
+      "accuracy_changing_exclusions": "24.2-25.0 TPS headline rows skip experts and change answers, with no KL measured by author; excluded from faithful baseline. DFlash2 was slower4.8-5.5 TPS.",
+      "limit": "Different card, larger RAM, Linux and CPU. No promised performance for our 5070 Ti pair."
+    },
+    {
+      "id": "platform-upgrade-firsthand",
+      "primary_url": "https://www.reddit.com/r/LocalLLaMA/comments/1xl3cnv/switching_to_epyc_what_i_had_to_fix_and/",
+      "author": "mrgreatheart",
+      "before": "Core Ultra7 265KF /64GB dual-channel DDR5-6000 /3090+5070Ti+two5060Ti; some chipsetx4 links",
+      "after": "EPYC7443 /256GB eight-channel DDR4 /3090+5070Ti+one5060Ti /x16,x16,x8",
+      "model": "GLM-5.3-Flash IQ3_S",
+      "decode_tps_before_after": [
+        9.7,
+        41.0
+      ],
+      "actual_29k_prompt_prefill_tps_before_after": [
+        577,
+        1069
+      ],
+      "decode_after_29k_tps_before_after": [
+        8.2,
+        37.8
+      ],
+      "version_change": "Maya1.0.34/1.1.20 to1.1.42; OS configuration, BIOS, RAM and links changed too",
+      "mtp_output_warmup": "Not specified for GLM; do not infer from Strata settings in same post",
+      "finding": "Author attributes large MoE gain mainly to capacity: previously30-60% read from NVMe each token; afterwards all weights resident across RAM+VRAM.",
+      "limit": "Not a controlled CPU-only experiment: different card count, memory capacity, PCIe, engine and tuning. Cannot apply4.2x multiplier to our machine."
+    }
+  ],
+  "memory_interpretation": {
+    "primary_url": "https://github.com/mw00/project-maya/blob/main/docs/MEMORY.md",
+    "xs_total_recommended_gb": [
+      80,
+      88
+    ],
+    "s24_total_recommended_gb": [
+      102,
+      128
+    ],
+    "our_nominal_capacity": "64 GiB RAM plus32 GiB VRAM, before OS/display/KV/scratch and Windows pin limits",
+    "two_v10032_comparison": "Two V10032GB have64GB aggregate VRAM, twice our32GB. They can retain substantially more experts; GPU compute capability alone does not determine speed. Up-to40TPS S-quant vendor results are not an equivalent XS/S24 benchmark.",
+    "inference": "The closest 27.85 TPS mixed-card report holds67.7GB experts in host RAM with zero NVMe reads. Our64GiB total RAM cannot provide that same resident tier. Additional VRAM or RAM can reduce expert fetches, but exact gains require measured cache/disk stats and correctness checks.",
+    "log_units": "Native RAM-tier log labels GB but divides bytes by1073741824.0 (source1.1.59 src/core/glm_fast_path.cu:2103-2104), so67.7 logged GB is approximately67.7GiB. GGUF download sizes remain decimalGB. Do not conflate these units."
+  },
+  "excluded": [
+    "Qwen3.8-Flash-Next benchmarks mislabeled as GLM comparison",
+    "Full744B GLM-5.3 and four-card reports",
+    "Synthetic capacity calculators",
+    "24+TPS GLM expert-skipping settings without accuracy validation",
+    "capy-flash two5070Ti bug-fix eval: author explicitly says GLM Flash cannot run on that rig, so its scores are Qwen/Gemma rather than a GLM benchmark"
+  ],
+  "download_status_is_separate": "S24 download runs cooperatively under root-owned benchmark pause marker; no model engines launched by this research."
+}

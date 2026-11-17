@@ -1,0 +1,934 @@
+{
+  "id": "arc-test-0420",
+  "category": "science_reasoning",
+  "cohort": "public128",
+  "suite_id": "arc-challenge-test-chat-v1",
+  "prompt_sha256": "40950722c8be9b4e4169ec18e6ea517b542d2cf1e12852afad34a4c86018aa1a",
+  "request_started_unix": 1794676193.8415494,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676193.8415494
+  },
+  "started_unix": 1794676193.8415494,
+  "response_id": "resp_bdaf4cd49de646e8af18c5b7",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 59,
+    "output_tokens": 36,
+    "total_tokens": 95,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 36,
+  "non_reasoning_generated_tokens": 36,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 1.7570678999982192,
+  "first_visible_content_s": 1.7570678999982192,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 3.7332070999982534,
+  "terminal_answer_s": 3.796776499999396,
+  "transport_wall_s": 3.796840399998473,
+  "answer": "Air is a good insulator because it's a poor conductor of heat. Trapped air (as in foam or fiberglass insulation) prevents heat transfer effectively.\n\nANSWER: A",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.0019511999998940155,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_bdaf4cd49de646e8af18c5b7",
+          "object": "response",
+          "created_at": 1794676193,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.0019710999986273237,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_bdaf4cd49de646e8af18c5b7",
+          "object": "response",
+          "created_at": 1794676193,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 1.7567587999947136,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_ad1073ea118b41378d84c9f0",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 1.7569215999974404,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 1.7570678999982192,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "Air",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 1.8549073999965913,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 1.9133714999989024,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " a",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.0103499999968335,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " good",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.064461599999049,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ins",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.1198648999998113,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ulator",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.1667746999955853,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " because",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.215549900000042,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " it",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.263882100000046,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "'s",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.3121103000012226,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " a",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.354217799998878,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " poor",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.412026699996204,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " conductor",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.455090999996173,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " of",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.5005240999962552,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " heat",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.5532974999950966,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.6030979999995907,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " Tr",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.695423799996206,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "apped",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7703543999959948,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " air",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8047845999972196,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " (",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8667371999981697,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "as",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.990226399997482,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " in",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.0399532000010367,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " foam",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.095537699999113,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " or",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.151064799996675,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " fiberglass",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.202466299997468,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " insulation",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.313212199995178,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ")",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.341401899997436,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " prevents",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.4334229999949457,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " heat",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.477815099999134,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " transfer",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5162807000015164,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " effectively",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5971040000003995,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 34,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.6260547999991104,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 35,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.6565257999973255,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 36,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.695226299998467,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 37,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7332070999982534,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 38,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7964375999945332,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 39,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "Air is a good insulator because it's a poor conductor of heat. Trapped air (as in foam or fiberglass insulation) prevents heat transfer effectively.\n\nANSWER: A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.796484699996654,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 40,
+        "item_id": "msg_ad1073ea118b41378d84c9f0",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "Air is a good insulator because it's a poor conductor of heat. Trapped air (as in foam or fiberglass insulation) prevents heat transfer effectively.\n\nANSWER: A",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.7966169999999693,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 41,
+        "output_index": 0,
+        "item": {
+          "id": "msg_ad1073ea118b41378d84c9f0",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "Air is a good insulator because it's a poor conductor of heat. Trapped air (as in foam or fiberglass insulation) prevents heat transfer effectively.\n\nANSWER: A",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.796776499999396,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 42,
+        "response": {
+          "id": "resp_bdaf4cd49de646e8af18c5b7",
+          "object": "response",
+          "created_at": 1794676193,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_ad1073ea118b41378d84c9f0",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "Air is a good insulator because it's a poor conductor of heat. Trapped air (as in foam or fiberglass insulation) prevents heat transfer effectively.\n\nANSWER: A",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 59,
+            "output_tokens": 36,
+            "total_tokens": 95,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676197
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "98f285127bfaaa0c691e1b987bd614a1167d86082c66f43620e9134b780b2fc8",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 8,
+    "source": "nvidia-smi",
+    "duration_s": 3.7969051000036416,
+    "gpu_w_avg": 145.45940035758608,
+    "gpu_sampled_coverage_s": 3.5473199999978533,
+    "gpu_sampled_coverage_fraction": 0.934266173783077,
+    "gpu_w_max": 163.01,
+    "gpu_energy_j": 552.2955390611901,
+    "system_w_est": 263.62269002760223,
+    "system_energy_j_est": 1000.9503362424821,
+    "gpu_util_avg": 65.6875,
+    "vram_mb_max": 30206.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 56.0,
+    "cpu_util_avg": 0.4182350852272727,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49642397696,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 72.04958541984033,
+    "system_memory_percent_max": 72.3260321179003,
+    "vram_percent_avg": 92.62980739741153,
+    "vram_percent_max": 92.63939152303257,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 8,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 8,
+        "source": "nvidia-smi",
+        "duration_s": 3.7969051000036416,
+        "gpu_w_avg": 73.84304941843679,
+        "gpu_sampled_coverage_s": 3.5473199999978533,
+        "gpu_sampled_coverage_fraction": 0.934266173783077,
+        "gpu_w_max": 81.74,
+        "gpu_energy_j": 280.3750509366836,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 54.5,
+        "vram_mb_max": 15622.0,
+        "clock_mhz_avg": 2975.25,
+        "temp_c_max": 56.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.80368643807888,
+        "vram_percent_max": 95.82285468932099,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 8,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 8,
+        "source": "nvidia-smi",
+        "duration_s": 3.7969051000036416,
+        "gpu_w_avg": 71.61635093914926,
+        "gpu_sampled_coverage_s": 3.5473199999978533,
+        "gpu_sampled_coverage_fraction": 0.934266173783077,
+        "gpu_w_max": 83.61,
+        "gpu_energy_j": 271.9204881245064,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 76.875,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 2978.125,
+        "temp_c_max": 55.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 8,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 8,
+    "errors": {},
+    "available_bytes_min": 18987892736,
+    "ram_used_percent_max": 72.3,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 57757.71305923868,
+      "max": 146602.93818037125,
+      "min": 28635.61456116275
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 721.9805010020133,
+      "max": 1803.9612540495868,
+      "min": 322.8988440615162
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 350668.88995501795,
+      "max": 626755.0601304476,
+      "min": 221394.4110935442
+    },
+    "transition_faults_s": {
+      "mean": 8184.3539754340645,
+      "max": 26998.202734254315,
+      "min": 57.70582417189257
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7701753344.0,
+      "max": 7902355456.0,
+      "min": 7512862720.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 18949188096.0,
+      "max": 19149402112.0,
+      "min": 18759593984.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 9216.0,
+      "max": 73728.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 227323392.0,
+      "max": 227323904.0,
+      "min": 227319808.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 301513728.0,
+      "max": 301572096.0,
+      "min": 301494272.0
+    },
+    "committed_bytes": {
+      "mean": 80226913280.0,
+      "max": 80319193088.0,
+      "min": 80209928192.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.917104721069336,
+      "max": 1.917104721069336,
+      "min": 1.917104721069336
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 98750976,
+        "write_bytes": 419328,
+        "read_time_ms": 25,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 815890432,
+        "write_bytes": 0,
+        "read_time_ms": 1,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 33548754944,
+    "engine_rss_max": 33550295040,
+    "engine_faults_delta": 385
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 26,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "A",
+      "expected": "A",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676197.6397421
+  }
+}

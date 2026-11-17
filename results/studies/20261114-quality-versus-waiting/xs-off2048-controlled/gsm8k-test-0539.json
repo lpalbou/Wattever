@@ -1,0 +1,1078 @@
+{
+  "id": "gsm8k-test-0539",
+  "category": "math_word_problems",
+  "cohort": "public128",
+  "suite_id": "gsm8k-test-chat-v1",
+  "prompt_sha256": "370c2ca3e8bf938eb1be410bc14d78bd237f8ef2f103c353ad67d1b548731801",
+  "request_started_unix": 1794676317.2157533,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676317.2157533
+  },
+  "started_unix": 1794676317.2157533,
+  "response_id": "resp_82a1501c5a4342619dba6e7c",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 68,
+    "output_tokens": 48,
+    "total_tokens": 116,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 48,
+  "non_reasoning_generated_tokens": 48,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.018018499999016,
+  "first_visible_content_s": 2.018018499999016,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 4.41060429999925,
+  "terminal_answer_s": 4.472911500000919,
+  "transport_wall_s": 4.472978700003296,
+  "answer": "The bill is $50, split evenly: you each pay $25. The tip is 20% of $50 = $10, which you pay additionally.\n\nTotal: $25 + $10 = $35.\n\n#### 35",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.020345700002508238,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_82a1501c5a4342619dba6e7c",
+          "object": "response",
+          "created_at": 1794676317,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.020363600000564475,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_82a1501c5a4342619dba6e7c",
+          "object": "response",
+          "created_at": 1794676317,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.0178861000022152,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_ae15a47aee3e49208004881a",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.0179532000038307,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.018018499999016,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "The",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.1204005000035977,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " bill",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.226164699997753,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.290344900000491,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " $",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.3209971000032965,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "50",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.348034499998903,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.4076555999999982,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " split",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.468941899998754,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " evenly",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.527954700002738,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.568532299999788,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " you",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.6788850000011735,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " each",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.76224799999909,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " pay",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7994671999986167,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " $",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8368745999978273,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "25",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8643611000006786,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.933731800003443,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " The",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.989428000000771,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " tip",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.0437515000012354,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.086488400003873,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.1323598000017228,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "20",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.17078169999877,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "%",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.223625799997535,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " of",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.2914977000036743,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " $",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.3231415999980527,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "50",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.356180399998266,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " =",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.406240299998899,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " $",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.43655640000361,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "10",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.4655457000044407,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5035594000000856,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " which",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.6102863999985857,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " you",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.6548727999979747,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 34,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " pay",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7400038999985554,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 35,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " additionally",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.8319708999988507,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 36,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.8575479999999516,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 37,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nTotal",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9361238999990746,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 38,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.97188019999885,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 39,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " $",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9973031999979867,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 40,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "25",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.027495599999384,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 41,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " +",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.077773500001058,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 42,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " $",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.12154140000348,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 43,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "10",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.153989800004638,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 44,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " =",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.1827278999990085,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 45,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " $",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.219031200002064,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 46,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "35",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.253603099998145,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 47,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.279689599999983,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 48,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\n####",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.333623200000147,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 49,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.41060429999925,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 50,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "35",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.472620000000461,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 51,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "The bill is $50, split evenly: you each pay $25. The tip is 20% of $50 = $10, which you pay additionally.\n\nTotal: $25 + $10 = $35.\n\n#### 35",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.472654400000465,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 52,
+        "item_id": "msg_ae15a47aee3e49208004881a",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "The bill is $50, split evenly: you each pay $25. The tip is 20% of $50 = $10, which you pay additionally.\n\nTotal: $25 + $10 = $35.\n\n#### 35",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.472752499998023,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 53,
+        "output_index": 0,
+        "item": {
+          "id": "msg_ae15a47aee3e49208004881a",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "The bill is $50, split evenly: you each pay $25. The tip is 20% of $50 = $10, which you pay additionally.\n\nTotal: $25 + $10 = $35.\n\n#### 35",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.472911500000919,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 54,
+        "response": {
+          "id": "resp_82a1501c5a4342619dba6e7c",
+          "object": "response",
+          "created_at": 1794676317,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_ae15a47aee3e49208004881a",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "The bill is $50, split evenly: you each pay $25. The tip is 20% of $50 = $10, which you pay additionally.\n\nTotal: $25 + $10 = $35.\n\n#### 35",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 68,
+            "output_tokens": 48,
+            "total_tokens": 116,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676321
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "8f6d29df8fc8dc67c8e656d5aa4c53e3cf39e8922580881e1d604d458bd6189e",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 9,
+    "source": "nvidia-smi",
+    "duration_s": 4.473043400001188,
+    "gpu_w_avg": 141.78970407458436,
+    "gpu_sampled_coverage_s": 4.044363799999701,
+    "gpu_sampled_coverage_fraction": 0.9041637735950934,
+    "gpu_w_max": 167.35,
+    "gpu_energy_j": 634.2314999989412,
+    "system_w_est": 257.3707939740255,
+    "system_energy_j_est": 1151.2307313385804,
+    "gpu_util_avg": 67.61111111111111,
+    "vram_mb_max": 30039.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 54.0,
+    "cpu_util_avg": 0.39087489478114473,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49653317632,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 72.2124276848482,
+    "system_memory_percent_max": 72.34194181764322,
+    "vram_percent_avg": 92.12721584984358,
+    "vram_percent_max": 92.12721584984358,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 9,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.473043400001188,
+        "gpu_w_avg": 73.0676947594347,
+        "gpu_sampled_coverage_s": 4.044363799999701,
+        "gpu_sampled_coverage_fraction": 0.9041637735950934,
+        "gpu_w_max": 88.82,
+        "gpu_energy_j": 326.8349697969908,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 56.888888888888886,
+        "vram_mb_max": 15455.0,
+        "clock_mhz_avg": 2981.5555555555557,
+        "temp_c_max": 54.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 94.79850334294302,
+        "vram_percent_max": 94.79850334294302,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.473043400001188,
+        "gpu_w_avg": 68.72200931514968,
+        "gpu_sampled_coverage_s": 4.044363799999701,
+        "gpu_sampled_coverage_fraction": 0.9041637735950934,
+        "gpu_w_max": 82.69,
+        "gpu_energy_j": 307.39653020195044,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 78.33333333333333,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 2998.8888888888887,
+        "temp_c_max": 39.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 8,
+    "errors": {},
+    "available_bytes_min": 19023478784,
+    "ram_used_percent_max": 72.3,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 79697.83508082123,
+      "max": 136632.66343098925,
+      "min": 39395.379102236446
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 896.3038071172343,
+      "max": 1547.98883557365,
+      "min": 438.02528212766555
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 337579.5250482795,
+      "max": 542471.6142963269,
+      "min": 204067.91005650334
+    },
+    "transition_faults_s": {
+      "mean": 3226.3838147879974,
+      "max": 8816.219384578322,
+      "min": 19.271305681065286
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7811564544.0,
+      "max": 7863615488.0,
+      "min": 7731326976.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 18847981568.0,
+      "max": 18933383168.0,
+      "min": 18772500480.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 227467264.0,
+      "max": 227467264.0,
+      "min": 227467264.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 362106368.0,
+      "max": 363327488.0,
+      "min": 361705472.0
+    },
+    "committed_bytes": {
+      "mean": 79982389248.0,
+      "max": 79990620160.0,
+      "min": 79977865216.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9166910648345947,
+      "max": 1.9166946411132812,
+      "min": 1.9166851043701174
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 77824,
+        "write_bytes": 1760256,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 1242103808,
+        "write_bytes": 0,
+        "read_time_ms": 3,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32626212864,
+    "engine_rss_max": 32626470912,
+    "engine_faults_delta": 72
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 30,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "35",
+      "expected": "35",
+      "content_rule": "final numeric expression; strict format separately requires####"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676321.6898756
+  }
+}

@@ -1,0 +1,450 @@
+{
+  "scope": "Frozen curated samples; descriptive uncertainty does not establish population representativeness. Paired comparisons require complete public128 and matching prompts/budget. No failed inference reruns or partial-cohort rankings.",
+  "conditions": {
+    "xs-low2048-controlled": {
+      "condition": {
+        "model": "glm-5.3-flash-maya-xs-iq1_s",
+        "mode_requested": "low",
+        "context": 32768,
+        "total_output_cap": 2048,
+        "sampling": {
+          "temperature": 0,
+          "top_p": 1
+        },
+        "active_config_sha256": "3c2fa51004adf3bb5c2aa6045df0deea9b72f96a0485df7604ba63bd2e7f952a",
+        "plan_sha256": "fa34768a0b8be9796124f7085c84836df5625bb87cf39ce4e794313e1df93e2a",
+        "cohort": "common152",
+        "endpoint": "http://127.0.0.1:8097/v1/responses"
+      },
+      "status": "functionality_screen_saved",
+      "public128": {
+        "expected": 128,
+        "attempts": 0,
+        "graded": 0,
+        "complete": false,
+        "errors": 0,
+        "strict_correct": 0,
+        "content_correct": 0,
+        "format_only_failures": 0,
+        "content_unknown": 0,
+        "truncated": 0,
+        "repetitive_final": 0,
+        "repetitive_reasoning": 0,
+        "descriptive_wilson95": null,
+        "correct_completed_by_s": {
+          "30": 0,
+          "60": 0,
+          "120": 0
+        },
+        "first_any_output_s": null,
+        "first_visible_content_s": null,
+        "terminal_answer_s": null,
+        "reasoning_tokens": null,
+        "total_generated_tokens": null,
+        "non_reasoning_generated_tokens": null,
+        "input_tokens": null,
+        "zero_reasoning_requests": 0,
+        "positive_reasoning_requests": 0,
+        "categories": {}
+      },
+      "practical24": {
+        "expected": 24,
+        "attempts": 8,
+        "graded": 8,
+        "complete": false,
+        "errors": 0,
+        "strict_correct": 8,
+        "content_correct": 8,
+        "format_only_failures": 0,
+        "content_unknown": 0,
+        "truncated": 0,
+        "repetitive_final": 0,
+        "repetitive_reasoning": 0,
+        "descriptive_wilson95": [
+          0.6755924351161198,
+          1.0
+        ],
+        "correct_completed_by_s": {
+          "30": 8,
+          "60": 8,
+          "120": 8
+        },
+        "first_any_output_s": {
+          "n": 8,
+          "median": 2.903571650003869,
+          "min": 2.6577436000006855,
+          "max": 3.1274028000043472,
+          "p90": 3.1274028000043472,
+          "p95": 3.1274028000043472,
+          "p99": 3.1274028000043472
+        },
+        "first_visible_content_s": {
+          "n": 8,
+          "median": 3.781713000003947,
+          "min": 2.6577436000006855,
+          "max": 5.640337099997851,
+          "p90": 5.640337099997851,
+          "p95": 5.640337099997851,
+          "p99": 5.640337099997851
+        },
+        "terminal_answer_s": {
+          "n": 8,
+          "median": 5.734714350001013,
+          "min": 4.12105370000063,
+          "max": 8.138107700004184,
+          "p90": 8.138107700004184,
+          "p95": 8.138107700004184,
+          "p99": 8.138107700004184
+        },
+        "reasoning_tokens": {
+          "n": 8,
+          "median": 14.5,
+          "min": 1,
+          "max": 45,
+          "p90": 45,
+          "p95": 45,
+          "p99": 45
+        },
+        "total_generated_tokens": {
+          "n": 8,
+          "median": 52.0,
+          "min": 29,
+          "max": 96,
+          "p90": 96,
+          "p95": 96,
+          "p99": 96
+        },
+        "non_reasoning_generated_tokens": {
+          "n": 8,
+          "median": 28.5,
+          "min": 2,
+          "max": 95,
+          "p90": 95,
+          "p95": 95,
+          "p99": 95
+        },
+        "input_tokens": {
+          "n": 8,
+          "median": 107.5,
+          "min": 72,
+          "max": 144,
+          "p90": 144,
+          "p95": 144,
+          "p99": 144
+        },
+        "zero_reasoning_requests": 0,
+        "positive_reasoning_requests": 8,
+        "categories": {
+          "arithmetic": {
+            "n": 1,
+            "strict_correct": 1,
+            "content_correct": 1
+          },
+          "executable-coding": {
+            "n": 2,
+            "strict_correct": 2,
+            "content_correct": 2
+          },
+          "formal-constraints": {
+            "n": 1,
+            "strict_correct": 1,
+            "content_correct": 1
+          },
+          "json-tool-arguments": {
+            "n": 2,
+            "strict_correct": 2,
+            "content_correct": 2
+          },
+          "state-tracking": {
+            "n": 2,
+            "strict_correct": 2,
+            "content_correct": 2
+          }
+        }
+      }
+    },
+    "xs-off2048-controlled": {
+      "condition": {
+        "model": "glm-5.3-flash-maya-xs-iq1_s",
+        "mode_requested": "none",
+        "context": 32768,
+        "total_output_cap": 2048,
+        "sampling": {
+          "temperature": 0,
+          "top_p": 1
+        },
+        "active_config_sha256": "3c2fa51004adf3bb5c2aa6045df0deea9b72f96a0485df7604ba63bd2e7f952a",
+        "plan_sha256": "fa34768a0b8be9796124f7085c84836df5625bb87cf39ce4e794313e1df93e2a",
+        "cohort": "common152",
+        "endpoint": "http://127.0.0.1:8097/v1/responses"
+      },
+      "status": "stopped_after_request",
+      "public128": {
+        "expected": 128,
+        "attempts": 106,
+        "graded": 106,
+        "complete": false,
+        "errors": 0,
+        "strict_correct": 81,
+        "content_correct": 91,
+        "format_only_failures": 10,
+        "content_unknown": 0,
+        "truncated": 0,
+        "repetitive_final": 0,
+        "repetitive_reasoning": 0,
+        "descriptive_wilson95": [
+          0.6749861244228658,
+          0.8348395880288849
+        ],
+        "correct_completed_by_s": {
+          "30": 80,
+          "60": 81,
+          "120": 81
+        },
+        "first_any_output_s": {
+          "n": 106,
+          "median": 2.4038844499991683,
+          "min": 1.7570678999982192,
+          "max": 4.967977499996778,
+          "p90": 3.1886643999969237,
+          "p95": 3.479793900005461,
+          "p99": 4.2001992000004975
+        },
+        "first_visible_content_s": {
+          "n": 106,
+          "median": 2.4038844499991683,
+          "min": 1.7570678999982192,
+          "max": 4.967977499996778,
+          "p90": 3.1886643999969237,
+          "p95": 3.479793900005461,
+          "p99": 4.2001992000004975
+        },
+        "terminal_answer_s": {
+          "n": 106,
+          "median": 4.453331149998121,
+          "min": 1.9803532999940217,
+          "max": 34.82265579999512,
+          "p90": 7.514456199998676,
+          "p95": 9.624368299999333,
+          "p99": 20.398557399996207
+        },
+        "reasoning_tokens": {
+          "n": 106,
+          "median": 0.0,
+          "min": 0,
+          "max": 0,
+          "p90": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "total_generated_tokens": {
+          "n": 106,
+          "median": 36.5,
+          "min": 2,
+          "max": 587,
+          "p90": 85,
+          "p95": 103,
+          "p99": 364
+        },
+        "non_reasoning_generated_tokens": {
+          "n": 106,
+          "median": 36.5,
+          "min": 2,
+          "max": 587,
+          "p90": 85,
+          "p95": 103,
+          "p99": 364
+        },
+        "input_tokens": {
+          "n": 106,
+          "median": 105.5,
+          "min": 56,
+          "max": 537,
+          "p90": 233,
+          "p95": 251,
+          "p99": 436
+        },
+        "zero_reasoning_requests": 106,
+        "positive_reasoning_requests": 0,
+        "categories": {
+          "biology": {
+            "n": 4,
+            "strict_correct": 4,
+            "content_correct": 4
+          },
+          "business": {
+            "n": 4,
+            "strict_correct": 4,
+            "content_correct": 4
+          },
+          "chemistry": {
+            "n": 4,
+            "strict_correct": 2,
+            "content_correct": 3
+          },
+          "economics": {
+            "n": 5,
+            "strict_correct": 2,
+            "content_correct": 5
+          },
+          "health": {
+            "n": 5,
+            "strict_correct": 5,
+            "content_correct": 5
+          },
+          "history": {
+            "n": 4,
+            "strict_correct": 4,
+            "content_correct": 4
+          },
+          "law": {
+            "n": 4,
+            "strict_correct": 1,
+            "content_correct": 1
+          },
+          "math": {
+            "n": 3,
+            "strict_correct": 1,
+            "content_correct": 2
+          },
+          "math_word_problems": {
+            "n": 32,
+            "strict_correct": 30,
+            "content_correct": 30
+          },
+          "other": {
+            "n": 5,
+            "strict_correct": 1,
+            "content_correct": 1
+          },
+          "psychology": {
+            "n": 4,
+            "strict_correct": 2,
+            "content_correct": 2
+          },
+          "science_reasoning": {
+            "n": 32,
+            "strict_correct": 25,
+            "content_correct": 30
+          }
+        }
+      },
+      "practical24": {
+        "expected": 24,
+        "attempts": 8,
+        "graded": 8,
+        "complete": false,
+        "errors": 0,
+        "strict_correct": 6,
+        "content_correct": 6,
+        "format_only_failures": 0,
+        "content_unknown": 0,
+        "truncated": 0,
+        "repetitive_final": 0,
+        "repetitive_reasoning": 0,
+        "descriptive_wilson95": [
+          0.40927543031016883,
+          0.9285207872478909
+        ],
+        "correct_completed_by_s": {
+          "30": 6,
+          "60": 6,
+          "120": 6
+        },
+        "first_any_output_s": {
+          "n": 8,
+          "median": 2.8787456499994732,
+          "min": 2.6307655999989947,
+          "max": 3.1964449000006425,
+          "p90": 3.1964449000006425,
+          "p95": 3.1964449000006425,
+          "p99": 3.1964449000006425
+        },
+        "first_visible_content_s": {
+          "n": 8,
+          "median": 2.8787456499994732,
+          "min": 2.6307655999989947,
+          "max": 3.1964449000006425,
+          "p90": 3.1964449000006425,
+          "p95": 3.1964449000006425,
+          "p99": 3.1964449000006425
+        },
+        "terminal_answer_s": {
+          "n": 8,
+          "median": 4.879842549999012,
+          "min": 3.3674734000014723,
+          "max": 8.285264599995571,
+          "p90": 8.285264599995571,
+          "p95": 8.285264599995571,
+          "p99": 8.285264599995571
+        },
+        "reasoning_tokens": {
+          "n": 8,
+          "median": 0.0,
+          "min": 0,
+          "max": 0,
+          "p90": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "total_generated_tokens": {
+          "n": 8,
+          "median": 38.0,
+          "min": 5,
+          "max": 99,
+          "p90": 99,
+          "p95": 99,
+          "p99": 99
+        },
+        "non_reasoning_generated_tokens": {
+          "n": 8,
+          "median": 38.0,
+          "min": 5,
+          "max": 99,
+          "p90": 99,
+          "p95": 99,
+          "p99": 99
+        },
+        "input_tokens": {
+          "n": 8,
+          "median": 108.5,
+          "min": 73,
+          "max": 145,
+          "p90": 145,
+          "p95": 145,
+          "p99": 145
+        },
+        "zero_reasoning_requests": 8,
+        "positive_reasoning_requests": 0,
+        "categories": {
+          "arithmetic": {
+            "n": 1,
+            "strict_correct": 0,
+            "content_correct": 0
+          },
+          "executable-coding": {
+            "n": 2,
+            "strict_correct": 2,
+            "content_correct": 2
+          },
+          "formal-constraints": {
+            "n": 1,
+            "strict_correct": 1,
+            "content_correct": 1
+          },
+          "json-tool-arguments": {
+            "n": 2,
+            "strict_correct": 2,
+            "content_correct": 2
+          },
+          "state-tracking": {
+            "n": 2,
+            "strict_correct": 1,
+            "content_correct": 1
+          }
+        }
+      }
+    }
+  },
+  "paired_public128": []
+}

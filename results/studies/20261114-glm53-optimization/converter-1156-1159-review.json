@@ -1,0 +1,20 @@
+{
+  "tools/iq_pack.py": {
+    "text_identical": false,
+    "diff": "--- \n\n+++ \n\n@@ -99,4 +99,5 @@\n\n )\n ARCHITECTURES = (\"qwen4exp\", \"glm5-next\", \"glm5next\")   # unsloth spells it without the hyphen\n+ARCHITECTURES += (\"glm-dsa\",)   # glm-dsa: GLM-5.3 744B, packed by tools/strata/glm_dsa_pack.py (B1.6)\n \n \n@@ -378,4 +379,6 @@\n\n         print(\"general.architecture is %r; the packer knows %s\" % (arch, \" and \".join(ARCHITECTURES)))\n         return 1\n+    if arch == \"glm-dsa\":   # glm-dsa (B1.6): the per-arch lists, upcasts and the MTP block live in tools/strata/\n+        sys.path.insert(0, str(HERE / \"strata\")); import glm_dsa_pack; return glm_dsa_pack.pack(a, src, out)  # noqa: E401,E702\n     if arch in (\"glm5-next\", \"glm5next\"):\n         # two spellings in the wild: llama.cpp's canonical \"glm5-next\" (llama-arch.cpp L156) and",
+    "normalized_1156_sha256": "02bdcd5257e428b150c0a87bd96c4577aedacadb933687eef055e1a65e3f3738",
+    "normalized_1159_sha256": "c24d413d5f17921d1a2f6296e433b6e1bc43c9e9d4db5b8e5c4d935b6eaaeed9"
+  },
+  "tools/strata_tokenizer.py": {
+    "text_identical": true,
+    "diff": "",
+    "normalized_1156_sha256": "76b119ae2dfd61b3ca4e3d5b9dee9b70f011e296743d695bae5fd9147c6e4ebc",
+    "normalized_1159_sha256": "76b119ae2dfd61b3ca4e3d5b9dee9b70f011e296743d695bae5fd9147c6e4ebc"
+  },
+  "tools/gguf_reader.py": {
+    "text_identical": true,
+    "diff": "",
+    "normalized_1156_sha256": "bb0c95d5b9bd76a78cfcd786f4f741881e673285070153b14a29a679b0b8a463",
+    "normalized_1159_sha256": "bb0c95d5b9bd76a78cfcd786f4f741881e673285070153b14a29a679b0b8a463"
+  }
+}

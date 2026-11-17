@@ -1,0 +1,526 @@
+{
+  "id": "mmlu-pro-test-07330",
+  "category": "economics",
+  "cohort": "public128",
+  "suite_id": "mmlu-pro-balanced64-chat-v1",
+  "prompt_sha256": "ea11d24330d903b5c0bf65d28abbe8208e58ce7ea8d64157a499da854a713f7e",
+  "request_started_unix": 1794676688.4987366,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676688.4987366
+  },
+  "started_unix": 1794676688.4987366,
+  "response_id": "resp_abd34ae17d574c868604660f",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 226,
+    "output_tokens": 2,
+    "total_tokens": 228,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 2,
+  "non_reasoning_generated_tokens": 2,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 3.0082889999976032,
+  "first_visible_content_s": 3.0082889999976032,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 3.0082889999976032,
+  "terminal_answer_s": 3.1094279999961145,
+  "transport_wall_s": 3.109502399995108,
+  "answer": "J",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.0029889999932493083,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_abd34ae17d574c868604660f",
+          "object": "response",
+          "created_at": 1794676688,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.003005999999004416,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_abd34ae17d574c868604660f",
+          "object": "response",
+          "created_at": 1794676688,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.0082253999935347,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_6d59b51624344683b7f151cd",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.0082638999956544,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_6d59b51624344683b7f151cd",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.0082889999976032,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_6d59b51624344683b7f151cd",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "J",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.108397599993623,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 5,
+        "item_id": "msg_6d59b51624344683b7f151cd",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "J",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.1084270999999717,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 6,
+        "item_id": "msg_6d59b51624344683b7f151cd",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "J",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.1084878999972716,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 7,
+        "output_index": 0,
+        "item": {
+          "id": "msg_6d59b51624344683b7f151cd",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "J",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.1094279999961145,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 8,
+        "response": {
+          "id": "resp_abd34ae17d574c868604660f",
+          "object": "response",
+          "created_at": 1794676688,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_6d59b51624344683b7f151cd",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "J",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 226,
+            "output_tokens": 2,
+            "total_tokens": 228,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676691
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "fdf7dfc7792d438e29b7aa00f8ce54a1c968f0c14baf3458f9701a31ae52c0d9",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 7,
+    "source": "nvidia-smi",
+    "duration_s": 3.109570499997062,
+    "gpu_w_avg": 115.62685377228581,
+    "gpu_sampled_coverage_s": 3.0313440000027185,
+    "gpu_sampled_coverage_fraction": 0.9748433103560709,
+    "gpu_w_max": 124.57999999999998,
+    "gpu_energy_j": 359.549853497774,
+    "system_w_est": 240.21270736944348,
+    "system_energy_j_est": 746.9583485604484,
+    "gpu_util_avg": 44.57142857142857,
+    "vram_mb_max": 30139.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 43.0,
+    "cpu_util_avg": 0.44710497835497837,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 48748482560,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 70.74697523675098,
+    "system_memory_percent_max": 71.02365072945615,
+    "vram_percent_avg": 92.41287755978304,
+    "vram_percent_max": 92.43390786971723,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 7,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 7,
+        "source": "nvidia-smi",
+        "duration_s": 3.109570499997062,
+        "gpu_w_avg": 56.03078300781947,
+        "gpu_sampled_coverage_s": 3.0313440000027185,
+        "gpu_sampled_coverage_fraction": 0.9748433103560709,
+        "gpu_w_max": 73.71,
+        "gpu_energy_j": 174.2316699328521,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 48.57142857142857,
+        "vram_mb_max": 15555.0,
+        "clock_mhz_avg": 2816.5714285714284,
+        "temp_c_max": 43.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.36982676282192,
+        "vram_percent_max": 95.4118873826903,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 7,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 7,
+        "source": "nvidia-smi",
+        "duration_s": 3.109570499997062,
+        "gpu_w_avg": 59.596070764466326,
+        "gpu_sampled_coverage_s": 3.0313440000027185,
+        "gpu_sampled_coverage_fraction": 0.9748433103560709,
+        "gpu_w_max": 73.41,
+        "gpu_energy_j": 185.31818356492184,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 40.57142857142857,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 3015.8571428571427,
+        "temp_c_max": 34.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 7,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 6,
+    "errors": {},
+    "available_bytes_min": 19919855616,
+    "ram_used_percent_max": 71.0,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 96800.69092336895,
+      "max": 187873.79763900198,
+      "min": 17725.839723390287
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 1445.1158047907113,
+      "max": 2214.5280337545546,
+      "min": 642.1323572921502
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 636666.3601859831,
+      "max": 977556.1876283418,
+      "min": 291582.223461687
+    },
+    "transition_faults_s": {
+      "mean": 8597.617695567833,
+      "max": 15812.723387537251,
+      "min": 825.8864306283249
+    },
+    "system_cache_resident_bytes": {
+      "mean": 6598923605.333333,
+      "max": 6747324416.0,
+      "min": 6463954944.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19839672320.0,
+      "max": 20040339456.0,
+      "min": 19693252608.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 7509.333333333333,
+      "max": 45056.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 225365333.33333334,
+      "max": 225443840.0,
+      "min": 225349632.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 340161194.6666667,
+      "max": 341524480.0,
+      "min": 338477056.0
+    },
+    "committed_bytes": {
+      "mean": 80252012544.0,
+      "max": 80336449536.0,
+      "min": 80141230080.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9670295715332031,
+      "max": 1.9670295715332031,
+      "min": 1.9670295715332031
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 18248192,
+        "write_bytes": 3229184,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 1169248256,
+        "write_bytes": 0,
+        "read_time_ms": 2,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32685924352,
+    "engine_rss_max": 32686112768,
+    "engine_faults_delta": 54
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": false,
+    "completed_final_answer": true,
+    "strict_success": false,
+    "content_success": true,
+    "format_only_failure": true,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 1,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "J",
+      "expected": "J",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": false,
+      "60": false,
+      "120": false
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676691.6100125
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "variant": "1.1.59+wddm-cap+buffered-direct",
+  "parent_commit": "027992cb1f09829488e650e466233ca351d3d6ef",
+  "parent_archive_sha256": "aa0353cde4e460b7990cacf7c65d270d8375788cbafe9c594befbe6a7cb90813",
+  "preserved_874_binary": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.59\\build\\held874\\maya.exe",
+  "preserved_874_sha256": "874d0e2485900299771023dfa67b5fe65ae854f8893ecbf4b6a8618fea754807",
+  "changed_sources": [
+    {
+      "path": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.59\\include\\strata\\core\\glm_model.hpp",
+      "upstream_sha256": "3df48a63b31b7152282568e226630cae3cbcfa54454427d980156a59e3f48159",
+      "sha256": "902a20bdf334b2f1f7e6db990916013e43bcea7820db24dbd56fe657d4b10d5c"
+    },
+    {
+      "path": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.59\\src\\core\\glm_model.cu",
+      "upstream_sha256": "52e98609000ff2be4699812c135dfaea4f95ecd653ec8cc94d9b013f9080aa1d",
+      "sha256": "0fc11970a332c64fee0cbd1bb72ece58500506f0f90d5e496689238893150d12"
+    },
+    {
+      "path": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.59\\src\\core\\glm_fast_path.cu",
+      "upstream_sha256": "3c5b4168197782fa80397be675fd90456ff527607161f19df420b8ffc302de98",
+      "sha256": "b4e47b1da79f973fe3da7e58e1a19a94d1723cc944011be75da67b8fed624eb4"
+    },
+    {
+      "path": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.59\\src\\core\\glm_wddm_plan.hpp",
+      "upstream_sha256": null,
+      "sha256": "0fb147a355a2141c1394f523b3184d3fd19cd4218e15b3a4f1a202aa626abb4d"
+    }
+  ],
+  "patch_path": "C:\\tests\\flash-next\\experimental-maya\\software-provenance\\v1.1.59-wddm-cap-buffered-direct.patch",
+  "patch_sha256": "5cd103964d969b8ecfe069c201f35a8a2b46239605d3c952b40818c90f51ea8a",
+  "status": "completed",
+  "source_hash": "184e670d9c5f9750",
+  "started_at": "2026-11-14T08:55:09.752261+00:00",
+  "engine_executed": false,
+  "gpu_tests_run": false,
+  "control_manifests_modified": false,
+  "opt_in_flags": {
+    "MAYA_GLM_WDDM_CAP": "1: query-known NVIDIA Windows cache budgets avoid all capacity probes; default0",
+    "MAYA_GLM_BUFFERED_DIRECT": "1 plus BUFFERED_IO1: exact overlapped reads to destination; default0"
+  },
+  "cpu_tests": {
+    "budget_floor_checks": 21,
+    "buffered_io_byte_parity_checks": 982,
+    "gpu_used": false
+  },
+  "build_metadata": {
+    "src": "184e670d9c5f9750",
+    "archs": [
+      120
+    ],
+    "gpu_ids": [
+      0,
+      1
+    ],
+    "nvcc": "C:\\tests\\flash-next\\experimental-maya\\cuda-13.4.3\\bin\\nvcc.exe",
+    "host_compiler": null,
+    "llama": "C:\\tests\\flash-next\\experimental-maya\\source\\third_party\\llama.cpp",
+    "lib_dirs": [
+      "C:\\tests\\flash-next\\experimental-maya\\cuda-13.4.3\\bin",
+      "C:\\tests\\flash-next\\experimental-maya\\cuda-13.4.3\\bin\\x64"
+    ],
+    "date": "2026-11-14 09:56",
+    "targets": [
+      "maya"
+    ]
+  },
+  "binary": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.59\\build\\maya.exe",
+  "binary_sha256": "bf3bd7baeed0fa7aad3e365aab4cc510fa8fa19f922bd1446219d17ca4748283",
+  "finished_at": "2026-11-14T08:56:53.826387+00:00"
+}

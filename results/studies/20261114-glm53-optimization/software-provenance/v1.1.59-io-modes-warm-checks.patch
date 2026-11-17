@@ -1,0 +1,133 @@
+--- a/src/core/glm_model.cu
++++ b/src/core/glm_model.cu
+@@ -2909,8 +2909,25 @@
+     s.base = (uint8_t*) v;
+     s.path = path;
+     s.data_start = data_start;
++    // Opt-in mmap-only experiment: use read_slice's existing mapped memcpy fallback.
++    // No expert ReadFile handle means pack_release_views preserves these views.
++    // This avoids mixing unbuffered reads with mapped views of the same shard.
++    if (strata::platform::env_switch("MAYA_GLM_MMAP_IO")) {
++        s.h_direct = nullptr;
++        std::fprintf(stderr, "glm expert I/O: native 1.1.59+io-modes+warm-checks, Windows mmap-only reads "
++                             "(mapped memcpy; no ReadFile expert handle)\n");
++        return true;
++    }
++    // Experimental 1.1.59+buffered-io: allow spare physical RAM to cache expert
++    // file pages without expanding the mapped/pinned RAM tier. Off by default.
++    // Keep the same overlapped handles and read_slice's alignment/EOF checks.
++    const bool buffered = strata::platform::env_switch("MAYA_GLM_BUFFERED_IO");
++    const DWORD read_flags = FILE_FLAG_OVERLAPPED | FILE_FLAG_RANDOM_ACCESS |
++                             (buffered ? 0 : FILE_FLAG_NO_BUFFERING);
++    std::fprintf(stderr, "glm expert I/O: native 1.1.59+buffered-io, Windows %s overlapped reads, CreateFile flags 0x%08lx\n",
++                 buffered ? "buffered (OS file cache)" : "unbuffered", (unsigned long) read_flags);
+     HANDLE hd = CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
+-                            FILE_FLAG_NO_BUFFERING | FILE_FLAG_OVERLAPPED | FILE_FLAG_RANDOM_ACCESS, nullptr);
++                            read_flags, nullptr);
+     s.h_direct = hd == INVALID_HANDLE_VALUE ? nullptr : (void*) hd;
+     return true;
+ #else
+--- a/src/core/glm_fast_path.cu
++++ b/src/core/glm_fast_path.cu
+@@ -4122,9 +4122,47 @@
+ // slots - all but the spares - and the rest fill the RAM tier (a few slots per class stay free for disk reads).  The
+ // first request then runs warm and the disk is touched again only for experts that fit nowhere.  MAYA_GLM_WARM=0
+ // skips it (the tiers fill on demand).
++// Diagnostic snapshots never substitute a guessed free-memory value when a query fails.
++// The existing NON_LOCAL lookup matches this CUDA device by LUID (not DXGI adapter order).
++static void glm_warm_memory_snapshot(int dev, const char* phase) {
++    const cudaError_t prior = cudaPeekAtLastError();
++    int current = -1;
++    const cudaError_t device_query = cudaGetDevice(&current);
++    size_t free = 0, total = 0;
++    const cudaError_t memory_query = cudaMemGetInfo(&free, &total);
++    uint64_t budget = 0, usage = 0;
++    const bool nonlocal = glm_pin_budget(dev, budget, usage);
++    std::fprintf(stderr,
++                 "glm warm memory: CUDA%d phase=%s current_device=%d device_query=%s prior_error=%s "
++                 "cuda_memory_query=%s free_bytes=%llu total_bytes=%llu "
++                 "wddm_nonlocal_query=%s budget_bytes=%llu usage_bytes=%llu\n",
++                 dev, phase, current, cudaGetErrorString(device_query), cudaGetErrorString(prior),
++                 cudaGetErrorString(memory_query), (unsigned long long) free, (unsigned long long) total,
++                 nonlocal ? "ok" : "unavailable", (unsigned long long) budget, (unsigned long long) usage);
++    std::fflush(stderr);
++}
++
+ bool Glm5Model::fast_warm(std::string& err) {
+     FastState* F = fast_;
+     const Glm5Geometry& g = g_;
++    // Keep the first failing operation: a pin-allocation error must not be attributed to the final table upload.
++    const cudaError_t entry_error = cudaPeekAtLastError();
++    glm_warm_memory_snapshot(dev_, "before-warm");
++    if (entry_error != cudaSuccess) {
++        err = "glm fast: CUDA" + std::to_string(dev_) + " warm entry has prior CUDA error (" +
++              cudaGetErrorString(entry_error) + ")";
++        return false;
++    }
++    const auto warm_error = [&](cudaError_t code, const char* operation, size_t batch, int il, int expert,
++                                const void* src, const void* dst, size_t bytes) {
++        std::ostringstream why;
++        why << "glm fast: CUDA" << dev_ << " warm " << operation << " failed (" << cudaGetErrorString(code)
++            << "): batch=" << batch << " layer=" << il << " expert=" << expert
++            << " src=" << src << " dst=" << dst << " bytes=" << bytes;
++        err = why.str();
++        glm_warm_memory_snapshot(dev_, "warm-failure");
++        return false;
++    };
+     // glm-dsa B8.1 (warm): MAYA_GLM_WARM_SEQ (glm-dsa default on) streams in file order on one thread, and a
+     // parallel split's parts take turns at the disk (the wait is not timed)
+     const bool seq = glmwarm::seq_on(g.arch == GlmArch::GlmDsa);
+@@ -4350,13 +4388,29 @@
+         } else {
+             F->workers->run(nb * 3, piece);
+         }
++        const void* last_src = nullptr;
++        const void* last_dst = nullptr;
++        size_t last_bytes = 0;
++        int last_layer = -1, last_expert = -1;
+         for (int k = 0; k < nb; ++k) {
+             const Job& J = jobs[b + (size_t) k];
+-            if (J.vram)
+-                cudaMemcpyAsync(J.dst, F->stage[(size_t) k], F->L[(size_t) J.il].blob, cudaMemcpyHostToDevice, F->copy);
++            if (J.vram) {
++                last_src = F->stage[(size_t) k];
++                last_dst = J.dst;
++                last_bytes = F->L[(size_t) J.il].blob;
++                last_layer = J.il;
++                last_expert = J.e;
++                const cudaError_t copy_error = cudaMemcpyAsync(J.dst, last_src, last_bytes,
++                                                               cudaMemcpyHostToDevice, F->copy);
++                if (copy_error != cudaSuccess)
++                    return warm_error(copy_error, "expert-copy", b / 8, J.il, J.e, last_src, J.dst, last_bytes);
++            }
+             done_bytes += F->L[(size_t) J.il].blob;
+         }
+-        cudaStreamSynchronize(F->copy);
++        const cudaError_t sync_error = cudaStreamSynchronize(F->copy);
++        if (sync_error != cudaSuccess)
++            return warm_error(sync_error, "batch-copy-sync (last copy shown)", b / 8,
++                              last_layer, last_expert, last_src, last_dst, last_bytes);
+         const int pct = (int) (100.0 * (double) done_bytes / (double) std::max<size_t>(1, total_bytes));
+         if (pct / 10 != last_pct / 10) {
+             last_pct = pct;
+@@ -4365,12 +4419,16 @@
+                          (double) done_bytes / 1e9, (double) total_bytes / 1e9, s);
+         }
+     }
++    if (const cudaError_t prior = cudaPeekAtLastError(); prior != cudaSuccess)
++        return warm_error(prior, "before-table-upload prior CUDA error", jobs.size() / 8, -1, -1,
++                          th.data(), F->tab, th.size() * sizeof(unsigned long long));
++    glm_warm_memory_snapshot(dev_, "before-table-upload");
+     if (const cudaError_t ue = upload_staged(F->stage.empty() ? nullptr : F->stage[0], F->stage_bytes, F->tab, th.data(),
+                                              th.size() * sizeof(unsigned long long));
+-        ue != cudaSuccess) {
+-        err = std::string("glm fast: the warmed expert tables did not upload (") + cudaGetErrorString(ue) + ")";
+-        return false;
+-    }
++        ue != cudaSuccess)
++        return warm_error(ue, "table-upload", jobs.size() / 8, -1, -1,
++                          th.data(), F->tab, th.size() * sizeof(unsigned long long));
++    glm_warm_memory_snapshot(dev_, "after-table-upload");
+     const double s = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+     // glm-dsa B8.1 (warm): the rate in MB/s (each part's ~13 MB/s printed as 0.01 GB/s) and the reads' order
+     std::string how = "slot order, parallel reads";

@@ -1,0 +1,101 @@
+[maya] sampling defaults from the config: temperature=0.0, top_p=1.0, seed=73129
+loading the model (the first start takes a minute or two) ...
+[maya] layer split across GPUs [1, 0] (25)
+glm settings from the environment: MAYA_GLM_BUFFERED_DIRECT=1, MAYA_GLM_BUFFERED_IO=1, MAYA_GLM_DISK_SKIP_FROM=8, MAYA_GLM_DISK_SKIP_W=0, MAYA_GLM_KV_RESIDENT=32768, MAYA_GLM_MISS_SKIP_FROM=0, MAYA_GLM_MISS_SKIP_W=0, MAYA_GLM_MMAP_IO=0, MAYA_GLM_MTP=1, MAYA_GLM_PARALLEL_LOAD=1, MAYA_GLM_PIN_PIECE_MB=1024, MAYA_GLM_PIN_ROOM_MB=512, MAYA_GLM_PREFILL_STABLE=0, MAYA_GLM_RAM_GB=46.2285, MAYA_GLM_RAM_HEADROOM_GB=12, MAYA_GLM_RAM_RESIDENT=0, MAYA_GLM_READ_CHUNKS=4, MAYA_GLM_SEQ_CTX=98304, MAYA_GLM_SLOTS=0, MAYA_GLM_SPEC_WIN=0, MAYA_GLM_WDDM_CAP=1
+glm expert I/O: native 1.1.59+buffered-io, Windows buffered (OS file cache) overlapped reads, CreateFile flags 0x50000000
+glm expert I/O: buffered direct-destination reads enabled (no aligned bounce copy)
+glm expert I/O: native 1.1.59+buffered-io, Windows buffered (OS file cache) overlapped reads, CreateFile flags 0x50000000
+glm expert I/O: buffered direct-destination reads enabled (no aligned bounce copy)
+glm expert I/O: native 1.1.59+buffered-io, Windows buffered (OS file cache) overlapped reads, CreateFile flags 0x50000000
+glm expert I/O: buffered direct-destination reads enabled (no aligned bounce copy)
+glm expert I/O: native 1.1.59+buffered-io, Windows buffered (OS file cache) overlapped reads, CreateFile flags 0x50000000
+glm expert I/O: buffered direct-destination reads enabled (no aligned bounce copy)
+glm mtp: CUDA1 the NextN block (blk.45) loaded: 142 MB dense, experts iq1_s/iq2_xxs
+glm pack: CUDA1 latent cache INT8 (544 bytes a position and layer)
+glm pack: CUDA1 KV streaming: 32768 of 98304 positions of each of 6 DSA layers in VRAM (0.11 GB), the latent cache in 0.32 GB of pinned RAM
+glm pack: CUDA0 latent cache INT8 (544 bytes a position and layer)
+glm pack: CUDA0 KV streaming: 32768 of 98304 positions of each of 6 DSA layers in VRAM (0.11 GB), the latent cache in 0.32 GB of pinned RAM
+glm spec: CUDA0 the head's recurrent-state backup (81 MB) before the expert pool
+glm prefill: CUDA0 cuBLAS warm-up: sgemm 0, gemm f16 0, sync no error
+glm prefill: CUDA0 the chunk stage line is on (MAYA_GLM_PREFILL_STAGES=0 silences it)
+glm prefill: CUDA0 chunks of 8192 tokens (--prefill auto, up to 8192; mixer sub-batches of 1024), borrowing 2069 MB of the expert pool while a prompt runs (activations 1889, weight scratch 96, expert staging 68, prestage 0: 0 experts); disk landing ring 96 experts (547 MB pinned)
+glm fast: CUDA0 VRAM before the expert pool: 4.84 of 15.89 GB in use - dense weights 2.77, state/KV (98304 ctx) 0.30, activations 0.05, other (context, MTP, scratch, prompt path) 1.73
+glm fast: the expert profile D:\StrataModels\models\GLM-5.3-Flash-Maya-XS\pack-f32-1156\expert-profile-seed.bin ranks 13248 (layer, expert) pairs
+glm fast: CUDA0 layers [0,25) expert pool 9.58 GB, 67-104 slots/layer (1905 total)
+glm WDDM cap: CUDA0 Budget=33513179136 CurrentUsage=2518679552 Available=30994499584
+glm WDDM cap: CUDA1 Budget=33513179136 CurrentUsage=2518679552 Available=30994499584
+glm WDDM cap: global RAM target <= 28580970496 bytes, reserve=536870912 future=1876658176; no allocation probe
+glm fast: CUDA1 only 1351 MiB free once the expert pool's 9.91 GB are written (reserve 1500 MiB): 0.21 GB less
+glm prefill: CUDA1 cuBLAS warm-up: sgemm 0, gemm f16 0, sync no error
+glm prefill: CUDA1 the chunk stage line is on (MAYA_GLM_PREFILL_STAGES=0 silences it)
+glm prefill: CUDA1 chunks of 8192 tokens (--prefill auto, up to 8192; mixer sub-batches of 1024), borrowing 2075 MB of the expert pool while a prompt runs (activations 1889, weight scratch 96, expert staging 74, prestage 0: 0 experts); disk landing ring 96 experts (596 MB pinned)
+glm fast: CUDA1 VRAM before the expert pool: 4.59 of 15.89 GB in use - dense weights 2.47, state/KV (98304 ctx) 0.28, activations 0.05, other (context, MTP, scratch, prompt path) 1.79
+glm fast: CUDA1 layers [25,45) expert pool 9.63 GB, 77-105 slots/layer, the draft layer 89 (1878 total)
+glm WDDM cap: CUDA0 Budget=33513179136 CurrentUsage=3277848576 Available=30235330560
+glm WDDM cap: CUDA1 Budget=33513179136 CurrentUsage=3277848576 Available=30235330560
+glm WDDM cap: CUDA0 Budget=33513179136 CurrentUsage=3277848576 Available=30235330560
+glm WDDM cap: CUDA1 Budget=33513179136 CurrentUsage=3277848576 Available=30235330560
+glm WDDM cap: CUDA0 RAM budget <= 14611513344 bytes, mandatory=261095424 later=242843648 reserve=536870912; destructive probes disabled
+glm WDDM cap: CUDA0 Budget=33513179136 CurrentUsage=3328180224 Available=30184998912
+glm WDDM cap: CUDA1 Budget=33513179136 CurrentUsage=3328180224 Available=30184998912
+glm WDDM cap: CUDA0 Budget=33513179136 CurrentUsage=4110417920 Available=29402761216
+glm WDDM cap: CUDA1 Budget=33513179136 CurrentUsage=4110417920 Available=29402761216
+glm WDDM cap: CUDA0 Budget=33513179136 CurrentUsage=16085155840 Available=17428023296
+glm WDDM cap: CUDA1 Budget=33513179136 CurrentUsage=16085155840 Available=17428023296
+glm fast: CUDA0 RAM tier 13.61 GB pinned, 2710 slots
+glm prefill: CUDA0 73% of the experts' bytes are held pinned: the pool lends at most 85% of its slots
+glm WDDM cap: CUDA0 Budget=33513179136 CurrentUsage=17943232512 Available=15569946624
+glm WDDM cap: CUDA1 Budget=33513179136 CurrentUsage=17943232512 Available=15569946624
+glm WDDM cap: CUDA1 RAM budget <= 13965131776 bytes, mandatory=190840832 later=0 reserve=536870912; destructive probes disabled
+glm warm memory: CUDA0 phase=before-warm current_device=0 device_query=no error prior_error=no error cuda_memory_query=no error free_bytes=1571815424 total_bytes=17066033152 wddm_nonlocal_query=ok budget_bytes=33513179136 usage_bytes=17943232512
+glm WDDM cap: CUDA0 Budget=33513179136 CurrentUsage=18010341376 Available=15502837760
+glm WDDM cap: CUDA1 Budget=33513179136 CurrentUsage=18010341376 Available=15502837760
+glm fast: CUDA0 warming the expert tiers 10% (2.5 of 24.5 GB, 1 s)
+glm WDDM cap: CUDA0 Budget=33513179136 CurrentUsage=31224496128 Available=2288683008
+glm WDDM cap: CUDA1 Budget=33513179136 CurrentUsage=31224496128 Available=2288683008
+glm fast: CUDA1 RAM tier 13.01 GB pinned, 2545 slots
+glm prefill: CUDA1 73% of the experts' bytes are held pinned: the pool lends at most 85% of its slots
+glm warm memory: CUDA1 phase=before-warm current_device=1 device_query=no error prior_error=no error cuda_memory_query=no error free_bytes=1648934912 total_bytes=17066033152 wddm_nonlocal_query=ok budget_bytes=33513179136 usage_bytes=31977373696
+glm fast: CUDA0 warming the expert tiers 20% (4.9 of 24.5 GB, 3 s)
+glm fast: CUDA1 warming the expert tiers 10% (2.4 of 23.9 GB, 1 s)
+glm fast: CUDA0 warming the expert tiers 30% (7.4 of 24.5 GB, 5 s)
+glm fast: CUDA1 warming the expert tiers 20% (4.8 of 23.9 GB, 3 s)
+glm fast: CUDA0 warming the expert tiers 40% (9.8 of 24.5 GB, 6 s)
+glm fast: CUDA1 warming the expert tiers 30% (7.2 of 23.9 GB, 4 s)
+glm fast: CUDA0 warming the expert tiers 50% (12.3 of 24.5 GB, 8 s)
+glm fast: CUDA1 warming the expert tiers 40% (9.6 of 23.9 GB, 6 s)
+glm fast: CUDA0 warming the expert tiers 60% (14.7 of 24.5 GB, 10 s)
+glm fast: CUDA1 warming the expert tiers 50% (12.0 of 23.9 GB, 7 s)
+glm fast: CUDA0 warming the expert tiers 70% (17.1 of 24.5 GB, 11 s)
+glm fast: CUDA1 warming the expert tiers 60% (14.4 of 23.9 GB, 9 s)
+glm fast: CUDA0 warming the expert tiers 80% (19.6 of 24.5 GB, 13 s)
+glm fast: CUDA1 warming the expert tiers 70% (16.8 of 23.9 GB, 10 s)
+glm fast: CUDA0 warming the expert tiers 90% (22.0 of 24.5 GB, 14 s)
+glm fast: CUDA1 warming the expert tiers 80% (19.1 of 23.9 GB, 12 s)
+glm fast: CUDA1 warming the expert tiers 90% (21.5 of 23.9 GB, 13 s)
+glm fast: CUDA0 warming the expert tiers 100% (24.5 of 24.5 GB, 16 s)
+glm warm memory: CUDA0 phase=before-table-upload current_device=0 device_query=no error prior_error=no error cuda_memory_query=no error free_bytes=1571815424 total_bytes=17066033152 wddm_nonlocal_query=ok budget_bytes=33513179136 usage_bytes=31977373696
+glm warm memory: CUDA0 phase=after-table-upload current_device=0 device_query=no error prior_error=no error cuda_memory_query=no error free_bytes=1571815424 total_bytes=17066033152 wddm_nonlocal_query=ok budget_bytes=33513179136 usage_bytes=31977373696
+glm fast: CUDA0 tiers warm: 4537 experts (24.5 GB) in 16 s (1559.0 MB/s; slot order, parallel reads)
+glm fast: CUDA1 warming the expert tiers 100% (23.9 of 23.9 GB, 14 s)
+glm warm memory: CUDA1 phase=before-table-upload current_device=1 device_query=no error prior_error=no error cuda_memory_query=no error free_bytes=1688928256 total_bytes=17066033152 wddm_nonlocal_query=ok budget_bytes=33513179136 usage_bytes=31977373696
+glm warm memory: CUDA1 phase=after-table-upload current_device=1 device_query=no error prior_error=no error cuda_memory_query=no error free_bytes=1688928256 total_bytes=17066033152 wddm_nonlocal_query=ok budget_bytes=33513179136 usage_bytes=31977373696
+glm fast: CUDA1 tiers warm: 4352 experts (23.9 GB) in 14 s (1662.5 MB/s; slot order, parallel reads)
+glm tier: CUDA0 CPU lane pool mode: a pool per part (MAYA_GLM_CPU_SHARED=unset, 2 part(s), 0 NUMA node(s))
+glm fast: CUDA0 CPU lane: 4 threads, an expert 0.814 ms on the CPU vs 0.435 ms over PCIe -> of 0..8 RAM-tier experts the CPU takes 0 0 1 1 1 2 2 2 3
+glm tier: CUDA1 CPU lane pool mode: a pool per part (MAYA_GLM_CPU_SHARED=unset, 2 part(s), 0 NUMA node(s))
+glm fast: CUDA1 CPU lane: 4 threads, an expert 0.782 ms on the CPU vs 0.397 ms over PCIe -> of 0..8 RAM-tier experts the CPU takes 0 0 0 1 1 1 2 2 2
+glm split: layers [0, 25) on CUDA0, [25, 45) on CUDA1 (one 64 KB host hop per boundary per token)
+maya serve: CUDA0: 1499 MiB of VRAM free with everything loaded
+maya serve: CUDA1: 1612 MiB of VRAM free with everything loaded
+maya generate: glm5-next serve (M3.1): GEN <max_new> [keys] <ids>, GENI <max_new> [keys] <embeddings> <ids>; QUIT to end
+[maya] thinking level when a request names none: none
+[maya] loop guard: off (a request's "loop_guard": true turns it on for that request)
+[maya] browser pages allowed to call /v1/* (CORS): *
+ready: http://127.0.0.1:8097/v1  (OpenAI: /v1/chat/completions, /v1/responses, Anthropic: /v1/messages, context 98304 tokens)
+       open http://127.0.0.1:8097/ in a browser to chat; close this window to stop the model
+       from other devices: http://192.168.x.x:8097/   (API: http://192.168.x.x:8097/v1)
+       WARNING: no API key - anyone on your network can use this model. Add "api_key": "..." to the config (clients send it as their API key; the web page asks for it)
+       nothing arrives? Windows Firewall blocks it until allowed: accept its prompt for Python, or run in an admin PowerShell:
+         New-NetFirewallRule -DisplayName "Maya 8097" -Direction Inbound -Protocol TCP -LocalPort 8097 -Action Allow -Profile Private
+       (and set this network to Private in Windows' network settings)

@@ -1,0 +1,435 @@
+{
+  "researched_on": "2026-11-14",
+  "region": "France/EUR",
+  "scope": "Read-only primary manufacturer, quantizer and retailer evidence. No purchases, downloads of weights, BIOS/device changes or engine starts.",
+  "conclusions": [
+    "Existing board is EVGA X99 Micro2, not FTW/Classified. Four occupied DIMM slots and official64GB ceiling prevent a supported drop-in capacity increase.",
+    "Prioritize free physical/path checks, then RAM capacity through another platform for higher GLM quants. PSU/cooling changes only help an observed limitation.",
+    "Prices are unusually high and volatile. Direct product pages supersede stale search snippets. No measured speed multiplier is claimed.",
+    "The10 ranks are ordered from free/cheap checks toward expensive capacity purchases; conditional items should be skipped when already satisfied."
+  ],
+  "machine": {
+    "board": "EVGA131-HE-E095 = X99 Micro2,mATX",
+    "cpu": "i7-5960X8c16t,AVX2,40PCIe3 lanes,4memorychannels,official64GB max",
+    "ram": "4x16GiB DDR4-2133,A1/B1/C1/D1;all4slots filled",
+    "gpus": "2xRTX5070Ti16GB300W;observedH2D13.8GB/s each",
+    "storage": "D: Samsung990PRO NVMe confirmed; C:870EVO SATA. F:removed. Existing NVMe has about1TB free; no extra SSD currently needed.",
+    "unknown": [
+      "PSU model/wattage/cables",
+      "case and exactGPUclearance",
+      "BIOSrevision",
+      "DIMMpartnumbers/SPDratedspeed",
+      "NVMeactualnegotiatedlink"
+    ],
+    "network": "Onlyactiveadapterreported:IntelI218-V Ethernetnegotiated100Mbps;hardwarecapable1GbE. WAN/routerpathunknown.",
+    "network_settings": "Speed & Duplex: Auto Negotiation; *SpeedDuplex registry value0. No softwareforced100Mbps setting observed."
+  },
+  "compatibility": {
+    "motherboard": {
+      "source": "https://www.evga.com/support/Manuals/files/131-HE-E095_Part1_v2.pdf",
+      "verified": "Official manual identifies Micro2;4slots supporting4/8/16GB DIMMs,max64GB;quadchannel;up to3200+OC.40laneCPU:PE1x16,PE2x16,PE3x8.M.2PCIe3x4 sharesPE3.",
+      "ram128": "Not validated. Do not buy4x32GB or ECCRDIMM for this board assuming they work."
+    },
+    "cpu": {
+      "source": "https://www.intel.com/content/www/us/en/products/sku/82930/intel-core-i75960x-processor-extreme-edition-20m-cache-up-to-3-50-ghz/specifications.html",
+      "verified": "5960X officialmax64GB,DDR4-2133,quadchannel68GB/stheoretical,AVX2,40Gen3lanes.13.8GB/s/card consistent with healthyGen3x16;notproof of poorplacement.",
+      "drop_in_xeon": "EVGA supportmatrix requesttimedout;no primaryXeonv3/v4compatibility confirmed. Socketmatching is insufficient. Do not rank cheapXeonasverifiedupgrade.",
+      "broadwell": "EVGA manual namesBroadwell-E,but BIOS/model-specific CPUcompatibility still needsmatrix."
+    },
+    "future_am5": {
+      "sources": [
+        "https://www.asus.com/motherboards-components/motherboards/proart/proart-x870e-creator-wifi/techspec/",
+        "https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-9-9950x.html"
+      ],
+      "verified": "ProArtX870Emax256GBUDIMM,twoGPUslotsGen5x8/x8withRyzen7000/9000;M.2_2 reduces secondGPUtox4;useM.2_1/3/4instead.9950X AVX512,max256GB,dualchannel;official4DIMMspeedDDR5-3600 versus2DIMM5600.",
+      "warning": "Most cheapAM5secondlongslots are chipsetx4;choose verifiedCPUx8/x8.4DIMMs can lowerbandwidth;QVL/BIOS/case/cooler needed."
+    },
+    "future_workstation": {
+      "source": "https://i.dell.com/sites/csdocuments/Shared-Content_data-Sheets_Documents/en/us/Precision-5820-Tower-Spec-Sheet.pdf",
+      "verified": "Precision5820 XeonW variants:quadchannelECCDDR4 andmultipleGen3slots;manufacturer offers2x300WGPUs,950WPSUconfiguration. ExactCPU/RAMtype andpowercables areconfiguration-specific.",
+      "warning": "A smallCPUbaseunit can be slower for expertcompute. CoreX andXeonW RAMcompatibility differ;do not mixUDIMM/RDIMM."
+    }
+  },
+  "ranked_upgrades": [
+    {
+      "rank": 1,
+      "action": "Diagnose the 100 Mbps Ethernet link; try an existing gigabit port and a known-good Cat5e/Cat6 cable.",
+      "indicative_eur": "0 with a spare working gigabit cable/port; approximately EUR 5-20 for a cable or small parts. A 100 Mbps-only switch requires different hardware.",
+      "benefit": "The active I218-V link negotiates 100 Mbps, limiting wire throughput to 12.5 MB/s before overhead. A 94.7 GB download therefore takes at least about 2.1 hours. A gigabit link can improve downloads if this link is the bottleneck, but does not improve local inference. ISP or CDN limits may remain.",
+      "measurement": "Get-NetAdapter on 2026-11-14: only active adapter Ethernet, Intel Ethernet Connection (2) I218-V, LinkSpeed 100 Mbps; Speed & Duplex is Auto Negotiation. No settings changed.",
+      "sources": [
+        "https://www.intel.com/content/www/us/en/products/details/ethernet/gigabit-controllers/i218-connections/resource.html",
+        "https://www.ldlc.com/fiche/PB00726438.html"
+      ],
+      "price_evidence": "LDLC Cat6 2 m product shows EUR 2.90 in stock, before shipping. Intel lists I218 as 10/100/1000BASE-T capable."
+    },
+    {
+      "rank": 2,
+      "action": "Trial native Linux on a separate drive or dual boot before buying hardware; installation is not authorized.",
+      "indicative_eur": "0 software; setup time and separate boot space required",
+      "benefit": "May allow a larger pinned host-expert tier than current Windows/WDDM, reducing NVMe misses with the same64GB RAM. Not a capacity or speed guarantee.",
+      "evidence": "Root current Windows measurement:40GiB requested but27.7GiB actually pinned despite~55GiB physical availability and91GiB available commit. Primary NVIDIA2022 report says typical50% Windows limit is not universal. Microsoft2025 formula caps graphics-system availability at80%, with lower segment/global limits possible; this does not guarantee cudaHostAlloc80%.",
+      "sources": [
+        "https://forums.developer.nvidia.com/t/change-limit-of-50-for-cudahostalloc-pinned-memory-on-windows-10-11/228235/8",
+        "https://learn.microsoft.com/en-us/windows-hardware/drivers/display/calculating-graphics-memory",
+        "https://docs.nvidia.com/cuda/wsl-user-guide/index.html"
+      ],
+      "compatibility": "Use a supported Linux driver/CUDA build for SM120. WSL2 retains WDDM and explicitly limited pinned memory; it is not a workaround. Preserve Windows and Strata Control lifecycle ownership."
+    },
+    {
+      "rank": 3,
+      "action": "Migrate both RTX 5070 Ti cards to a used HP Z840 with 1125 W PSU or Dell T7910 with 1300 W PSU and 128 GB RAM.",
+      "indicative_eur": "~900 EUR concrete French private Z840 lead; professional offers and actual compatibility require confirmation",
+      "benefit": "Supported doubling of hostRAM64?128GB. With32GB VRAM, nominal160GB pool makes FlashS/S24 resident and approaches MayaM recommendation; operating-system overhead still matters.",
+      "price_evidence": {
+        "hp_z840": {
+          "manufacturer_url": "https://h10032.www1.hp.com/ctg/Manual/c04823811.pdf",
+          "supported": "1125W option supports two300W or three225W GPUs;850W option does not.16DIMMs withtwoCPUs;ECCRDIMM/LRDIMM only,do notmix. Gen3x16 slots.",
+          "limits": "OEM cables are not modern12V-2x6; exactsafe cable solution,cardwidth/height/length,BIOS/boot compatibility require verification. TwoCPU NUMA mayhurt CPUexpert/PCIelocality;capacity gain not guaranteed speedgain.",
+          "live_french_listing": {
+            "url": "https://www.leboncoin.fr/ck/ordinateurs/hp-z840",
+            "title": "HP Z840 workstation, deux Xeon E5-2637 V4, ram128Go, alim1125W",
+            "price_eur": 900,
+            "seller": "Colvert,Hendaye",
+            "status": "Visible in live marketplace category;private seller claims,not professionalrefurb or independentlyverified. No contact/purchase."
+          }
+        },
+        "dell_t7910": {
+          "manufacturer_url": "https://www.dell.com/support/manuals/en-us/precision-t7910-workstation/precision_t7910_om_pub-v1/technical-specifications?guid=guid-26ef0634-418a-464a-a66f-bbcdf23ce58f&lang=en-us",
+          "supported": "1300W at181?240VAC;675W totalgraphics budget;2Gen3x16 slots onfirstCPU and2additionalwithsecondCPU. 600W nominaltwo5070Tis belowtotalbudget,butconnector/slot/cardrestrictionsstillapply.",
+          "offer_490": {
+            "url": "https://www.quantelectronic.de/de/Server-Workstation/Workstation/Dell/Dell-Precision-T7910-Workstation-B-Ware-Grade-B-1x-Intel-Xeon-E5-2667-v4-3-2GHz-128GB-512-GB-SSD-n.html",
+            "eur": 490,
+            "spec": "E5-2667v4,128GB,1300W,P2000",
+            "status": "SOLD OUT;notbuyable recommendation"
+          },
+          "offer_400": {
+            "url": "https://www.quantelectronic.de/de/Dell-Precision-T7910-Workstation-A-Ware-Grade-A-1x-Intel-Xeon-8-Core-E5-2667-v4-3-2GHz-128GB-keine.html",
+            "eur": 400,
+            "spec": "E5-2667v4,128GB,1300W,nodrive/GPU",
+            "status": "SOLD OUT;pricehistory only"
+          }
+        },
+        "conclusion": "?500?900 is a sensible used-private opportunity target,not a verified available professional128GB quote. CurrentFrench?900Z840 listing is the closest concretecheapcapacitylead; exactGPUfit must be checked beforebuying. No verified256GB?500?900offer found."
+      },
+      "compatibility": "Whole-workstation migration, not a Xeon drop-in for X99. Verify actual300W-per-card power delivery, modernGPU cables, clearance, BIOS and return terms. NUMA/oldCPU may limit speed; no multiplier promised."
+    },
+    {
+      "rank": 4,
+      "action": "After workstation migration, expand its validated ECC RAM from 128 GB to 256 GB.",
+      "indicative_eur": "Fresh matching-RDIMM/LRDIMM quote required; no current validated128GB increment price found.",
+      "benefit": "256GB RAM plus32GB VRAM nominal288GB pool can hold FlashL and full744B MayaXS; full744B UD-IQ2_M recommended256GB pool becomes plausible with headroom checks.",
+      "compatibility": "Applies only to the new supported workstation; not existing X99. Populate all channels symmetrically across CPUs, never mixRDIMM andLRDIMM. Larger pool cuts disk misses, not GPU compute time.",
+      "sources": [
+        "https://h10032.www1.hp.com/ctg/Manual/c04823811.pdf",
+        "https://www.dell.com/support/manuals/en-us/precision-t7910-workstation/precision_t7910_om_pub-v1/technical-specifications?guid=guid-26ef0634-418a-464a-a66f-bbcdf23ce58f&lang=en-us"
+      ],
+      "fresh_memory_price_evidence": [
+        {
+          "url": "https://www.reddit.com/r/homelabsales/comments/1x913xr/fseuie_32x_samsung_32gb_ddr42133_ecc_lrdimm/",
+          "offer": "Private EU-Ireland seller: 8x32GB Samsung M386A4G40DM0-CPB DDR4-2133 ECC LRDIMM256GB for EUR640 plus EUR15 EU tracked shipping; 4x32GB128GB EUR330. Availability and testing claims require verification.",
+          "compatibility": "LRDIMM only: cannot mix with RDIMM or use in current X99 desktop. A workstation populated with RDIMM would need a replacement set or matching RDIMM instead."
+        },
+        {
+          "url": "https://www.servershop24.de/komponenten/arbeitsspeicher/ddr4/pc4-2133/",
+          "offer": "Live retailer category lists multiple32GB ECC LRDIMM/RDIMM at EUR229.99 each; eight matching32GB modules imply about EUR1839.92 before shipping. Exact stocked matching SKU, France VAT and platform validation required.",
+          "stock": "Several LRDIMM SKUs show18 or958 available; Cisco RDIMM only4, so do not assume an8-stick matched RDIMM set is available."
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "action": "Consider two tested used RTX 3090 24 GB cards, replacing both RTX 5070 Ti cards, for 48 GB aggregate VRAM.",
+      "indicative_eur": "Current private asking examples1300?1500 EUR each (~2600?3000 pair gross); search/test a better deal, do not assume historical650 EUR stock. Resale proceeds excluded.",
+      "benefit": "CombinedVRAM32?48GB, plus existing64GB RAM gives nominal112GB. More experts cached, but below S24 recommended128GB; no promise of fully resident S24 or faster compute.",
+      "sources": [
+        "https://www.leboncoin.fr/ck/accessoires_informatique/rtx-3090/p-2",
+        "https://github.com/mw00/project-maya/blob/main/README.md"
+      ],
+      "compatibility": "Maya has official firsthand3090 results and RTX30 CUDA support. Ampere SM86 is supported by Maya source, but binary must include compatible kernels/PTX. Pair consumes more power than current600W total unless capped; exactPSU/case/cables/thermals and used-card health needed. NoNVLink requirement assumed."
+    },
+    {
+      "rank": 6,
+      "action": "Replace CPU, board and RAM with Ryzen 9000, a verified PCIe x8/x8 board, and 128 GB DDR5.",
+      "indicative_eur": "~3400\u00e2\u20ac\u201c4500+,indicativecomponentbudgetratherthanavailablecompletequote",
+      "benefit": "ModernAVX512CPUandfasterPCIe/DDR5;128GBRAMopensbetterFlashquantswithoutlargeSSDspill. Keepingboth5070Tis preserves32GBVRAM.",
+      "price_evidence": [
+        {
+          "url": "https://www.ldlc.com/fiche/PB00622378.html",
+          "observed_eur": 429.95,
+          "status": "9900Xin stock"
+        },
+        {
+          "url": "https://www.ldlc.com/fiche/PB00644012.html",
+          "observed_eur": 467.46,
+          "status": "ProArtX870Epromo throughNov19;regular549.95,in stock"
+        },
+        {
+          "url": "https://www.ldlc.com/fiche/PB00692538.html",
+          "observed_eur": 2469.95,
+          "status": "128GB2x64kitDISCONTINUED,lastpriceonly"
+        },
+        {
+          "url": "https://www.corsair.com/fr/fr/p/memory/cmk128gx5m2b6400c42/vengeance-128gb-2x64gb-ddr5-dram-6400mt-s-cl42-intel-xmp-memory-kit-cmk128gx5m2b6400c42",
+          "observed_eur": 3244.99,
+          "status": "128GBkitoutofstock;IntelXMPexample,notAM5QVLrecommendation"
+        }
+      ],
+      "compatibility": "FinalRAMquote/QVL essential;AM5cooler/casefitpossiblyextra.2DIMMs preferredforbandwidth;256GB4DIMMcanreduceofficialspeed. Threadripper/EPYCoffersmorechannelsbutrequiresseparatebudget.",
+      "sources": [
+        "https://www.asus.com/motherboards-components/motherboards/proart/proart-x870e-creator-wifi/techspec/",
+        "https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-9-9950x.html"
+      ]
+    },
+    {
+      "rank": 7,
+      "action": "Rebuild around one EPYC 7003 socket with 256-512 GB DDR4 ECC across eight channels, retaining both GPUs.",
+      "indicative_eur": "Complete French/EU quote required; no verified available complete-kit price in this research. Do not compare CPU-only price to completeAM5 system.",
+      "benefit": "Large resident pool and eight-channel RAM bandwidth with trueGen4x16 slots; avoids two-socket remote-memory path. Useful when RAM expert computation or SSD misses dominate.",
+      "sources": [
+        "https://www.amd.com/en/products/processors/server/epyc/7003-series/amd-epyc-7543.html",
+        "https://www.supermicro.com/en/products/motherboard/H12SSL-i"
+      ],
+      "compatibility": "H12SSL-i supports7002/7003, eightECCDDR4 channels, up to2TB and fiveGen4x16 slots. Needs motherboard/CPU/RAM/SP3cooler/case/PSU/BIOS as a complete design; serverlocked usedCPUs require checks. EPYC7003 AVX2, notAVX512; benchmark rather than infer TPS from corecount."
+    },
+    {
+      "rank": 8,
+      "action": "Consider a used Threadripper PRO 3975WX / WRX80 workstation with 256-512 GB DDR4, retaining both GPUs.",
+      "indicative_eur": "Current complete-system quote required; no validated inexpensive available listing found.",
+      "benefit": "EightDDR4-3200 channels andGen4x16 expansion, with workstation clocks and room for futureGPU capacity. More durable capacity route than unsupported X99RAM.",
+      "sources": [
+        "https://www.amd.com/en/support/downloads/drivers.html/processors/ryzen-threadripper-pro/ryzen-threadripper-pro-3000wx-series/amd-ryzen-threadripper-pro-3975wx.html",
+        "https://dlcdnets.asus.com/pub/ASUS/mb/SocketTRX4/Pro_WS_WRX80E-SAGE_SE_WIFI/PRO_WS_WRX80E-SAGE_SE_WIFI_SPEC.pdf"
+      ],
+      "compatibility": "3975WX32cores/64threads,280W;sWRX8 needsWRX80, not ordinaryTRX40. CheckCPU/QVL/cooler/largecase. Benchmarks and fullsystemprice decide value against EPYC/AM5."
+    },
+    {
+      "rank": 9,
+      "action": "Replace one RTX 5070 Ti with an RTX 5090 32 GB only after comparing its cost and measured benefit against a RAM/platform upgrade.",
+      "indicative_eur": "~9250\u00e2\u20ac\u201c9900 currentLDLCexamples,grossbeforeanyresale",
+      "benefit": "RaisescombinedVRAM32\u00e2\u2020\u201948GBifsecond5070Tiretained;reduceshostexperttraffic. Replacingboth5070Tis withone5090keeps32GBtotalVRAM.",
+      "price_evidence": [
+        {
+          "url": "https://www.ldlc.com/informatique/pieces-informatique/carte-graphique-interne/c4684/%2Bfi131-l32h32.html",
+          "observed_eur": 9249.95,
+          "status": "GainwardPhantomcategoryexample;severalothers9299.95\u00e2\u20ac\u201c9899.95"
+        }
+      ],
+      "compatibility": "PSU/case/thermal/slotcheckmandatory;X99stillGen3. Verypoorcapacity/euro atthesequotes;noTPSmultiplierclaimed."
+    },
+    {
+      "rank": 10,
+      "action": "Consider a 48-96 GB professional GPU after evaluating cheaper RAM and platform upgrades.",
+      "indicative_eur": "~9900 EUR48GBBlackwellcategoryexample to~19370 EUR96GBRTXPRO6000example;checkactualstock/checkout.",
+      "benefit": "LargerVRAMexpertcachecanavoidhost/SSDtraffic;96GBcardisnotautomaticallyenoughtoholdtheentiremodel. Nominalpoolandworkingheadroommustberecomputed.",
+      "price_evidence": [
+        {
+          "url": "https://www.ldlc.com/informatique/pieces-informatique/carte-professionnelle/c4685/%2Bfv1316-7316.html",
+          "observed_eur": 19369.94,
+          "status": "RTXPRO6000Blackwell96GBOEM;48GB5000examples~9900insearch,verifycheckout"
+        }
+      ],
+      "compatibility": "Cardpower/cooling/formfactorvary;serverpassivecardsneedforcedair. Enginecapabilitymustmatchcard. RetainingsecondGPUdependsclearance/power. Lowestcosteffectivenessforcurrentmachine."
+    }
+  ],
+  "not_recommended_as_easy_upgrades": [
+    {
+      "item": "Add4x16GBRAM",
+      "reason": "TherearenoemptyDIMMslots."
+    },
+    {
+      "item": "4x32GBECCRDIMM onexistingboard",
+      "reason": "Notmanufacturer-supported;5960Xalsoofficial64GB/nonECC."
+    },
+    {
+      "item": "CheapXeonE5v3/v4dropin",
+      "reason": "NoverifiedEVGACPU/BIOSsupportmatrix;stillGen3andoldDDR4;morecoresalonecanloseclock-sensitiveperformance."
+    },
+    {
+      "item": "ReplaceDDR4-2133withfaster64GBkit",
+      "reason": "Doesnotincreasecapacity;manualOC/XMPconditionalonDIMMspecs andCPUstability;poorvaluebeforeplatformmigration."
+    },
+    {
+      "item": "Used3090at\u00e2\u201a\u00ac650",
+      "reason": "Cybertek\u00e2\u201a\u00ac649.99listingwaslastpriceonlyandnowredirectstocategory;notcurrentstock/priceevidence. Couldbeacity24GBalternativewithverifiedlistingandtest,notpurchaserecommendation."
+    },
+    {
+      "item": "NewGen5SSDforadvertised14GB/s onX99",
+      "reason": "BoardlinkisGen3x4;advertisedspeedunreachable."
+    }
+  ],
+  "glm_models": {
+    "distinction": "GLM-5.3-Flash321B/~18Bactive differsfromGLM-5.3full744B/~40Bactive.",
+    "flash_source": "https://huggingface.co/peasantsmith/GLM-5.3-Flash-Maya-GGUF",
+    "memory_source": "https://github.com/mw00/project-maya/blob/main/docs/MEMORY.md",
+    "flash_quants": [
+      {
+        "quant": "Maya-XS",
+        "download_GB": 73.4,
+        "whole_pool_GB": 80,
+        "recommended_pool_GB": 88,
+        "fp8_accuracy_retained_percent": 92.4,
+        "folder": "Maya-XS"
+      },
+      {
+        "quant": "Maya-S24",
+        "download_GB": 94.7,
+        "whole_pool_GB": 102,
+        "recommended_pool_GB": 128,
+        "fp8_accuracy_retained_percent": 97.7,
+        "folder": "Maya-S24"
+      },
+      {
+        "quant": "Maya-S",
+        "download_GB": 96.5,
+        "whole_pool_GB": 104,
+        "recommended_pool_GB": 128,
+        "fp8_accuracy_retained_percent": 97.9,
+        "folder": "Maya-S-v2-IQ2_XXS"
+      },
+      {
+        "quant": "Maya-M",
+        "download_GB": 116,
+        "whole_pool_GB": 124,
+        "recommended_pool_GB": 160,
+        "fp8_accuracy_retained_percent": 97.9,
+        "folder": "Maya-M"
+      },
+      {
+        "quant": "Maya-L",
+        "download_GB": 156.3,
+        "whole_pool_GB": 164,
+        "recommended_pool_GB": 192,
+        "fp8_accuracy_retained_percent": 99.2,
+        "folder": "Maya-L"
+      }
+    ],
+    "quality_limits": "Quantizer-reported400questionspertask,zero-shotARC/HellaSwag/WinoGrande/PIQA,notcoding/agentaccuracy. MismultiplechoiceequalSbutlowerKL. MTPincludedallGGUFs. S24forcards24GBorless;someattention/sharedexpertsQ4vsS Q6.",
+    "full_source": "https://github.com/mw00/project-maya/blob/main/docs/GLM53.md",
+    "full_models": [
+      {
+        "quant": "Maya-XS",
+        "repo": "peasantsmith/GLM-5.3-Maya-GGUF",
+        "download_GB": 170,
+        "whole_pool_GB": 176,
+        "recommended_pool_GB": 192
+      },
+      {
+        "quant": "UD-IQ2_M",
+        "repo": "unsloth/GLM-5.3-GGUF",
+        "download_GB": 238.6,
+        "whole_pool_GB": 245,
+        "recommended_pool_GB": 256
+      }
+    ],
+    "current_machine": "Nominal64GiBRAM+32GiBVRAM notfullyallocatable:OS,denseweights,KV,scratchandstagingmustfit. FlashXSclosestnaturalfit;S24/SneedNVMeatcurrentcapacity. Full744BrequiresmuchmoreSSDtraffic.",
+    "advice": "BenchS24nextonlyif qualitypriorityandNVMeperformanceacceptable;platformRAMupgradefirstforresidentS/S24. Do notdownloadhigherquantsduringread-onlyresearch."
+  },
+  "price_policy": "Allpricesobserved2026-11-14;FranceTTCunlessstated. SomeEUretailersneedFranceVAT/shippingadjustment. Discontinued/outofstockquotesarenotbuyableoffers. Currentretailcrisisquotesmustberechecked;noneconstitutesthecheapestmarketprice.",
+  "priority_correction": "Free lane/storage checks are already mostly satisfied. The compelling real capacity change is migration to a used workstation with128?256GB validated RAM, keepingboth5070Tis. Do not present conditional fans,PSU or anotherSSD as expected speedups.",
+  "budget_workstation_followup": {
+    "hp_z840": {
+      "manufacturer_url": "https://h10032.www1.hp.com/ctg/Manual/c04823811.pdf",
+      "supported": "1125W option supports two300W or three225W GPUs;850W option does not.16DIMMs withtwoCPUs;ECCRDIMM/LRDIMM only,do notmix. Gen3x16 slots.",
+      "limits": "OEM cables are not modern12V-2x6; exactsafe cable solution,cardwidth/height/length,BIOS/boot compatibility require verification. TwoCPU NUMA mayhurt CPUexpert/PCIelocality;capacity gain not guaranteed speedgain.",
+      "live_french_listing": {
+        "url": "https://www.leboncoin.fr/ck/ordinateurs/hp-z840",
+        "title": "HP Z840 workstation, deux Xeon E5-2637 V4, ram128Go, alim1125W",
+        "price_eur": 900,
+        "seller": "Colvert,Hendaye",
+        "status": "Visible in live marketplace category;private seller claims,not professionalrefurb or independentlyverified. No contact/purchase."
+      }
+    },
+    "dell_t7910": {
+      "manufacturer_url": "https://www.dell.com/support/manuals/en-us/precision-t7910-workstation/precision_t7910_om_pub-v1/technical-specifications?guid=guid-26ef0634-418a-464a-a66f-bbcdf23ce58f&lang=en-us",
+      "supported": "1300W at181?240VAC;675W totalgraphics budget;2Gen3x16 slots onfirstCPU and2additionalwithsecondCPU. 600W nominaltwo5070Tis belowtotalbudget,butconnector/slot/cardrestrictionsstillapply.",
+      "offer_490": {
+        "url": "https://www.quantelectronic.de/de/Server-Workstation/Workstation/Dell/Dell-Precision-T7910-Workstation-B-Ware-Grade-B-1x-Intel-Xeon-E5-2667-v4-3-2GHz-128GB-512-GB-SSD-n.html",
+        "eur": 490,
+        "spec": "E5-2667v4,128GB,1300W,P2000",
+        "status": "SOLD OUT;notbuyable recommendation"
+      },
+      "offer_400": {
+        "url": "https://www.quantelectronic.de/de/Dell-Precision-T7910-Workstation-A-Ware-Grade-A-1x-Intel-Xeon-8-Core-E5-2667-v4-3-2GHz-128GB-keine.html",
+        "eur": 400,
+        "spec": "E5-2667v4,128GB,1300W,nodrive/GPU",
+        "status": "SOLD OUT;pricehistory only"
+      }
+    },
+    "conclusion": "?500?900 is a sensible used-private opportunity target,not a verified available professional128GB quote. CurrentFrench?900Z840 listing is the closest concretecheapcapacitylead; exactGPUfit must be checked beforebuying. No verified256GB?500?900offer found."
+  },
+  "conditional_preflight": {
+    "status": "Already largely satisfied; not expected performance upgrades",
+    "checks": [
+      "Use confirmed D:990PRO; about1TB free means no extraSSD purchase now.",
+      "Both measured13.8GB/s GPU links appear healthy Gen3x16; check slot map only if future topology changes.",
+      "Fans and PSU only justify purchase when measured throttling or power/cabling limitations exist."
+    ],
+    "price_examples": [
+      [
+        {
+          "url": "https://www.ldlc.com/fiche/PB00505033.html",
+          "observed_eur": 11.9,
+          "status": "P12PWM listed,weboutofstock;currentalternativesP12Pro8.90/PST8.95 onpage"
+        }
+      ],
+      [
+        {
+          "url": "https://www.ldlc.com/fiche/PB00583767.html",
+          "observed_eur": 15.95,
+          "status": "In stock"
+        }
+      ],
+      [
+        {
+          "url": "https://www.ldlc.com/fiche/PB00656152.html",
+          "observed_eur": 199.95,
+          "status": "RM1000x2024ATX3.1,in stock"
+        }
+      ],
+      [
+        {
+          "url": "https://www.ldlc.com/fiche/PB00574041.html",
+          "observed_eur": 949.95,
+          "capacity": "4TB",
+          "status": "In stock;2TBvariant549.95"
+        }
+      ]
+    ]
+  },
+  "ranking_note": "10rankedroutes:1networklinkfix,2nativeLinuxtrial,3used128GBworkstation,4expandmigratedworkstation256GB,5used3090pair,6modernAM5128GB,7singleEPYC256/512GB,8usedThreadripperPRO/WRX80,9RTX5090,10professional48?96GB. Quotes/alternativesoverlap;notashoppinglisttobuyall.",
+  "firsthand_platform_evidence": {
+    "url": "https://www.reddit.com/r/LocalLLaMA/comments/1xl3cnv/switching_to_epyc_what_i_had_to_fix_and/",
+    "summary": "Author reports GLM-5.3-Flash IQ3_S decode 9.7 to 41.0 tokens/s when migrating from Core Ultra 7 with 64 GB RAM to EPYC 7443 with 256 GB RAM. Actual 29K prefill rises 577 to 1069 tokens/s. Author attributes the major gain to eliminating per-token NVMe expert reads.",
+    "confounders": "GPU count, PCIe links, RAM capacity, channels, engine versions and BIOS tuning changed. This is not a CPU-only comparison and does not justify a promised multiplier for our machine.",
+    "details_artifact": "online-glm-comparison.json"
+  },
+  "workstation_physical_fit": {
+    "source": "https://h10032.www1.hp.com/ctg/Manual/c04823811.pdf",
+    "pages": "56-58 (PDF65-67)",
+    "facts": "Z840 x16 slots2,4,6. Slots3/4 require a second CPU. HP suggests compute cards in slots6 and2 to keep both on CPU0. Official graphics power supports two300W only with1125W PSU.",
+    "limitation": "Power support is not proof that two consumer triple-slot AIB coolers fit. Slot6 is near chassis bottom. Verify exact GPU width, length, slot clearance, airflow and qualified power cables; risers may be necessary. Dell T7910 clearance also requires exact card inspection.",
+    "numa": "Two GPUs on CPU0 can avoid cross-socket GPU relay, but host-expert RAM allocation and CPU workers still need measured NUMA locality."
+  },
+  "additional_primary_leads_20261114": {
+    "wrx80_256": {
+      "url": "https://www.kleinanzeigen.de/s-anzeige/workstation-server-threadripper-pro-3975wx-256gb-ecc-ram/3566216224-228-701",
+      "price_eur": 3850,
+      "date": "2026-11-08",
+      "spec": "3975WX; ASUS WRX80E-SAGE SE WIFI; 8x32GB DDR4-2933 ECC; 1200W PSU; case/cooling; no GPU or disks",
+      "status": "Private asking price; pickup in Kiel; not independently inspected; no contact"
+    },
+    "epyc_256": {
+      "url": "https://www.marktplaats.nl/l/computers-en-software/q/epyc/",
+      "basis_price_eur": 3750,
+      "complete_price_eur": 4200,
+      "spec": "EPYC7543 + ROMED8-2T + 4x64GB DDR4-3200",
+      "limitation": "Only four of eight memory channels populated; not an eight-channel 8x32GB performance configuration. Pickup Amsterdam, seller claims unlocked CPU; no purchase/contact."
+    },
+    "rejected_swiss_sold": {
+      "url": "https://www.ricardo.ch/fr/a/supermicro-threadripper-pro-3975wx-256gb-ram-rtx-3090-1317932376/",
+      "sold_chf": 2799,
+      "status": "SOLD; not an available offer; non-EU import/collection adds uncertainty"
+    }
+  }
+}

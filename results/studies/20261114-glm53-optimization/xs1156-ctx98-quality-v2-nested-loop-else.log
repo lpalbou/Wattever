@@ -1,0 +1,24 @@
+fill: CUDA0 chunk 1/1, 128 tokens, wall 1501 ms | the copy lane 1492 ms: copies 1365 (12.1 GB/s), ring wait 26, gaps 56, mixer windows 44 | lead 9, tail 0 | pcie 16.53 GB (ram 14.91, disk 1.62) + 1.46 GB vram | experts: staged 3578, resident 1487 (8414 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 0 ms | layer lane 102.5/47.8 ms max/min
+glm prefill: CUDA1 chunk 1/1, 128 tokens, wall 3071 ms | the copy lane 3067 ms: copies 1242 (11.7 GB/s), ring wait 1154, gaps 632, mixer windows 40 | lead 2, tail 2 | pcie 14.53 GB (ram 5.53, disk 9.00) + 1.42 GB vram | experts: staged 3119, resident 1407 (8038 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 1 ms host, disk wait 0 ms, hop in 1 ms | layer lane 231.5/97.7 ms max/min
+glm prefill: 128 tokens in 4577.1 ms (35.76 ms/token, 28 tok/s), 1 chunk of 128 tokens | CUDA0 1501 ms, CUDA1 3071 ms (hop in 1 ms)
+glm vram: prompt 129 tokens read in 4.7 s; VRAM free CUDA0 1.4 of 15.9, CUDA1 1.5 of 15.9 GB before, 1.4, 1.5 after
+glm stat: decode 48.57 ms/tok (20.59 tok/s) | vram hit 81.89% | ram fetches 43.70/tok | disk 14.69 reads/tok in 9.76 waits/tok, 26.40 ms/tok | promotions 41.74/tok | cpu lane 3.39/tok in 5.30 ms/tok | prompt 36.6 ms/tok | vram 3689/3781 ram 5408/5492
+glm spec: 503 of 510 drafts accepted (98.6%)
+glm kv: KV streaming: 99.68% of 596570 block reads hit VRAM, 4.0 MiB read from RAM
+glm fast: CUDA1 CPU lane timed again in decode: an expert 1.562 ms (planned with 1.084) -> RAM-tier experts to the CPU, of 0..8: 0 0 0 0 0 1 1 1 1 (PCIe share 0.92)
+ max 512 tokens, 22.9 tok/s, 15 s
+[maya] answering: 251 of max 512 tokens, 22.3 tok/s, 16 s
+[maya] answering: 270 of max 512 tokens, 22.0 tok/s, 17 s
+[maya] answering: 287 of max 512 tokens, 21.5 tok/s, 18 s
+[maya] answering: 307 of max 512 tokens, 21.4 tok/s, 19 s
+[maya] answering: 325 of max 512 tokens, 21.1 tok/s, 20 s
+[maya] answering: 344 of max 512 tokens, 21.0 tok/s, 21 s
+[maya] answering: 366 of max 512 tokens, 21.0 tok/s, 22 s
+[maya] answering: 390 of max 512 tokens, 21.1 tok/s, 23 s
+[maya] answering: 410 of max 512 tokens, 21.0 tok/s, 24 s
+[maya] answering: 431 of max 512 tokens, 21.0 tok/s, 25 s
+[maya] answering: 450 of max 512 tokens, 20.8 tok/s, 26 s
+[maya] answering: 470 of max 512 tokens, 20.8 tok/s, 27 s
+[maya] answering: 489 of max 512 tokens, 20.7 tok/s, 28 s
+[maya] answering: 508 of max 512 tokens, 20.6 tok/s, 29 s
+[maya] done: 512 tokens in 30 s (20.6 tok/s) (length, cancel=False), expert cache 81.9% hit

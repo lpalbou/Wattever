@@ -1,0 +1,934 @@
+{
+  "id": "mmlu-pro-test-04404",
+  "category": "chemistry",
+  "cohort": "public128",
+  "suite_id": "mmlu-pro-balanced64-chat-v1",
+  "prompt_sha256": "2f68ff7127ce6b46492bc487ab056d877e2a8dfa1098ccca78efe209768b0eff",
+  "request_started_unix": 1794676578.017923,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676578.017923
+  },
+  "started_unix": 1794676578.017923,
+  "response_id": "resp_da36f3c104ac4034b2291eb4",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 114,
+    "output_tokens": 36,
+    "total_tokens": 150,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 36,
+  "non_reasoning_generated_tokens": 36,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.5110269999931916,
+  "first_visible_content_s": 2.5110269999931916,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 4.495900799993251,
+  "terminal_answer_s": 4.571736699996109,
+  "transport_wall_s": 4.571805799998401,
+  "answer": "The average separation equals the mean distance ⟨r⟩ = ⟨r₁₀⟩ = a₀ = 52.9 pm ≈ 53 pm.\n\nANSWER: F",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.002087499997287523,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_da36f3c104ac4034b2291eb4",
+          "object": "response",
+          "created_at": 1794676578,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.002105199993820861,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_da36f3c104ac4034b2291eb4",
+          "object": "response",
+          "created_at": 1794676578,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.510934799996903,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_8c5aa8c9eaca4637b851b00a",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.5109804999956395,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.5110269999931916,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "The",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.650811399995291,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " average",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.6994247999973595,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " separation",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.778863299994555,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " equals",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.878464299996267,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.928942599995935,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " mean",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.0448729999989155,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " distance",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.1461776999931317,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ⟨",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.2343712000001688,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "r",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.28930639999453,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "⟩",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.333244099994772,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " =",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.3769155999980285,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ⟨",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.4187104999946314,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "r",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.457116899997345,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "₁",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5456132999970578,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "₀",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5873408999977983,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "⟩",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.6299342999991495,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " =",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.667412799994054,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " a",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7454431999940425,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "₀",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7819470999966143,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " =",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.8666392999948584,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9059443999940413,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "52",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9758692999967025,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.015995199995814,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "9",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.067132699994545,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " pm",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.101016399996297,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.1547660999931395,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "≈",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.199351799994474,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.250383899998269,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "53",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.280129599996144,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " pm",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.3117600999976275,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 34,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.340713300000061,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 35,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.4038272999969195,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 36,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.458625899998879,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 37,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.495900799993251,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 38,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " F",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.571487099994556,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 39,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "The average separation equals the mean distance ⟨r⟩ = ⟨r₁₀⟩ = a₀ = 52.9 pm ≈ 53 pm.\n\nANSWER: F",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.571521899997606,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 40,
+        "item_id": "msg_8c5aa8c9eaca4637b851b00a",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "The average separation equals the mean distance ⟨r⟩ = ⟨r₁₀⟩ = a₀ = 52.9 pm ≈ 53 pm.\n\nANSWER: F",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.571595299996261,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 41,
+        "output_index": 0,
+        "item": {
+          "id": "msg_8c5aa8c9eaca4637b851b00a",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "The average separation equals the mean distance ⟨r⟩ = ⟨r₁₀⟩ = a₀ = 52.9 pm ≈ 53 pm.\n\nANSWER: F",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.571736699996109,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 42,
+        "response": {
+          "id": "resp_da36f3c104ac4034b2291eb4",
+          "object": "response",
+          "created_at": 1794676578,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_8c5aa8c9eaca4637b851b00a",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "The average separation equals the mean distance ⟨r⟩ = ⟨r₁₀⟩ = a₀ = 52.9 pm ≈ 53 pm.\n\nANSWER: F",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 114,
+            "output_tokens": 36,
+            "total_tokens": 150,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676582
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "681a30c2ae5c991b9aad1367c126fc6d4aa0eecc5fe12efce6b6a98f080b1dee",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 9,
+    "source": "nvidia-smi",
+    "duration_s": 4.571872500004247,
+    "gpu_w_avg": 127.48981520279307,
+    "gpu_sampled_coverage_s": 4.041318700001284,
+    "gpu_sampled_coverage_fraction": 0.8839526255374641,
+    "gpu_w_max": 157.86,
+    "gpu_energy_j": 582.867180156273,
+    "system_w_est": 246.13497176373912,
+    "system_energy_j_est": 1125.2977086959606,
+    "gpu_util_avg": 66.11111111111111,
+    "vram_mb_max": 30254.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 45.0,
+    "cpu_util_avg": 0.41872501052188554,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49493454848,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 71.61798748769814,
+    "system_memory_percent_max": 72.10903121326737,
+    "vram_percent_avg": 92.20184424134618,
+    "vram_percent_max": 92.78660369257192,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 9,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.571872500004247,
+        "gpu_w_avg": 65.24038467605163,
+        "gpu_sampled_coverage_s": 4.041318700001284,
+        "gpu_sampled_coverage_fraction": 0.8839526255374641,
+        "gpu_w_max": 80.38,
+        "gpu_energy_j": 298.2707205901389,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 58.666666666666664,
+        "vram_mb_max": 15670.0,
+        "clock_mhz_avg": 2987.3333333333335,
+        "temp_c_max": 45.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 94.94776012594818,
+        "vram_percent_max": 96.11727902839968,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.571872500004247,
+        "gpu_w_avg": 62.249430526741406,
+        "gpu_sampled_coverage_s": 4.041318700001284,
+        "gpu_sampled_coverage_fraction": 0.8839526255374641,
+        "gpu_w_max": 78.54,
+        "gpu_energy_j": 284.5964595661339,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 73.55555555555556,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 3005.6666666666665,
+        "temp_c_max": 35.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 9,
+    "errors": {},
+    "available_bytes_min": 19062509568,
+    "ram_used_percent_max": 72.2,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 180332.95746642206,
+      "max": 322193.42402355885,
+      "min": 62130.27173935983
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 2024.8995121299704,
+      "max": 3632.390512057165,
+      "min": 817.3791777666695
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 450241.6709359437,
+      "max": 777879.1273856602,
+      "min": 179246.6425301536
+    },
+    "transition_faults_s": {
+      "mean": 3229.860870291519,
+      "max": 5845.817008085147,
+      "min": 33.61741366207736
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7371182080.0,
+      "max": 7763779584.0,
+      "min": 7069450240.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19232359765.333332,
+      "max": 19538604032.0,
+      "min": 18829033472.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 226414592.0,
+      "max": 226414592.0,
+      "min": 226414592.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 338674574.2222222,
+      "max": 340611072.0,
+      "min": 337383424.0
+    },
+    "committed_bytes": {
+      "mean": 80190477653.33333,
+      "max": 80273190912.0,
+      "min": 79975694336.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9743018680148654,
+      "max": 1.9743919372558594,
+      "min": 1.973581314086914
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 1037824,
+        "write_bytes": 3401728,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 3246206976,
+        "write_bytes": 0,
+        "read_time_ms": 7,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32670990336,
+    "engine_rss_max": 32671244288,
+    "engine_faults_delta": 70
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": false,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": false,
+    "content_success": false,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 20,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "F",
+      "expected": "B",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": false,
+      "60": false,
+      "120": false
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676582.590938
+  }
+}

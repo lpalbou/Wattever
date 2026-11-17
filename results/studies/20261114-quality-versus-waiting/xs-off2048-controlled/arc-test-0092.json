@@ -1,0 +1,970 @@
+{
+  "id": "arc-test-0092",
+  "category": "science_reasoning",
+  "cohort": "public128",
+  "suite_id": "arc-challenge-test-chat-v1",
+  "prompt_sha256": "ae4c8767dea3fd22f23f3558d4960c75037acd8c4b2a3054473751adf2072b82",
+  "request_started_unix": 1794676162.4380355,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676162.4380355
+  },
+  "started_unix": 1794676162.4380355,
+  "response_id": "resp_b2547f3fa30448a9b7939af1",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 94,
+    "output_tokens": 39,
+    "total_tokens": 133,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 39,
+  "non_reasoning_generated_tokens": 39,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.620492000001832,
+  "first_visible_content_s": 2.620492000001832,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 4.837684800004354,
+  "terminal_answer_s": 4.908750900001905,
+  "transport_wall_s": 4.9088102000023355,
+  "answer": "Salt dissolves in water forming a solution; pepper does not dissolve, so it forms a mixture (suspension), not a solution. Both jars contain mixtures.\n\nANSWER: D",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.00333140000293497,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_b2547f3fa30448a9b7939af1",
+          "object": "response",
+          "created_at": 1794676162,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.0033489999987068586,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_b2547f3fa30448a9b7939af1",
+          "object": "response",
+          "created_at": 1794676162,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.6204417000044486,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_55b2181e2aa840868fb707d2",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.620472000002337,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.620492000001832,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "Salt",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7825173000019277,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " diss",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.901199899999483,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "olves",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.9505455000035,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " in",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.0147018999996362,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " water",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.0711251000029733,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " forming",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.180366000000504,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " a",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.211013100000855,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " solution",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.283510599998408,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ";",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.3386473999999,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " pepper",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.384125700002187,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " does",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.4459241000004113,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " not",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.4912402000045404,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " dissolve",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5284720999989077,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.564497700004722,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " so",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.646305200003553,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " it",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.696793000002799,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " forms",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.788631399998849,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " a",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.82940100000269,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " mixture",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.8820243000009214,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " (",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9116656000041985,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "s",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.020105499999772,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "usp",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.073670300000231,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ension",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.1186455999995815,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "),",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.157784700000775,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " not",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.185935499997868,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " a",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.250528299999132,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " solution",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.288912199997867,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.327160400003777,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " Both",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.388012600000366,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " jars",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.440194800001336,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 34,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " contain",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.4834707000045455,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 35,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " mix",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.520222500003001,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 36,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "tures",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.566910100002133,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 37,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.633964699998614,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 38,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.737387900000613,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 39,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.80337700000382,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 40,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.837684800004354,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 41,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.908373700003722,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 42,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "Salt dissolves in water forming a solution; pepper does not dissolve, so it forms a mixture (suspension), not a solution. Both jars contain mixtures.\n\nANSWER: D",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.9084479000011925,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 43,
+        "item_id": "msg_55b2181e2aa840868fb707d2",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "Salt dissolves in water forming a solution; pepper does not dissolve, so it forms a mixture (suspension), not a solution. Both jars contain mixtures.\n\nANSWER: D",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.908542500001204,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 44,
+        "output_index": 0,
+        "item": {
+          "id": "msg_55b2181e2aa840868fb707d2",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "Salt dissolves in water forming a solution; pepper does not dissolve, so it forms a mixture (suspension), not a solution. Both jars contain mixtures.\n\nANSWER: D",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.908750900001905,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 45,
+        "response": {
+          "id": "resp_b2547f3fa30448a9b7939af1",
+          "object": "response",
+          "created_at": 1794676162,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_55b2181e2aa840868fb707d2",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "Salt dissolves in water forming a solution; pepper does not dissolve, so it forms a mixture (suspension), not a solution. Both jars contain mixtures.\n\nANSWER: D",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 94,
+            "output_tokens": 39,
+            "total_tokens": 133,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676167
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "8c59e781a52d675b21050d0dc5f0f98c32227aea80f29a6eca697990cd656c32",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 10,
+    "source": "nvidia-smi",
+    "duration_s": 4.908877300003951,
+    "gpu_w_avg": 135.9389265941037,
+    "gpu_sampled_coverage_s": 4.54204550000577,
+    "gpu_sampled_coverage_fraction": 0.9252717520566494,
+    "gpu_w_max": 158.46,
+    "gpu_energy_j": 667.3075109446991,
+    "system_w_est": 258.84536386290705,
+    "system_energy_j_est": 1270.6401308778875,
+    "gpu_util_avg": 60.65,
+    "vram_mb_max": 30170.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 52.0,
+    "cpu_util_avg": 0.44910629734848484,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49247780864,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 71.31100640308722,
+    "system_memory_percent_max": 71.7510987748278,
+    "vram_percent_avg": 92.52898239587806,
+    "vram_percent_max": 92.52898239587806,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 10,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 10,
+        "source": "nvidia-smi",
+        "duration_s": 4.908877300003951,
+        "gpu_w_avg": 67.95289250339975,
+        "gpu_sampled_coverage_s": 4.54204550000577,
+        "gpu_sampled_coverage_fraction": 0.9252717520566494,
+        "gpu_w_max": 78.03,
+        "gpu_energy_j": 333.57241147954767,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 50.0,
+        "vram_mb_max": 15586.0,
+        "clock_mhz_avg": 2984.8,
+        "temp_c_max": 52.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.60203643501197,
+        "vram_percent_max": 95.60203643501197,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 10,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 10,
+        "source": "nvidia-smi",
+        "duration_s": 4.908877300003951,
+        "gpu_w_avg": 67.98603409070397,
+        "gpu_sampled_coverage_s": 4.54204550000577,
+        "gpu_sampled_coverage_fraction": 0.9252717520566494,
+        "gpu_w_max": 80.43,
+        "gpu_energy_j": 333.73509946515145,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 71.3,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 2989.2,
+        "temp_c_max": 52.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 10,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 10,
+    "errors": {},
+    "available_bytes_min": 19392561152,
+    "ram_used_percent_max": 71.7,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 175098.60497531996,
+      "max": 343153.9018867692,
+      "min": 90912.33828961584
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 1965.3292639054052,
+      "max": 3910.7608926984017,
+      "min": 1029.384708336518
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 492164.09102915024,
+      "max": 836315.8005117638,
+      "min": 302810.4187303779
+    },
+    "transition_faults_s": {
+      "mean": 6562.68683047502,
+      "max": 40068.00727878358,
+      "min": 32.70834736264899
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7160930713.6,
+      "max": 7419863040.0,
+      "min": 6821330944.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19453727539.2,
+      "max": 19805437952.0,
+      "min": 19163615232.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 227180134.4,
+      "max": 227180544.0,
+      "min": 227176448.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 301635993.6,
+      "max": 301707264.0,
+      "min": 301264896.0
+    },
+    "committed_bytes": {
+      "mean": 80301855129.6,
+      "max": 80421933056.0,
+      "min": 80280055808.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9172096252441406,
+      "max": 1.9172191619873047,
+      "min": 1.9172000885009766
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 508416,
+        "write_bytes": 768000,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 3368116224,
+        "write_bytes": 0,
+        "read_time_ms": 7,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 33531039744,
+    "engine_rss_max": 33532702720,
+    "engine_faults_delta": 415
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 26,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "D",
+      "expected": "D",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676167.3469026
+  }
+}

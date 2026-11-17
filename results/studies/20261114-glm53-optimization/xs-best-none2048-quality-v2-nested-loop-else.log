@@ -1,0 +1,8 @@
+fill: CUDA0 chunk 1/1, 128 tokens, wall 1449 ms | the copy lane 1438 ms: copies 1247 (12.0 GB/s), ring wait 70, gaps 80, mixer windows 41 | lead 10, tail 0 | pcie 14.94 GB (ram 10.62, disk 4.32) + 1.46 GB vram | experts: staged 3266, resident 1646 (8680 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 0 ms | layer lane 97.0/47.0 ms max/min
+glm prefill: CUDA1 chunk 1/1, 128 tokens, wall 1394 ms | the copy lane 1389 ms: copies 1258 (12.0 GB/s), ring wait 31, gaps 58, mixer windows 41 | lead 2, tail 3 | pcie 15.04 GB (ram 10.49, disk 4.55) + 1.41 GB vram | experts: staged 3217, resident 1489 (8612 rows), prestaged 0, cpu 0 (0 rows, 0 ms) | plan 2 ms host, disk wait 0 ms, hop in 1 ms | layer lane 76.9/51.6 ms max/min
+glm prefill: 128 tokens in 2848.5 ms (22.25 ms/token, 45 tok/s), 1 chunk of 128 tokens | CUDA0 1449 ms, CUDA1 1394 ms (hop in 1 ms)
+glm vram: prompt 129 tokens read in 3.0 s; VRAM free CUDA0 0.6 of 15.9, CUDA1 0.9 of 15.9 GB before, 0.6, 0.9 after
+glm stat: decode 38.36 ms/tok (26.07 tok/s) | vram hit 82.80% | ram fetches 45.45/tok | disk 12.39 reads/tok in 10.00 waits/tok, 12.37 ms/tok | promotions 41.61/tok | cpu lane 0.00/tok in 0.00 ms/tok | prompt 23.1 ms/tok | vram 3947/4043 ram 5136/5216
+glm spec: 29 of 29 drafts accepted (100.0%)
+glm kv: KV streaming: 96.51% of 13736 block reads hit VRAM, 1.0 MiB read from RAM
+ hit

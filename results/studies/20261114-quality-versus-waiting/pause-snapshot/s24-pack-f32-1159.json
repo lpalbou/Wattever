@@ -1,0 +1,167 @@
+{
+  "status": "completed",
+  "started_at": "2026-11-14T17:06:23.558107+00:00",
+  "model_revision": "5ca1df1d2436bd1ab270b169c5ea6c47aad23641",
+  "model_id": "glm-5.3-flash-maya-s24-iq2_xxs_s",
+  "quantization": "Maya-S24 IQ2_XXS_S GGUF + BF16-compat",
+  "command": [
+    "C:\\tests\\flash-next\\experimental-maya\\source\\.venv\\Scripts\\python.exe",
+    "C:\\tests\\flash-next\\experimental-maya\\source-1.1.59\\tools\\iq_pack.py",
+    "--gguf",
+    "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\GLM-5.3-Flash-Maya-S24-IQ2_XXS_S-00001-of-00003.gguf",
+    "--out",
+    "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\pack-f32-1159",
+    "--compat-bf16"
+  ],
+  "converter_sha256": "6b0ae6c86ba98a391e41b8149497baa459d0bd6813eca77ef5dfb547d253337c",
+  "source_revision": "027992cb1f09829488e650e466233ca351d3d6ef",
+  "output": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\pack-f32-1159",
+  "engine_executed": false,
+  "control_manifests_modified": false,
+  "model_files": [
+    {
+      "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\GLM-5.3-Flash-Maya-S24-IQ2_XXS_S-00001-of-00003.gguf",
+      "bytes": 46886573024,
+      "mtime_ns": 1794663732000000000,
+      "sha256": "8ebd5c74bcf65ece2a8699b7b6fd2b8d177f350ed252cee252fdd99b86a0138c",
+      "sha256_verified": true,
+      "verified_utc": "2026-11-14T17:04:04.520251+00:00"
+    },
+    {
+      "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\GLM-5.3-Flash-Maya-S24-IQ2_XXS_S-00002-of-00003.gguf",
+      "bytes": 46982144736,
+      "mtime_ns": 1794675562000000000,
+      "sha256": "4bd445da3a0128a9c5b32228c924e0a622aa4a132c7a8dc9a2c207a4beea8e34",
+      "sha256_verified": true,
+      "verified_utc": "2026-11-14T17:06:20.402544+00:00"
+    },
+    {
+      "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\GLM-5.3-Flash-Maya-S24-IQ2_XXS_S-00003-of-00003.gguf",
+      "bytes": 832958464,
+      "mtime_ns": 1794675668000000000,
+      "sha256": "a6fd4e88007ac49b431c7d02be34e43ab7a09224d53a0c52782327613cb41917",
+      "sha256_verified": true,
+      "verified_utc": "2026-11-14T17:06:22.934399+00:00"
+    }
+  ],
+  "model_header_summary": {
+    "parameters": 320759404382,
+    "total_tensor_bytes": 94692154744,
+    "expert_bytes": 88652906496,
+    "bytes_by_dtype": {
+      "Q6_K": 1605058560,
+      "F32": 360734072,
+      "Q4_K": 3855089664,
+      "Q8_0": 218365952,
+      "IQ3_XXS": 7398752256,
+      "IQ2_XXS": 52319748096,
+      "IQ2_S": 26310868992,
+      "Q3_K": 1038090240,
+      "Q2_K": 1585446912
+    }
+  },
+  "returncode": 0,
+  "finished_at": "2026-11-14T17:06:55.103603+00:00",
+  "files": [
+    {
+      "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\pack-f32-1159\\compat-bf16.json",
+      "relative": "compat-bf16.json",
+      "bytes": 87942,
+      "mtime_ns": 1794676008000000000,
+      "sha256": "a4a19d5e7eecda5acf6fb18ba2897616393df8c8cf8ebcc237b37c98af58a509",
+      "sha256_verified": true,
+      "xs_reference_sha256": "1642066b959daf34bb58a082baec1924fc7cf6766b32648fc920533debfd03ee",
+      "xs_byte_identical": false
+    },
+    {
+      "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\pack-f32-1159\\dense.bin",
+      "relative": "dense.bin",
+      "bytes": 943935232,
+      "mtime_ns": 1794676008000000000,
+      "sha256": "ca7aea5d3c894b2bd521f6da6e6506c0ee503d93dea3fbbb1afb782b0b3d0f24",
+      "sha256_verified": true,
+      "xs_reference_sha256": "ca7aea5d3c894b2bd521f6da6e6506c0ee503d93dea3fbbb1afb782b0b3d0f24",
+      "xs_byte_identical": true
+    },
+    {
+      "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\pack-f32-1159\\expert-profile-seed.bin",
+      "relative": "expert-profile-seed.bin",
+      "bytes": 106008,
+      "mtime_ns": 1794638462000000000,
+      "sha256": "53b03a13482b6fedc599d149be2d69f88c38d9edc4611a740da46314ab1dc5a7",
+      "sha256_verified": true,
+      "xs_reference_sha256": "53b03a13482b6fedc599d149be2d69f88c38d9edc4611a740da46314ab1dc5a7",
+      "xs_byte_identical": true
+    },
+    {
+      "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\pack-f32-1159\\index.txt",
+      "relative": "index.txt",
+      "bytes": 105680,
+      "mtime_ns": 1794676008000000000,
+      "sha256": "44b305a3d000ae1d81295c0bd7de5d74b6da7e6ced785b3c322dc7e1b24ac1bb",
+      "sha256_verified": true,
+      "xs_reference_sha256": "d08cb3c796fd694cc23e957be7f1122fcdddf4f302cc2b43e65d617f2da0774f",
+      "xs_byte_identical": false
+    },
+    {
+      "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\pack-f32-1159\\native_experts.txt",
+      "relative": "native_experts.txt",
+      "bytes": 4067,
+      "mtime_ns": 1794676010000000000,
+      "sha256": "0fd66942907916d97c78ec9fa6d646426e3ae126ffdcdf1262ef5a03733d2b79",
+      "sha256_verified": true,
+      "xs_reference_sha256": "eb602a8be73e22d2edaab83bf75a80bd3e5112b9acef59a2f7cabf37e8cd5d95",
+      "xs_byte_identical": false
+    },
+    {
+      "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\pack-f32-1159\\tokenizer\\chat_template.jinja",
+      "relative": "tokenizer/chat_template.jinja",
+      "bytes": 10648,
+      "mtime_ns": 1794676010000000000,
+      "sha256": "a4fddbbf0b432101a296c17094f8bc5a2b0d30713b5b5cd92f86be78511aa724",
+      "sha256_verified": true,
+      "xs_reference_sha256": "a4fddbbf0b432101a296c17094f8bc5a2b0d30713b5b5cd92f86be78511aa724",
+      "xs_byte_identical": true
+    },
+    {
+      "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\pack-f32-1159\\tokenizer\\merges.txt",
+      "relative": "tokenizer/merges.txt",
+      "bytes": 4189984,
+      "mtime_ns": 1794676010000000000,
+      "sha256": "c9f9352db4dab0d3e0cba5923692047db4efe065ba59c5ab8a5eb2fb589f0d93",
+      "sha256_verified": true,
+      "xs_reference_sha256": "c9f9352db4dab0d3e0cba5923692047db4efe065ba59c5ab8a5eb2fb589f0d93",
+      "xs_byte_identical": true
+    },
+    {
+      "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\pack-f32-1159\\tokenizer\\token_type.json",
+      "relative": "tokenizer/token_type.json",
+      "bytes": 464640,
+      "mtime_ns": 1794676010000000000,
+      "sha256": "3d226d66989eaa352fc8093536ece4b9398c85b57ba33860031bef042251ddb9",
+      "sha256_verified": true,
+      "xs_reference_sha256": "3d226d66989eaa352fc8093536ece4b9398c85b57ba33860031bef042251ddb9",
+      "xs_byte_identical": true
+    },
+    {
+      "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\pack-f32-1159\\tokenizer\\tokenizer.json",
+      "relative": "tokenizer/tokenizer.json",
+      "bytes": 729,
+      "mtime_ns": 1794676010000000000,
+      "sha256": "74d0676146941e9ad57724515186294cfeb644ae15a300e2e0ba6d7c18cf13ab",
+      "sha256_verified": true,
+      "xs_reference_sha256": "74d0676146941e9ad57724515186294cfeb644ae15a300e2e0ba6d7c18cf13ab",
+      "xs_byte_identical": true
+    },
+    {
+      "path": "D:\\StrataModels\\models\\GLM-5.3-Flash-Maya-S24\\pack-f32-1159\\tokenizer\\vocab.json",
+      "relative": "tokenizer/vocab.json",
+      "bytes": 3186346,
+      "mtime_ns": 1794676010000000000,
+      "sha256": "168e8586859e110a73372e50e742258eac5314627fddcd85957c1d6781d38ae2",
+      "sha256_verified": true,
+      "xs_reference_sha256": "168e8586859e110a73372e50e742258eac5314627fddcd85957c1d6781d38ae2",
+      "xs_byte_identical": true
+    }
+  ]
+}

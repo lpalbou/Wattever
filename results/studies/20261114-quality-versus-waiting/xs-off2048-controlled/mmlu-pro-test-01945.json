@@ -1,0 +1,1726 @@
+{
+  "id": "mmlu-pro-test-01945",
+  "category": "law",
+  "cohort": "public128",
+  "suite_id": "mmlu-pro-balanced64-chat-v1",
+  "prompt_sha256": "f55182bf1b20f9e7aa27c7e562bce6c16cd1524a1ef3f4123fd18cc5a48b6515",
+  "request_started_unix": 1794676500.6013703,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676500.6013703
+  },
+  "started_unix": 1794676500.6013703,
+  "response_id": "resp_d37d6856a8434624a5ffb19e",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 270,
+    "output_tokens": 102,
+    "total_tokens": 372,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 102,
+  "non_reasoning_generated_tokens": 102,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 3.479793900005461,
+  "first_visible_content_s": 3.479793900005461,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 9.568823800000246,
+  "terminal_answer_s": 9.624368299999333,
+  "transport_wall_s": 9.624463000000105,
+  "answer": "The friend took the necklace by force (grabbing it from the woman's neck) — under the facts, this constitutes robbery/theft by force. But the question asks which crime she should be found guilty of. Taking property from a person by force = robbery, but robbery isn't listed. Theft (A) is the closest — taking the necklace. The intent to return it doesn't negate the taking (though it might negate theft intent... but among choices, A is best).\n\nANSWER: A",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.006108400004450232,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_d37d6856a8434624a5ffb19e",
+          "object": "response",
+          "created_at": 1794676500,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.006131000001914799,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_d37d6856a8434624a5ffb19e",
+          "object": "response",
+          "created_at": 1794676500,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.479716300003929,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_33e76a1a216c4c58818f2d20",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.479772700004105,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.479793900005461,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "The",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5837700000047334,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " friend",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.6529546000019764,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " took",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.732499800004007,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7836994000026607,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " necklace",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.840818600001512,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " by",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9061418999990565,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " force",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9539932000043336,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " (",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.994682399999874,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "grab",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.114492400003655,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "bing",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.184771300002467,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " it",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.238747700001113,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " from",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.298758900004032,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.375976300005277,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " woman",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.416273000002548,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "'s",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.474315700004809,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " neck",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.514840700001514,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ")",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.601709499998833,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " —",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.71370890000253,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " under",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.816485399998783,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.850438000001304,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " facts",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.969936500005133,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.005840900004841,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " this",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.0433577000003424,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " constitutes",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.1464084000035655,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " robbery",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.2116490000044,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "/the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.301999900002556,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ft",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.335779200002435,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " by",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.427032899999176,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " force",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.4950051000050735,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.590992199999164,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 34,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " But",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.677862500000629,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 35,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.740774099998816,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 36,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " question",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.801567800001067,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 37,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " asks",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.853936200001044,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 38,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " which",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.91086670000368,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 39,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " crime",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.9544424999985495,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 40,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " she",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 5.998820799999521,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 41,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " should",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.0913260000015725,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 42,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " be",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.133582700000261,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 43,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " found",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.225216300001193,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 44,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " guilty",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.270514600000752,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 45,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " of",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.310013599999365,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 46,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.333442800001649,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 47,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " Taking",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.392578200000571,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 48,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " property",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.479996300004132,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 49,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " from",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.557776800000283,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 50,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " a",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.638599500001874,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 51,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " person",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.6729512000019895,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 52,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " by",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.746557099999336,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 53,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " force",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.785806600004435,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 54,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " =",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.868678300001193,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 55,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " robbery",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 6.9566998000009335,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 56,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.039240500002052,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 57,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " but",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.086776399999508,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 58,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " robbery",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.156833900000493,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 59,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " isn",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.203797300004226,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 60,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "'t",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.253441900000325,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 61,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " listed",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.303236700005073,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 62,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.324942300001567,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 63,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " Theft",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.379031399999803,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 64,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " (",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.429262199999357,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 65,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.532999300005031,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 66,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ")",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.564607100001012,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 67,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.600432400002319,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 68,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.630001900004572,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 69,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " closest",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.713946200005012,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 70,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " —",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.749439100000018,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 71,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " taking",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.774433999999019,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 72,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.807061400002567,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 73,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " necklace",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.850079300005746,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 74,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.9179216000047745,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 75,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " The",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 7.975307699998666,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 76,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " intent",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.02582640000037,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 77,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " to",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.110781900002621,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 78,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " return",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.211411500000395,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 79,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " it",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.249133000004804,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 80,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " doesn",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.27868120000494,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 81,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "'t",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.322317400001339,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 82,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " negate",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.36509870000009,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 83,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.392763700001524,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 84,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " taking",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.421531200001482,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 85,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " (",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.469070800005284,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 86,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "though",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.503564099999494,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 87,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " it",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.577597200004675,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 88,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " might",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.66320220000489,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 89,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " negate",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.72124790000089,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 90,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " theft",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.81017520000023,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 91,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " intent",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.89163120000012,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 92,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "...",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.916026999999303,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 93,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " but",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 8.967824700004712,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 94,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " among",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.066843500004325,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 95,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " choices",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.118004600000859,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 96,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.165244800002256,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 97,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.216317700003856,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 98,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " is",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.254673399998865,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 99,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " best",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.311267700002645,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 100,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ").",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.374496700002055,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 101,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.456731199999922,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 102,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.517490800004452,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 103,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.568823800000246,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 104,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.623875000004773,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 105,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "The friend took the necklace by force (grabbing it from the woman's neck) — under the facts, this constitutes robbery/theft by force. But the question asks which crime she should be found guilty of. Taking property from a person by force = robbery, but robbery isn't listed. Theft (A) is the closest — taking the necklace. The intent to return it doesn't negate the taking (though it might negate theft intent... but among choices, A is best).\n\nANSWER: A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 9.623939800003427,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 106,
+        "item_id": "msg_33e76a1a216c4c58818f2d20",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "The friend took the necklace by force (grabbing it from the woman's neck) — under the facts, this constitutes robbery/theft by force. But the question asks which crime she should be found guilty of. Taking property from a person by force = robbery, but robbery isn't listed. Theft (A) is the closest — taking the necklace. The intent to return it doesn't negate the taking (though it might negate theft intent... but among choices, A is best).\n\nANSWER: A",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 9.624051300001156,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 107,
+        "output_index": 0,
+        "item": {
+          "id": "msg_33e76a1a216c4c58818f2d20",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "The friend took the necklace by force (grabbing it from the woman's neck) — under the facts, this constitutes robbery/theft by force. But the question asks which crime she should be found guilty of. Taking property from a person by force = robbery, but robbery isn't listed. Theft (A) is the closest — taking the necklace. The intent to return it doesn't negate the taking (though it might negate theft intent... but among choices, A is best).\n\nANSWER: A",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 9.624368299999333,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 108,
+        "response": {
+          "id": "resp_d37d6856a8434624a5ffb19e",
+          "object": "response",
+          "created_at": 1794676500,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_33e76a1a216c4c58818f2d20",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "The friend took the necklace by force (grabbing it from the woman's neck) — under the facts, this constitutes robbery/theft by force. But the question asks which crime she should be found guilty of. Taking property from a person by force = robbery, but robbery isn't listed. Theft (A) is the closest — taking the necklace. The intent to return it doesn't negate the taking (though it might negate theft intent... but among choices, A is best).\n\nANSWER: A",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 270,
+            "output_tokens": 102,
+            "total_tokens": 372,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676510
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "e238903e6f1ee6a6614b72489f62d92b3f004bad8f8b5561f838372ff7449e3b",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 19,
+    "source": "nvidia-smi",
+    "duration_s": 9.62456309999834,
+    "gpu_w_avg": 139.87796149788957,
+    "gpu_sampled_coverage_s": 9.11001280000346,
+    "gpu_sampled_coverage_fraction": 0.9465378018047418,
+    "gpu_w_max": 165.20999999999998,
+    "gpu_energy_j": 1346.2642667355765,
+    "system_w_est": 256.9805587876334,
+    "system_energy_j_est": 2473.325603524411,
+    "gpu_util_avg": 66.8157894736842,
+    "vram_mb_max": 30185.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 46.0,
+    "cpu_util_avg": 0.4044370514354067,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49115418624,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 71.00221877400037,
+    "system_memory_percent_max": 71.55825483364546,
+    "vram_percent_avg": 92.55287209005769,
+    "vram_percent_max": 92.57498619885911,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 19,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 19,
+        "source": "nvidia-smi",
+        "duration_s": 9.62456309999834,
+        "gpu_w_avg": 68.25800567157927,
+        "gpu_sampled_coverage_s": 9.11001280000346,
+        "gpu_sampled_coverage_fraction": 0.9465378018047418,
+        "gpu_w_max": 78.88,
+        "gpu_energy_j": 656.9534826661593,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 53.0,
+        "vram_mb_max": 15601.0,
+        "clock_mhz_avg": 2885.4210526315787,
+        "temp_c_max": 46.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.64981582337123,
+        "vram_percent_max": 95.69404404097405,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 19,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 19,
+        "source": "nvidia-smi",
+        "duration_s": 9.62456309999834,
+        "gpu_w_avg": 71.61995582631026,
+        "gpu_sampled_coverage_s": 9.11001280000346,
+        "gpu_sampled_coverage_fraction": 0.9465378018047418,
+        "gpu_w_max": 86.33,
+        "gpu_energy_j": 689.3107840694169,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 80.63157894736842,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 3002.6315789473683,
+        "temp_c_max": 36.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 19,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 19,
+    "errors": {},
+    "available_bytes_min": 19532972032,
+    "ram_used_percent_max": 71.5,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 98343.71128091033,
+      "max": 311186.6347233482,
+      "min": 18699.479693240944
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 1103.5559523650552,
+      "max": 3439.204205721156,
+      "min": 213.0545212438044
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 387972.56653497514,
+      "max": 879224.6952498915,
+      "min": 142165.3950013269
+    },
+    "transition_faults_s": {
+      "mean": 2795.727140006603,
+      "max": 10798.315763497412,
+      "min": 5.785409890505333
+    },
+    "system_cache_resident_bytes": {
+      "mean": 6946975744.0,
+      "max": 7315800064.0,
+      "min": 6409641984.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19669021534.31579,
+      "max": 20212658176.0,
+      "min": 19304202240.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 226381824.0,
+      "max": 226381824.0,
+      "min": 226381824.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 341123287.57894737,
+      "max": 342892544.0,
+      "min": 339136512.0
+    },
+    "committed_bytes": {
+      "mean": 80173099331.36842,
+      "max": 80207499264.0,
+      "min": 80156962816.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9763785914370888,
+      "max": 1.9765377044677734,
+      "min": 1.976289749145508
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 680448,
+        "write_bytes": 5070848,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 3817730048,
+        "write_bytes": 0,
+        "read_time_ms": 8,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32664080384,
+    "engine_rss_max": 32664940544,
+    "engine_faults_delta": 218
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": false,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": false,
+    "content_success": false,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 79,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "A",
+      "expected": "E",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": false,
+      "60": false,
+      "120": false
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676510.227662
+  }
+}

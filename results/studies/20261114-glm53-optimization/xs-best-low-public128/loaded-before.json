@@ -1,0 +1,259 @@
+{
+  "service": "maya",
+  "model": "glm-5.3-flash-maya-xs-iq1_s",
+  "engine": null,
+  "started": 1794668961,
+  "uptime_s": 1133,
+  "cache_max_tokens": 131072,
+  "context": {
+    "native": 131072,
+    "max_positions": 131072
+  },
+  "concurrency": {
+    "serving": 1,
+    "requested": 1
+  },
+  "dialects": [
+    "/v1/chat/completions",
+    "/v1/responses",
+    "/v1/messages"
+  ],
+  "responses": {
+    "cache": {
+      "hits": 0,
+      "misses": 0,
+      "writes": 0,
+      "expired": 0,
+      "evicted": 0,
+      "deleted": 0,
+      "rejected": 0,
+      "assembly_rejected": 0,
+      "write_seconds": 0,
+      "read_seconds": 0,
+      "lock_wait_seconds": 0.0008360000429092906,
+      "lock_hold_seconds": 0.008431100046436768,
+      "entries": 0,
+      "blocks": 0,
+      "bytes": 0,
+      "inflight_bytes": 0,
+      "peak_inflight_bytes": 0,
+      "max_entries": 128,
+      "max_bytes": 67108864,
+      "ttl_s": 3600
+    },
+    "jobs": {
+      "records": 0,
+      "running": 0,
+      "queued": 0,
+      "readers": 0,
+      "event_bytes": 0
+    },
+    "structured_outputs": {
+      "mode": "validate-before-publish",
+      "schema_draft": "2020-12",
+      "constrained_decoding": false
+    }
+  },
+  "vision": {
+    "enabled": false,
+    "available": false,
+    "error": null
+  },
+  "memory_note": null,
+  "activity": {
+    "requests": 68,
+    "in_flight": 0,
+    "queue": {
+      "waiting": 0,
+      "first_waited_s": 0.0,
+      "places": 1
+    },
+    "last_request_at": 1794670012
+  },
+  "last_timings": {
+    "cache_n": 0,
+    "prompt_n": 72,
+    "prompt_ms": 2033.0,
+    "prompt_per_token_ms": 28.236,
+    "prompt_per_second": 35.4,
+    "predicted_n": 51,
+    "predicted_ms": 2907.2,
+    "predicted_per_token_ms": 57.004,
+    "predicted_per_second": 17.5,
+    "draft_n": 49,
+    "draft_n_accepted": 31,
+    "at": 1794670012
+  },
+  "machine": {
+    "at": 1794670095,
+    "gpu": {
+      "name": "NVIDIA GeForce RTX 5070 Ti + NVIDIA GeForce RTX 5070 Ti",
+      "used_mib": 30652.0,
+      "total_mib": 32606.0,
+      "util_pct": 1.0,
+      "temp_c": 49,
+      "power_w": 16.912
+    },
+    "ram": {
+      "used_gib": 46.3,
+      "total_gib": 63.9
+    }
+  },
+  "loaded": true,
+  "auto_load": false,
+  "model_routing": "active-only",
+  "backend": "project-maya-experimental",
+  "model_management": false,
+  "engine_info": {
+    "version": null,
+    "context": 131072,
+    "kv": "int8",
+    "kv_resident": 32768,
+    "expert_slots": 4043,
+    "expert_cache_mib": 21024,
+    "engine_kind": "glm-fast",
+    "experts": 12096,
+    "vram_slots": 4043,
+    "vram_gb": "20.5",
+    "ram_slots": 5216,
+    "ram_gb": "26.4",
+    "mtp": 1,
+    "dflash": 0,
+    "vision_lend": 0,
+    "cpu_threads": 0,
+    "cpu_threads_max": 0,
+    "pcie_share": "1.00",
+    "logit_bias": 1,
+    "kv_ctx": 131072,
+    "kv_gb": 0.63
+  },
+  "gpu_placement": [
+    {
+      "dev": 0,
+      "pci": "0000:02:00",
+      "total": 17066033152,
+      "free": 785383424,
+      "weights": 2877097728,
+      "kv": 339279872,
+      "kv_ram": 427819008,
+      "act": 50428504,
+      "drafter": 0,
+      "window": 0,
+      "pool": 11163798400,
+      "tail": 2267848000,
+      "borrow": 2187621120,
+      "vision": 0,
+      "slots": 2066,
+      "ctx": 131072,
+      "layers": [
+        0,
+        24
+      ]
+    },
+    {
+      "dev": 1,
+      "pci": "0000:01:00",
+      "total": 17066033152,
+      "free": 1000161280,
+      "weights": 2750490880,
+      "kv": 330301440,
+      "kv_ram": 427819008,
+      "act": 54622808,
+      "drafter": 149254400,
+      "window": 0,
+      "pool": 10882317600,
+      "tail": 2298825200,
+      "borrow": 2194072320,
+      "vision": 0,
+      "slots": 1977,
+      "ctx": 131072,
+      "layers": [
+        24,
+        45
+      ]
+    }
+  ],
+  "expert_tier_statistics": {
+    "tok_s": 17.43,
+    "ms_tok": 57.39,
+    "vram_hit": 0.7548,
+    "ram_fetch": 85.312,
+    "disk": 12.438,
+    "promo": 57.354,
+    "vram_used": 3974.0,
+    "vram_slots": 4043.0,
+    "ram_used": 5095.0,
+    "ram_slots": 5216.0,
+    "ram_gb": 26.4,
+    "vram_gb": 20.5,
+    "disk_gb": 15.9,
+    "draft_acc": 28.0,
+    "draft_off": 46.0,
+    "time": 1794670012.3135135
+  },
+  "expert_tier_statistics_scope": "Latest native STAT snapshot, emitted every8tokens; rounded per-token rates for the current/last request, not raw transferred bytes or lifetime totals.",
+  "recorded_condition": {
+    "backend": "project-maya",
+    "runtime_revision": "027992cb1f09829488e650e466233ca351d3d6ef",
+    "base_model": "zai-org/GLM-5.3-Flash",
+    "model_revision": "6728cf78a5b198a6a6f84b7fb88956a17ec56521",
+    "quantization": "Maya-XS IQ1_S + IQ2_XXS + BF16-compat (F32 selection bias)",
+    "requested_mtp": true,
+    "gpu_order": "1,0",
+    "layer_split": "24",
+    "context": 131072,
+    "parallel": 1,
+    "kv": "int8",
+    "reasoning": "low",
+    "sampling": {
+      "temperature": 0,
+      "top_p": 1,
+      "seed": 73129
+    },
+    "loop_guard": false,
+    "kv_streaming": "on",
+    "kv_resident_requested_positions": 32768,
+    "mtp_decode_policy_requested": "vendor-default; head included",
+    "thinking_budget": 0,
+    "pack_policy": "vendor-standard BF16-compat with F32 expert-selection bias",
+    "ram_tier_gib_requested": null,
+    "per_slot_context_tokens_requested": 131072,
+    "memory_policy_requested": {
+      "ram_tier_policy": "auto",
+      "vram_reserve_mib": 750,
+      "ram_tier_global_gib": null,
+      "ram_headroom_min_gib": 12.0,
+      "ram_resident_required": false,
+      "target_disk_skip_weight": 0.0,
+      "target_disk_skip_rank_from": 8,
+      "target_miss_skip_weight": 0.0,
+      "additional_sequence_context_tokens": 131072,
+      "kv_streaming": "on"
+    },
+    "hardware_plan": {
+      "requested": "auto",
+      "gpu_order": "1,0",
+      "cards": [
+        {
+          "index": 1,
+          "name": "NVIDIA GeForce RTX 5070 Ti",
+          "memory_mib": 16303.0,
+          "compute_capability": 12.0,
+          "power_limit_w": 300.0,
+          "free_mib": 15994.0,
+          "uuid": "GPU-a896427b-982e-03be-26b8-50adaf7c9ff8"
+        },
+        {
+          "index": 0,
+          "name": "NVIDIA GeForce RTX 5070 Ti",
+          "memory_mib": 16303.0,
+          "compute_capability": 12.0,
+          "power_limit_w": 300.0,
+          "free_mib": 14754.0,
+          "uuid": "GPU-9478f846-71cd-479b-0c6b-c60e57d29815"
+        }
+      ],
+      "vram_reserve_mib": 750
+    }
+  }
+}

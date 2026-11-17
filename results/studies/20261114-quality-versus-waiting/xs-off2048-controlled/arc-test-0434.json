@@ -1,0 +1,658 @@
+{
+  "id": "arc-test-0434",
+  "category": "science_reasoning",
+  "cohort": "public128",
+  "suite_id": "arc-challenge-test-chat-v1",
+  "prompt_sha256": "e016771593a247262c8c7e84c02b713bef93ae4f0b41bbd10cb116f3853ca530",
+  "request_started_unix": 1794676197.6847157,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676197.6847157
+  },
+  "started_unix": 1794676197.6847157,
+  "response_id": "resp_652335e4168c4283befb2138",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 147,
+    "output_tokens": 13,
+    "total_tokens": 160,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 13,
+  "non_reasoning_generated_tokens": 13,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.691632499998377,
+  "first_visible_content_s": 2.691632499998377,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 3.2177842000019155,
+  "terminal_answer_s": 3.2481066000036662,
+  "transport_wall_s": 3.248157399997581,
+  "answer": "A. She has a desirable trait.\n\nANSWER: A",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.0041959000009228475,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_652335e4168c4283befb2138",
+          "object": "response",
+          "created_at": 1794676197,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.0042134000032092445,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_652335e4168c4283befb2138",
+          "object": "response",
+          "created_at": 1794676197,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.69151039999997,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_e9c7029948144b8ab2bcf873",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.691591900002095,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_e9c7029948144b8ab2bcf873",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.691632499998377,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_e9c7029948144b8ab2bcf873",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7699043000029633,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_e9c7029948144b8ab2bcf873",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8110330999988946,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_e9c7029948144b8ab2bcf873",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " She",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8916183000037563,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_e9c7029948144b8ab2bcf873",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " has",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.9292553999985103,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_e9c7029948144b8ab2bcf873",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " a",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.970549800003937,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_e9c7029948144b8ab2bcf873",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " desirable",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.0350818000006257,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_e9c7029948144b8ab2bcf873",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " trait",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.1040632000003825,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_e9c7029948144b8ab2bcf873",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.132853299997805,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_e9c7029948144b8ab2bcf873",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.1526513999997405,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_e9c7029948144b8ab2bcf873",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.1878257999997004,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_e9c7029948144b8ab2bcf873",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.2177842000019155,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_e9c7029948144b8ab2bcf873",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.247832799999742,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 16,
+        "item_id": "msg_e9c7029948144b8ab2bcf873",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "A. She has a desirable trait.\n\nANSWER: A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.2478677999970387,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 17,
+        "item_id": "msg_e9c7029948144b8ab2bcf873",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "A. She has a desirable trait.\n\nANSWER: A",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.2479378999996698,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 18,
+        "output_index": 0,
+        "item": {
+          "id": "msg_e9c7029948144b8ab2bcf873",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "A. She has a desirable trait.\n\nANSWER: A",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.2481066000036662,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 19,
+        "response": {
+          "id": "resp_652335e4168c4283befb2138",
+          "object": "response",
+          "created_at": 1794676197,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_e9c7029948144b8ab2bcf873",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "A. She has a desirable trait.\n\nANSWER: A",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 147,
+            "output_tokens": 13,
+            "total_tokens": 160,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676200
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "54aab4bad7230160e7fc4f8e5b64f700bbf71a1b8e7d99622d6599bac30e1659",
+  "gpu": {
+    "available": true,
+    "low_confidence": true,
+    "gpu_power_complete": true,
+    "samples": 6,
+    "source": "nvidia-smi",
+    "duration_s": 3.2482245999999577,
+    "gpu_w_avg": 141.97473889933423,
+    "gpu_sampled_coverage_s": 2.5334883000032278,
+    "gpu_sampled_coverage_fraction": 0.7799609361998123,
+    "gpu_w_max": 164.68,
+    "gpu_energy_j": 461.1658394713884,
+    "system_w_est": 256.0479558032067,
+    "system_energy_j_est": 831.701268819678,
+    "gpu_util_avg": 45.416666666666664,
+    "vram_mb_max": 30207.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 55.0,
+    "cpu_util_avg": 0.38257575757575757,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49551663104,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 71.69087644363667,
+    "system_memory_percent_max": 72.19383719340483,
+    "vram_percent_avg": 92.64194728986485,
+    "vram_percent_max": 92.6424584432313,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 6,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": true,
+        "gpu_power_complete": true,
+        "samples": 6,
+        "source": "nvidia-smi",
+        "duration_s": 3.2482245999999577,
+        "gpu_w_avg": 65.98690415049417,
+        "gpu_sampled_coverage_s": 2.5334883000032278,
+        "gpu_sampled_coverage_fraction": 0.7799609361998123,
+        "gpu_w_max": 80.79,
+        "gpu_energy_j": 214.34028533947446,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 33.5,
+        "vram_mb_max": 15623.0,
+        "clock_mhz_avg": 2975.8333333333335,
+        "temp_c_max": 55.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.82796622298554,
+        "vram_percent_max": 95.82898852971846,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 6,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": true,
+        "gpu_power_complete": true,
+        "samples": 6,
+        "source": "nvidia-smi",
+        "duration_s": 3.2482245999999577,
+        "gpu_w_avg": 75.98783474884003,
+        "gpu_sampled_coverage_s": 2.5334883000032278,
+        "gpu_sampled_coverage_fraction": 0.7799609361998123,
+        "gpu_w_max": 84.55,
+        "gpu_energy_j": 246.8255541319138,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 57.333333333333336,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 2978.5,
+        "temp_c_max": 55.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 6,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 6,
+    "errors": {},
+    "available_bytes_min": 19085070336,
+    "ram_used_percent_max": 72.2,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 120717.16452822204,
+      "max": 180065.56503124512,
+      "min": 36779.84040473305
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 1354.0602903361673,
+      "max": 2036.6723620989906,
+      "min": 389.8720417025483
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 488740.9215495074,
+      "max": 735893.3525769679,
+      "min": 250395.31878346164
+    },
+    "transition_faults_s": {
+      "mean": 2135.535899793706,
+      "max": 5932.457435799663,
+      "min": 108.93483518159438
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7455984298.666667,
+      "max": 7806767104.0,
+      "min": 7157714944.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19205883904.0,
+      "max": 19501875200.0,
+      "min": 18856067072.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 227323904.0,
+      "max": 227323904.0,
+      "min": 227323904.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 301494272.0,
+      "max": 301518848.0,
+      "min": 301481984.0
+    },
+    "committed_bytes": {
+      "mean": 80216345258.66667,
+      "max": 80219709440.0,
+      "min": 80213471232.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9170729319254558,
+      "max": 1.917104721069336,
+      "min": 1.9170093536376953
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 167424,
+        "write_bytes": 59392,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 1436209152,
+        "write_bytes": 0,
+        "read_time_ms": 4,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 33550594048,
+    "engine_rss_max": 33552265216,
+    "engine_faults_delta": 417
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 8,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "A",
+      "expected": "A",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676200.9332902
+  }
+}

@@ -1,0 +1,658 @@
+{
+  "id": "mmlu-pro-test-08057",
+  "category": "math",
+  "cohort": "public128",
+  "suite_id": "mmlu-pro-balanced64-chat-v1",
+  "prompt_sha256": "c23a10068d40a2751ee2ecbdb43f6a5906ef70e4c84115b9933f1f78faac649c",
+  "request_started_unix": 1794676712.3107164,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676712.3107164
+  },
+  "started_unix": 1794676712.3107164,
+  "response_id": "resp_23122e458623460687565370",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 82,
+    "output_tokens": 13,
+    "total_tokens": 95,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 13,
+  "non_reasoning_generated_tokens": 13,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.1100084999998217,
+  "first_visible_content_s": 2.1100084999998217,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 2.897743500005163,
+  "terminal_answer_s": 2.9486011000044527,
+  "transport_wall_s": 2.9486680000045453,
+  "answer": "E has horizontal symmetry, not vertical. ANSWER: B",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.00329990000318503,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_23122e458623460687565370",
+          "object": "response",
+          "created_at": 1794676712,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.0034360000063315965,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_23122e458623460687565370",
+          "object": "response",
+          "created_at": 1794676712,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.1097967000023345,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_e0882d6b10b34e1cb20c5677",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.1099333000020124,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_e0882d6b10b34e1cb20c5677",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.1100084999998217,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_e0882d6b10b34e1cb20c5677",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "E",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.2276074000037625,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_e0882d6b10b34e1cb20c5677",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " has",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.329177500003425,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_e0882d6b10b34e1cb20c5677",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " horizontal",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.453157000003557,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_e0882d6b10b34e1cb20c5677",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " symmetry",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.5535221000027377,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_e0882d6b10b34e1cb20c5677",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.6214263000001665,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_e0882d6b10b34e1cb20c5677",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " not",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.698498900004779,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_e0882d6b10b34e1cb20c5677",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " vertical",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7449548000004143,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_e0882d6b10b34e1cb20c5677",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7817847000042093,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_e0882d6b10b34e1cb20c5677",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ANSW",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.826314600002661,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_e0882d6b10b34e1cb20c5677",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8701876000050106,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_e0882d6b10b34e1cb20c5677",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.897743500005163,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_e0882d6b10b34e1cb20c5677",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " B",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.9483183000047575,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 16,
+        "item_id": "msg_e0882d6b10b34e1cb20c5677",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "E has horizontal symmetry, not vertical. ANSWER: B",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.9483510999998543,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 17,
+        "item_id": "msg_e0882d6b10b34e1cb20c5677",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "E has horizontal symmetry, not vertical. ANSWER: B",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.9484248000007938,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 18,
+        "output_index": 0,
+        "item": {
+          "id": "msg_e0882d6b10b34e1cb20c5677",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "E has horizontal symmetry, not vertical. ANSWER: B",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.9486011000044527,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 19,
+        "response": {
+          "id": "resp_23122e458623460687565370",
+          "object": "response",
+          "created_at": 1794676712,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_e0882d6b10b34e1cb20c5677",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "E has horizontal symmetry, not vertical. ANSWER: B",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 82,
+            "output_tokens": 13,
+            "total_tokens": 95,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676715
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "f2a02714d48113707bef19afe90aaf6f9117eb7f2324b3a2b95d0dbcde7074e6",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 6,
+    "source": "nvidia-smi",
+    "duration_s": 2.9487525999938953,
+    "gpu_w_avg": 125.11637835282505,
+    "gpu_sampled_coverage_s": 2.5405113999950117,
+    "gpu_sampled_coverage_fraction": 0.8615546112618168,
+    "gpu_w_max": 162.68,
+    "gpu_energy_j": 368.93724596971276,
+    "system_w_est": 236.22312706683218,
+    "system_energy_j_est": 696.5635601170097,
+    "gpu_util_avg": 54.083333333333336,
+    "vram_mb_max": 30176.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 44.0,
+    "cpu_util_avg": 0.37987294823232326,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49624379392,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 72.01034950037715,
+    "system_memory_percent_max": 72.29978051656157,
+    "vram_percent_avg": 92.54738391707048,
+    "vram_percent_max": 92.54738391707048,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 6,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 6,
+        "source": "nvidia-smi",
+        "duration_s": 2.9487525999938953,
+        "gpu_w_avg": 61.54137660727518,
+        "gpu_sampled_coverage_s": 2.5405113999950117,
+        "gpu_sampled_coverage_fraction": 0.8615546112618168,
+        "gpu_w_max": 82.93,
+        "gpu_energy_j": 181.4702942779062,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 44.833333333333336,
+        "vram_mb_max": 15592.0,
+        "clock_mhz_avg": 2994.8333333333335,
+        "temp_c_max": 44.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.6388394773968,
+        "vram_percent_max": 95.6388394773968,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 6,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 6,
+        "source": "nvidia-smi",
+        "duration_s": 2.9487525999938953,
+        "gpu_w_avg": 63.57500174554989,
+        "gpu_sampled_coverage_s": 2.5405113999950117,
+        "gpu_sampled_coverage_fraction": 0.8615546112618168,
+        "gpu_w_max": 79.75,
+        "gpu_energy_j": 187.46695169180666,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 63.333333333333336,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 3008.3333333333335,
+        "temp_c_max": 35.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 6,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 5,
+    "errors": {},
+    "available_bytes_min": 19114045440,
+    "ram_used_percent_max": 72.2,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 190345.5751198815,
+      "max": 276637.40901667223,
+      "min": 82471.88589637999
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 2247.0807759359054,
+      "max": 3108.5687513404855,
+      "min": 1369.358562894639
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 520266.88857060455,
+      "max": 737725.6136369014,
+      "min": 335985.4229318105
+    },
+    "transition_faults_s": {
+      "mean": 8874.109743882951,
+      "max": 32603.50839382067,
+      "min": 69.20937972971957
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7474438144.0,
+      "max": 7630839808.0,
+      "min": 7305154560.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19030864691.2,
+      "max": 19213541376.0,
+      "min": 18886504448.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 225490534.4,
+      "max": 225509376.0,
+      "min": 225415168.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 339655884.8,
+      "max": 340062208.0,
+      "min": 338743296.0
+    },
+    "committed_bytes": {
+      "mean": 80219167948.8,
+      "max": 80306003968.0,
+      "min": 80195461120.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9648323059082031,
+      "max": 1.964845657348633,
+      "min": 1.9647979736328127
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 5663744,
+        "write_bytes": 1657856,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 1720127488,
+        "write_bytes": 0,
+        "read_time_ms": 3,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32686645248,
+    "engine_rss_max": 32686690304,
+    "engine_faults_delta": 19
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": false,
+    "completed_final_answer": true,
+    "strict_success": false,
+    "content_success": true,
+    "format_only_failure": true,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 8,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "B",
+      "expected": "B",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": false,
+      "60": false,
+      "120": false
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676715.2610242
+  }
+}

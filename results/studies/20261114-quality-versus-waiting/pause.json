@@ -1,0 +1,31 @@
+{
+  "status": "paused_by_user",
+  "utc": "2026-11-14T17:20:56.373103+00:00",
+  "reason": "User requested all experiments and downloads paused without loss.",
+  "atomic_request": "Completed and saved; xs-off2048-controlled is stopped_after_request with 114 attempts (106 public,8 practical).",
+  "verified": {
+    "engine_processes": [],
+    "benchmark_download_conversion_processes": [],
+    "maya_owned_registry": [],
+    "port8097_listening": false,
+    "desktop_only": {
+      "desktop_only": true
+    }
+  },
+  "s24": {
+    "download_status": "complete",
+    "verified_shards": 3,
+    "bytes": 94701676224,
+    "independent_conversion_receipt_status": "completed",
+    "inference_tested": false
+  },
+  "settings": "Exact experimental profile and all request configuration snapshots retained. Production guards unchanged. No automatic restart or model restore. Current GLM scope: 750 MiB reserve, RAM/GPU/layer split Auto; restore production reserve after the campaign ends.",
+  "resume": "Only on user request. Remove stop.after-request and cooperative download pause marker intentionally; verify no competing workloads and Control-owned actual model/context/config before sending any inference. If reloading changes allocation/config identity, retain all saved attempts and record an explicit load segment; do not discard or cherry-pick reruns.",
+  "next_when_resumed": [
+    "Finish remaining 22 public and16 practical XS Off questions; finish XS Low condition using the frozen set.",
+    "Run exact Flash Next IQ3_S and UD-IQ4_XS Off/Low, then verified S24 Off/Low under the same protocol.",
+    "Report complete common public128 paired outcomes and latency deadlines; use a separate full MMLU64 4096 cohort only where truncation limits conclusions.",
+    "Grade common20k/80k/120k evidence tasks; defer expensive190kS24 grids unless quality warrants them.",
+    "Complete native-Linux feasibility and complete delivered used128-256GB platform research; no OS install or hardware purchase."
+  ]
+}

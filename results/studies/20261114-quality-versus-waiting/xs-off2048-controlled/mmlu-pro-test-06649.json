@@ -1,0 +1,910 @@
+{
+  "id": "mmlu-pro-test-06649",
+  "category": "health",
+  "cohort": "public128",
+  "suite_id": "mmlu-pro-balanced64-chat-v1",
+  "prompt_sha256": "8cef7bc1765252f2a6c23b14aadebe004ead1dcc18f2b65be4939180a453ee12",
+  "request_started_unix": 1794676660.2133634,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676660.2133634
+  },
+  "started_unix": 1794676660.2133634,
+  "response_id": "resp_b087841353e04178b0f61e1b",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 131,
+    "output_tokens": 34,
+    "total_tokens": 165,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 34,
+  "non_reasoning_generated_tokens": 34,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.575461300002644,
+  "first_visible_content_s": 2.575461300002644,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 4.742854199997964,
+  "terminal_answer_s": 4.82390039999882,
+  "transport_wall_s": 4.82396560000052,
+  "answer": "Collagen fibers take time to re-establish during wound healing — they are not immediately restored; granulation tissue initially deposits collagen which matures over weeks.\n\nANSWER: B",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.02282299999933457,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_b087841353e04178b0f61e1b",
+          "object": "response",
+          "created_at": 1794676660,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.022843300001113676,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_b087841353e04178b0f61e1b",
+          "object": "response",
+          "created_at": 1794676660,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.575374100000772,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_3e68f813d571468ea0c96a68",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.5754011000026367,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.575461300002644,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "Coll",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.6850310000008903,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "agen",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.764199400000507,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " fibers",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.8809073000011267,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " take",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.946997500002908,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " time",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.0057993000009446,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " to",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.04690870000195,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " re",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.108489099999133,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "-establish",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.1535561999990023,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " during",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.2242843999993056,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " wound",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.27075909999985,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " healing",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.319030799997563,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " —",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.392649100002018,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " they",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.4405770000012126,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " are",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.505202599997574,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " not",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5708364000020083,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " immediately",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.660908500001824,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " restored",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.745648000003712,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ";",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.842045600002166,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " gran",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9428350000016508,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ulation",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.979779499997676,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " tissue",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.019192600004317,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " initially",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.04855569999927,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " deposits",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.125780000002123,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " collagen",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.178224200004479,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " which",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.260112100004335,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " matures",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.343357300000207,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " over",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.427574699999241,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " weeks",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.524070999999822,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.552119100000709,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.646149600004719,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 34,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.701699700002791,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 35,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.742854199997964,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 36,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " B",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.823607600003015,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 37,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "Collagen fibers take time to re-establish during wound healing — they are not immediately restored; granulation tissue initially deposits collagen which matures over weeks.\n\nANSWER: B",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.823645700002089,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 38,
+        "item_id": "msg_3e68f813d571468ea0c96a68",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "Collagen fibers take time to re-establish during wound healing — they are not immediately restored; granulation tissue initially deposits collagen which matures over weeks.\n\nANSWER: B",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.823722699999053,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 39,
+        "output_index": 0,
+        "item": {
+          "id": "msg_3e68f813d571468ea0c96a68",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "Collagen fibers take time to re-establish during wound healing — they are not immediately restored; granulation tissue initially deposits collagen which matures over weeks.\n\nANSWER: B",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.82390039999882,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 40,
+        "response": {
+          "id": "resp_b087841353e04178b0f61e1b",
+          "object": "response",
+          "created_at": 1794676660,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_3e68f813d571468ea0c96a68",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "Collagen fibers take time to re-establish during wound healing — they are not immediately restored; granulation tissue initially deposits collagen which matures over weeks.\n\nANSWER: B",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 131,
+            "output_tokens": 34,
+            "total_tokens": 165,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676665
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "b213bcf2247ec662b672d35502340059b6069e17463335ffdbe95363eeda2b67",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 9,
+    "source": "nvidia-smi",
+    "duration_s": 4.824036699996213,
+    "gpu_w_avg": 127.5383422480306,
+    "gpu_sampled_coverage_s": 4.041326500002469,
+    "gpu_sampled_coverage_fraction": 0.8377478761730071,
+    "gpu_w_max": 153.14,
+    "gpu_energy_j": 615.2496436611772,
+    "system_w_est": 245.82683633940962,
+    "system_energy_j_est": 1185.877680345275,
+    "gpu_util_avg": 63.72222222222222,
+    "vram_mb_max": 30099.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 44.0,
+    "cpu_util_avg": 0.4151885738512577,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49395548160,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 71.69240448827523,
+    "system_memory_percent_max": 71.9663869698485,
+    "vram_percent_avg": 92.30543799028128,
+    "vram_percent_max": 92.31123106176777,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 9,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.824036699996213,
+        "gpu_w_avg": 64.56446869895096,
+        "gpu_sampled_coverage_s": 4.041326500002469,
+        "gpu_sampled_coverage_fraction": 0.8377478761730071,
+        "gpu_w_max": 75.07,
+        "gpu_energy_j": 311.4613665194962,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 55.333333333333336,
+        "vram_mb_max": 15515.0,
+        "clock_mhz_avg": 2993.222222222222,
+        "temp_c_max": 44.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.15494762381839,
+        "vram_percent_max": 95.16653376679139,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.824036699996213,
+        "gpu_w_avg": 62.97387354907964,
+        "gpu_sampled_coverage_s": 4.041326500002469,
+        "gpu_sampled_coverage_fraction": 0.8377478761730071,
+        "gpu_w_max": 79.11,
+        "gpu_energy_j": 303.78827714168096,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 72.11111111111111,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 3008.1111111111113,
+        "temp_c_max": 35.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 10,
+    "errors": {},
+    "available_bytes_min": 19199893504,
+    "ram_used_percent_max": 72.0,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 99900.90301812456,
+      "max": 243161.92200925108,
+      "min": 27045.93100453296
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 1125.0505612992379,
+      "max": 2727.2734296351864,
+      "min": 292.0768392674252
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 408332.4695896781,
+      "max": 966517.1173106148,
+      "min": 90336.29189236969
+    },
+    "transition_faults_s": {
+      "mean": 2326.398147800411,
+      "max": 5844.050709105728,
+      "min": 5.762871662000662
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7381655142.4,
+      "max": 7582044160.0,
+      "min": 7102951424.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19185358438.4,
+      "max": 19464429568.0,
+      "min": 18971049984.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 409.6,
+      "max": 4096.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 226443264.0,
+      "max": 226443264.0,
+      "min": 226443264.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 342334259.2,
+      "max": 344223744.0,
+      "min": 340258816.0
+    },
+    "committed_bytes": {
+      "mean": 80067842048.0,
+      "max": 80070107136.0,
+      "min": 80065368064.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9673633575439453,
+      "max": 1.9673633575439453,
+      "min": 1.9673633575439453
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 287232,
+        "write_bytes": 4228096,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 2048487424,
+        "write_bytes": 0,
+        "read_time_ms": 5,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32683307008,
+    "engine_rss_max": 32683692032,
+    "engine_faults_delta": 102
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 26,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "B",
+      "expected": "B",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676665.0382097
+  }
+}

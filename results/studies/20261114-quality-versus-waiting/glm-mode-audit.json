@@ -1,0 +1,105 @@
+{
+  "family": "glm",
+  "vendor": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.59",
+  "server_sha256": "e4fe26f1f5379d199847d4cf2bbec6229f0c31c7ca62768790c9ecd1a1d44469",
+  "frontend_sha256": "410120bf020ce1c1b5f688c5aaa65217cb24c4bb4536a891c713451727a48459",
+  "responses_sha256": "8faa5de7e6a34987bbe08db525013c04c443b0bc35ba8fa8a2bed5abcad72d4e",
+  "effort_mapping": {
+    "none": {
+      "accepted": true,
+      "template_kwargs": {
+        "enable_thinking": false
+      }
+    },
+    "low": {
+      "accepted": true,
+      "template_kwargs": {
+        "reasoning_effort": "low"
+      }
+    },
+    "medium": {
+      "accepted": true,
+      "template_kwargs": {
+        "reasoning_effort": "high",
+        "effort_name": "medium"
+      }
+    },
+    "high": {
+      "accepted": true,
+      "template_kwargs": {
+        "reasoning_effort": "high"
+      }
+    },
+    "xhigh": {
+      "accepted": true,
+      "template_kwargs": {
+        "reasoning_effort": "max",
+        "effort_name": "xhigh"
+      }
+    },
+    "max": {
+      "accepted": true,
+      "template_kwargs": {
+        "reasoning_effort": "max"
+      }
+    },
+    "auto": {
+      "accepted": true,
+      "template_kwargs": {
+        "reasoning_effort": "auto"
+      }
+    },
+    "invalid": {
+      "accepted": false,
+      "error": "unknown reasoning effort 'invalid': use none, auto, low, medium, high, xhigh or max"
+    }
+  },
+  "parity": [
+    {
+      "template": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.59\\serve\\glm5_chat_template.jinja",
+      "template_sha256": "2614a3c896d53e265f564c23701173c0049f985dacfbae79fc4bcd9f5ba083f4",
+      "mode": "none",
+      "prompt_sha256": "fcbd84e92b59dfe0672549014201764f4f4503fe9518305cb5e08949abd7a338",
+      "chat_responses_render_identical": true,
+      "rendered_sha256": "10723dd9c152789a3828bd58a0bdcf2aff286c27c36ffe29c9d5b0044f41e152",
+      "rendered_prefix": "[gMASK]<sop><|system|>Reasoning Effort: Low<|user|>An astronomer observes that a planet rotates faster after a meteorite impact. Which is the most likely effect of this increase in rotation?\n\nA. Planetary density will de",
+      "rendered_suffix": ".\n\nChoose the best answer. End your reply with exactly ANSWER: <letter>.<|assistant|><think></think>",
+      "thinking_open_for_generation": false
+    },
+    {
+      "template": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.59\\serve\\glm5_chat_template.jinja",
+      "template_sha256": "2614a3c896d53e265f564c23701173c0049f985dacfbae79fc4bcd9f5ba083f4",
+      "mode": "none",
+      "prompt_sha256": "43009dbb1b1aef655cd4ded243400c3426e4f7aa5c7d329e515c4cdd868dac13",
+      "chat_responses_render_identical": true,
+      "rendered_sha256": "db7fbf455e888c2e3eda1a253f440246608cbcf584c46c3986acbd9b08af8d0c",
+      "rendered_prefix": "[gMASK]<sop><|system|>Reasoning Effort: Low<|user|>Implement this Python function: stable_unique(values): return a list retaining only the first occurrence of each integer or string, preserving order.\nReturn exactly one ",
+      "rendered_suffix": " arguments. Return values directly; do not write a command-line program.<|assistant|><think></think>",
+      "thinking_open_for_generation": false
+    },
+    {
+      "template": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.59\\serve\\glm5_chat_template.jinja",
+      "template_sha256": "2614a3c896d53e265f564c23701173c0049f985dacfbae79fc4bcd9f5ba083f4",
+      "mode": "low",
+      "prompt_sha256": "fcbd84e92b59dfe0672549014201764f4f4503fe9518305cb5e08949abd7a338",
+      "chat_responses_render_identical": true,
+      "rendered_sha256": "b9f387250a9bc2cdf470dd53ca576b88e055e1357bbba537fcc85ba3873c4c2d",
+      "rendered_prefix": "[gMASK]<sop><|system|>Reasoning Effort: Low<|user|>An astronomer observes that a planet rotates faster after a meteorite impact. Which is the most likely effect of this increase in rotation?\n\nA. Planetary density will de",
+      "rendered_suffix": "stronger.\n\nChoose the best answer. End your reply with exactly ANSWER: <letter>.<|assistant|><think>",
+      "thinking_open_for_generation": true
+    },
+    {
+      "template": "C:\\tests\\flash-next\\experimental-maya\\source-1.1.59\\serve\\glm5_chat_template.jinja",
+      "template_sha256": "2614a3c896d53e265f564c23701173c0049f985dacfbae79fc4bcd9f5ba083f4",
+      "mode": "low",
+      "prompt_sha256": "43009dbb1b1aef655cd4ded243400c3426e4f7aa5c7d329e515c4cdd868dac13",
+      "chat_responses_render_identical": true,
+      "rendered_sha256": "6e9b489cb630ffc0a21f611cd7aaf09009c7942a45cd2112b68439e1fb3f3cc8",
+      "rendered_prefix": "[gMASK]<sop><|system|>Reasoning Effort: Low<|user|>Implement this Python function: stable_unique(values): return a list retaining only the first occurrence of each integer or string, preserving order.\nReturn exactly one ",
+      "rendered_suffix": "he input arguments. Return values directly; do not write a command-line program.<|assistant|><think>",
+      "thinking_open_for_generation": true
+    }
+  ],
+  "engines_started": false,
+  "budget_policy": "Maya config thinking_budget0: no reasoning cap inside2048; Low is a prompt hint."
+}

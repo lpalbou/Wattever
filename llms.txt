@@ -9,22 +9,23 @@
 - [Browser mode](docs/browser.md): hosted connection, measurement and storage limits.
 - [Sharing results](docs/sharing-results.md): shared catalog, contributions and continuing helper sessions.
 - [Getting started](docs/getting-started.md): provider choice, automatic endpoint identity, connection, manual model IDs and first run.
-- [Measurements](docs/measurements.md): client/provider timings, cache provenance, power boundaries, hardware and compute claims.
+- [Measurements](docs/measurements.md): batch and per-request timing definitions, workload selection, cache provenance, power boundaries, hardware and compute claims.
 - [Concurrency comparisons](docs/concurrency.md): request-count charts, throughput/latency tradeoffs, timing bars, failed/partial groups, placement conditions, matched-repeat scaling and energy.
 - [Prefill scheduling study](docs/prefill-scheduling-and-concurrency.md): measured scheduler/replica strategies on two RTX 5070 Ti cards, Q8 capacity, raw timing/power evidence and reproduction limits.
-- [GLM-5.3-Flash comparison](docs/glm53-flash-comparison.md): preliminary Maya-XS NVMe measurements, actual host residency, Flash-Next observations and separate diagnostic snapshots.
+- [GLM-5.3-Flash comparison](docs/glm53-flash-comparison.md): separate AirDisk/Samsung 990 Pro Maya-XS cohorts, complete native/client timings, a matched buffered-I/O pair, host/cache/physical-I/O evidence and a sixteen-task exact-answer screen.
 - [RTX 5060 Ti storage comparison](docs/5060-ti-storage-comparison.md): recorded Strata SATA/NVMe timings, repeats, speedups and hardware conditions.
 - [RTX 5070 Ti hardware and storage follow-up](docs/5070-ti-hardware-follow-up.md): 144 completed paired storage observations, prefill/decode aggregates, actual drafting evidence, transfer measurements and the pending active-channel report.
 - [PNY versus ASUS Prime RTX 5070 Ti](docs/pny-5070-ti-comparison.md): 156 primary PNY cases with one repeat, GPU power and throughput comparisons with ASUS and RTX 5060 Ti; incomplete storage data retained separately.
 - [i7-5820K versus i7-5960X](docs/5960x-cpu-comparison.md): same PNY RTX 5070 Ti, 156 matched CPU cases across the 13 established models, measured transfer/compute probes and uncertainty limits.
 - [PNY RTX 5070 Ti plus ASUS RTX 5060 Ti](docs/5070-plus-5060-comparison.md): matched and supplemental LM Studio measurements, per-card/combined energy, transfer/compute probes, connection diagnostics and Strata coverage status.
 - [Multi-GPU communication and placement study](docs/dual-gpu-communication-and-placement.md): communication paths, transfer measurements, GPU execution strategies, profiling evidence and diagnostic protocol boundaries.
-- [Two RTX 5070 Ti cards](docs/two-5070-ti-comparison.md): 180 normal cases, matched single/mixed-card throughput and energy, native drafting and per-card temperatures.
+- [Two RTX 5070 Ti cards](docs/two-5070-ti-comparison.md): 180 normal cases, matched single/mixed-card throughput and energy, native drafting and temperatures; separate three-repeat Flash expert-RAM tables at 40,960 and 131,072 context.
 - [Two RTX 5070 Ti placement strategies](docs/two-5070-ti-placement.md): measured communication paths, standalone prefill/decode, independent instances, energy and profiling limits.
 - [Capability evaluation](docs/capabilities.md): visual score/coverage dashboard, question-by-repeat evidence explorer, pinned Core/GSM8K/ARC/MMLU-Pro suites and paired-comparison limits.
 - [Flash-Next task accuracy](docs/flash-next-quality.md): UD-IQ4_XS and IQ3_S on matched public-question samples, audit answers, coverage and generation conditions on two RTX 5070 Ti cards.
 - [Experiment checkpoint](docs/experiment-status.md): completed dual-5070 performance, communication and quality measurements; explicit GLM download/preparation status without inference claims.
 - [Architecture](docs/architecture.md): components and boundaries.
+- [Local inference upgrades](docs/local-inference-upgrades.md): ten ranked upgrade routes for the dual-5070 Ti machine, supported RAM/platform limits and purchasing evidence.
 - [API](docs/api.md): automatic naming/opaque route identity, private registry boundaries, environment-based authentication, local routes and managed-only extensions.
 - [FAQ](docs/faq.md): common questions and limits.
 - [Troubleshooting](docs/troubleshooting.md): diagnosis and fixes.

@@ -1,0 +1,946 @@
+{
+  "id": "arc-test-1103",
+  "category": "science_reasoning",
+  "cohort": "public128",
+  "suite_id": "arc-challenge-test-chat-v1",
+  "prompt_sha256": "13a1629dacd2d1282d0a13add57e0285f57dae4a240ac82656e29d9271851d03",
+  "request_started_unix": 1794676256.6315725,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676256.6315725
+  },
+  "started_unix": 1794676256.6315725,
+  "response_id": "resp_450ec3ba1b70485a82eacae2",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 72,
+    "output_tokens": 37,
+    "total_tokens": 109,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 37,
+  "non_reasoning_generated_tokens": 37,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.07408089999808,
+  "first_visible_content_s": 2.07408089999808,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 4.209008599995286,
+  "terminal_answer_s": 4.2907530999946175,
+  "transport_wall_s": 4.29082219999691,
+  "answer": "Both are living cells, so both need energy — that's the shared trait. Mouse skin cells lack cell walls, pseudopodia, and CO2 consumption.\n\nANSWER: A",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.01842979999491945,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_450ec3ba1b70485a82eacae2",
+          "object": "response",
+          "created_at": 1794676256,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.018449499999405816,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_450ec3ba1b70485a82eacae2",
+          "object": "response",
+          "created_at": 1794676256,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.073143699999491,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_eccdf205c0374deea7fc73c6",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.0740446999989217,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.07408089999808,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "Both",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.178090699999302,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " are",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.241144199993869,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " living",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.3459963999994216,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " cells",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.3988190999953076,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.4340148999981466,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " so",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.4976482999991276,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " both",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.581699899994419,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " need",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.6414331999985734,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " energy",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.690020399997593,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " —",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7321490999966045,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " that",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.856955899995228,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "'s",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.899112099999911,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.9608941999977105,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " shared",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.0703577999956906,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " trait",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.121072499998263,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.151849999994738,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " Mouse",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.2583674999987124,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " skin",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.36211159999948,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 22,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " cells",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.394108000000415,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 23,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " lack",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.497776199998043,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 24,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " cell",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.5574406999949133,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 25,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " walls",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.596343400000478,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 26,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.623012899995956,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 27,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " pseud",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.688127800000075,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 28,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "op",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7368719999940367,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 29,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "odia",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.7740173999991384,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 30,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.813308999997389,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 31,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " and",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.863962799994624,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 32,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " CO",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.9354087999963667,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 33,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "2",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.977143199997954,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 34,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " consumption",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.021055499993963,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 35,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.059752499997558,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 36,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.11429159999534,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 37,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.164760599996953,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 38,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.209008599995286,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 39,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.29045269999915,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 40,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "Both are living cells, so both need energy — that's the shared trait. Mouse skin cells lack cell walls, pseudopodia, and CO2 consumption.\n\nANSWER: A",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 4.290490999999747,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 41,
+        "item_id": "msg_eccdf205c0374deea7fc73c6",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "Both are living cells, so both need energy — that's the shared trait. Mouse skin cells lack cell walls, pseudopodia, and CO2 consumption.\n\nANSWER: A",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.290576699997473,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 42,
+        "output_index": 0,
+        "item": {
+          "id": "msg_eccdf205c0374deea7fc73c6",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "Both are living cells, so both need energy — that's the shared trait. Mouse skin cells lack cell walls, pseudopodia, and CO2 consumption.\n\nANSWER: A",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 4.2907530999946175,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 43,
+        "response": {
+          "id": "resp_450ec3ba1b70485a82eacae2",
+          "object": "response",
+          "created_at": 1794676256,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_eccdf205c0374deea7fc73c6",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "Both are living cells, so both need energy — that's the shared trait. Mouse skin cells lack cell walls, pseudopodia, and CO2 consumption.\n\nANSWER: A",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 72,
+            "output_tokens": 37,
+            "total_tokens": 109,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676260
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "929789230e7a96beae5b8bad85e77388dd31cfd7fa3b04f533b45d39d4cb69d6",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 9,
+    "source": "nvidia-smi",
+    "duration_s": 4.290888600000471,
+    "gpu_w_avg": 142.40163771699366,
+    "gpu_sampled_coverage_s": 4.047464900002524,
+    "gpu_sampled_coverage_fraction": 0.943269629512656,
+    "gpu_w_max": 163.25,
+    "gpu_energy_j": 611.0295639012453,
+    "system_w_est": 259.93442334802756,
+    "system_energy_j_est": 1115.3496538917477,
+    "gpu_util_avg": 64.05555555555556,
+    "vram_mb_max": 30246.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 57.0,
+    "cpu_util_avg": 0.4059343434343434,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49885732864,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 72.3184605224446,
+    "system_memory_percent_max": 72.68055704000335,
+    "vram_percent_avg": 92.76206833098203,
+    "vram_percent_max": 92.76206833098203,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 9,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.290888600000471,
+        "gpu_w_avg": 72.72947345003168,
+        "gpu_sampled_coverage_s": 4.047464900002524,
+        "gpu_sampled_coverage_fraction": 0.943269629512656,
+        "gpu_w_max": 81.61,
+        "gpu_energy_j": 312.07406851077786,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 48.0,
+        "vram_mb_max": 15662.0,
+        "clock_mhz_avg": 2975.4444444444443,
+        "temp_c_max": 57.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 96.0682083052199,
+        "vram_percent_max": 96.0682083052199,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 9,
+        "source": "nvidia-smi",
+        "duration_s": 4.290888600000471,
+        "gpu_w_avg": 69.672164266962,
+        "gpu_sampled_coverage_s": 4.047464900002524,
+        "gpu_sampled_coverage_fraction": 0.943269629512656,
+        "gpu_w_max": 82.32,
+        "gpu_energy_j": 298.95549539046743,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 80.11111111111111,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 2988.8888888888887,
+        "temp_c_max": 47.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 9,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 8,
+    "errors": {},
+    "available_bytes_min": 18848178176,
+    "ram_used_percent_max": 72.5,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 92017.71922235897,
+      "max": 178492.19370254566,
+      "min": 48265.60560994347
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 1065.425561278008,
+      "max": 1960.3344280613908,
+      "min": 529.8717670927965
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 352750.8197803565,
+      "max": 587668.2048390959,
+      "min": 237110.5989462059
+    },
+    "transition_faults_s": {
+      "mean": 8513.464141242337,
+      "max": 37129.98602462684,
+      "min": 60.98661477213971
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7874303488.0,
+      "max": 8055496704.0,
+      "min": 7752593408.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 18784238080.0,
+      "max": 18883059712.0,
+      "min": 18618843136.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 227466752.0,
+      "max": 227467264.0,
+      "min": 227463168.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 361968128.0,
+      "max": 362762240.0,
+      "min": 361660416.0
+    },
+    "committed_bytes": {
+      "mean": 80257359360.0,
+      "max": 80383234048.0,
+      "min": 80234303488.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9167578220367432,
+      "max": 1.9167613983154297,
+      "min": 1.9167518615722654
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 4898304,
+        "write_bytes": 1359360,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 1450840064,
+        "write_bytes": 0,
+        "read_time_ms": 3,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32583053312,
+    "engine_rss_max": 32588611584,
+    "engine_faults_delta": 1366
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 25,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "A",
+      "expected": "A",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676260.9228845
+  }
+}

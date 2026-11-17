@@ -1,0 +1,550 @@
+{
+  "id": "gsm8k-test-0562",
+  "category": "math_word_problems",
+  "cohort": "public128",
+  "suite_id": "gsm8k-test-chat-v1",
+  "prompt_sha256": "bbb879c9c8c14de1cab052137847d2eb8a5fc0407f7b736c3cdb006a4f675bea",
+  "request_started_unix": 1794676329.246892,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676329.246892
+  },
+  "started_unix": 1794676329.246892,
+  "response_id": "resp_d085c0e41fe9435dbeb6d565",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 113,
+    "output_tokens": 4,
+    "total_tokens": 117,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 4,
+  "non_reasoning_generated_tokens": 4,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.504300200002035,
+  "first_visible_content_s": 2.504300200002035,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 2.672293100004026,
+  "terminal_answer_s": 2.7336988000024576,
+  "transport_wall_s": 2.733777800000098,
+  "answer": "#### 82",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.020485000000917353,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_d085c0e41fe9435dbeb6d565",
+          "object": "response",
+          "created_at": 1794676329,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.020503100000496488,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_d085c0e41fe9435dbeb6d565",
+          "object": "response",
+          "created_at": 1794676329,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.5042038000028697,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_1c4a9aa792d544a5829248c7",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.504249500001606,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_1c4a9aa792d544a5829248c7",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.504300200002035,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_1c4a9aa792d544a5829248c7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "####",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.576286200004688,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_1c4a9aa792d544a5829248c7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.672293100004026,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_1c4a9aa792d544a5829248c7",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "82",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7333358000032604,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 7,
+        "item_id": "msg_1c4a9aa792d544a5829248c7",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "#### 82",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.7333665000041947,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 8,
+        "item_id": "msg_1c4a9aa792d544a5829248c7",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "#### 82",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.7336245000042254,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 9,
+        "output_index": 0,
+        "item": {
+          "id": "msg_1c4a9aa792d544a5829248c7",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "#### 82",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.7336988000024576,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 10,
+        "response": {
+          "id": "resp_d085c0e41fe9435dbeb6d565",
+          "object": "response",
+          "created_at": 1794676329,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_1c4a9aa792d544a5829248c7",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "#### 82",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 113,
+            "output_tokens": 4,
+            "total_tokens": 117,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676331
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "0574348f2f46fbbfb9002e5987c7de3422630d3f25464efd797474b74c272114",
+  "gpu": {
+    "available": true,
+    "low_confidence": true,
+    "gpu_power_complete": true,
+    "samples": 5,
+    "source": "nvidia-smi",
+    "duration_s": 2.733839699998498,
+    "gpu_w_avg": 132.97096377808256,
+    "gpu_sampled_coverage_s": 2.027180999997654,
+    "gpu_sampled_coverage_fraction": 0.7415142153355838,
+    "gpu_w_max": 168.39,
+    "gpu_energy_j": 363.5212997235844,
+    "system_w_est": 250.1373082649678,
+    "system_energy_j_est": 683.8353037855313,
+    "gpu_util_avg": 38.1,
+    "vram_mb_max": 30040.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 51.0,
+    "cpu_util_avg": 0.40501893939393946,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49430179840,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 71.75160602331923,
+    "system_memory_percent_max": 72.01684327567231,
+    "vram_percent_avg": 92.13028277004233,
+    "vram_percent_max": 92.13028277004233,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 5,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": true,
+        "gpu_power_complete": true,
+        "samples": 5,
+        "source": "nvidia-smi",
+        "duration_s": 2.733839699998498,
+        "gpu_w_avg": 65.10073550664153,
+        "gpu_sampled_coverage_s": 2.027180999997654,
+        "gpu_sampled_coverage_fraction": 0.7415142153355838,
+        "gpu_w_max": 89.54,
+        "gpu_energy_j": 177.97497522715844,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 33.2,
+        "vram_mb_max": 15456.0,
+        "clock_mhz_avg": 2983.4,
+        "temp_c_max": 51.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 94.80463718334049,
+        "vram_percent_max": 94.80463718334049,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 5,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": true,
+        "gpu_power_complete": true,
+        "samples": 5,
+        "source": "nvidia-smi",
+        "duration_s": 2.733839699998498,
+        "gpu_w_avg": 67.87022827144105,
+        "gpu_sampled_coverage_s": 2.027180999997654,
+        "gpu_sampled_coverage_fraction": 0.7415142153355838,
+        "gpu_w_max": 78.85,
+        "gpu_energy_j": 185.54632449642597,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 43.0,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 3002.8,
+        "temp_c_max": 37.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 5,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 5,
+    "errors": {},
+    "available_bytes_min": 19180208128,
+    "ram_used_percent_max": 72.1,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 96663.78055807966,
+      "max": 154845.90304694875,
+      "min": 15333.121917427741
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 1119.615820836752,
+      "max": 1869.4263672072345,
+      "min": 165.99301169420767
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 469225.41075552005,
+      "max": 731055.7914671598,
+      "min": 246359.17785567004
+    },
+    "transition_faults_s": {
+      "mean": 7544.216384540098,
+      "max": 21612.631570060592,
+      "min": 43.35341844660366
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7475216384.0,
+      "max": 7657033728.0,
+      "min": 7321079808.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19141884313.6,
+      "max": 19295289344.0,
+      "min": 18950885376.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 227329638.4,
+      "max": 227348480.0,
+      "min": 227254272.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 362748313.6,
+      "max": 363327488.0,
+      "min": 362266624.0
+    },
+    "committed_bytes": {
+      "mean": 80025674547.2,
+      "max": 80094396416.0,
+      "min": 80000462848.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9166851043701176,
+      "max": 1.9166851043701174,
+      "min": 1.9166851043701174
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 2306048,
+        "write_bytes": 1775616,
+        "read_time_ms": 1,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 977829888,
+        "write_bytes": 0,
+        "read_time_ms": 2,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 32627322880,
+    "engine_rss_max": 32627441664,
+    "engine_faults_delta": 34
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 2,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "82",
+      "expected": "82",
+      "content_rule": "final numeric expression; strict format separately requires####"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676331.9810069
+  }
+}

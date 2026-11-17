@@ -1,0 +1,730 @@
+{
+  "id": "arc-test-0107",
+  "category": "science_reasoning",
+  "cohort": "public128",
+  "suite_id": "arc-challenge-test-chat-v1",
+  "prompt_sha256": "3c436d4e5b068a0820347c7df7e1dac53976b8364114af59d87a98a8a62f619c",
+  "request_started_unix": 1794676170.0200183,
+  "download_before": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676170.0200183
+  },
+  "started_unix": 1794676170.0200183,
+  "response_id": "resp_b0c40853bc0d4ce189fe29d5",
+  "response_model": "glm-5.3-flash-maya-xs-iq1_s",
+  "provider_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 108,
+    "output_tokens": 19,
+    "total_tokens": 127,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "reasoning_tokens": 0,
+  "total_generated_tokens": 19,
+  "non_reasoning_generated_tokens": 19,
+  "token_count_note": "Provider counter. Non-reasoning generated tokens can include control markers, not only visible answer text.",
+  "first_any_output_s": 2.4088982999965083,
+  "first_visible_content_s": 2.4088982999965083,
+  "first_visible_content_note": "First observed final-channel text; may include visible analysis and is not proof that a useful answer has arrived.",
+  "last_visible_answer_s": 3.2505917999951635,
+  "terminal_answer_s": 3.2760944999972708,
+  "transport_wall_s": 3.276159099994402,
+  "answer": "B. The dog becomes ill, and the tapeworm benefits.\n\nANSWER: B",
+  "reasoning_text": "",
+  "stream_text_matches_terminal": true,
+  "events": [
+    {
+      "elapsed_s": 0.003886200000124518,
+      "event": {
+        "type": "response.created",
+        "sequence_number": 0,
+        "response": {
+          "id": "resp_b0c40853bc0d4ce189fe29d5",
+          "object": "response",
+          "created_at": 1794676170,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 0.003906699996150564,
+      "event": {
+        "type": "response.in_progress",
+        "sequence_number": 1,
+        "response": {
+          "id": "resp_b0c40853bc0d4ce189fe29d5",
+          "object": "response",
+          "created_at": 1794676170,
+          "status": "in_progress",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": null
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.4088074999963283,
+      "event": {
+        "type": "response.output_item.added",
+        "sequence_number": 2,
+        "output_index": 0,
+        "item": {
+          "id": "msg_57161b6779ad45c3a5af1a52",
+          "type": "message",
+          "role": "assistant",
+          "status": "in_progress",
+          "content": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.408848899998702,
+      "event": {
+        "type": "response.content_part.added",
+        "sequence_number": 3,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 2.4088982999965083,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 4,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "B",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.4669041999950423,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 5,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.504776399997354,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 6,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " The",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.56745139999839,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 7,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " dog",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.6426044999971054,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 8,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " becomes",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.70712989999447,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 9,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " ill",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.758984000000055,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 10,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ",",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.786953699993319,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 11,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " and",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.871282699998119,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 12,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " the",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.9243060999942827,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 13,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " tap",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 2.9797581999955582,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 14,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "ew",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.0274042999953963,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 15,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "orm",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.076429199994891,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 16,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " benefits",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.1215904999990016,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 17,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ".",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.162021999996796,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 18,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "\n\nANS",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.187685499993677,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 19,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "WER",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.219847899999877,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 20,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": ":",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.2505917999951635,
+      "event": {
+        "type": "response.output_text.delta",
+        "sequence_number": 21,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": " B",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.2758237999951234,
+      "event": {
+        "type": "response.output_text.done",
+        "sequence_number": 22,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "text": "B. The dog becomes ill, and the tapeworm benefits.\n\nANSWER: B",
+        "logprobs": []
+      }
+    },
+    {
+      "elapsed_s": 3.275855899999442,
+      "event": {
+        "type": "response.content_part.done",
+        "sequence_number": 23,
+        "item_id": "msg_57161b6779ad45c3a5af1a52",
+        "output_index": 0,
+        "content_index": 0,
+        "part": {
+          "type": "output_text",
+          "text": "B. The dog becomes ill, and the tapeworm benefits.\n\nANSWER: B",
+          "annotations": [],
+          "logprobs": []
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.2759383999946294,
+      "event": {
+        "type": "response.output_item.done",
+        "sequence_number": 24,
+        "output_index": 0,
+        "item": {
+          "id": "msg_57161b6779ad45c3a5af1a52",
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "B. The dog becomes ill, and the tapeworm benefits.\n\nANSWER: B",
+              "annotations": [],
+              "logprobs": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_s": 3.2760944999972708,
+      "event": {
+        "type": "response.completed",
+        "sequence_number": 25,
+        "response": {
+          "id": "resp_b0c40853bc0d4ce189fe29d5",
+          "object": "response",
+          "created_at": 1794676170,
+          "status": "completed",
+          "error": null,
+          "incomplete_details": null,
+          "model": "glm-5.3-flash-maya-xs-iq1_s",
+          "output": [
+            {
+              "id": "msg_57161b6779ad45c3a5af1a52",
+              "type": "message",
+              "role": "assistant",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "text": "B. The dog becomes ill, and the tapeworm benefits.\n\nANSWER: B",
+                  "annotations": [],
+                  "logprobs": []
+                }
+              ]
+            }
+          ],
+          "instructions": null,
+          "max_output_tokens": 2048,
+          "tools": [],
+          "tool_choice": "auto",
+          "parallel_tool_calls": true,
+          "reasoning": {
+            "effort": "none",
+            "summary": null
+          },
+          "text": {
+            "format": {
+              "type": "text"
+            }
+          },
+          "temperature": 0,
+          "top_p": 1,
+          "metadata": {},
+          "store": false,
+          "background": false,
+          "previous_response_id": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 108,
+            "output_tokens": 19,
+            "total_tokens": 127,
+            "input_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "completed_at": 1794676173
+        }
+      }
+    }
+  ],
+  "request_payload_sha256": "285205e01d2103e854637246552f83cede0f8167e38c81432b9f064af0f0813d",
+  "gpu": {
+    "available": true,
+    "low_confidence": false,
+    "gpu_power_complete": true,
+    "samples": 7,
+    "source": "nvidia-smi",
+    "duration_s": 3.2762262000032933,
+    "gpu_w_avg": 132.92411722066421,
+    "gpu_sampled_coverage_s": 3.0382654999993974,
+    "gpu_sampled_coverage_fraction": 0.9273674387917242,
+    "gpu_w_max": 137.01,
+    "gpu_energy_j": 435.489475450649,
+    "system_w_est": 254.72870777443137,
+    "system_energy_j_est": 834.5488663035746,
+    "gpu_util_avg": 53.5,
+    "vram_mb_max": 30175.0,
+    "clock_mhz_avg": null,
+    "temp_c_max": 52.0,
+    "cpu_util_avg": 0.4440273268398269,
+    "cpu_w_avg": null,
+    "system_memory_used_bytes_max": 49036738560,
+    "system_memory_total_bytes": 68636971008,
+    "system_memory_percent_avg": 71.18594808123284,
+    "system_memory_percent_max": 71.44362264221203,
+    "vram_percent_avg": 92.54431699687174,
+    "vram_percent_max": 92.54431699687174,
+    "cpu_temp_c_max": null,
+    "telemetry_samples": 7,
+    "raw_retention_truncated": false,
+    "scope": "benchmark_client_all_nvidia_gpus",
+    "gpu_indices": [
+      0,
+      1
+    ],
+    "inventory_complete": true,
+    "gpus": [
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 7,
+        "source": "nvidia-smi",
+        "duration_s": 3.2762262000032933,
+        "gpu_w_avg": 66.87929360699314,
+        "gpu_sampled_coverage_s": 3.0382654999993974,
+        "gpu_sampled_coverage_fraction": 0.9273674387917242,
+        "gpu_w_max": 77.62,
+        "gpu_energy_j": 219.1116939529437,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 55.285714285714285,
+        "vram_mb_max": 15591.0,
+        "clock_mhz_avg": 2985.8571428571427,
+        "temp_c_max": 52.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 95.63270563699932,
+        "vram_percent_max": 95.63270563699932,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 7,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      },
+      {
+        "available": true,
+        "low_confidence": false,
+        "gpu_power_complete": true,
+        "samples": 7,
+        "source": "nvidia-smi",
+        "duration_s": 3.2762262000032933,
+        "gpu_w_avg": 66.04482361367104,
+        "gpu_sampled_coverage_s": 3.0382654999993974,
+        "gpu_sampled_coverage_fraction": 0.9273674387917242,
+        "gpu_w_max": 74.05,
+        "gpu_energy_j": 216.37778149770526,
+        "system_w_est": null,
+        "system_energy_j_est": null,
+        "gpu_util_avg": 51.714285714285715,
+        "vram_mb_max": 14584.0,
+        "clock_mhz_avg": 2990.0,
+        "temp_c_max": 52.0,
+        "cpu_util_avg": null,
+        "cpu_w_avg": null,
+        "system_memory_used_bytes_max": null,
+        "system_memory_total_bytes": null,
+        "system_memory_percent_avg": null,
+        "system_memory_percent_max": null,
+        "vram_percent_avg": 89.45592835674415,
+        "vram_percent_max": 89.45592835674415,
+        "cpu_temp_c_max": null,
+        "telemetry_samples": 7,
+        "raw_retention_truncated": false,
+        "scope": "benchmark_client_gpu",
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 5070 Ti"
+      }
+    ]
+  },
+  "paging": {
+    "available": true,
+    "samples": 6,
+    "errors": {},
+    "available_bytes_min": 19589783552,
+    "ram_used_percent_max": 71.5,
+    "interpretation": "Available RAM includes reclaimable standby cache; report cache counters separately. PagesInput/PageReads and process faults include mmap model reads; they alone do not prove pagefile thrashing.",
+    "pages_input_s": {
+      "mean": 126162.59374923336,
+      "max": 193118.50227693087,
+      "min": 46993.913864064634
+    },
+    "pages_output_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_reads_s": {
+      "mean": 1410.6149272424539,
+      "max": 2185.1323136944484,
+      "min": 531.8424346599935
+    },
+    "page_writes_s": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "page_faults_s": {
+      "mean": 535719.0429512999,
+      "max": 1018920.0995530166,
+      "min": 324285.4874830191
+    },
+    "transition_faults_s": {
+      "mean": 5617.318395064848,
+      "max": 9463.790784420293,
+      "min": 482.4782296529143
+    },
+    "system_cache_resident_bytes": {
+      "mean": 7000118613.333333,
+      "max": 7124602880.0,
+      "min": 6856560640.0
+    },
+    "standby_cache_normal_bytes": {
+      "mean": 19567476053.333332,
+      "max": 19774578688.0,
+      "min": 19362328576.0
+    },
+    "standby_cache_reserve_bytes": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "standby_cache_core_bytes": {
+      "mean": 227190101.33333334,
+      "max": 227192832.0,
+      "min": 227188736.0
+    },
+    "modified_page_list_bytes": {
+      "mean": 304081578.6666667,
+      "max": 305246208.0,
+      "min": 303218688.0
+    },
+    "committed_bytes": {
+      "mean": 80257211050.66667,
+      "max": 80390852608.0,
+      "min": 80182169600.0
+    },
+    "commit_limit_bytes": {
+      "mean": 111586643968.0,
+      "max": 111586643968.0,
+      "min": 111586643968.0
+    },
+    "pagefile_usage_percent": {
+      "mean": 1.9171905517578125,
+      "max": 1.9171905517578125,
+      "min": 1.9171905517578125
+    },
+    "longest_pageouts_ge_1024_pages_s_seconds": 0,
+    "disk_deltas": {
+      "PhysicalDrive0": {
+        "read_bytes": 56832,
+        "write_bytes": 2226688,
+        "read_time_ms": 0,
+        "write_time_ms": 0
+      },
+      "PhysicalDrive1": {
+        "read_bytes": 1507078144,
+        "write_bytes": 0,
+        "read_time_ms": 3,
+        "write_time_ms": 0
+      }
+    },
+    "engine_rss_min": 33534545920,
+    "engine_rss_max": 33536274432,
+    "engine_faults_delta": 431
+  },
+  "budget_violation": false,
+  "generation_headroom_verified": true,
+  "grade": {
+    "answer_content_passed": true,
+    "format_passed": true,
+    "completed_final_answer": true,
+    "strict_success": true,
+    "content_success": true,
+    "format_only_failure": false,
+    "truncated": false,
+    "answer_repetition": {
+      "words": 11,
+      "duplicate_8gram_fraction": 0.0,
+      "longest_identical_line_run": 1,
+      "suspected": false
+    },
+    "reasoning_repetition": {
+      "words": 0,
+      "duplicate_8gram_fraction": 0,
+      "longest_identical_line_run": 0,
+      "suspected": false
+    },
+    "details": {
+      "normalized_answer": "B",
+      "expected": "B",
+      "content_rule": "explicit final option, or standalone letter"
+    },
+    "correct_within_s": {
+      "30": true,
+      "60": true,
+      "120": true
+    }
+  },
+  "grading_source_sha256": {
+    "common.py": "9304231a8e1835f37afcd7d8ca5830c57c518177b5e8a8b3eee1d4ddfbe1cc1b",
+    "code_grade.py": "abbc7a1f51237250293da224b9e7367fa7e1a42646d87d91e8735983e53a80d4"
+  },
+  "grading_revision": "v3-sequence-pair-semantics",
+  "download_after": {
+    "state": "complete",
+    "verified_shards": 3,
+    "checked_unix": 1794676173.2971401
+  }
+}
