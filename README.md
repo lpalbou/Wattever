@@ -21,7 +21,7 @@ See [Getting started](docs/getting-started.md) for both provider modes and [Meas
 
 The local helper supports **Add / rerun tests** for managed LM Studio and reconnected external endpoints. One JSON file stores each benchmark. Review it before publication; see [results guidance](results/README.md).
 
-Consolidation preserves engine/session settings and exact measurement rows. Conflicting known GPU board identities remain separate even when the GPU chip name matches; legacy unknown board metadata stays unknown.
+Benchmarks of one machine merge into one: tick them in Results and choose **Merge into one…**. Wattever recognizes the machine, including for endpoint benchmarks saved as remote, explains what cannot join, and can undo the merge. Consolidation preserves engine/session settings and exact measurement rows. Conflicting known GPU board identities remain separate even when the GPU chip name matches; legacy unknown board metadata stays unknown.
 
 The **System** tab's collapsed **This machine** header shows CPU, GPU, RAM and per-card VRAM. Expand it for grouped compute, storage, transfer and platform cards; full names and probe methods stay accessible. Compatible saved transfer captures retain their original date and are labeled **Saved capture**.
 

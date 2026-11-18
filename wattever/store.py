@@ -132,19 +132,31 @@ def prepare_run(run):
         "runtime_gpu_placement_source": "user_reported" if cfg.get("runtime_gpu_placement") else "unknown",
     }
     run["corpus"]["sha256"] = hashlib.sha256(corpus.load_master().encode("utf-8")).hexdigest()
-    # A configuration grouping key, never a unique machine identifier.
+    run["classification"] = classification(machine, (run.get("host") or {}).get("platform"))
+    return run
+
+
+def hardware_class(machine):
+    """A configuration grouping key, never a unique machine identifier.
+
+    Two inventories of one computer give the same key, so it also recognizes the
+    machine that launched an endpoint benchmark (see consolidation.facts).
+    """
     cards = [{k: g.get(k) for k in ("name", "vendor", "memory_bytes")}
              for g in machine.get("gpus", [])]
     stable_cpu = {key: (machine.get("cpu") or {}).get(key) for key in ("name", "physical_cores", "logical_cores")}
     descriptor = {"cpu": stable_cpu, "system": machine.get("system"),
                   "gpus": sorted(cards, key=lambda g: json.dumps(g, sort_keys=True)),
                   "os": machine.get("os")}
-    run["classification"] = {
-        "hardware_class": hashlib.sha256(json.dumps(descriptor, sort_keys=True).encode()).hexdigest()[:20],
+    return hashlib.sha256(json.dumps(descriptor, sort_keys=True).encode()).hexdigest()[:20]
+
+
+def classification(machine, platform_name):
+    return {
+        "hardware_class": hardware_class(machine),
         "gpu_names": sorted(g.get("name", "") for g in machine.get("gpus", [])),
-        "platform": (run.get("host") or {}).get("platform"),
+        "platform": platform_name,
     }
-    return run
 
 
 def save(run):
@@ -232,12 +244,19 @@ def list_runs(full=False):
 def summarise(run):
     results = run.get("results") or []
     ok = [r for r in results if r.get("status") == "ok"]
+    merges = [entry for entry in run.get("consolidation_history") or [] if isinstance(entry, dict)]
     return {
         "id": run.get("id"),
         "label": run.get("label"),
         "notes": run.get("notes"),
         "created_at": run.get("created_at"),
+        "updated_at": run.get("updated_at"),
+        # The most recent merge, so the library can say where a benchmark came from.
+        "merge": {"sources": len(merges[-1].get("source_run_ids") or []), "at": merges[-1].get("at")} if merges else None,
         "status": run.get("status"),
+        # Why a benchmark stopped and how much of it is still owed.
+        "error": run.get("error"),
+        "remaining_tests": run.get("remaining_tests"),
         "gpu": run.get("gpu") or {},
         "host": run.get("host") or {},
         "hardware": run.get("hardware") or {},

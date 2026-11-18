@@ -15,7 +15,7 @@ For a command-line contribution, fork and clone the repository, create a branch,
 
 For a linked machine comparison, contribute every member listed in `comparison_group.run_ids`, including its root run. **Open machine benchmark** then selects the available members together in Results. The files retain separate engines, settings and sessions; a group does not turn externally queued requests into parallel backend execution. Use clear labels and optional public `tags` for the GPU, engine, model, quantization and technique; tags appear with the run's scientific metadata. Review notes and recorded runtime observations alongside requested/reported/effective settings. See [machine comparison linking](api.md).
 
-To keep one entry per machine configuration, use the helper's [consolidation route](api.md) before contributing. Publish the resulting single JSON file and remove the superseded source entries from the active catalog. Engine-specific results, settings and provenance remain inside the benchmark's sessions, `engine_groups` and source metadata. Consolidation preserves measurement rows and does not change the backend's concurrency behavior.
+To keep one entry per machine configuration, merge its benchmarks before contributing: tick them in Results and choose **Merge into one…**, or use the helper's [consolidation route](api.md). Publish the resulting single JSON file and remove the superseded source entries from the active catalog. Engine-specific results, settings and provenance remain inside the benchmark's sessions, `engine_groups` and source metadata. Consolidation preserves measurement rows and does not change the backend's concurrency behavior.
 
 ## Open a model comparison
 

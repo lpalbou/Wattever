@@ -104,6 +104,37 @@ class EndpointIntegrationTests(unittest.TestCase):
         self.assertIsNone(value["decode_tps"])
         self.assertIn("only one observed output delta", value["timing_scope"]["decode_token_scope"])
 
+    def test_typed_key_authenticates_without_an_environment_variable(self):
+        cfg = dict(self.cfg, endpoint_api_key="typed-secret-key")
+        cfg.pop("endpoint_api_key_env")
+        self.assertEqual(endpoints.list_models(dict(cfg))[0]["id"], "org/model")
+        runner.BenchRunner()._measure_completion(cfg, "org/model", "test", 4, disable_thinking=True)
+        self.assertEqual([r[1] for r in self.requests], ["Bearer typed-secret-key"] * 2)
+        # A typed key wins over a named variable, and a pasted header value is the same key.
+        self.assertEqual(endpoints.api_key(dict(self.cfg, endpoint_api_key="typed-secret-key")), "typed-secret-key")
+        self.assertEqual(endpoints.api_key({"endpoint_api_key":"  Bearer typed-secret-key\n"}), "typed-secret-key")
+        self.assertEqual(endpoints.api_key({"endpoint_api_key":""}), "")
+
+    def test_typed_key_rejects_header_injection_without_echoing_it(self):
+        for value in ("two words", "line\r\nX-Injected: 1", "tab\tkey", "caf\u00e9", 12345, ["k"], "k" * 8193):
+            with self.subTest(value=value), self.assertRaises(ValueError) as error:
+                endpoints.validate(dict(self.cfg, endpoint_api_key=value))
+            self.assertNotIn(str(value)[:6], str(error.exception))
+        for field in ("api_key", "apiKey", "authorization"):
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, "endpoint_api_key"):
+                endpoints.validate(dict(self.cfg, **{field:"typed-secret-key"}))
+
+    def test_typed_key_is_private_and_scrubbed_from_diagnostics(self):
+        cfg = dict(runner.DEFAULT_CONFIG, provider="openai", endpoint_base_url="http://127.0.0.1:9/v1",
+                   endpoint_api_key="Bearer typed-secret-key", models=["org/model"])
+        self.assertNotIn("typed-secret-key", json.dumps(endpoints.public_config(cfg)))
+        self.assertNotIn("endpoint_api_key", endpoints.public_config(cfg))
+        echoed = endpoints.sanitize_error("401 invalid key typed-secret-key (sent 'Bearer typed-secret-key')", cfg)
+        self.assertNotIn("typed-secret-key", echoed)
+        with self.assertRaises(ValueError) as error:
+            endpoints.list_models(dict(cfg))
+        self.assertNotIn("typed-secret-key", str(error.exception))
+
     def test_model_discovery_preserves_explicit_quant_context_architecture_and_loaded_state(self):
         self.model_payload["data"]=[
             {"id":"flash-ud-iq4_xs","quantization":"q8_0","meta":{"quantization":"BF16","n_ctx":32768},
@@ -266,7 +297,7 @@ class EndpointPolicyTests(unittest.TestCase):
         bench.cli = cli
         cfg = dict(runner.DEFAULT_CONFIG, provider="openai", models=["manual/model"], sizes=[16],
                    warmup=False, endpoint_base_url="http://localhost:8086/v1", endpoint_api_key_env="",
-                   surprise={"secret":"do-not-save"})
+                   endpoint_api_key="typed-secret-key", surprise={"secret":"do-not-save"})
         saved = []
         def prepare(run):
             run.update(application={},hardware={},measurement_scope={},classification={})
@@ -275,8 +306,11 @@ class EndpointPolicyTests(unittest.TestCase):
         self.assertEqual(cli.mock_calls, [])
         text = json.dumps(saved) + json.dumps(save_cfg.call_args.args)
         self.assertNotIn("8086", text)
-        self.assertNotIn("endpoint_api_key_env", text)
+        self.assertNotIn("endpoint_api_key", text)
+        self.assertNotIn("typed-secret-key", text)
         self.assertNotIn("do-not-save", text)
+        # The running job keeps the key in memory so its requests can authenticate.
+        self.assertEqual(endpoints.api_key(bench._runtime_config), "typed-secret-key")
         self.assertIsInstance(bench.cli, endpoints.ExternalControl)
         row = {"mtp":False,"context_length":100,"reasoning_disabled":True}
         with patch.object(store, "save"):

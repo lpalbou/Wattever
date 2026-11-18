@@ -80,11 +80,12 @@ check('conditions for different models are not variants of each other',()=>{
   assert(!variants.some(label=>label.includes(' / m')),'the shared model name is not repeated in a variant name');
 });
 
-check('an unchecked sole condition remains recoverable',()=>{
-  const f=fixture();f.context.sampleRun={id:'remaining',results:[row('Q4',10)]};
-  f.run(`state.conditions=new Set();renderRecordedConditions([sampleRun])`);
-  assert.equal(f.get('#recorded-conditions').hidden,false,
-    'the last unchecked recorded condition must stay visible for re-selection');
+check('a switched-off benchmark remains recoverable from the key',()=>{
+  const f=fixture();f.context.sampleRun={id:'remaining',label:'Remaining',results:[row('Q4',10)]};
+  const html=f.run(`chartKeyMarkup({allModels:['m'],models:[],runs:[],levels:[],mtp:new Set(),curves:[{run:sampleRun,on:false,cases:1,measured:1}]},'context')`);
+  assert.match(html,/<button type="button" class="key-item key-toggle" aria-pressed="false" data-curve="remaining"/,
+    'the last switched-off benchmark must stay in the key for re-selection');
+  assert.match(html,/1 matching case · 1 measured/);
 });
 
 check('a recorded query count of 11 is selectable',()=>{

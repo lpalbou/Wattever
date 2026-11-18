@@ -32,6 +32,18 @@ class LoadError(Exception):
     pass
 
 
+class Refused(RuntimeError):
+    """The server answered a request with an HTTP error status."""
+
+    def __init__(self, message, status=None):
+        super().__init__(message)
+        self.status = status
+
+
+class Unreachable(RuntimeError):
+    """No HTTP answer at all: refused or reset connection, failed lookup, connect timeout."""
+
+
 def _clean(text):
     """lms draws spinners; keep only the last meaningful lines."""
     text = ANSI.sub("", text or "")
@@ -327,9 +339,9 @@ def measure_completion(model, prompt, max_tokens, base=DEFAULT_BASE, timeout=180
             detail = exc.read().decode("utf-8", "replace")[:600]
         except OSError:
             pass
-        raise RuntimeError("HTTP %s from %s: %s" % (exc.code, provider_name, detail)) from exc
+        raise Refused("HTTP %s from %s: %s" % (exc.code, provider_name, detail), exc.code) from exc
     except (urllib.error.URLError, OSError) as exc:
-        raise RuntimeError("Could not reach %s (%s)" % (provider_name, exc)) from exc
+        raise Unreachable("Could not reach %s (%s)" % (provider_name, exc)) from exc
 
     # hand the response back so a caller can close it to abort a blocked read
     # (a long prefill produces no bytes for minutes, so polling a flag is not

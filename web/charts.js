@@ -108,6 +108,9 @@ const Charts = (() => {
     const node = tooltip();
     node.innerHTML = html;
     node.style.display = "block";
+    // Measure from the corner: where the box last stood must not squeeze its new content.
+    node.style.left = "0px";
+    node.style.top = "0px";
     const pad = 14;
     const rect = node.getBoundingClientRect();
     const anchor=(event.currentTarget || event.target)?.getBoundingClientRect?.();

@@ -28,6 +28,9 @@ const state = {
   metadataOverrides: {label: false, notes: false},
   cursor: 0,
   liveResults: [],
+  openNotes: new Set(),
+  // Curves switched on or off from the chart key, by run key. Unlisted keys follow the selection.
+  curveChoice: new Map(),
   poller: null,
   pollBusy: false,
   liveRunId: null,
@@ -35,6 +38,8 @@ const state = {
   idleWatcher: null,
   benchmarkRunning: false,
   extension: null,
+  merge: null,            // the open merge dialog: ticked benchmarks, confirmations and the server's plan
+  mergeSuggestions: [],   // same-machine groups found by the helper
   detectedEndpoint: null,
   detectedEndpointProvider: null,
   conditions: null,
@@ -160,26 +165,6 @@ function measurementRuns(runs) {
   return variants.filter(run=>state.conditions === null ? !run.storage_alternative && !run.storage_baseline : state.conditions.has(run.id));
 }
 
-function renderRecordedConditions(runs) {
-  const container = $("#recorded-conditions");
-  if (!container) return;
-  const variants = availableMeasurementRuns(runs), selected = new Set(measurementRuns(runs).map(run=>run.id));
-  container.hidden = !variants.length || (variants.length === 1 && selected.has(variants[0].id));
-  const signature = JSON.stringify(variants.map(run=>[run.id,run.label]));
-  if (container.dataset.conditions !== signature) {
-    container.dataset.conditions = signature;
-    container.innerHTML = `<div class="condition-selection-heading"><span class="measure-heading">Recorded conditions</span><span class="dim condition-total"></span></div><div class="chips">${variants.map(run=>`<label class="chip condition-choice" title="Show recorded measurements: ${esc(run.label || run.id)}"><input type="checkbox" data-condition-id="${esc(run.id)}"><span class="condition-copy"><strong>${esc(run.label || run.id)}</strong><small class="condition-count"></small></span></label>`).join("")}</div>`;
-  }
-  container.querySelector(".condition-total").textContent = `${selected.size} selected / ${variants.length} recorded`;
-  container.querySelectorAll("[data-condition-id]").forEach(input=>{
-    input.checked = selected.has(input.dataset.conditionId);
-    input.closest(".chip").dataset.on = input.checked ? "1" : "0";
-    const run=variants.find(item=>item.id === input.dataset.conditionId), rows=conditionRows(run,null,state.resultView==="compare" && state.comparisonAxis==="concurrency");
-    const measured=rows.filter(row=>row.status === "ok" && selectedMetricKeys().some(key=>Number.isFinite(METRICS[key].get(row)))).length;
-    input.closest(".chip").querySelector(".condition-count").textContent=rows.length ? `${rows.length} matching cases · ${measured} measured` : "0 cases for current model / queries";
-  });
-}
-
 /* Results can show several concurrent-query levels at once. With no explicit
  * choice the single comparisonConcurrency level applies. */
 function activeQueryLevels() {
@@ -282,7 +267,7 @@ function compareRecordedStorage(runId) {
   const experimentIds = new Set(alternatives.flatMap(view=>[view.id,view.storage_baseline_id || view.id.replace(/::storage:alternate$/,"")]));
   const variants = available.filter(view=>experimentIds.has(view.id));
   state.compare = new Set([runId]); state.selected = runId;
-  state.conditions = new Set(variants.map(view=>view.id)); state.visibleModels = models;
+  state.conditions = new Set(variants.map(view=>view.id)); state.visibleModels = models; state.curveChoice.clear();
   state.metrics = new Set(["wall_s"]); state.mtpFilter = "all";
   state.comparisonConcurrency = 1; state.queryLevels = null; state.promptLevels = null; state.levelsTouched = true; state.metricsTouched = true;
   state.comparisonLayout = "models"; state.comparisonAxis = "context"; state.colorBy = "benchmarks";
@@ -326,11 +311,26 @@ function helperEndpointConfig() {
     endpoint_identity:identity || undefined,endpoint_name_override:override};
   if (browserMode()) return {provider:"openai",...publicIdentity};
   if(provider==="lmstudio")return {provider,...publicIdentity,endpoint_inference_local:!!$("#helper-local")?.checked};
+  // The key is typed here and travels only in same-origin request bodies to the
+  // local helper. Nothing in this page stores it: see withoutCredentials().
+  const key = $("#helper-key")?.value.trim() || "";
   return {provider,
     endpoint_base_url: $("#helper-url")?.value.trim() || "",
-    endpoint_api_key_env: $("#helper-key-env")?.value.trim() || "",
+    ...(key ? {endpoint_api_key: key} : {}),
     ...publicIdentity,
     endpoint_inference_local: !!$("#helper-local")?.checked};
+}
+/* Remembered form state must never carry the typed credential. */
+function withoutCredentials(config) {
+  const {endpoint_api_key, ...rest} = config || {};
+  return rest;
+}
+/* Detects that the key changed without keeping a copy of it in signatures. */
+function credentialMark(value) {
+  if (!value) return "";
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index++) hash = Math.imul(hash ^ value.charCodeAt(index), 16777619);
+  return value.length + ":" + (hash >>> 0).toString(36);
 }
 function rememberEndpoint(payload,provider) {
   state.detectedEndpointProvider=provider;
@@ -343,7 +343,7 @@ const HELPER_PROVIDER_STORAGE = "wattever-helper-provider";
 
 function helperConnectionSignature() {
   const config = helperEndpointConfig();
-  return JSON.stringify({provider:config.provider,base:config.endpoint_base_url,keyEnv:config.endpoint_api_key_env,
+  return JSON.stringify({provider:config.provider,base:config.endpoint_base_url,key:credentialMark(config.endpoint_api_key),
     model:$("#helper-model")?.value.trim() || "",local:config.endpoint_inference_local});
 }
 function addComputeClaim() {
@@ -372,7 +372,7 @@ function updateProviderControls() {
   });
   if (!browserMode()) {
     const generic = genericHelper();
-    ["#helper-url", "#helper-key-env", "#helper-model", "#helper-local"].forEach(selector => { const node = $(selector); if (node) (node.closest(".field") || node.closest("label") || node).hidden = !generic; });
+    ["#helper-url", "#helper-key", "#helper-model", "#helper-local"].forEach(selector => { const node = $(selector); if (node) (node.closest(".field") || node.closest("label") || node).hidden = !generic; });
     if ($("#helper-name-override")) $("#helper-name-override").disabled = false;
     if ($("#helper-local-note")) $("#helper-local-note").hidden = !generic;
   }
@@ -384,7 +384,7 @@ async function refreshOpenAiCatalog(config = helperEndpointConfig()) {
   const models = Array.isArray(found) ? found : found.models || found.data || [];
   if (!models.length) throw new Error(found.error || "No model IDs found.");
   state.env = {...state.env, models, default_models: models.map((model) => model.id),
-    last_config: {...state.env.defaults, ...state.env.last_config, ...config, models: models.map(model => model.id)},
+    last_config: {...state.env.defaults, ...state.env.last_config, ...withoutCredentials(config), models: models.map(model => model.id)},
     lms: {server: true, cli: false}, capabilities: {...state.env.capabilities, context_planning: false}};
   state.providerNeedsConnection = false;
   state.endpointSignature = helperConnectionSignature();
@@ -413,7 +413,7 @@ async function connectHelperEndpoint() {
       } catch (error) {
         if (manual) {
           state.env = {...(state.env || {}), models: [{id: manual, type: "llm", state: "manual model ID; discovery unavailable"}],
-            last_config: {...state.env.defaults, ...state.env.last_config, ...config, models: [manual]},
+            last_config: {...state.env.defaults, ...state.env.last_config, ...withoutCredentials(config), models: [manual]},
             default_models: [manual], lms: {server: true, cli: false}};
           state.providerNeedsConnection = false;
           state.endpointSignature = helperConnectionSignature();
@@ -423,7 +423,7 @@ async function connectHelperEndpoint() {
           status.dataset.state = "ready";
         } else throw error;
       }
-      state.env.last_config = {...state.env.defaults, ...config, models: state.env.default_models};
+      state.env.last_config = {...state.env.defaults, ...withoutCredentials(config), models: state.env.default_models};
       localStorage.setItem(OPENAI_URL_STORAGE, config.endpoint_base_url);
       localStorage.setItem(HELPER_PROVIDER_STORAGE, "openai");
       updatePlan();
@@ -642,7 +642,7 @@ async function init() {
     $("#helper-endpoint").hidden = false;
     $("#helper-provider").addEventListener("change", () => { state.providerNeedsConnection = true; state.detectedEndpoint=null; state.detectedEndpointProvider=null; updateProviderControls(); updatePlan(); });
     $("#helper-connect").addEventListener("click", connectHelperEndpoint);
-    ["#helper-url", "#helper-key-env", "#helper-name-override", "#helper-local", "#helper-model"].forEach(selector => $(selector)?.addEventListener("input", updatePlan));
+    ["#helper-url", "#helper-key", "#helper-name-override", "#helper-local", "#helper-model"].forEach(selector => $(selector)?.addEventListener("input", updatePlan));
     updateProviderControls();
   }
   $("#add-compute-claim")?.addEventListener("click", addComputeClaim);
@@ -657,6 +657,12 @@ async function init() {
     });
   }
   $("#extend-close").addEventListener("click", () => $("#extend-dialog").close());
+  if ($("#merge-dialog")) {
+    for (const id of ["#merge-close", "#merge-cancel"]) $(id).addEventListener("click", () => $("#merge-dialog").close());
+    $("#merge-dialog").addEventListener("close", () => { state.merge = null; });
+    for (const type of ["change", "input", "click"]) $("#merge-content").addEventListener(type, mergeDialogChanged);
+    $("#merge-start").addEventListener("click", startMerge);
+  }
   $("#extend-dialog").addEventListener("close", () => {
     // A queued close event can arrive after the dialog has already reopened.
     if (!$("#extend-dialog").open) state.extension = null;
@@ -706,6 +712,15 @@ async function init() {
   $("#chart-key")?.addEventListener("mouseleave", () => highlightSeries(null));
   $("#chart-key")?.addEventListener("focusin", event => highlightSeries(event.target.closest?.("[data-hl-tag]")));
   $("#chart-key")?.addEventListener("focusout", () => highlightSeries(null));
+  // A benchmark in the key is a switch for its curves.
+  $("#chart-key")?.addEventListener("click", async event => {
+    const entry = event.target.closest?.("[data-curve]");
+    if (!entry) return;
+    const key = entry.dataset.curve;
+    state.curveChoice.set(key, entry.getAttribute("aria-pressed") !== "true");
+    await redrawResultsWithoutScrolling();
+    [...$$("#chart-key [data-curve]")].find(node => node.dataset.curve === key)?.focus();
+  });
   document.addEventListener("click", event => {
     const link = event.target.closest?.("[data-open-graph]");
     if (link) openGraphFor(JSON.parse(link.dataset.openGraph));
@@ -728,6 +743,17 @@ async function init() {
   $("#start-btn").addEventListener("click", startBench);
   $("#cancel-btn").addEventListener("click", cancelBench);
   $("#refresh-runs").addEventListener("click", async () => { if (browserMode()) { await window.WatteverBrowser.loadCommunity(true); for (const [id, run] of Object.entries(state.runCache)) if (run.community) delete state.runCache[id]; state.detailSignature = null; } await loadRuns(); });
+  $("#live-issues")?.addEventListener("click", event => {
+    const id = event.target.closest?.("[data-continue-run]")?.dataset.continueRun;
+    if (!id) return;
+    event.preventDefault();
+    continueBenchmark(id);
+  });
+  // `toggle` does not bubble; capture it so every strip remembers whether it was unfolded.
+  document.addEventListener("toggle", event => {
+    const id = event.target?.dataset?.notes;
+    if (id) state.openNotes[event.target.open ? "add" : "delete"](id);
+  }, true);
   $("#goto-results").addEventListener("click", () => {
     showPanel("results");
     const id = $("#live-card").dataset.runId;
@@ -767,15 +793,6 @@ async function init() {
     const link = document.createElement("a"), url = URL.createObjectURL(new Blob([storageComparisonCsv(run)], {type:"text/csv;charset=utf-8"}));
     link.href = url; link.download = run.id + "-storage-comparison.csv"; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-  });
-  document.addEventListener("change", event => {
-    const condition = event.target.closest?.("[data-condition-id]");
-    if (condition) {
-      if (state.conditions === null) state.conditions = new Set(measurementRuns([...state.compare].map(id=>state.runCache[id]).filter(Boolean)).map(run=>run.id));
-      if (condition.checked) state.conditions.add(condition.dataset.conditionId); else state.conditions.delete(condition.dataset.conditionId);
-      redrawResultsWithoutScrolling(); return;
-    }
-
   });
   document.addEventListener("click", event => {
     const button = event.target.closest?.("[data-compare-storage]");
@@ -962,12 +979,11 @@ async function renderResultsView() {
   if ($("#result-selection-summary")) $("#result-selection-summary").textContent = runs.map(run=>run.label || run.id).join(" · ") || "Select a benchmark";
   autoResultDefaults(measured, models);
   renderResultControls(runs, models);
-  renderRecordedConditions(runs);
   renderVisibleModels(models);
   const shown = shownModels(models);
   $("#summary-export").href = "/api/export.csv?ids=" + ids.map(encodeURIComponent).join(",");
   $("#summary-export").hidden = !runs.length;
-  const detailSignature = JSON.stringify([state.selected, resultsConnectionKey(), !!state.env?.capabilities?.extend, runs.map(run => [run.id, run.status, run.label, run.notes, (run.results || []).length, run.hardware?.memory, run.hardware_follow_ups])]);
+  const detailSignature = JSON.stringify([state.selected, resultsConnectionKey(), !!state.env?.capabilities?.extend, runs.map(run => [run.id, run.status, run.label, run.notes, (run.results || []).length, run.hardware?.memory, run.hardware_follow_ups, state.runs.find(item => item.id === run.id)?.merge])]);
   if (detailSignature !== state.detailSignature) {
     const selection = JSON.stringify([...state.compare]);
     const keepDetailsOpen = state.detailSelection === selection && $("#run-detail details")?.open;
@@ -1963,6 +1979,96 @@ function renderLive(status) {
   if (status.running && Number.isFinite(t.gpu_w)) $("#pill-power").innerHTML = `<span class="num">${Math.round(t.gpu_w)}</span> W GPU`;
   $("#live-stats").innerHTML = stat("TTFT", Number.isFinite(live.ttft_s) ? fmt(live.ttft_s, 2) : "\u2014", outcome ? "s last test" : "s this test")
     + stat("Stream arrival", Number.isFinite(live.decode_chunks_per_s_live) ? fmt(live.decode_chunks_per_s_live, 1) : "\u2014", outcome ? "chunks/s last test" : "chunks/s live");
+  renderLiveIssues(status);
+}
+
+/* ---------------- notes: one slim line, unfolded on demand ---------------- */
+/* Each note is {kind, tone, gist, many, html}: `gist` is its one-line summary,
+   `many(n)` words several notes of one kind, `html` is shown once unfolded. */
+function notesStrip(id, notes, action = "") {
+  const items = notes.filter(Boolean);
+  if (!items.length) return "";
+  const tone = ["err", "warn", "info"].find(level => items.some(item => item.tone === level)) || "info";
+  const kinds = new Map();
+  for (const item of items) kinds.set(item.kind, [...(kinds.get(item.kind) || []), item]);
+  const gists = [...kinds.values()].map(group => group.length > 1 && group[0].many ? group[0].many(group.length) : group[0].gist);
+  return `<details class="notes" data-notes="${esc(id)}" data-tone="${tone}"${state.openNotes.has(id) ? " open" : ""}><summary><span class="notes-dot" aria-hidden="true"></span>${items.length > 1 ? `<span class="notes-count">${items.length} notes</span>` : ""}<span class="notes-gist">${gists.map(esc).join(" \u00b7 ")}</span>${action}</summary><div class="notes-body">${items.map(item => `<div class="note">${item.html}</div>`).join("")}</div></details>`;
+}
+function plainNote(kind, tone, gist, text) {
+  return {kind, tone, gist, html: esc(text)};
+}
+function incompleteNote(run, named = false) {
+  const html = benchmarkIncompleteNotice(run);
+  if (!html) return null;
+  const scope = run.experiment_scope || {};
+  const remaining = Math.max(Number(run.remaining_tests) || 0, (Number(scope.planned_cases) || 0) - (Number(scope.recorded_cases) || 0));
+  return {kind: "incomplete", tone: "warn", many: count => `${count} benchmarks incomplete`,
+    gist: `Benchmark incomplete${remaining > 0 ? ` \u00b7 ${remaining} test${remaining === 1 ? "" : "s"} remaining` : ""}`,
+    html: (named ? `<span class="note-source">${esc(run.label || run.id)}</span>` : "") + html};
+}
+function unservedNotes(rows) {
+  return unservedModels(rows).map(item => ({kind: "unserved", tone: "warn", gist: `${item.model} was skipped: the endpoint could not serve it`,
+    many: count => `${count} models skipped: the endpoint could not serve them`, html: unservedModelMarkup(item)}));
+}
+
+/* ---------------- what went wrong, said where it shows ---------------- */
+/* A server's own explanation, without the JSON envelope it arrived in. */
+function failureReason(row) {
+  const text = String(row?.message || String(row?.fail_kind || "").replace(/_/g, " ")).trim();
+  const reply = text.match(/^(HTTP \d{3}) from [^:]+: (\{[\s\S]*)$/);
+  if (!reply) return text;
+  try {
+    const body = JSON.parse(reply[2]);
+    const detail = [body?.error?.message, body?.error, body?.message, body?.detail].find(value => typeof value === "string" && value.trim());
+    if (detail) return `${reply[1]}: ${detail.trim()}`;
+  } catch (error) { /* A truncated reply is shown as received. */ }
+  return text;
+}
+
+/* Models an endpoint could not serve, with the tests skipped because of it. */
+function unservedModels(rows) {
+  const found = new Map();
+  for (const row of rows || []) {
+    if (row.fail_kind === "model_unavailable") found.set(row.model, {model: row.model, session: row.session_id, reason: failureReason(row), skipped: 0});
+  }
+  for (const row of rows || []) {
+    const item = found.get(row.model);
+    if (item && row.status === "skipped" && row.session_id === item.session) item.skipped++;
+  }
+  return [...found.values()];
+}
+function unservedModelMarkup(item) {
+  return `<b>${esc(item.model)} was skipped</b> — the endpoint could not serve it${item.skipped ? `, so ${item.skipped} of its tests ${item.skipped === 1 ? "was" : "were"} not run` : ""}. Other models were not affected.<small class="issue-reason">${esc(item.reason)}</small>`;
+}
+
+/* Under the progress bar: why the run stopped, which models were skipped, and how to go on. */
+function renderLiveIssues(status) {
+  const box = $("#live-issues");
+  if (!box) return;
+  const run = status.run || {}, ended = !status.running && !!run.id;
+  const remaining = Number(run.remaining_tests) || 0;
+  const unfinished = ended && remaining > 0 && ["error", "cancelled", "interrupted"].includes(run.status);
+  const owed = remaining ? `${remaining} test${remaining === 1 ? " was" : "s were"} not run` : "";
+  const action = unfinished && !browserMode() && state.env?.capabilities?.extend
+    ? `<button type="button" class="btn-sm" data-continue-run="${esc(run.id)}" title="Review the remaining tests and run them in this benchmark">Continue this benchmark\u2026</button>` : "";
+  // The first sentence of the reason stays readable while the strip is folded.
+  const cause = (String(run.error || "").match(/^.*?\.(?=\s|$)/) || [String(run.error || "")])[0];
+  const stopped = ended && run.status === "error" && run.error
+    ? {kind: "stopped", tone: "err", gist: `The benchmark stopped: ${cause}${owed ? ` ${owed}.` : ""}`,
+       html: `<b>The benchmark stopped</b> — ${esc(run.error)}${owed ? ` ${owed}.` : ""}`}
+    : unfinished ? {kind: "unfinished", tone: "info", gist: `Not finished \u00b7 ${owed}`,
+       html: `<b>Not finished</b> — ${owed}. Continue to review the remaining tests and run them in this benchmark.`} : null;
+  const markup = notesStrip("live", [stopped, ...unservedNotes($("#live-card")?.dataset.runId === run.id ? state.liveResults : [])], action);
+  // Redrawn only on change, so a focused button survives the status poll.
+  if (box.dataset.markup !== markup) { box.dataset.markup = markup; box.innerHTML = markup; }
+  box.hidden = !markup;
+}
+
+async function continueBenchmark(id) {
+  showPanel("results");
+  await selectRun(id);
+  const run = state.runCache[id] || state.runs.find(item => item.id === id);
+  if (run) openExtendDialog(run);
 }
 
 function liveGpuCards(telemetry) {
@@ -2044,13 +2150,16 @@ function renderLiveTable() {
   const rows = state.liveResults.map((r, i) => {
     const m = metrics[i], star = (v) => v != null && m.estimated ? "*" : "";
     const cardTip = (key, unit, f) => m.cards.length > 1 ? ` title="${esc(m.cards.map((c) => `${c.name}: ${f(c[key])} ${unit}`).join(" · "))}"` : "";
-    return `<tr>
+    const lead = `<tr>
       <td>${esc(r.model)}</td>
       <td class="num">${fmtTokens(r.target_tokens)}</td>
       <td>${providerManaged() ? '<span class="dim">provider controlled</span>' : r.mtp ? '<span class="badge accent">MTP</span>' : '<span class="dim">off</span>'}</td>
       <td class="num">${fmtInt(m.prompt)}</td>
       <td>${statusCell(r)}</td>
-      <td class="num">${m.n}</td>
+      <td class="num">${m.n}</td>`;
+    // A test without a measurement uses its empty cells to say why.
+    if (r.status !== "ok" && failureReason(r)) return `${lead}<td class="fail-reason" colspan="13">${esc(failureReason(r))}</td></tr>`;
+    return `${lead}
       <td class="num">${fmtInt(m.totalPrompt)}</td><td class="num">${fmtInt(m.totalOutput)}${star(m.totalOutput)}</td><td class="num">${fmt(m.wall, 2)}</td>
       <td class="num">${fmt(m.prefillTime, 2)}</td><td class="num">${fmt(m.decodeTime, 2)}${m.decodeTime!==null && m.decodeApprox?'*':''}</td>
       <td class="num">${fmt(m.prefill, 0)}</td>
@@ -2092,6 +2201,7 @@ async function loadRuns() {
   if (!state.compare.has(state.selected)) state.selected = [...state.compare][0] || null;
   renderRunsList();
   checkComparability();
+  refreshMergeSuggestions();
   await renderResultsView();
   return runs;
 }
@@ -2103,6 +2213,7 @@ function emptyState(title, body) {
 function renderRunsList() {
   if (!state.runs.length) {
     $("#runs-list").innerHTML = '<p class="dim">Nothing cached yet.</p>';
+    renderMergeBar();
     return;
   }
   const groups = {};
@@ -2141,6 +2252,7 @@ function renderRunsList() {
     renderRunsList(); await renderResultsView();
   }));
   $$("#runs-list [data-delete]").forEach((btn) => btn.addEventListener("click", () => deleteRun(state.runs.find((run) => run.id === btn.dataset.delete))));
+  renderMergeBar();
 }
 
 async function deleteRun(run) {
@@ -2163,6 +2275,161 @@ async function selectRun(id) {
   state.compare = new Set([id]);
   renderRunsList();
   await renderResultsView();
+}
+
+/* ---------------- merging benchmarks ----------------
+ * Benchmarks measured on one machine can be stored as one benchmark, e.g. an
+ * LM Studio run and a Strata run. The helper decides what is possible and says
+ * why in plain words (/api/bench/merge-plan); this page only shows that plan,
+ * collects the two things a person must decide (which benchmarks, and whether
+ * an endpoint was served by this machine) and sends the merge. */
+const MERGE_DISMISSED_STORAGE = "wattever-merge-dismissed";
+function mergeAvailable() { return !browserMode() && !!state.env?.capabilities?.merge; }
+function dismissedMergeSuggestions() {
+  try { return new Set(JSON.parse(localStorage.getItem(MERGE_DISMISSED_STORAGE) || "[]")); } catch (error) { return new Set(); }
+}
+/* One suggestion at a time: the one about what is ticked, else the most recent. */
+function currentMergeSuggestion() {
+  const dismissed = dismissedMergeSuggestions(), known = new Set(state.runs.map(run => run.id));
+  const open = (state.mergeSuggestions || []).filter(item => !dismissed.has(item.key) && item.run_ids.filter(id => known.has(id)).length > 1);
+  return open.find(item => item.run_ids.some(id => state.compare.has(id))) || open[0] || null;
+}
+async function refreshMergeSuggestions() {
+  if (!mergeAvailable()) return;
+  try { state.mergeSuggestions = (await api("/api/bench/merge-suggestions")).suggestions || []; }
+  catch (error) { state.mergeSuggestions = []; }
+  renderMergeBar();
+}
+function renderMergeBar() {
+  const bar = $("#merge-bar");
+  if (!bar) return;
+  const ticked = mergeAvailable() ? [...state.compare].filter(id => state.runs.some(run => run.id === id)) : [];
+  const suggestion = mergeAvailable() && ticked.length < 2 ? currentMergeSuggestion() : null;
+  bar.hidden = ticked.length < 2 && !suggestion;
+  if (bar.hidden) { bar.innerHTML = ""; return; }
+  bar.innerHTML = ticked.length > 1
+    ? `<div class="merge-selection"><span><b>${ticked.length}</b> ticked</span><button type="button" class="btn-sm merge-action" id="merge-ticked" title="Check whether the ticked benchmarks ran on one machine, then merge them into one">Merge into one…</button></div>`
+    : `<div class="merge-suggestion" role="note"><span class="eyebrow">SAME MACHINE</span><p><b>${esc(suggestion.engines.join(" + "))}</b> ran on ${esc(suggestion.machine)}.</p><div class="btn-row"><button type="button" class="btn-sm merge-action" id="merge-suggested" title="Review these benchmarks before anything changes">Merge ${suggestion.run_ids.length} benchmarks…</button><button type="button" class="btn-sm" id="merge-dismiss" title="Hide this suggestion">Not now</button></div></div>`;
+  $("#merge-ticked")?.addEventListener("click", () => openMergeDialog(ticked));
+  $("#merge-suggested")?.addEventListener("click", () => openMergeDialog(suggestion.run_ids));
+  $("#merge-dismiss")?.addEventListener("click", () => {
+    try { localStorage.setItem(MERGE_DISMISSED_STORAGE, JSON.stringify([...dismissedMergeSuggestions(), suggestion.key].slice(-50))); } catch (error) { /* a suggestion is only a convenience */ }
+    state.mergeSuggestions = state.mergeSuggestions.filter(item => item.key !== suggestion.key);
+    renderMergeBar();
+  });
+}
+
+async function openMergeDialog(ids) {
+  if (!mergeAvailable()) return;
+  state.merge = {ids: new Set(ids), assumed: new Set(), left: new Map(), label: "", labelEdited: false, plan: null, error: "", busy: false, revision: 0};
+  $("#merge-content").innerHTML = '<p class="hint">Checking these benchmarks…</p>';
+  $("#merge-start").disabled = true; $("#merge-start").textContent = "Merge";
+  $("#merge-dialog").showModal();
+  await refreshMergePlan();
+}
+async function refreshMergePlan() {
+  const merge = state.merge;
+  if (!merge) return;
+  const revision = ++merge.revision;
+  try {
+    const plan = merge.ids.size ? await api("/api/bench/merge-plan", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({run_ids: [...merge.ids], assume_local: [...merge.assumed].filter(id => merge.ids.has(id))})}) : null;
+    if (state.merge !== merge || merge.revision !== revision) return;
+    merge.plan = plan; merge.error = "";
+    if (plan && !merge.labelEdited) merge.label = plan.label;
+  } catch (error) {
+    if (state.merge !== merge || merge.revision !== revision) return;
+    merge.plan = null; merge.error = error.message;
+  }
+  renderMergeDialog();
+}
+function mergeRowMarkup(row, picked) {
+  const blocks = picked ? (row.issues || []).filter(issue => issue.level === "block") : [];
+  // An endpoint benchmark is attributed to this machine only on the operator's word.
+  const confirm = picked && !blocks.length && row.attribution === "client";
+  const tests = `${row.tests} test${row.tests === 1 ? "" : "s"} · ${row.models} model${row.models === 1 ? "" : "s"}`;
+  return `<div class="merge-row" data-state="${blocks.length ? "block" : confirm && !row.confirmed ? "confirm" : "ok"}" data-picked="${picked}" style="--benchmark-color:${runColor(row.id)}">
+    <label class="merge-pick"><input type="checkbox" data-merge-run="${esc(row.id)}" ${picked ? "checked" : ""}><span>${esc(row.label)}</span></label>
+    <div class="merge-meta">${row.engines.map(engine => `<span class="badge">${esc(engine)}</span>`).join("")}<span>${tests}</span><span>${esc((row.created_at || "").slice(0, 10))}</span>${row.status && row.status !== "completed" ? `<span>${esc(row.status)}</span>` : ""}</div>
+    ${blocks.map(issue => `<p class="merge-issue">${esc(issue.message)}</p>`).join("")}
+    ${confirm ? `<label class="merge-confirm"><input type="checkbox" data-merge-confirm="${esc(row.id)}" ${row.confirmed ? "checked" : ""}><span><b>Inference ran on this machine</b><small>${row.loopback ? "The endpoint was reached at a local address, but the run was saved without saying where inference ran." : "The endpoint was reached over the network. Tick only if that address is this same computer."} Power was not recorded for it.</small></span></label>` : ""}
+  </div>`;
+}
+function renderMergeDialog() {
+  const merge = state.merge, content = $("#merge-content"), start = $("#merge-start");
+  if (!merge || !content) return;
+  const plan = merge.plan, rows = plan?.runs || [];
+  const blocked = rows.filter(row => row.issues.some(issue => issue.level === "block"));
+  const unconfirmed = rows.filter(row => !blocked.includes(row) && row.attribution === "client" && !row.confirmed);
+  const warnings = (plan?.issues || []).filter(issue => issue.level === "warn");
+  // Benchmarks that are not ticked stay folded until asked for, unless nothing else can be ticked.
+  const folded = (id, title, items) => !items.length ? "" : `<details class="merge-more" id="${id}" ${($("#" + id) ? $("#" + id).open : rows.length < 2) ? "open" : ""}><summary>${title} · ${items.length} benchmark${items.length === 1 ? "" : "s"}</summary><div class="merge-list">${items.map(row => mergeRowMarkup(row, false)).join("")}</div></details>`;
+  const next = merge.error ? "" : rows.length < 2 ? "Tick at least two benchmarks."
+    : blocked.length ? `${blocked.length === 1 ? "One benchmark" : blocked.length + " benchmarks"} cannot join. <button type="button" class="btn-sm" id="merge-leave-out">Leave ${blocked.length === 1 ? "it" : "them"} out</button>`
+    : unconfirmed.length ? `Confirm where inference ran for ${unconfirmed.length === 1 ? "the benchmark" : "the " + unconfirmed.length + " benchmarks"} marked above.${unconfirmed.length > 1 ? ' <button type="button" class="btn-sm" id="merge-confirm-all">All ran on this machine</button>' : ""}` : "";
+  content.innerHTML = (merge.error ? banner("err", "Could not merge", esc(merge.error)) : "")
+    + (plan?.machine ? `<p class="merge-machine"><span class="eyebrow">MACHINE</span>${esc(plan.machine)}</p>` : "")
+    + (rows.length ? `<div class="merge-list">${rows.map(row => mergeRowMarkup(row, true)).join("")}</div>` : "")
+    + folded("merge-more", "Also on this machine", (plan?.also_here || []).filter(row => !merge.left.has(row.id)))
+    + folded("merge-left", "Left out", [...merge.left.values()])
+    + `<div class="field"><label for="merge-label">Name of the merged benchmark</label><input type="text" id="merge-label" maxlength="160" value="${esc(merge.label)}"></div>`
+    + (plan?.ok
+      ? `<div class="merge-outcome" data-ready="true"><b>One benchmark</b> · ${esc(plan.engines.map(engine => engine.label).join(" + "))} · ${plan.models} model${plan.models === 1 ? "" : "s"} · ${plan.tests} test${plan.tests === 1 ? "" : "s"}`
+        + (plan.superseded ? `<p>${plan.superseded} test${plan.superseded === 1 ? " was" : "s were"} measured more than once. The completed, most recent measurement is shown; the other${plan.superseded === 1 ? " stays" : "s stay"} in the benchmark's history.</p>` : "")
+        + warnings.map(issue => `<p>${esc(issue.message)}</p>`).join("")
+        + `<p>The originals move to the local archive. You can undo the merge afterwards.</p></div>`
+      : next ? `<div class="merge-outcome" data-ready="false">${next}</div>` : "");
+  start.disabled = !plan?.ok || merge.busy;
+  start.textContent = merge.busy ? "Merging…" : plan?.ok ? `Merge ${rows.length} benchmarks` : "Merge";
+}
+/* Ticking, confirming and leaving out all end the same way: ask the helper again. */
+function mergeDialogChanged(event) {
+  const merge = state.merge, target = event.target;
+  if (!merge || merge.busy) return;
+  if (target.id === "merge-label") { if (event.type === "input") { merge.label = target.value; merge.labelEdited = true; } return; }
+  if (event.type !== "change" && !["merge-leave-out", "merge-confirm-all"].includes(target.id)) return;
+  const known = [...(merge.plan?.runs || []), ...(merge.plan?.also_here || [])];
+  const leave = id => { merge.ids.delete(id); merge.assumed.delete(id); const row = known.find(item => item.id === id); if (row) merge.left.set(id, {...row, issues: [], confirmed: false}); };
+  if (target.id === "merge-leave-out") (merge.plan?.runs || []).filter(row => row.issues.some(issue => issue.level === "block")).forEach(row => leave(row.id));
+  else if (target.id === "merge-confirm-all") (merge.plan?.runs || []).filter(row => row.attribution === "client").forEach(row => merge.assumed.add(row.id));
+  else if (target.dataset.mergeRun) { if (target.checked) { merge.ids.add(target.dataset.mergeRun); merge.left.delete(target.dataset.mergeRun); } else leave(target.dataset.mergeRun); }
+  else if (target.dataset.mergeConfirm) { if (target.checked) merge.assumed.add(target.dataset.mergeConfirm); else merge.assumed.delete(target.dataset.mergeConfirm); }
+  else return;
+  refreshMergePlan();
+}
+async function startMerge() {
+  const merge = state.merge, plan = merge?.plan;
+  if (!plan?.ok || merge.busy) return;
+  merge.busy = true; renderMergeDialog();
+  try {
+    const merged = await api("/api/bench/consolidate", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({run_ids: plan.run_ids, label: merge.label.trim() || plan.label,
+        assume_local: plan.runs.filter(row => row.confirmed).map(row => row.id), overlap: "newest"})});
+    $("#merge-dialog").close(); state.merge = null;
+    await showMergeResult(plan.run_ids, [merged.id]);
+  } catch (error) {
+    merge.busy = false; merge.error = error.message; renderMergeDialog();
+  }
+}
+/* After a merge or its undo the library changed under the page: forget what was cached and open the result. */
+async function showMergeResult(changed, open) {
+  changed.forEach(id => delete state.runCache[id]);
+  state.conditions = null; state.visibleModels = null; state.detailSignature = null;
+  state.compare = new Set(open); state.selected = open[0] || null;
+  await loadRuns();
+  $$("#runs-list .run").find(node => node.dataset.id === state.selected)?.scrollIntoView?.({block: "nearest"});
+}
+function mergeOriginMarkup(run) {
+  const merge = mergeAvailable() ? state.runs.find(item => item.id === run.id)?.merge : null;
+  if (!merge) return "";
+  return `<p class="hint merge-origin">Merged from ${merge.sources} benchmarks${merge.at ? " on " + esc(String(merge.at).slice(0, 10)) : ""}.${merge.undo ? ` <button type="button" class="btn-sm" id="undo-merge" title="Bring back the original benchmarks exactly as they were" ${state.benchmarkRunning ? "disabled" : ""}>Undo merge</button>` : ""}</p>`;
+}
+async function undoMerge(run) {
+  if (!confirm(`Undo the merge of "${run.label || run.id}"? The original benchmarks come back exactly as they were.`)) return;
+  try {
+    const {restored} = await api("/api/bench/merge-undo", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({run_id: run.id})});
+    await showMergeResult([run.id, ...restored], restored);
+  } catch (error) { alert("Could not undo the merge: " + error.message); }
 }
 
 function sessionConfig(session) { return session.config || session.execution_config || {}; }
@@ -2245,7 +2512,7 @@ function renderRunDetail(run) {
   const selectedRuns = [...state.compare].map(id => state.runCache[id]).filter(Boolean);
   const allocationKeys = new Set(selectedRuns.flatMap(allocationConfigs).map(allocationKey));
   const measurementModes = new Set(selectedRuns.map(item => item.measurement_mode || "helper"));
-  const measurementNotice = measurementModes.size > 1 ? '<p class="banner warn measurement-notice">These benchmarks use different measurement modes. Browser timings and desktop helper measurements may not be directly comparable.</p>' : selectedRuns.length ? `<p class="hint measurement-notice">Measurement mode: ${measurementModes.has("browser") ? "Browser timing" : "Desktop helper"}</p>` : "";
+  const measurementNotice = measurementModes.size > 1 ? notesStrip("selection", [{kind: "modes", tone: "warn", gist: "Different measurement modes", html: '<p class="measurement-notice">These benchmarks use different measurement modes. Browser timings and desktop helper measurements may not be directly comparable.</p>'}]) : selectedRuns.length ? `<p class="hint measurement-notice">Measurement mode: ${measurementModes.has("browser") ? "Browser timing" : "Desktop helper"}</p>` : "";
   const allocationNotice = allocationKeys.size > 1 ? '<p class="hint">Different context allocation settings: these benchmarks reserve different amounts of memory, which can affect speed. Check benchmark settings before comparing.</p>' : "";
   const liveNotice = active.length ? `<p class="live-result-notice" role="status"><span class="badge badge-live">Live</span> ${active.reduce((count, item) => count + (item.results || []).length, 0)} completed tests in the ongoing benchmark${active.length > 1 ? "s" : ""}. Results update as each test finishes.</p>` : "";
   if (state.compare.size > 1) {
@@ -2253,18 +2520,18 @@ function renderRunDetail(run) {
     return;
   }
   const sessionAllocationNotice = new Set(allocationConfigs(run).map(allocationKey)).size > 1
-    ? '<p class="hint" role="status">Sessions in this benchmark used different context allocation settings. Memory use and speed may differ; see session settings below.</p>' : "";
-  const incompleteNotice = benchmarkIncompleteNotice(run);
+    ? plainNote("allocation", "info", "Sessions used different context allocation settings", "Sessions in this benchmark used different context allocation settings. Memory use and speed may differ; see session settings below.") : null;
   const sourceNotice = run.community ? `<p class="hint">Data source: <a target="_blank" rel="noopener noreferrer" href="https://github.com/lpalbou/Wattever/blob/main/results/runs/${encodeURIComponent(run.id)}.json">GitHub</a></p>` : "";
   const gpu = run.gpu || {}, host = run.host || {}, cfg = run.config || {};
   const testAction = resultsTestAction(run);
   const ok = (run.results || []).filter((row) => row.status === "ok");
   const failureNotice = (run.results || []).length && !ok.length
-    ? `<p class="hint" role="status">No test in this benchmark completed. Open Tables &amp; CSV, then All measurements, for the failure details.</p>` : "";
-  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${testAction ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" || !testAction.ready ? "disabled" : ""} title="${esc(testAction.title)}">${esc(testAction.label)}</button>` : ""}<button class="btn-sm" id="rename-run" title="${run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : "Edit this benchmark name and notes"}" ${run.status === "running" || run.community ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="${run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""}>${run.community ? "Hide" : "Delete"}</button></header>${hardwareBadgesMarkup(run)}${engineBadgesMarkup(run)}${bandwidthBadgesMarkup(displayBandwidthProfile(run))}${liveNotice}${sourceNotice}${measurementNotice}${failureNotice}${sessionAllocationNotice}${incompleteNotice}<p class="ov-coverage">${esc(coverageLine(run))}</p>${storageExperimentSummary(run)}<details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}${scientificMetadata(run)}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "per_session" ? "context, placement and techniques recorded per engine/session" : cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
+    ? plainNote("failed", "warn", "No test in this benchmark completed", "No test in this benchmark completed. Open Tables & CSV, then All measurements, for the failure details.") : null;
+  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${testAction ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" || !testAction.ready ? "disabled" : ""} title="${esc(testAction.title)}">${esc(testAction.label)}</button>` : ""}<button class="btn-sm" id="rename-run" title="${run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : "Edit this benchmark name and notes"}" ${run.status === "running" || run.community ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="${run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""}>${run.community ? "Hide" : "Delete"}</button></header>${hardwareBadgesMarkup(run)}${engineBadgesMarkup(run)}${bandwidthBadgesMarkup(displayBandwidthProfile(run))}${mergeOriginMarkup(run)}${liveNotice}${sourceNotice}${measurementNotice}${notesStrip("detail", [failureNotice, sessionAllocationNotice, incompleteNote(run), ...unservedNotes(run.results)])}<p class="ov-coverage">${esc(coverageLine(run))}</p>${storageExperimentSummary(run)}<details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}${scientificMetadata(run)}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "per_session" ? "context, placement and techniques recorded per engine/session" : cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
   $("#extend-run")?.addEventListener("click", () => openExtendDialog(run));
   bindTelemetry($("#run-detail"),run);
   $("#delete-run").addEventListener("click", () => deleteRun(run));
+  $("#undo-merge")?.addEventListener("click", () => undoMerge(run));
   if (run.comparison_group?.run_ids?.length > 1) {
     const ids = run.comparison_group.run_ids.filter(id => state.runs.some(item => item.id === id));
     if (ids.length > 1) {
@@ -2753,21 +3020,85 @@ async function redrawResultsWithoutScrolling() {
   finally { window.scrollTo({left, top, behavior: "instant"}); }
 }
 
+/* ---------------- model groups: one model under several names ---------------- */
+// Parts of a served ID that say how a model was packaged, not which model it is.
+const MODEL_QUANT = /(^|[-_.])(?:i?q\d+(?:_[k01])?(?:_(?:xxs|xs|s|m|l|xl|nl))?|oq\d+[a-z]?|\d+bit|\d+(?:\.\d+)?bpw|fp\d+|bf16|f16|f32|mxfp4|nvfp4)(?=$|[-_.])/gi;
+const MODEL_PACKAGING = new Set(["gguf", "mlx", "awq", "gptq", "exl2", "exl3", "qat", "mtp", "ud", "imatrix", "i1", "unsloth", "bartowski", "thebloke", "mradermacher", "lmstudio"]);
+const MODEL_SIZE = /^[ae]?\d+(?:\.\d+)?[bm]$/i;
+/* What a served ID stands for: `label` drops the publisher, quantization and
+ * packaging; `family` also drops the parameter count. Unknown words are kept,
+ * so two IDs only meet when nothing but packaging tells them apart. */
+function modelBase(id) {
+  const name = String(id).trim().replace(/^.*\//, "").replace(/^[^/]*?--/, "").replace(/\.gguf$/i, "")
+    .replace(/[@:]/g, "-").replace(MODEL_QUANT, "$1");
+  const words = name.split(/[-_\s]+/).map(word => word.replace(/^\.+|\.+$/g, "")).filter(Boolean)
+    .filter((word, index) => index === 0 || !MODEL_PACKAGING.has(word.toLowerCase()));
+  const family = words.filter((word, index) => index === 0 || !MODEL_SIZE.test(word));
+  return {label: words.join("-") || String(id), family: family.join("-") || String(id)};
+}
+/* Boxes for the model list: first the same model in several variants, then, among
+ * the rest, one family in several sizes. A model with no sibling stays loose. */
+function modelGroups(models) {
+  const bases = new Map(models.map(model => [model, modelBase(model)]));
+  const gather = (field, pool) => {
+    const found = new Map();
+    for (const model of pool) {
+      const key = bases.get(model)[field].toLowerCase();
+      found.set(key, [...(found.get(key) || []), model]);
+    }
+    return [...found.values()].filter(members => members.length > 1);
+  };
+  // The spelling with the most capitals is usually the publisher's own.
+  const named = (members, field) => members.map(model => bases.get(model)[field])
+    .sort((a, b) => (b.match(/[A-Z]/g) || []).length - (a.match(/[A-Z]/g) || []).length)[0];
+  const variants = gather("label", models), taken = new Set(variants.flat());
+  const sizes = gather("family", models.filter(model => !taken.has(model)));
+  sizes.flat().forEach(model => taken.add(model));
+  const groups = [...variants.map(members => ({name: named(members, "label"), kind: "variants", models: members})),
+    ...sizes.map(members => ({name: named(members, "family"), kind: "sizes", models: members}))]
+    .sort((a, b) => models.indexOf(a.models[0]) - models.indexOf(b.models[0]));
+  return {groups, loose: models.filter(model => !taken.has(model))};
+}
+
 function renderVisibleModels(models) {
   updateModelRerunAvailability();
   const shown = shownModels(models);
   $("#visible-model-count").textContent = models.length ? `${shown.length} of ${models.length} shown` : "";
   const container = $("#visible-models");
   const signature = JSON.stringify(models);
+  const {groups, loose} = modelGroups(models);
   if (container.dataset.models !== signature) {
     container.dataset.models = signature;
-    container.innerHTML = models.map(model => `<label class="chip" title="Show or hide ${esc(model)}" data-hl-tag="model" data-hl-value="${esc(model)}"><input type="checkbox" value="${esc(model)}"><span class="model-key" aria-hidden="true"></span>${esc(model)}</label>`).join("") || '<span class="dim">Select a benchmark to see its models.</span>';
+    const chip = model => `<label class="chip" title="Show or hide ${esc(model)}" data-hl-tag="model" data-hl-value="${esc(model)}"><input type="checkbox" value="${esc(model)}"><span class="model-key" aria-hidden="true"></span>${esc(model)}</label>`;
+    const box = (group, index) => `<div class="model-group" data-kind="${group.kind}"><div class="model-group-head"><button type="button" class="model-group-toggle" data-model-group="${index}" aria-pressed="true"><i class="model-group-mark" aria-hidden="true"></i><strong>${esc(group.name)}</strong><small></small></button><button type="button" class="model-group-only" data-model-group-only="${index}" title="Show only these ${group.models.length} models">only</button></div><div class="chips">${group.models.map(chip).join("")}</div></div>`;
+    container.classList.toggle("grouped", groups.length > 0);
+    container.innerHTML = !models.length ? '<span class="dim">Select a benchmark to see its models.</span>'
+      : !groups.length ? models.map(chip).join("")
+      : `<div class="model-groups">${groups.map(box).join("")}</div>${loose.length ? `<div class="chips model-loose">${loose.map(chip).join("")}</div>` : ""}`;
     $$("#visible-models input").forEach(input => input.addEventListener("change", async () => {
       if (state.visibleModels === null) state.visibleModels = new Set(models);
       if (input.checked) state.visibleModels.add(input.value); else state.visibleModels.delete(input.value);
       await redrawResultsWithoutScrolling();
     }));
+    // A box header shows all of its models, or hides them when all are already shown.
+    $$("#visible-models [data-model-group]").forEach(button => button.addEventListener("click", async () => {
+      const members = groups[Number(button.dataset.modelGroup)].models, on = shownModels(models);
+      const hide = members.every(model => on.includes(model));
+      if (state.visibleModels === null) state.visibleModels = new Set(models);
+      members.forEach(model => state.visibleModels[hide ? "delete" : "add"](model));
+      await redrawResultsWithoutScrolling();
+    }));
+    $$("#visible-models [data-model-group-only]").forEach(button => button.addEventListener("click", async () => {
+      state.visibleModels = new Set(groups[Number(button.dataset.modelGroupOnly)].models);
+      await redrawResultsWithoutScrolling();
+    }));
   }
+  $$("#visible-models [data-model-group]").forEach(button => {
+    const group = groups[Number(button.dataset.modelGroup)], on = group.models.filter(model => shown.includes(model)).length;
+    button.setAttribute("aria-pressed", on === group.models.length ? "true" : on ? "mixed" : "false");
+    button.title = `${on === group.models.length ? "Hide" : "Show"} all ${group.models.length}: ${group.models.join(", ")}`;
+    button.querySelector("small").textContent = `${group.models.length} ${group.kind} · ${on === group.models.length ? "all" : on || "none"} shown`;
+  });
   const shapes = {circle: "&#9679;", square: "&#9632;", triangle: "&#9650;", diamond: "&#9670;"};
   $$("#visible-models input").forEach(input => {
     const selected = shown.includes(input.value);
@@ -2825,24 +3156,34 @@ function keyGlyph(appearance, {line = true, shape = true} = {}) {
   return `<svg width="30" height="14" aria-hidden="true">${line ? `<line x1="1" y1="7" x2="29" y2="7" stroke="${c}" stroke-width="2"${appearance.dash ? ` stroke-dasharray="${esc(appearance.dash)}"` : ""}/>` : ""}${mark}</svg>`;
 }
 /* The key is shared by every chart on the page, so it is drawn once. Hovering
- * an entry dims every other line. */
+ * an entry dims every other line. A benchmark entry is also a switch: clicking
+ * it hides or shows that benchmark's curves. `used.curves` lists every
+ * benchmark that has something to draw here, as {run, on, cases, measured}. */
 function chartKeyMarkup(used, axis) {
   const byModel = state.colorBy !== "benchmarks", byLevel = state.colorBy === "levels", groups = [];
   const item = (tag, value, glyph, label, title = "") => `<span class="key-item" tabindex="0" data-hl-tag="${tag}" data-hl-value="${esc(value)}"${title ? ` title="${esc(title)}"` : ""}>${glyph}${esc(label)}</span>`;
+  const curve = ({run, on, cases, measured}) => {
+    const look = chartAppearance(run, "", used.allModels, false);
+    const glyph = byModel ? keyGlyph({marker: look.marker}, {line: false}) : keyGlyph({color: configurationColor(run), dash: look.dash}, {shape: false});
+    const counts = `${cases} matching case${cases === 1 ? "" : "s"} \u00b7 ${measured} measured`;
+    const title = `${configurationFullTitle(run) || run.label || run.id}\n${counts}\n${on ? "Click to hide these curves" : "Hidden. Click to show these curves"}`;
+    // Only a benchmark that is drawn can be picked out by hovering.
+    return `<button type="button" class="key-item key-toggle" aria-pressed="${on}" data-curve="${esc(runKey(run))}"${on ? ` data-hl-tag="run" data-hl-value="${esc(runKey(run))}"` : ""}${byModel ? "" : ` style="--key-color:${esc(configurationColor(run))}"`} title="${esc(title)}">${glyph}${esc(run.label || run.id)}</button>`;
+  };
   const modelItems = used.models.map(model => item("model", model, byModel && !byLevel
     ? `<i class="key-dot" style="background:${esc(modelColor(model, used.allModels))}"></i>`
     : keyGlyph({marker: chartAppearance({id: ""}, model, used.allModels, false).marker}, {line: false}), model));
-  const runItems = [...new Map(used.runs.map(run => [runKey(run), run])).values()].map(run => item("run", runKey(run), byModel
-    ? keyGlyph({marker: chartAppearance(run, "", used.allModels, false).marker}, {line: false})
-    : keyGlyph({color: configurationColor(run), dash: chartAppearance(run, "", used.allModels, false).dash}, {shape: false}), run.label || run.id, configurationFullTitle(run)));
+  const runItems = (used.curves || used.runs.map(run => ({run, on: true, cases: 0, measured: 0}))).map(curve);
+  // A lone benchmark needs no entry, unless it is switched off and this is the way back.
+  const anyOff = (used.curves || []).some(entry => !entry.on);
   const colored = byModel ? ["Models", modelItems] : ["Benchmarks", runItems], shaped = byModel ? ["Benchmarks", runItems] : ["Models", modelItems];
   const levelName = level => axis === "context" ? `${level} quer${level === 1 ? "y" : "ies"}` : `${fmtTokens(level)} prompt`;
   if (byLevel) {
-    groups.push(`<div class="key-group"><span class="key-title">${axis === "context" ? "Concurrent queries" : "Prompt length"} <small>colour</small></span>${used.levels.map((level, index) => item("level", level, `<i class="key-dot" style="background:${levelColor(index, used.levels.length)}"></i>`, levelName(level))).join("")}</div>`);
-    groups.push(`<div class="key-group"><span class="key-title">Models <small>marker</small></span>${modelItems.join("")}</div>`);
-    if (runItems.length > 1) groups.push(`<div class="key-group"><span class="key-title">Benchmarks <small>marker</small></span>${runItems.join("")}</div>`);
-  } else groups.push(`<div class="key-group"><span class="key-title">${colored[0]} <small>colour</small></span>${colored[1].join("")}</div>`);
-  if (!byLevel && shaped[1].length > 1) groups.push(`<div class="key-group"><span class="key-title">${shaped[0]} <small>marker</small></span>${shaped[1].join("")}</div>`);
+    if (used.levels.length) groups.push(`<div class="key-group"><span class="key-title">${axis === "context" ? "Concurrent queries" : "Prompt length"} <small>colour</small></span>${used.levels.map((level, index) => item("level", level, `<i class="key-dot" style="background:${levelColor(index, used.levels.length)}"></i>`, levelName(level))).join("")}</div>`);
+    if (modelItems.length) groups.push(`<div class="key-group"><span class="key-title">Models <small>marker</small></span>${modelItems.join("")}</div>`);
+    if (runItems.length > 1 || anyOff) groups.push(`<div class="key-group"><span class="key-title">Benchmarks <small>marker</small></span>${runItems.join("")}</div>`);
+  } else if (colored[1].length) groups.push(`<div class="key-group"><span class="key-title">${colored[0]} <small>colour</small></span>${colored[1].join("")}</div>`);
+  if (!byLevel && (shaped[1].length > 1 || (byModel && anyOff))) groups.push(`<div class="key-group"><span class="key-title">${shaped[0]} <small>marker</small></span>${shaped[1].join("")}</div>`);
   const lines = [];
   if (!byLevel && used.levels.length > 1) used.levels.forEach((level, index) => lines.push(item("level", level,
     keyGlyph({dash: LEVEL_DASHES[index % LEVEL_DASHES.length]}, {shape: false}),
@@ -3317,7 +3658,15 @@ function coverageMarkup(coverage, keys, axis) {
     parts.push(`<li><b>${coverage.unrecorded.length}</b> at ${esc(levelWords(axis, sorted(coverage.unrecordedAt)))} ${coverage.unrecorded.length === 1 ? "has" : "have"} no ${esc(names)} value.${coverage.needsOffsets ? " This benchmark did not record when each request started, so rates for the whole group cannot be worked out." : ""}${coverage.suggest.length ? ` Recorded for ${coverage.unrecorded.length === 1 ? "it" : "them"}: ${coverage.suggest.map(key => `<button type="button" class="btn-sm" data-coverage="metric" data-metric-add="${esc(key)}">+ ${esc(METRICS[key].short)}</button>`).join(" ")}` : ""}</li>`);
   }
   if (coverage.models) parts.push(`<li><b>${coverage.models}</b> belong${coverage.models === 1 ? "s" : ""} to models that are not ticked. <button type="button" class="btn-sm" data-coverage="models">Show all models</button></li>`);
+  if (coverage.hidden) parts.push(`<li><b>${coverage.hidden}</b> belong${coverage.hidden === 1 ? "s" : ""} to benchmarks switched off in the key. <button type="button" class="btn-sm" data-coverage="curves">Show every benchmark</button></li>`);
   return `<div class="coverage-bar" role="status"><strong>The charts below draw ${coverage.drawn} of ${coverage.total} passed tests.</strong><ul>${parts.join("")}</ul></div>`;
+}
+function coverageNote(coverage, keys, axis) {
+  const html = coverageMarkup(coverage, keys, axis);
+  if (!html) return null;
+  const complete = coverage.drawn === coverage.total;
+  return {kind: "coverage", tone: complete ? "info" : "warn", html,
+    gist: complete ? `All ${coverage.total} passed test${coverage.total === 1 ? "" : "s"} drawn` : `Charts draw ${coverage.drawn} of ${coverage.total} passed tests`};
 }
 function applyCoverageAction(button) {
   const scope = state.resultScope || {queries: [], prompts: []};
@@ -3327,6 +3676,7 @@ function applyCoverageAction(button) {
     if (state.comparisonAxis === "context") { state.queryLevels = new Set(scope.queries); state.comparisonConcurrency = scope.queries[0] ?? 1; }
     else state.promptLevels = new Set(scope.prompts);
   } else if (button.dataset.coverage === "models") state.visibleModels = null;
+  else if (button.dataset.coverage === "curves") state.curveChoice.clear();
   else if (button.dataset.coverage === "metric") state.metrics.add(button.dataset.metricAdd);
   redrawResultsWithoutScrolling();
 }
@@ -3343,8 +3693,17 @@ async function renderCompare() {
   await ensureRuns(ids);
   if (generation !== state.resultsRender) return;
   const source = ids.map(id => state.runCache[id]).filter(Boolean);
-  const runs = splitRowConditions(measurementRuns(source));
-  const allModels = allModelsOf(runs), models = shownModels(allModels), keys = selectedMetricKeys();
+  // Every recorded condition is offered in the key. The selection decides which
+  // are on to begin with; a click in the key overrides that for one benchmark.
+  const offered = splitRowConditions(availableMeasurementRuns(source));
+  const selected = new Set(splitRowConditions(measurementRuns(source)).map(runKey));
+  const known = new Set(offered.map(runKey));
+  for (const key of [...state.curveChoice.keys()]) if (!known.has(key)) state.curveChoice.delete(key);
+  const curveOn = run => state.curveChoice.has(runKey(run)) ? state.curveChoice.get(runKey(run)) : selected.has(runKey(run));
+  const pool = offered.filter(run => selected.has(runKey(run)) || state.curveChoice.get(runKey(run)));
+  const runs = pool.filter(curveOn);
+  // Colours follow the whole selection, so hiding one benchmark does not recolour the rest.
+  const allModels = allModelsOf(pool), models = shownModels(allModels), keys = selectedMetricKeys();
   if (!allModels.length) return message("No tests were recorded", `${source.length === 1 ? "This benchmark" : "These benchmarks"} stopped before completing or failing a single test${source.length === 1 && source[0].status ? ` (status: ${source[0].status})` : ""}. There is nothing to plot.`);
   if (!keys.length) return message("Choose a metric", "Tick one or more metric buttons above.");
   if (!models.length) return message("Choose a model", "Tick one or more model buttons above, or press All.");
@@ -3357,12 +3716,33 @@ async function renderCompare() {
   const sources = [...new Set(runs.map(run => run.power_source).filter(Boolean))];
   const mixedPower = keys.some(key => ["j_per_1k_prefill", "j_per_token_decode", "prefill_gpu_w"].includes(key)) && sources.length > 1;
   const coverage = graphCoverage(runs, models, keys, axis, levels);
-  const notes = coverageMarkup(coverage, keys, axis) + source.map(benchmarkIncompleteNotice).join("")
-    + (mixedPower ? banner("warn", "Different power sensors", "These readings have different measurement boundaries. Compare them with care.") : "")
-    + (missing.length ? `<p class="hint graph-missing">Not recorded for this selection: ${missing.map(key => esc(METRICS[key].short)).join(", ")}.</p>` : "");
-  if (!drawn.length) { body.innerHTML = notes + emptyState("Nothing recorded for this selection", "Tick another metric, model or level above. Greyed-out metric buttons were not recorded in these benchmarks."); if (keyNode) keyNode.innerHTML = ""; return; }
+  coverage.hidden = graphCoverage(pool.filter(run => !curveOn(run)), models, keys, axis, levels).total;
+  coverage.total += coverage.hidden;
+  // One key entry per benchmark with something to draw here: drawn, or switched off but drawable.
+  const rate = axis === "concurrency";
+  const curves = [...new Map(offered.map(run => [runKey(run), run])).keys()].map(key => {
+    const members = offered.filter(run => runKey(run) === key), on = curveOn(members[0]);
+    const rows = members.flatMap(run => conditionRows(run, models, rate));
+    return {run: members[0], on, cases: rows.length, members,
+      measured: rows.filter(row => row.status === "ok" && keys.some(metric => Number.isFinite(METRICS[metric].get(row)))).length};
+  });
+  const switchedOff = curves.filter(entry => !entry.on && chartConditions(entry.members, models, keys).length);
+  // Nothing is drawn because the benchmarks that could draw something here are switched off.
+  const allOff = !drawn.length && switchedOff.length > 0;
+  const notes = notesStrip("compare", [coverageNote(coverage, keys, axis), ...source.map(run => incompleteNote(run, source.length > 1)),
+    mixedPower ? plainNote("power", "warn", "Different power sensors", "Different power sensors: these readings have different measurement boundaries. Compare them with care.") : null,
+    missing.length && !allOff ? {kind: "missing", tone: "info", gist: `Not recorded: ${missing.map(key => METRICS[key].short).join(", ")}`,
+      html: `<p class="graph-missing">Not recorded for this selection: ${missing.map(key => esc(METRICS[key].short)).join(", ")}.</p>`} : null]);
+  if (!drawn.length) {
+    // The key entries of switched-off benchmarks must stay, or nothing could be switched back on.
+    body.innerHTML = notes + (allOff ? emptyState("Every benchmark is switched off", "Click a benchmark in the key above to show its curves.")
+      : emptyState("Nothing recorded for this selection", "Tick another metric, model or level above. Greyed-out metric buttons were not recorded in these benchmarks."));
+    if (keyNode) keyNode.innerHTML = allOff ? chartKeyMarkup({allModels, models: [], runs: [], curves: switchedOff, levels: [], mtp: new Set()}, axis) : "";
+    return;
+  }
   const used = {allModels, models: models.filter(model => drawn.some(chart => chart.series.some(item => item.model === model))),
     runs: runs.filter(run => drawn.some(chart => chart.series.some(item => item.run === run))),
+    curves: curves.filter(entry => entry.on ? drawn.some(chart => chart.series.some(item => runKey(item.run) === runKey(entry.run))) : switchedOff.includes(entry)),
     levels: levels.filter(level => drawn.some(chart => chart.series.some(item => item.level === level))),
     mtp: new Set(drawn.flatMap(chart => chart.series.map(item => item.mtp)))};
   if (keyNode) keyNode.innerHTML = chartKeyMarkup(used, axis);
@@ -3395,7 +3775,7 @@ async function renderCompare() {
   body.innerHTML = notes + (perModel
     ? keys.filter(key => !missing.includes(key)).map(key => `<h3 class="graph-section">${esc(METRICS[key].short)}<small>${esc(METRICS[key].blurb)}</small></h3><div class="graph-grid">${drawn.map((chart, index) => chart.key === key ? card(chart, index) : "").join("")}</div>`).join("")
     : `<div class="graph-grid${single ? " single" : ""}">${drawn.map(card).join("")}</div>`)
-    + `<p class="hint graph-help">Move the pointer over a chart to compare every line at that point. &#10005; on the baseline marks a test that failed. Hover an entry in the key to pick out its lines.</p>`;
+    + `<p class="hint graph-help">Move the pointer over a chart to compare every line at that point. &#10005; on the baseline marks a test that failed. Hover an entry in the key to pick out its lines; click a benchmark there to hide or show its curves.</p>`;
   drawn.forEach((chart, index) => {
     const metric = METRICS[chart.key];
     Charts.line($(`[data-graph="${index}"]`, body), {

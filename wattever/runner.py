@@ -7,6 +7,11 @@ MTP mode; its different memory conditions are recorded with every result.
 
 A load that fails is a result, not an error: "this card cannot hold this model at
 this context" is precisely what the user is trying to find out.
+
+The same holds on an external endpoint: a model it cannot serve is recorded and
+skipped, and the other models still run. Only an endpoint that is gone, that
+rejects the credentials or whose state is unknown stops the benchmark, with the
+unmeasured tests left for a later continuation.
 """
 import datetime
 import copy
@@ -25,6 +30,15 @@ FAIL_UNSUPPORTED = "exceeds_model_context"
 FAIL_ERROR = "error"
 FAIL_SKIPPED = "skipped_after_failure"
 FAIL_MTP = "mtp_unsupported"
+# An external endpoint that is up but cannot serve one model, and one that is gone.
+FAIL_UNAVAILABLE = "model_unavailable"
+FAIL_ENDPOINT = "endpoint_unreachable"
+
+WARMUP_PROMPT = "Reply with the single word: ready."
+# How long a vanished endpoint may take to come back (a restart) before the run stops.
+ENDPOINT_GRACE_S = 60
+ENDPOINT_RETRY_S = 3
+CONTINUE_HINT = "then continue this benchmark with Add / rerun tests."
 
 
 class RecoveryError(RuntimeError):
@@ -505,7 +519,7 @@ class BenchRunner:
             raise RuntimeError("A benchmark is already running.")
         cfg = dict(DEFAULT_CONFIG)
         # External requested_mtp records operator intent; it is never an inference parameter.
-        allowed = set(DEFAULT_CONFIG) | {"endpoint_base_url", "endpoint_api_key_env", "endpoint_id", "canonical_model_id", "model_modes",
+        allowed = set(DEFAULT_CONFIG) | {"endpoint_base_url", "endpoint_api_key", "endpoint_api_key_env", "endpoint_id", "canonical_model_id", "model_modes",
                                         "runtime_gpu_placement", "reproducibility", "performance_claims",
                                         "requested_mtp", "reported_mtp", "reported_reasoning", "model_source", "temperature", "token_limit_field",
                                         "endpoint_identity", "endpoint_name_override", "selected_cases", "storage_probe_directory", "storage_probe_directories", "engine_group_id"}
@@ -602,7 +616,10 @@ class BenchRunner:
             old_class = (resume_source.get("classification") or {}).get("hardware_class")
             if not old_class or old_class != run["classification"]["hardware_class"]:
                 raise ValueError("Hardware differs or cannot be verified. Start a new benchmark.")
-            if any((resume_source.get("gpu") or {}).get(key) != gpu.get(key)
+            # Compare with what this session records, not with the client's own card: an
+            # endpoint whose hardware is unverified stores a placeholder, and its
+            # identity was already matched against the saved engine.
+            if any((resume_source.get("gpu") or {}).get(key) != (run.get("gpu") or {}).get(key)
                    for key in ("name", "vram_total_mb", "driver")):
                 raise ValueError("The selected GPU or driver differs. Start a new benchmark.")
             old_hash = (resume_source.get("corpus") or {}).get("sha256")
@@ -786,9 +803,12 @@ class BenchRunner:
             self.live["done"] = done
             reps = int(cfg["repeats"])
             fixed = cfg.get("context_policy") == "fixed"
+            external = cfg.get("provider") == "openai"
             for model in cfg["models"]:
                 if self.cancel_event.is_set():
                     break
+                # Set once the endpoint is known to be up yet unable to serve this model.
+                unavailable = None
                 cpt = corpus.DEFAULT_CHARS_PER_TOKEN
                 for previous in run["results"]:
                     if (previous.get("model") == model and previous.get("status") == "ok"
@@ -830,6 +850,12 @@ class BenchRunner:
                                     mode_failed = prior_failure
                                 continue
                             tag = {"model": model, "target_tokens": size, "mtp": mtp, "concurrency": concurrency}
+                            if unavailable:
+                                for rep in pending:
+                                    done += 1
+                                    self._record(run, dict(tag, repeat=rep, status="skipped", fail_kind=FAIL_SKIPPED,
+                                                          message=unavailable), done)
+                                continue
                             if mode_failed and (cfg["stop_model_after_failure"] or
                                                 cfg.get("skip_after_timeout") and mode_failed == FAIL_TIMEOUT):
                                 for rep in pending:
@@ -894,17 +920,28 @@ class BenchRunner:
                                               load_reused=reused)
                                 cpt = result.pop("_cpt", cpt)
                                 result["chars_per_token_after"] = cpt
+                                if external and result.get("status") == "failed" and result.get("fail_kind") == FAIL_ERROR:
+                                    unavailable = self._settle_endpoint(model, cfg, result)
                                 self._record(run, result, done)
                                 if result.get("recovery_error"):
                                     raise RecoveryError(result["recovery_error"])
                                 if result.get("status") == "cancelled":
+                                    break
+                                if unavailable:
+                                    for later in pending:
+                                        if later <= rep:
+                                            continue
+                                        done += 1
+                                        self._record(run, dict(tag, repeat=later, status="skipped", fail_kind=FAIL_SKIPPED,
+                                                              message=unavailable), done)
                                     break
                                 if result.get("fail_kind") == FAIL_TIMEOUT:
                                     loaded = None  # timeout recovery unloaded the model
                                 elif result.get("status") == "failed" and result.get("fail_kind") == FAIL_ERROR:
                                     # A broken stream can indicate a failed engine. Do not reuse
                                     # its load or let a provider silently reload default settings.
-                                    if not self.cli.unload_confirmed(model):
+                                    # An external endpoint has nothing to unload: it was checked above.
+                                    if not external and not self.cli.unload_confirmed(model):
                                         raise RecoveryError("Could not verify model unload after a request error.")
                                     loaded = None
                                 if result.get("status") != "ok" and (result.get("fail_kind") in (FAIL_LOAD, FAIL_CONTEXT, FAIL_UNSUPPORTED)
@@ -1004,13 +1041,79 @@ class BenchRunner:
         self.emit("phase", phase="warmup", model=model)
         try:
             self._measure_completion(
-                cfg, model, "Reply with the single word: ready.", 8,
+                cfg, model, WARMUP_PROMPT, 8,
                 timeout=min(300, cfg["per_test_timeout_s"]),
                 cancel=self.cancel_event,
                 disable_thinking=cfg["disable_thinking"])
         except Exception as exc:                     # noqa: BLE001 - warmup is best effort
             if cfg.get("provider") == "openai" and _classify(str(exc)) == FAIL_TIMEOUT:
                 raise RecoveryError("External warmup timed out; check the inference server before starting again.") from None
+            if not isinstance(exc, lmstudio.Cancelled) and not self.cancel_event.is_set():
+                self.log("Warmup request failed for %s: %s" % (model, str(exc)[:200]), level="warn")
+
+    def _check_endpoint(self, model, cfg):
+        """Find out what a failed external request means for the rest of the benchmark.
+
+        Nothing can be unloaded or restarted on an endpoint this program does not
+        manage, so the only evidence is whether it still answers. Returns
+        (verdict, reason, HTTP status): "ok" when the model answers a short
+        request, "model" when the endpoint is up but cannot serve this model, and
+        another verdict when continuing would only record failures that the
+        remaining tests did not earn.
+        """
+        self.live["phase"] = "checking endpoint"
+        self.emit("phase", phase="checking endpoint", model=model)
+        deadline = time.monotonic() + ENDPOINT_GRACE_S
+        fine = ("ok", None, None)
+        gone = ("endpoint", "The endpoint stopped responding and did not return within %d seconds. "
+                            "Restart the inference server, %s" % (ENDPOINT_GRACE_S, CONTINUE_HINT), None)
+        announced = False
+        while not endpoints.reachable(cfg):
+            if self.cancel_event.is_set():
+                return fine
+            if time.monotonic() >= deadline:
+                return gone
+            if not announced:
+                self.log("The endpoint is not responding - waiting up to %d s for it to return"
+                         % ENDPOINT_GRACE_S, level="warn")
+                announced = True
+            self.cancel_event.wait(ENDPOINT_RETRY_S)
+        try:
+            self._measure_completion(cfg, model, WARMUP_PROMPT, 8,
+                                     timeout=min(300, cfg["per_test_timeout_s"]),
+                                     cancel=self.cancel_event, disable_thinking=cfg["disable_thinking"])
+            return fine
+        except lmstudio.Cancelled:
+            return fine
+        except Exception as exc:                     # noqa: BLE001 - every outcome is a verdict
+            message, status = str(exc), getattr(exc, "status", None)
+            if self.cancel_event.is_set():
+                return fine
+            if _classify(message) == FAIL_TIMEOUT:
+                return "unknown", ("The endpoint did not answer a short check after a failed test, so its state is "
+                                   "unknown. Check the inference server, %s" % CONTINUE_HINT), status
+            if isinstance(exc, lmstudio.Unreachable):
+                return gone
+            if status == 401:
+                return "credentials", ("The endpoint rejected the API key (HTTP 401). Reconnect with a valid key, %s"
+                                       % CONTINUE_HINT), status
+            return "model", message, status
+
+    def _settle_endpoint(self, model, cfg, result):
+        """Classify a failed external test. Returns why to skip the model, or None."""
+        verdict, reason, status = self._check_endpoint(model, cfg)
+        if verdict == "ok":
+            return None
+        if verdict == "model":
+            result.update(fail_kind=FAIL_UNAVAILABLE,
+                          endpoint_check={"verdict": "model_unavailable", "http_status": status})
+            self.log("The endpoint cannot serve %s (%s) - skipping its remaining tests"
+                     % (model, reason[:200]), level="warn")
+            return "Skipped: the endpoint could not serve this model."
+        if verdict == "endpoint":
+            result["fail_kind"] = FAIL_ENDPOINT
+        result.update(recovery_error=reason, endpoint_check={"verdict": verdict, "http_status": status})
+        return None
 
     def _recover_requests(self, model, threads, responses):
         """Do not start another case until both model and HTTP workers stopped."""
@@ -1453,7 +1556,13 @@ class BenchRunner:
         except lmstudio.Cancelled:
             raise
         except Exception as exc:
-            raise RuntimeError(endpoints.sanitize_error(exc, cfg)) from None
+            # Keep what kind of failure this was; only the text needs redacting.
+            message = endpoints.sanitize_error(exc, cfg)
+            if isinstance(exc, lmstudio.Refused):
+                raise lmstudio.Refused(message, exc.status) from None
+            if isinstance(exc, lmstudio.Unreachable):
+                raise lmstudio.Unreachable(message) from None
+            raise RuntimeError(message) from None
 
     def _finish_session(self, run):
         for session in run.get("sessions", []):

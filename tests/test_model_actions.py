@@ -165,8 +165,16 @@ class ModelActionTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'differs'):
                 runner.extension_config(self.source,{'connection':dict(self.connection,endpoint_id='other'),
                                                     'model_modes':{'external':['off']}})
+        self.connection['endpoint_api_key']='typed-secret-key'
         bench=self.execute_selection(['new-model'])
         self.assertNotIn('endpoint_base_url',str(bench.run))
+        # A typed key authenticates the added tests and reaches no saved or returned structure.
+        self.assertEqual(endpoints.api_key(bench._runtime_config),'typed-secret-key')
+        self.assertNotIn('typed-secret-key',str(bench.run)+str(store.load('card')))
+        with patch.object(endpoints,'resolve_identity',side_effect=lambda cfg,**kwargs:cfg), \
+             patch.object(endpoints,'list_models',return_value=[]):
+            options=bench.extension_options('card',{'connection':self.connection})
+        self.assertNotIn('typed-secret-key',str(options))
 
 
 if __name__=='__main__':unittest.main()

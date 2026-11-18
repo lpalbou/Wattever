@@ -1,5 +1,6 @@
 """OpenAI-compatible transport configuration, separate from model management."""
 import copy
+import http.client
 import ipaddress
 import os
 import re
@@ -13,7 +14,7 @@ import tempfile
 import threading
 import time
 
-PRIVATE_KEYS = {"endpoint_base_url", "endpoint_api_key_env", "api_key", "apiKey", "authorization", "storage_probe_directory", "storage_probe_directories"}
+PRIVATE_KEYS = {"endpoint_base_url", "endpoint_api_key", "endpoint_api_key_env", "api_key", "apiKey", "authorization", "storage_probe_directory", "storage_probe_directories"}
 ROUTE_REGISTRY_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results", ".endpoint-routes.json")
 _IDENTITY_LOCK = threading.RLock()
 _ROUTE_CACHE = {}
@@ -301,6 +302,24 @@ def is_loopback(base):
     except ValueError: return False
 
 def api_key(cfg):
+    """Bearer credential for one connection.
+
+    `endpoint_api_key` is the key itself, as typed into the helper. It exists
+    only in the memory of the running helper: PRIVATE_KEYS keeps it out of
+    benchmark files, the saved form and exports, and sanitize_error removes it
+    from diagnostics. `endpoint_api_key_env` names an environment variable
+    instead, for scripts that prefer not to send the key in a request body.
+    Messages raised here never include the credential.
+    """
+    literal = cfg.get("endpoint_api_key")
+    if literal not in (None, ""):
+        if not isinstance(literal, str):
+            raise ValueError("API key must be text.")
+        # A pasted "Bearer <key>" header value is a key with a prefix, not a different key.
+        literal = re.sub(r"^Bearer\s+", "", literal.strip(), flags=re.I)
+        if not re.fullmatch(r"[\x21-\x7e]{1,8192}", literal):
+            raise ValueError("API key must be 1..8192 printable characters without spaces.")
+        return literal
     name = cfg.get("endpoint_api_key_env") or ""
     if name and not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name):
         raise ValueError("API-key environment variable name is invalid.")
@@ -327,7 +346,7 @@ def validate(cfg):
     if not isinstance(label, str) or len(label) > 120:
         raise ValueError("Endpoint label must be a string of at most 120 characters.")
     for key in ("api_key", "apiKey", "authorization"):
-        if cfg.get(key): raise ValueError("Use an API-key environment variable; literal credentials are not accepted.")
+        if cfg.get(key): raise ValueError("Send the API key as endpoint_api_key.")
     provider = cfg.get("provider", "lmstudio")
     if provider not in ("lmstudio", "openai"):
         raise ValueError("Provider must be lmstudio or openai.")
@@ -399,8 +418,13 @@ def public_provider(cfg):
 
 def sanitize_error(value, cfg):
     text = str(value)
-    for secret in (cfg.get("endpoint_base_url"), os.environ.get(cfg.get("endpoint_api_key_env") or "", "")):
-        if secret: text = text.replace(secret, "[redacted]")
+    try:
+        credential = api_key(cfg)
+    except ValueError:
+        credential = ""
+    # A server can echo the credential it rejected; the raw field covers a pasted "Bearer " prefix.
+    for secret in (cfg.get("endpoint_base_url"), credential, cfg.get("endpoint_api_key")):
+        if isinstance(secret, str) and secret: text = text.replace(secret, "[redacted]")
     text = re.sub(r"https?://[^\s\"'<>]+", "[endpoint]", text)
     return text[:800]
 
@@ -411,6 +435,20 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 def open_request(request, timeout):
     return urllib.request.build_opener(NoRedirect()).open(request, timeout=timeout)
+
+
+def reachable(cfg, timeout=5):
+    """Whether the endpoint answers HTTP at all. An error status still proves it is up."""
+    headers = {"Accept": "application/json"}
+    try:
+        key = api_key(cfg)
+        if key: headers["Authorization"] = "Bearer " + key
+        with open_request(urllib.request.Request(cfg["endpoint_base_url"] + "/models", headers=headers), timeout):
+            return True
+    except urllib.error.HTTPError:
+        return True
+    except (OSError, ValueError, http.client.HTTPException):
+        return False
 
 
 _QUANT_PATTERN=r"(?:UD[-_])?(?:"+(r"IQ(?:1_[SM]|2_(?:XXS|XS|S|M)|3_(?:XXS|XS|S|M)|4_(?:XS|NL))"

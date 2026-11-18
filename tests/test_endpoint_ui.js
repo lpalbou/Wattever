@@ -4,7 +4,7 @@ const vm = require('node:vm');
 const source = fs.readFileSync('web/app.js', 'utf8').replace(/\ninit\(\);\s*$/, '');
 const elements = {
   '#helper-provider': {value:'openai'}, '#helper-url': {value:'http://localhost:9000/v1'},
-  '#helper-key-env': {value:'PRIVATE_KEY_ENV'}, '#helper-name-override':{value:''}, '#helper-local': {checked:false}, '#helper-reasoning':{value:'none'},
+  '#helper-key': {value:'  sk-typed-secret-0123456789  '}, '#helper-name-override':{value:''}, '#helper-local': {checked:false}, '#helper-reasoning':{value:'none'},
   '#meta-engine': {value:'Strata'}, '#meta-context': {value:'32768'}, '#meta-mtp': {value:'4'},
   '#max-tokens': {value:'128'}, '#repeats': {value:'2'}, '#gpu-index': {value:'0'},
   '#runtime-gpu-placement': {value:''}, '#offload': {value:'max'}, '#fallback': {checked:true},
@@ -19,7 +19,14 @@ vm.runInContext(`
   if(helperEndpointConfig().endpoint_label)throw Error('legacy saved label must not become an inferred name');
   rememberEndpoint({endpoint_identity:{id:'detected-fixture',label:'Example engine',source:'detected'}},'openai');
   const cfg=collectConfig();
-  if(cfg.provider!=='openai'||cfg.endpoint_base_url!=='http://localhost:9000/v1'||cfg.endpoint_api_key_env!=='PRIVATE_KEY_ENV')throw Error('connection config');
+  if(cfg.provider!=='openai'||cfg.endpoint_base_url!=='http://localhost:9000/v1'||cfg.endpoint_api_key!=='sk-typed-secret-0123456789'||'endpoint_api_key_env' in cfg)throw Error('connection config');
+  // The typed key travels in the request only: never in remembered form state or change-detection signatures.
+  if(JSON.stringify(withoutCredentials(cfg)).includes('sk-typed-secret')||withoutCredentials(cfg).endpoint_base_url!==cfg.endpoint_base_url)throw Error('remembered form state must drop the key');
+  if(helperConnectionSignature().includes('sk-typed-secret'))throw Error('signature must not contain the key');
+  const keyed=helperConnectionSignature();document.querySelector('#helper-key').value='sk-another-secret-0123456789';
+  if(helperConnectionSignature()===keyed)throw Error('changing the key must require a reconnect');
+  document.querySelector('#helper-key').value='';if('endpoint_api_key' in helperEndpointConfig())throw Error('an empty key must be omitted');
+  document.querySelector('#helper-key').value='sk-typed-secret-0123456789';if(helperConnectionSignature()!==keyed)throw Error('signature must be stable for one key');
   if(cfg.context_policy!=='provider_managed'||cfg.gpu_offload!=='provider_managed'||cfg.disable_thinking!==null||cfg.fallback_on_failure)throw Error('provider settings');
   if(cfg.reproducibility.engine!=='Strata'||cfg.reproducibility.context_tokens!==32768||cfg.reproducibility.mtp_draft_tokens!==4)throw Error('reported settings');
   if(cfg.endpoint_id!=='detected-fixture'||cfg.endpoint_identity.source!=='detected'||cfg.endpoint_reasoning_effort!=='none')throw Error('automatic identity and requested reasoning');
@@ -39,5 +46,8 @@ vm.runInContext(`
 assert.equal(vm.runInContext('helperEndpointConfig().endpoint_inference_local',context),false);
 elements['#helper-provider'].value='lmstudio';
 const native=vm.runInContext('helperEndpointConfig()',context);
-assert.equal(native.provider,'lmstudio');assert(!('endpoint_base_url' in native));assert(!('endpoint_api_key_env' in native));assert.equal(native.endpoint_id,'');
+assert.equal(native.provider,'lmstudio');assert(!('endpoint_base_url' in native));assert(!('endpoint_api_key' in native));assert(!('endpoint_api_key_env' in native));assert.equal(native.endpoint_id,'');
+const page=fs.readFileSync('web/index.html','utf8');
+assert.match(page,/<input id="helper-key" type="password"[^>]*autocomplete="off"/);
+assert(!/helper-key-env|environment variable/i.test(page),'the helper form must not ask for an environment variable');
 console.log('Generic endpoint UI tests passed');

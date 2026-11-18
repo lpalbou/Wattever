@@ -295,6 +295,36 @@ details.adv > div { padding-top: 14px; }
 .banner.err { border-color: color-mix(in srgb, var(--status-critical) 45%, var(--border)); background: color-mix(in srgb, var(--status-critical) 9%, var(--surface-1)); }
 .banner.info { background: var(--surface-2); }
 .banner b { color: var(--text-primary); }
+/* Notes: one slim line that says what needs attention and unfolds to explain it. */
+.notes { margin: 0 0 12px; border: 1px solid var(--border); border-left-width: 3px; border-radius: var(--radius-sm); background: var(--surface-1); font-size: 12px; line-height: 1.45; }
+.notes[data-tone="warn"] { border-left-color: var(--status-warning); }
+.notes[data-tone="err"] { border-left-color: var(--status-critical); }
+.notes > summary { display: flex; align-items: center; gap: 8px; min-height: 30px; padding: 4px 10px; cursor: pointer; list-style: none; color: var(--text-secondary); }
+.notes > summary::-webkit-details-marker { display: none; }
+.notes > summary::before { content: ""; flex: none; width: 6px; height: 6px; margin: 0 3px 0 1px; border-right: 1.5px solid var(--text-muted); border-bottom: 1.5px solid var(--text-muted); transform: rotate(-45deg); transition: transform .12s ease; }
+.notes[open] > summary::before { transform: rotate(45deg); }
+.notes > summary:focus-visible { outline: 2px solid var(--accent, var(--border-strong)); outline-offset: 2px; border-radius: var(--radius-sm); }
+.notes > summary:hover { color: var(--text-primary); }
+.notes-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); }
+.notes[data-tone="warn"] .notes-dot { background: var(--status-warning); }
+.notes[data-tone="err"] .notes-dot { background: var(--status-critical); }
+.notes-count { flex: none; font-weight: 600; color: var(--text-primary); }
+.notes-gist { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.notes > summary .btn-sm { flex: none; padding: 2px 10px; font-size: 12px; }
+.notes-body { padding: 0 12px 2px 29px; border-top: 1px solid var(--border); color: var(--text-secondary); }
+.note { padding: 8px 0; }
+.note + .note { border-top: 1px solid var(--border); }
+.note b { color: var(--text-primary); }
+.note p { margin: 0; }
+.note-source { display: block; margin-bottom: 2px; font-weight: 600; color: var(--text-primary); }
+/* Notices keep their own markup; inside a strip they lose their box. */
+.notes-body .banner, .notes-body .coverage-bar, .notes-body .coverage-bar[data-complete] { display: block; margin: 0; padding: 0; border: 0; border-radius: 0; background: none; font-size: 12px; color: inherit; }
+.notes-body .coverage-bar ul { margin-top: 4px; }
+.live-issues .notes { margin: 12px 0 2px; }
+.selection-heading .notes { margin: 10px 0; }
+.issue-reason { display: block; margin-top: 4px; color: var(--text-muted); overflow-wrap: anywhere; }
+td.fail-reason { color: var(--text-secondary); text-align: left; white-space: normal; overflow-wrap: anywhere; min-width: 260px; }
+#live-table .st { white-space: nowrap; }
 
 @media (max-width: 760px) {
   .topbar { flex-wrap: wrap; gap: 10px; }
@@ -396,9 +426,6 @@ main { max-width: 1480px; padding: 32px 40px 80px; }
 .result-navigation p { margin: 0; }
 .results-controls { padding: 18px 20px; }
 .results-controls > .color-control { position: static; justify-content: flex-end; margin: 0 0 12px; }
-.recorded-conditions { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 14px; }
-.recorded-conditions .chips { margin-top: 9px; }
-.recorded-conditions p { margin: 8px 0 0; }
 .recorded-experiment { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 16px; }
 .recorded-experiment > header { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .recorded-experiment h3 { margin: 0; flex: 1; font-size: 16px; }
@@ -587,6 +614,21 @@ tfoot td { white-space: normal; font-size: 11px; text-align: left; }
 .model-filter-heading { flex-wrap: wrap; }
 .model-filter-heading .btn-row { flex-wrap: wrap; }
 .model-visibility-chips { max-height: 160px; overflow-y: auto; padding: 3px; }
+/* Similar models share a box whose header shows or hides them together. */
+.model-visibility-chips.grouped { display: grid; gap: 10px; max-height: 360px; }
+.model-groups { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; }
+.model-group { display: grid; gap: 6px; min-width: 0; max-width: 100%; padding: 6px 8px 8px; border: 1px solid var(--border); border-radius: 10px; background: color-mix(in srgb, var(--surface-2) 55%, transparent); }
+.model-group-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.model-group-toggle { display: inline-flex; align-items: center; gap: 7px; min-width: 0; flex: 1; padding: 2px 4px; border: 0; border-radius: 6px; background: transparent; font-size: 11px; color: var(--text-secondary); text-align: left; }
+.model-group-toggle strong { font-weight: 600; color: var(--text-primary); overflow-wrap: anywhere; }
+.model-group-toggle small { color: var(--text-muted); white-space: nowrap; }
+.model-group-toggle:hover:not(:disabled) { background: var(--surface-3); }
+/* Filled when every model in the box is shown, half when some are, empty when none. */
+.model-group-mark { flex: none; width: 11px; height: 11px; border: 1.5px solid var(--text-muted); border-radius: 3px; }
+.model-group-toggle[aria-pressed="true"] .model-group-mark { background: var(--accent); border-color: var(--accent); }
+.model-group-toggle[aria-pressed="mixed"] .model-group-mark { border-color: var(--accent); background: linear-gradient(to right, var(--accent) 50%, transparent 50%); }
+.model-group-only { flex: none; padding: 1px 7px; border-radius: 999px; background: transparent; font-size: 10px; color: var(--text-muted); }
+.model-group-only:hover:not(:disabled) { color: var(--text-primary); }
 .model-visibility-chips .chip { overflow-wrap: anywhere; min-width: 0; max-width: 100%; font-size: 11px; gap: 7px; }
 .model-swatch { width: 8px; height: 8px; display: inline-block; border-radius: 2px; flex: none; }
 .color-control { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 14px; color: var(--text-muted); font-size: 11px; }
@@ -992,7 +1034,7 @@ tfoot td { white-space: normal; font-size: 11px; text-align: left; }
 .hw-methods summary, .hw-probe-settings summary { font-size: 12px; cursor: pointer; }
 .hw-probe-settings .field { margin: 15px 0 0; }
 .probe-empty { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px; border: 1px dashed var(--border); border-radius: 9px; }
-input:not([type]) { padding: 10px 12px; width: 100%; min-width: 0; background: var(--surface-0); color: var(--text-primary); border: 1px solid var(--border-strong); border-radius: 7px; }
+input:not([type]), .endpoint-card input[type="password"] { padding: 10px 12px; width: 100%; min-width: 0; background: var(--surface-0); color: var(--text-primary); border: 1px solid var(--border-strong); border-radius: 7px; }
 @media (max-width: 760px) {
  .machine-header-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px 8px; }
  .machine-card > summary { align-items: flex-start; gap: 10px; }
@@ -1003,14 +1045,6 @@ input:not([type]) { padding: 10px 12px; width: 100%; min-width: 0; background: v
  .hardware-tile { padding: 12px; }
 }
 
-.condition-selection-heading { display: flex; justify-content: space-between; gap: 10px; align-items: center; font-size: 11px; }
-#recorded-conditions .condition-choice { display: flex; align-items: center; gap: 9px; padding: 10px 12px; text-align: left; }
-#recorded-conditions input[type=checkbox] { position: static; opacity: 1; width: 16px; height: 16px; flex: none; accent-color: var(--accent); }
-.condition-copy { display: grid; gap: 5px; min-width: 0; }
-.condition-copy strong { font-size: 11px; font-weight: 500; }
-.condition-count { font-size: 10px; color: var(--text-secondary); }
-.condition-choice[data-on="0"] { opacity: .75; }
-.condition-choice[data-on="1"] { box-shadow: inset 0 0 0 1px color-mix(in srgb,var(--accent) 25%,transparent); }
 .chart-readout { margin: 12px 0; padding: 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 9px; }
 .chart-readout-title { font-size: 11px; color: var(--text-secondary); margin-bottom: 10px; }
 .chart-readout-values { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 10px; }
@@ -1020,7 +1054,7 @@ input:not([type]) { padding: 10px 12px; width: 100%; min-width: 0; background: v
 .chart-readout-item small { font-size: 10px; color: var(--text-secondary); }
 .metric-delta { font-size: 11px; }
 .metric-delta[data-direction=better] { color: var(--accent); }
-@media(max-width:760px) { .chart-readout-values { grid-template-columns: minmax(0,1fr); } .condition-selection-heading { flex-wrap: wrap; } }
+@media(max-width:760px) { .chart-readout-values { grid-template-columns: minmax(0,1fr); } }
 
 /* Concurrency is a dimension to explore, rather than a hidden single-value filter. */
 #results-controls[data-analysis="concurrency"] .color-control,
@@ -1218,7 +1252,6 @@ button.chip { font: inherit; font-size: 12px; line-height: 1.3; }
 button.chip:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 7%, var(--surface-1)); }
 button.chip[data-on="1"]:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 20%, var(--surface-1)); }
 .metric-chip[data-empty] { opacity: .5; border-style: dashed; }
-#results-controls .recorded-conditions { border-bottom: 0; border-top: 1px solid var(--border); padding: 15px 0; margin: 0; }
 #results-controls .model-visibility-chips { max-height: none; overflow: visible; }
 #results-controls .model-visibility-chips .chip { font-size: 12px; }
 #results-controls .model-visibility-chips .chip:hover { border-color: var(--border-strong); }
@@ -1233,6 +1266,14 @@ button.chip[data-on="1"]:hover:not(:disabled) { background: color-mix(in srgb, v
 .key-item:hover, .key-item:focus-visible { background: var(--surface-3); color: var(--text-primary); outline: none; }
 .key-item svg { flex: none; color: var(--text-secondary); }
 .key-dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+/* A benchmark in the key switches its curves on and off. On: a faint wash of its own colour. */
+.key-toggle { appearance: none; font: inherit; color: inherit; text-align: left; background: transparent; border: 1px solid transparent; padding: 2px 8px; cursor: pointer; --key-color: var(--text-secondary); }
+.key-toggle[aria-pressed="true"] { background: color-mix(in srgb, var(--key-color) 13%, transparent); border-color: color-mix(in srgb, var(--key-color) 28%, transparent); }
+.key-toggle[aria-pressed="true"]:hover:not(:disabled), .key-toggle[aria-pressed="true"]:focus-visible { background: color-mix(in srgb, var(--key-color) 24%, transparent); border-color: color-mix(in srgb, var(--key-color) 55%, transparent); }
+.key-toggle[aria-pressed="false"] { color: var(--text-muted); border-style: dashed; border-color: var(--border); }
+.key-toggle[aria-pressed="false"] svg, .key-toggle[aria-pressed="false"] .key-dot { opacity: .35; filter: grayscale(1); }
+.key-toggle[aria-pressed="false"]:hover:not(:disabled), .key-toggle[aria-pressed="false"]:focus-visible { background: var(--surface-2); border-color: var(--border-strong); color: var(--text-secondary); }
+.key-toggle:focus-visible { outline: 2px solid var(--accent, var(--border-strong)); outline-offset: 1px; }
 .chart-series { transition: opacity .12s; }
 .chart-series.is-dim { opacity: .1; }
 svg.has-focus .chart-series:not(.is-focus) { opacity: .25; }
@@ -1260,11 +1301,12 @@ svg.has-focus .chart-series:not(.is-focus) { opacity: .25; }
 #compare-body > .banner { margin-bottom: 12px; }
 #concurrency-comparison { margin-top: 16px; }
 
-.chart-tip { max-width: 440px; }
+.chart-tip { max-width: min(760px, calc(100vw - 16px)); }
 .tip-head { font-weight: 600; margin-bottom: 5px; }
-.tip-row { display: grid; grid-template-columns: 9px minmax(0, 1fr) auto; gap: 8px; align-items: center; color: var(--text-secondary); }
+.tip-row { display: grid; grid-template-columns: 9px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; color: var(--text-secondary); }
 .tip-row i { width: 9px; height: 9px; border-radius: 2px; }
-.tip-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A name is never cut: the box grows to fit it, and past its limit the name wraps. */
+.tip-row span { overflow-wrap: anywhere; }
 .tip-row b { color: var(--text-primary); font-variant-numeric: tabular-nums; }
 .tip-row.is-focus { color: var(--text-primary); font-weight: 600; }
 .tip-note { margin-top: 5px; font-size: 11px; color: var(--text-muted); }
@@ -1317,3 +1359,42 @@ svg.has-focus .chart-series:not(.is-focus) { opacity: .25; }
   .graph-card > header { flex-wrap: wrap; }
   .graph-direction { white-space: normal; }
 }
+
+/* ---------- merging benchmarks ---------- */
+/* In the library: an action for what is ticked, or one same-machine suggestion. */
+.merge-bar { margin: 0 0 12px; font-size: 12px; }
+.merge-selection { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 8px 7px 12px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border)); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--accent) 9%, var(--surface-2)); color: var(--text-secondary); }
+.merge-suggestion { padding: 10px 12px; border: 1px dashed color-mix(in srgb, var(--accent) 55%, var(--border)); border-radius: var(--radius-sm); background: var(--surface-2); }
+.merge-suggestion p { margin: 3px 0 9px; color: var(--text-secondary); overflow-wrap: anywhere; }
+.merge-suggestion b, .merge-selection b { color: var(--text-primary); }
+.merge-suggestion .btn-row { gap: 6px; }
+.merge-action { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); font-weight: 600; white-space: nowrap; }
+.merge-origin { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 0; }
+
+/* In the dialog: every benchmark states whether it can join, and why not. */
+.merge-dialog { width: min(660px, calc(100% - 28px)); }
+.merge-machine { display: flex; flex-direction: column; gap: 2px; margin: 0 0 12px; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
+.merge-more { margin: 0 0 16px; }
+.merge-more > summary { cursor: pointer; font-size: 12px; color: var(--text-secondary); }
+.merge-more > .merge-list { margin: 10px 0 0; }
+.merge-list { display: grid; gap: 8px; margin-bottom: 16px; }
+.merge-row { padding: 10px 12px; border: 1px solid var(--border); border-left: 4px solid var(--benchmark-color, var(--border-strong)); border-radius: var(--radius-sm); background: var(--surface-2); }
+.merge-row[data-picked="false"] { background: transparent; border-style: dashed; border-left-style: solid; }
+.merge-row[data-picked="false"] .merge-pick { font-weight: 500; color: var(--text-secondary); }
+.merge-row[data-state="block"] { border-color: color-mix(in srgb, var(--status-critical) 55%, var(--border)); border-left-color: var(--benchmark-color, var(--status-critical)); }
+.merge-pick { display: flex; align-items: flex-start; gap: 10px; font-weight: 600; cursor: pointer; overflow-wrap: anywhere; }
+.merge-pick input, .merge-confirm input { flex: none; width: 14px; height: 14px; margin-top: 4px; }
+.merge-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 4px 0 0 24px; font-size: 11px; color: var(--text-muted); }
+.merge-issue { margin: 8px 0 0 24px; font-size: 12px; color: var(--status-serious); }
+.merge-issue::before { content: "Cannot join: "; font-weight: 600; }
+.merge-confirm { display: flex; align-items: flex-start; gap: 10px; margin: 9px 0 0 24px; padding: 8px 10px; border: 1px solid color-mix(in srgb, var(--status-warning) 45%, var(--border)); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--status-warning) 9%, var(--surface-1)); font-size: 12px; cursor: pointer; }
+.merge-row[data-state="ok"] .merge-confirm { border-color: var(--border); background: transparent; }
+.merge-confirm small { display: block; color: var(--text-muted); font-size: 11px; }
+.merge-dialog #merge-label { width: 100%; }
+.merge-outcome { margin: 4px 0 0; padding: 11px 13px; border-radius: var(--radius-sm); border-left: 3px solid var(--status-warning); background: var(--surface-2); font-size: 13px; }
+.merge-outcome[data-ready="true"] { border-left-color: var(--ready-accent); }
+.merge-outcome p { margin: 6px 0 0; font-size: 12px; color: var(--text-muted); }
+.merge-outcome .btn-sm { margin-left: 6px; }
+/* A long selection scrolls; the decision stays in view. */
+.merge-actions { position: sticky; bottom: -22px; justify-content: flex-end; margin: 16px -22px -22px; padding: 14px 22px 18px; background: var(--surface-1); border-top: 1px solid var(--border); }
+.merge-actions .btn-primary { border-color: var(--ready-accent); background: var(--ready-accent); color: var(--surface-0); }

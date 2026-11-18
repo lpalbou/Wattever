@@ -6,7 +6,7 @@ JSON errors have an `error` field. Invalid input and runtime conflicts generally
 
 JSON request bodies are limited to 32 MiB. This includes capability imports; a suite's supported question count does not guarantee that its completed audit fits in one HTTP request.
 
-State-changing requests must come from the helper's own browser origin, or an Origin-free local API client. Send JSON bodies with `Content-Type: application/json`; rejected cross-origin or non-JSON changes return 403. Authenticated model discovery must use POST; GET query parameters cannot select a credential environment variable. See [security](../SECURITY.md).
+State-changing requests must come from the helper's own browser origin, or an Origin-free local API client. Send JSON bodies with `Content-Type: application/json`; rejected cross-origin or non-JSON changes return 403. Authenticated model discovery must use POST; GET query parameters cannot carry an API key or select a credential environment variable. See [security](../SECURITY.md).
 
 ## Read and control routes
 
@@ -48,7 +48,18 @@ A hardware-class difference caused solely by a page-aligned usable-RAM change of
 
 `POST /api/bench/link` accepts `{"run_ids":["<managed-run>","<endpoint-run>"],"label":"Machine benchmark"}`. It groups stopped benchmarks on matching hardware/GPU/driver, with local inference explicitly asserted for generic endpoints. The first ID is the group root. Each run keeps its provider, settings and measurements; **Open machine benchmark** in Results selects all available members for charts, tables and multi-run JSON/CSV exports. Send all desired member IDs when updating a group. Files are backed up before group metadata is saved.
 
-`POST /api/bench/consolidate` accepts the same `run_ids` and a `label` to store their measurements in **one benchmark file and one library entry**. Put the destination first. Sources must have matching hardware/GPU/driver, corpus and measurement protocol, with identified execution sessions. Backups are saved and the other source files move to local trash. The destination retains every result, configuration fingerprint, execution session and source metadata. Its aggregate configuration uses `provider: "mixed"`; `engine_groups` and each session's `engine_group_id` identify actual providers and settings. Charts and CSV preserve engine attribution. Both managed and external-engine tests can be repaired directly within that benchmark after connecting the matching engine.
+`POST /api/bench/consolidate` accepts the same `run_ids` and a `label` to store their measurements in **one benchmark file and one library entry**. This is what **Merge into one…** in Results sends. Put the destination first. Sources must have matching hardware/GPU/driver, corpus and measurement protocol, with identified execution sessions. Backups are saved and the other source files move to local trash. The destination retains every result, configuration fingerprint, execution session and source metadata. With several engines its aggregate configuration uses `provider: "mixed"`; `engine_groups` and each session's `engine_group_id` identify actual providers and settings. Benchmarks of a single engine become one plain benchmark with more sessions, as if extended with Add tests. Charts and CSV preserve engine attribution. Both managed and external-engine tests can be repaired directly within that benchmark after connecting the matching engine.
+
+Two optional fields cover what the default refuses:
+
+- `assume_local` lists endpoint benchmarks that were saved as remote and that the operator states were served by the computer that launched them. Such a benchmark keeps an inventory of that computer in `measurement_client`; it is accepted only when that inventory matches the other benchmarks' machine. The merged file records the statement in `inference_local_assertion` (`source: "user_reported"`, `declared_during: "merge"`, `power_sampled: false`) and in `consolidation_history`. Power was not sampled for such a benchmark and stays unavailable.
+- `overlap` decides a test measured more than once. `"error"` (default) refuses. `"newest"` keeps one measurement per test in `results`, a completed one before an incomplete one and otherwise the most recent, and moves the others to `previous_attempts` with `archive_reason: "superseded_by_merge"`.
+
+`POST /api/bench/merge-plan` accepts `run_ids` (one or more, in any order) and optional `assume_local`, and changes nothing. It returns the benchmarks in merge order (`run_ids`, destination first: an already merged benchmark, else the largest locally measured one), `ok`, the `machine`, and `issues`: `block` cannot be merged, `confirm` needs `assume_local`, `warn` is informational. Each names the benchmarks it concerns. It also reports the resulting `engines`, `models`, `tests`, the `superseded` count, and `also_here`: other benchmarks of that machine that could join.
+
+`GET /api/bench/merge-suggestions` lists groups of benchmarks from different engines that ran on one machine and can be merged, including endpoint benchmarks matched through the computer that launched them.
+
+`POST /api/bench/merge-undo` accepts `{"run_id":"<merged benchmark>"}` and restores the exact files that existed before its most recent merge. It is refused once that benchmark has changed. `GET /api/runs` reports `merge: {sources, at, undo}` for merged benchmarks.
 
 ### GPU telemetry boundaries
 
@@ -71,7 +82,7 @@ per-request draft counters are recorded separately when supplied by the server.
 {
   "provider": "openai",
   "endpoint_base_url": "http://127.0.0.1:8000/v1",
-  "endpoint_api_key_env": "BENCHMARK_API_KEY",
+  "endpoint_api_key": "<key, if the endpoint requires one>",
   "endpoint_inference_local": true,
   "models": ["<served-model-id>"],
   "sizes": [512, 5000],
@@ -86,7 +97,7 @@ per-request draft counters are recorded separately when supplied by the server.
 }
 ```
 
-Send this to `POST /api/bench/start` only when ready to run inference. Omit `endpoint_api_key_env` if authentication is unnecessary. Otherwise set that environment variable before starting the helper; the field contains only its name. Literal keys are rejected. URLs must use HTTP(S) without embedded credentials, query or fragment. A root URL gets `/v1`; an explicit API path is preserved. Do not supply `/chat/completions` or `/models` as the base.
+Send this to `POST /api/bench/start` only when ready to run inference. Omit `endpoint_api_key` if authentication is unnecessary. The key is sent to the endpoint as a Bearer token and held in memory only: it is not written to benchmark files, the saved form, exports or recorded errors, so every request that needs it (`/api/endpoint/check`, start, extend, capability start) carries it again. A pasted `Bearer ` prefix is ignored; a key must be printable text without spaces. A script can instead set `endpoint_api_key_env` to the name of an environment variable defined before the helper started. URLs must use HTTP(S) without embedded credentials, query or fragment. A root URL gets `/v1`; an explicit API path is preserved. Do not supply `/chat/completions` or `/models` as the base.
 
 `endpoint_inference_local` defaults to **false**, including for loopback addresses. Set it true only when inference executes on the benchmark computer. This user assertion permits local power attribution; neither route-origin detection nor a display name verifies server hardware.
 
@@ -187,7 +198,7 @@ The default provider is `lmstudio`. `LMS_BASE_URL` selects its API (default `htt
 
 Optional booleans `fallback_on_failure` and `skip_after_timeout` control the new session's load-placement fallback and practical timeout skipping. Timeout-based skips are not hard capacity/OOM claims. Optional `per_test_timeout_s` sets the new execution session's timeout (integer 1 through 7200). Existing measurements retain their recorded budgets. `repeats` is the desired total per case (saved repeat count through 100). Raising it adds new slots. To repair individual cases, optionally supply `selected_cases` as a nonempty array of `[model_id, mtp_boolean, concurrency, target_tokens, zero_based_repeat]` tuples within the selected workload. For example, `[["<installed-model-id>",false,2,5000,0]]` with `rerun_existing: true` replaces only that first repeat. Omit `selected_cases` to use the full selection. Case selection applies only to the execution session; the benchmark keeps its full workload configuration.
 
-Review counts and warnings before submitting the selection to `POST /api/bench/extend`. Defaults add missing cases; `retry_failed` includes failed and skipped cases; `rerun_existing` includes successful selected cases. Extension takes a history snapshot and modifies the existing file. `POST /api/bench/resume` with `run_id` creates a separate run for unfinished work. Managed operations load/unload models. External extensions never load/unload models, use only `["off"]` scheduling modes with provider-controlled MTP, and require a fresh matching endpoint connection. Adding a first external engine upgrades the existing file with execution groups. Use distinct served model IDs for variants across engines. All extensions require compatible hardware, GPU/driver and corpus; managed extensions additionally check LM Studio version; see [measurements](measurements.md) and [architecture](architecture.md).
+Review counts and warnings before submitting the selection to `POST /api/bench/extend`. Defaults add missing cases; `retry_failed` includes failed and skipped cases; `rerun_existing` includes successful selected cases. Extension takes a history snapshot and modifies the existing file. `POST /api/bench/resume` with `run_id` creates a separate run for unfinished managed work; an endpoint benchmark continues in its own file through `/api/bench/extend` with a fresh `connection`. `GET /api/runs` and `/api/status` report `error` and `remaining_tests` for a benchmark that stopped early. On an external endpoint a failed row can carry `fail_kind` `model_unavailable` (the endpoint refused the model; its other tests are skipped) or `endpoint_unreachable` (the endpoint disappeared; the run stopped), with `endpoint_check: {verdict, http_status}`. Managed operations load/unload models. External extensions never load/unload models, use only `["off"]` scheduling modes with provider-controlled MTP, and require a fresh matching endpoint connection. Adding a first external engine upgrades the existing file with execution groups. Use distinct served model IDs for variants across engines. All extensions require compatible hardware, GPU/driver and corpus; managed extensions additionally check LM Studio version; see [measurements](measurements.md) and [architecture](architecture.md).
 
 `POST /api/runs/<id>/models/delete` with `{"models":["<model-id>"]}` removes selected models, their results and planned workloads from that benchmark. Other models are preserved. It creates a history backup and returns `run`, `removed_measurements` and `backup_created`. Active work blocks removal. The last model requires whole-benchmark deletion.
 

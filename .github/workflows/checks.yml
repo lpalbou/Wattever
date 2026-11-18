@@ -28,6 +28,7 @@ jobs:
       - run: node tests/test_model_metadata.js
       - run: node tests/test_transfer_ui.js
       - run: node tests/test_consolidation_ui.js
+      - run: node tests/test_merge_ui.js
       - run: node tests/test_result_conditions.js
       - run: node tests/test_recorded_condition_migration.js
       - run: node tests/test_storage_baseline_views.js
@@ -59,6 +60,9 @@ jobs:
       - run: node tests/test_metric_selection.js
       - run: node tests/test_tables.js
       - run: node tests/test_live_results.js
+      - run: node tests/test_run_issues.js
+      - run: node tests/test_chart_key_toggles.js
+      - run: node tests/test_model_groups.js
       - run: node tests/test_browser_backend.js
       - run: node tests/test_browser_catalog.js
 

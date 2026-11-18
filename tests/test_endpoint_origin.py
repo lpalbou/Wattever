@@ -18,7 +18,8 @@ class EndpointOriginTests(unittest.TestCase):
         self.base = "http://127.0.0.1:%d" % self.httpd.server_port
 
     def test_unrelated_webpage_cannot_forward_environment_credentials(self):
-        body = json.dumps({"endpoint_base_url":"https://attacker.invalid/v1", "endpoint_api_key_env":"PRIVATE_TEST_KEY"}).encode()
+        body = json.dumps({"endpoint_base_url":"https://attacker.invalid/v1", "endpoint_api_key_env":"PRIVATE_TEST_KEY",
+                           "endpoint_api_key":"typed-private-key"}).encode()
         for origin, content_type in (("https://attacker.invalid", "text/plain"),
                                      ("https://attacker.invalid", "application/json"),
                                      ("null", "application/json"), (None, "text/plain")):
@@ -38,9 +39,24 @@ class EndpointOriginTests(unittest.TestCase):
             with patch.object(server.endpoints, "list_models", return_value=[{"id":"fixture"}]):
                 with urllib.request.urlopen(urllib.request.Request(self.base + "/api/endpoint/check", data=body, headers=headers)) as response:
                     self.assertTrue(json.load(response)["ok"])
-        with self.assertRaises(urllib.error.HTTPError) as error:
-            urllib.request.urlopen(self.base + "/api/models?provider=openai&endpoint_api_key_env=PRIVATE_TEST_KEY")
-        self.assertEqual(error.exception.code, 400)
+        for field in ("endpoint_api_key_env", "endpoint_api_key"):
+            with self.subTest(field=field), self.assertRaises(urllib.error.HTTPError) as error:
+                urllib.request.urlopen(self.base + "/api/models?provider=openai&%s=PRIVATE_TEST_KEY" % field)
+            self.assertEqual(error.exception.code, 400)
+
+    def test_typed_key_reaches_discovery_and_is_never_echoed(self):
+        seen = []
+        def discover(cfg, timeout=10):
+            seen.append(server.endpoints.api_key(cfg))
+            return [{"id":"fixture"}]
+        body = json.dumps({"endpoint_base_url":"http://localhost:8086/v1", "endpoint_api_key":"typed-private-key"}).encode()
+        request = urllib.request.Request(self.base + "/api/endpoint/check", data=body, headers={"Content-Type":"application/json"})
+        with patch.object(server.endpoints, "list_models", side_effect=discover):
+            with urllib.request.urlopen(request) as response:
+                text = response.read().decode()
+        self.assertEqual(seen, ["typed-private-key"])
+        self.assertTrue(json.loads(text)["ok"])
+        self.assertNotIn("typed-private-key", text)
 
 
 if __name__ == "__main__": unittest.main()

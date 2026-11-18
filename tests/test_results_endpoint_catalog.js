@@ -12,7 +12,7 @@ function fixture(provider='openai'){
  };
  node('#helper-provider').value=provider;
  node('#helper-url').value='http://127.0.0.1:8086/v1';
- node('#helper-key-env').value='CURRENT_ENDPOINT_API_KEY';
+ node('#helper-key').value='current-endpoint-key';
  node('#helper-local').checked=true;
  const effects={renders:0,plans:0,panels:[],forms:0,previews:0};
  const context={window:{WATTEVER_STATIC:false,WatteverModelMetadata:metadata},Charts:{fmtNum:String},document:{querySelector:node,querySelectorAll:()=>[]},console,effects};
@@ -46,7 +46,7 @@ function fixture(provider='openai'){
  assert.equal(calls.length,2);
  const request=JSON.parse(calls[0].options.body);
  assert.equal(request.connection.endpoint_base_url,'http://127.0.0.1:8086/v1');
- assert.equal(request.connection.endpoint_api_key_env,'CURRENT_ENDPOINT_API_KEY');
+ assert.equal(request.connection.endpoint_api_key,'current-endpoint-key');
  assert.equal(current.evaluate('state.extension.runId'),'historical');
  assert.equal(current.evaluate('state.extension.external'),true);
  assert.equal(current.evaluate('state.extension.models.map(model=>model.id).join()'),'served/qwen-flash');
@@ -119,7 +119,7 @@ function fixture(provider='openai'){
  assert(!stale.node('#extend-content').innerHTML.includes('served/old-connection'));
  assert.equal(stale.node('#extend-start').disabled,true);
 
- current.node('#helper-key-env').value='DIFFERENT_ENDPOINT_KEY';
+ current.node('#helper-key').value='different-endpoint-key';
  await current.evaluate('startExtension()');
  assert.match(current.node('#extend-preview').innerHTML,/Endpoint changed/);
  assert.equal(calls.length,2);

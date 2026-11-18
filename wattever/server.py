@@ -230,7 +230,8 @@ class Handler(BaseHTTPRequestHandler):
         """Permit CLI clients and this helper's own browser origin only.
 
         Endpoint credentials live in the helper process. An unrelated webpage
-        must not be able to forward a named environment secret to its server.
+        must not be able to forward a typed or environment-named secret to its
+        server.
         """
         host = urllib.parse.urlsplit("http://" + self.headers.get("Host", ""))
         try: port = host.port or 80
@@ -315,7 +316,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"capability_runs": runs})
             if route == "/api/models":
                 cfg = {k: v[0] for k, v in query.items()}
-                if cfg.get("endpoint_api_key_env"):
+                if cfg.get("endpoint_api_key_env") or cfg.get("endpoint_api_key"):
+                    # A credential in a URL would reach history and logs.
                     return self._error(400, "Use same-origin POST /api/endpoint/check for authenticated discovery.")
                 if cfg.get("provider") == "openai":
                     cfg.pop("endpoint_inference_local", None)
@@ -329,7 +331,15 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"events": events, "cursor": total,
                                    "status": BENCH.status()})
             if route == "/api/runs":
-                return self._json({"runs": [_mark_interrupted(r) for r in store.list_runs()]})
+                from . import consolidation
+                runs = [_mark_interrupted(r) for r in store.list_runs()]
+                for run in runs:
+                    if run.get("merge"):
+                        run["merge"] = dict(run["merge"], undo=consolidation.undo_available(run))
+                return self._json({"runs": runs})
+            if route == "/api/bench/merge-suggestions":
+                from . import consolidation
+                return self._json({"suggestions": consolidation.suggestions()})
             if route.startswith("/api/runs/"):
                 run_id = urllib.parse.unquote(route[len("/api/runs/"):])
                 download = run_id.endswith("/download")
@@ -374,13 +384,32 @@ class Handler(BaseHTTPRequestHandler):
                         return self._error(409, "Wait for the benchmark to finish before changing GPU placement.")
                     from . import gpu_setup
                     return self._json(gpu_setup.stage(self._body()))
+            if route == "/api/bench/merge-plan":
+                from . import consolidation
+                body = self._body()
+                return self._json(consolidation.merge_plan(body.get("run_ids"), body.get("assume_local")))
             if route == "/api/bench/consolidate":
-                with WORK_LOCK:
+                with WORK_LOCK, BENCH._start_lock:
                     if _any_running():
                         return self._error(409, "Wait for the benchmark to finish before consolidating results.")
-                    from .consolidation import consolidate
+                    from . import consolidation
                     body = self._body()
-                    return self._json(store.summarise(consolidate(body.get("run_ids"), body.get("label"))))
+                    merged = consolidation.consolidate(body.get("run_ids"), body.get("label"),
+                                                       assume_local=body.get("assume_local"),
+                                                       overlap=body.get("overlap", "error"))
+                    self._forget(body["run_ids"], merged["id"])
+                    summary = store.summarise(merged)
+                    summary["merge"] = dict(summary["merge"], undo=consolidation.undo_available(summary))
+                    return self._json(summary)
+            if route == "/api/bench/merge-undo":
+                with WORK_LOCK, BENCH._start_lock:
+                    if _any_running():
+                        return self._error(409, "Wait for the benchmark to finish before undoing a merge.")
+                    from . import consolidation
+                    run_id = self._body().get("run_id")
+                    restored = consolidation.undo_merge(run_id)
+                    self._forget(restored["restored"], run_id)
+                    return self._json(restored)
             if route == "/api/bench/link":
                 with WORK_LOCK:
                     if _any_running():
@@ -549,6 +578,12 @@ class Handler(BaseHTTPRequestHandler):
         return self._error(404, "not found")
 
     # -- payloads ----------------------------------------------------------
+    def _forget(self, run_ids, kept_id):
+        """The last benchmark shown as "this run" may just have been merged or restored."""
+        current = (BENCH.run or {}).get("id")
+        if current == kept_id or current in run_ids:
+            BENCH.run = store.load(current)  # None when that file no longer exists
+
     def _selected_runs(self, query):
         ids = [i for i in (query.get("ids") or [""])[0].split(",") if i]
         if not ids:
@@ -638,7 +673,7 @@ class Handler(BaseHTTPRequestHandler):
                              "multi_gpu_telemetry": True,
                              "providers": ["lmstudio", "openai"], "external_model_management": False,
                              "capability_benchmarks": True, "transfer_bandwidth": True,
-                             "memory_topology": True},
+                             "memory_topology": True, "merge": True},
             "size_presets": [512, 5000, 10000, 20000, 40000, 80000,
                              100000, 120000, 150000, 200000, 260000],
             "concurrency_presets": list(range(1, 11)) + [15, 20, 30, 40, 50, 75, 100],

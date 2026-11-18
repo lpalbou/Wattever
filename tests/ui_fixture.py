@@ -122,6 +122,14 @@ class Handler(server.Handler):
             if getattr(self.server, 'discovery_failure', False):
                 return self._error(503, 'Fixture discovery unavailable')
             return self._json({'ok': True, 'models': [{'id': 'external/model', 'type': 'llm', 'quantization': 'IQ3_S', 'quantization_source': 'endpoint_reported', 'max_context_length': 32768}]})
+        if self.path == '/test/merge-pair':
+            # One machine, two engines: an LM Studio benchmark and an endpoint benchmark saved as remote.
+            sys.path.insert(0, str(Path(__file__).resolve().parent))
+            from test_merge import benchmark
+            for item in (benchmark('merge-lm'), benchmark('merge-strata', provider='openai', models=('qwen',),
+                                                          created='2026-11-13T10:00:00+00:00')):
+                store.save(item)
+            return self._json({'ok': True})
         if self.path == '/test/start':
             live = copy.deepcopy(run)
             live.update(id='live', label='Ongoing benchmark', created_at='2026-11-01T12:00:00+00:00', status='running', results=[])
