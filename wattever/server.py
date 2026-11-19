@@ -50,7 +50,23 @@ DEFAULT_MODEL_PATTERNS = [
 BENCH = runner.BenchRunner()
 CAP_BENCH = None
 WORK_LOCK = threading.RLock()
-SYSTEM_MONITOR = SystemMonitor()
+CAP_SAMPLER = None
+
+
+def _benchmark_sampler():
+    """A running benchmark's own sampler. System reads it instead of starting a second sensor stream."""
+    for sampler in (getattr(BENCH, "sampler", None), CAP_SAMPLER):
+        if isinstance(sampler, power.PowerSampler) and sampler._thread is not None:
+            return sampler
+    return None
+
+
+SYSTEM_MONITOR = SystemMonitor(borrow=_benchmark_sampler)
+
+
+def telemetry_dir():
+    """Local-only rolling System log; gitignored and never part of shared or published results."""
+    return os.environ.get("GPU_BENCH_TELEMETRY_DIR") or os.path.join(os.path.dirname(store.RUNS_DIR), ".telemetry")
 
 
 def build_id():
@@ -97,14 +113,19 @@ def _cap_telemetry_start(run, cfg):
     sampler = power.PowerSampler(interval_ms=cfg.get("power_interval_ms", 500),
                                  gpu_index=cfg.get("gpu_index", 0))
     sampler.start()
+    global CAP_SAMPLER
+    CAP_SAMPLER = sampler
     if hasattr(sampler, 'measurement_scope'):
         run['measurement_scope'].update(sampler.measurement_scope())
     return sampler
 
 
 def _cap_telemetry_finish(run, sampler):
+    global CAP_SAMPLER
     if sampler is not None:
         sampler.stop()
+        if CAP_SAMPLER is sampler:
+            CAP_SAMPLER = None
         run["telemetry"] = {"history": sampler.history(), "summary": sampler.summary()}
 
 
@@ -272,9 +293,23 @@ class Handler(BaseHTTPRequestHandler):
             if route.startswith("/static/"):
                 return self._static(route[len("/static/"):])
             if route == "/api/env":
-                return self._json(self.env_payload())
+                return self._json(self.env_payload((query.get("provider") or [None])[0]))
             if route == "/api/system":
                 return self._json(SYSTEM_MONITOR.snapshot())
+            if route == "/api/system/history":
+                def number(name, default=None):
+                    raw = (query.get(name) or [None])[0]
+                    if raw in (None, ""): return default
+                    value = float(raw)
+                    if value != value or value in (float("inf"), float("-inf")): raise ValueError(name)
+                    return value
+                try:
+                    start, end, limit = number("start"), number("end"), number("max_points", 900)
+                except ValueError:
+                    return self._error(400, "start, end and max_points must be numbers (Unix seconds for start and end).")
+                if start is not None and end is not None and end < start:
+                    return self._error(400, "end must not be earlier than start.")
+                return self._json(SYSTEM_MONITOR.history(start, end, limit))
             if route == "/api/bench/extend-plan":
                 return self._json(BENCH.extension_options((query.get("run_id") or [None])[0]))
             if route == "/api/version":
@@ -603,6 +638,9 @@ class Handler(BaseHTTPRequestHandler):
             models = endpoints.list_models(cfg)
             endpoints.resolve_identity(cfg)
             return {"models": models, "ok": True, "provider": endpoints.public_provider(cfg),
+                    # This computer's own LM Studio: the page connects it as managed, so its
+                    # models can be loaded with a chosen context, GPU placement and MTP.
+                    "helper_lmstudio": endpoints.helper_lmstudio(cfg, models),
                     "endpoint_identity": dict(cfg["endpoint_identity"], id=cfg["endpoint_id"], label=cfg["endpoint_label"]),
                     "manual_model_ids": True,
                     "note": "Models discovered. Effective inference settings remain unverified."}
@@ -612,12 +650,15 @@ class Handler(BaseHTTPRequestHandler):
                     "endpoint_identity": dict(cfg["endpoint_identity"], id=cfg["endpoint_id"], label=cfg["endpoint_label"]),
                     "provider": endpoints.public_provider(cfg)}
 
-    def env_payload(self):
+    def env_payload(self, provider=None):
+        """`provider="lmstudio"` asks for LM Studio's own catalog. Without it the last saved
+        connection decides, and a saved endpoint that is offline would empty the model list."""
         from . import bandwidth, memory_topology, gpu_setup
         last = store.load_config() or {}
         models = self.models_payload()
         endpoint_connection = None
-        if last.get("provider") == "openai" and last.get("endpoint_id"):
+        saved_endpoint = provider != "lmstudio" and last.get("provider") == "openai"
+        if saved_endpoint and last.get("endpoint_id"):
             base = endpoints.lookup_base_url(last.get("endpoint_id"))
             if base and endpoints._location(base) == "local":
                 endpoint_connection = {"base_url": base, "endpoint_id": last.get("endpoint_id")}
@@ -635,7 +676,7 @@ class Handler(BaseHTTPRequestHandler):
                 except ValueError:
                     models = []
         selected, missing = default_selection(models)
-        if last.get("provider") == "openai" and models:
+        if saved_endpoint and models:
             selected = [m["id"] for m in models if m.get("type") != "embeddings"]
             missing = []
         cli = lmstudio.LmsCli()
@@ -770,6 +811,10 @@ def main():
     if len(sensors) > 1:
         print("  Telemetry: all %d NVIDIA GPUs, per card and combined" % len(sensors))
     print("\n  Leave this window open. Press Ctrl+C to stop the server.\n")
+    SYSTEM_MONITOR.start(telemetry_dir())
+    log = SYSTEM_MONITOR.log.status()
+    print("  History  : %s" % ("last 24 h recorded locally, whether or not System is open" if log["mode"] == "owner"
+                               else log["reason"]))
     if os.environ.get("GPU_BENCH_NO_BROWSER") != "1":
         threading.Timer(0.6, lambda: webbrowser.open(url)).start()
     try:
@@ -777,7 +822,7 @@ def main():
     except KeyboardInterrupt:
         print("\nStopping...")
     finally:
-        SYSTEM_MONITOR.stop()
+        SYSTEM_MONITOR.stop(final=True)
         BENCH.cancel()
         if CAP_BENCH: CAP_BENCH.cancel()
         httpd.server_close()

@@ -264,12 +264,26 @@ class _CpuMeter:
 
 
 class _CpuTemperature:
-    """Read an actual Linux CPU package sensor when exposed, without elevation."""
+    """Read an actual CPU sensor when exposed, without elevation; never an estimate.
+
+    Linux: the hwmon package sensor. Windows: see windows_cpu_temperature
+    (third-party sensor tools or a live ACPI thermal zone, polled off-thread).
+    `note` says why there is no reading.
+    """
     def __init__(self):
         self.path = None
         self.source = None
-        if not IS_LINUX:
+        self.note = None
+        self._windows = None
+        if IS_WINDOWS and not IS_LINUX:
+            from .windows_cpu_temperature import WindowsCpuTemperature
+            self._windows = WindowsCpuTemperature()
+            self.note = self._windows.note
             return
+        if not IS_LINUX:
+            self.note = 'CPU temperature is not read on this platform.'
+            return
+        self.note = 'No supported hwmon CPU package sensor (coretemp, k10temp or zenpower) was found.'
         try:
             for folder in islice(Path('/sys/class/hwmon').glob('hwmon*'), 32):
                 name = (folder / 'name').read_text(encoding='ascii').strip()
@@ -280,11 +294,19 @@ class _CpuTemperature:
                     if description.startswith('Package id') or description in ('Tctl', 'Tdie'):
                         self.path = label.with_name(label.name.replace('_label', '_input'))
                         self.source = 'linux_hwmon:%s:%s' % (name, description)
+                        self.note = None
                         return
         except OSError:
             pass
 
     def sample(self):
+        if self._windows is not None:
+            try:
+                value = self._windows.sample()
+            except Exception:  # noqa: BLE001 - a sensor must never stop the host sampler
+                value = None
+            self.source, self.note = self._windows.source, self._windows.note
+            return value
         if self.path is None:
             return None
         try:
@@ -292,6 +314,10 @@ class _CpuTemperature:
             return value if math.isfinite(value) and -30 <= value <= 150 else None
         except (OSError, ValueError):
             return None
+
+    def close(self):
+        if self._windows is not None:
+            self._windows.close()
 
 
 class PowerSampler:
@@ -436,6 +462,14 @@ class PowerSampler:
     def _loop_monitor(self):
         cpu, temperature = _CpuMeter(), _CpuTemperature()
         cpu.sample()
+        try:
+            self._monitor(cpu, temperature)
+        finally:
+            close = getattr(temperature, 'close', None)
+            if callable(close):
+                close()
+
+    def _monitor(self, cpu, temperature):
         while not self._stop.is_set():
             now = time.perf_counter()
             gpu_rows = self._gpu_rows_at(now) if self._gpu_meters else None
@@ -448,10 +482,12 @@ class PowerSampler:
                 values = sensor[1:] if fresh else (None,) * 7
             row = (now,) + tuple(values[:5]) + (cpu.sample(), values[6])
             memory = system_memory() or {}
+            cpu_temp = temperature.sample()
+            note = getattr(temperature, 'note', None)
             if gpu_rows is None:
-                self._append(row, memory, temperature.sample(), temperature.source)
+                self._append(row, memory, cpu_temp, temperature.source, None, note)
             else:
-                self._append(row, memory, temperature.sample(), temperature.source, gpu_rows=gpu_rows)
+                self._append(row, memory, cpu_temp, temperature.source, gpu_rows, note)
             self._stop.wait(self.interval_ms / 1000.0)
 
     def _record_sensor(self, row, gpu_index=None):
@@ -461,7 +497,7 @@ class PowerSampler:
             elif gpu_index in self._gpu_meters:
                 self._sensor_rows[gpu_index] = row
 
-    def _point(self, row, memory=None, cpu_temp=None, cpu_temp_source=None):
+    def _point(self, row, memory=None, cpu_temp=None, cpu_temp_source=None, cpu_temp_note=None):
         memory = memory or {}
         elapsed = max(0.0, row[T] - self._started_perf)
         vram_pct = 100.0 * row[MEM_MB] / self._vram_total_mb if row[MEM_MB] is not None and self._vram_total_mb else None
@@ -472,6 +508,7 @@ class PowerSampler:
                 'clock_mhz': row[CLOCK], 'temp_c': row[TEMP], 'cpu_util': row[CPU_UTIL],
                 'cpu_util_percent': row[CPU_UTIL] * 100.0 if row[CPU_UTIL] is not None else None,
                 'cpu_w': row[CPU_W], 'cpu_temp_c': cpu_temp, 'cpu_temp_source': cpu_temp_source,
+                'cpu_temp_note': cpu_temp_note if cpu_temp is None and isinstance(cpu_temp_note, str) else None,
                 'system_memory_used_bytes': memory.get('used_bytes'),
                 'system_memory_total_bytes': memory.get('total_bytes'),
                 'system_memory_percent': memory.get('percent'),
@@ -482,11 +519,11 @@ class PowerSampler:
             point.update(index=self.gpu_index, name=self._device_name)
         return point
 
-    def _append(self, row, memory=None, cpu_temp=None, cpu_temp_source=None, gpu_rows=None):
+    def _append(self, row, memory=None, cpu_temp=None, cpu_temp_source=None, gpu_rows=None, cpu_temp_note=None):
         if gpu_rows is not None:
             for index, values in gpu_rows.items():
                 self._gpu_meters[index]._append(values)
-        point = self._point(row, memory, cpu_temp, cpu_temp_source)
+        point = self._point(row, memory, cpu_temp, cpu_temp_source, cpu_temp_note)
         if self._gpu_meters:
             point['gpus'] = [meter.now() for meter in self._gpu_meters.values()]
             point['gpu_power_complete'] = self._inventory_complete and all(gpu and gpu['gpu_w'] is not None for gpu in point['gpus'])
@@ -661,7 +698,7 @@ class PowerSampler:
                               'retained_start_elapsed_s': points[0]['elapsed_s'] if points else None,
                               'retained_end_elapsed_s': points[-1]['elapsed_s'] if points else None,
                               'phase_raw_capacity_points': 72000},
-                'note': 'Whole-client CPU/RAM and the declared GPU boundary; not inference-process isolation. All-card totals require every card reading. Driver snapshots are held only while fresh. CPU temperature needs an actual sensor. Summary preserves all observations despite ring eviction.',
+                'note': 'Whole-client CPU/RAM and the declared GPU boundary; not inference-process isolation. All-card totals require every card reading. Driver snapshots are held only while fresh. CPU temperature needs an actual sensor (cpu_temp_source names it; cpu_temp_note says why it is missing). Summary preserves all observations despite ring eviction.',
                 'points': points}
 
     def summary(self):

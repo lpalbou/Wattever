@@ -340,6 +340,13 @@ function rememberEndpoint(payload,provider) {
 }
 const OPENAI_URL_STORAGE = "wattever-openai-base-url";
 const HELPER_PROVIDER_STORAGE = "wattever-helper-provider";
+const PLAIN_ENDPOINT_STORAGE = "wattever-plain-endpoint";
+/* The address the user chose to measure as a plain endpoint although it is this computer's LM Studio. */
+function plainEndpoint() { return state.plainEndpoint ?? localStorage.getItem(PLAIN_ENDPOINT_STORAGE) ?? ""; }
+function setPlainEndpoint(url) {
+  state.plainEndpoint = url;
+  if (url) localStorage.setItem(PLAIN_ENDPOINT_STORAGE, url); else localStorage.removeItem(PLAIN_ENDPOINT_STORAGE);
+}
 
 function helperConnectionSignature() {
   const config = helperEndpointConfig();
@@ -367,9 +374,19 @@ function publicRunMetadata() {
 }
 function updateProviderControls() {
   const managed = providerManaged();
-  ["#offload", "#mtp-chips", "#load-timeout", "#headroom", "#context-policy", "#fallback", "#skip-after-timeout", "#no-think"].forEach(selector => {
+  ["#offload", "#load-timeout", "#headroom", "#context-policy", "#fallback", "#skip-after-timeout", "#no-think"].forEach(selector => {
       const node = $(selector); if (node) (node.closest(".field") || node.closest("label") || node).hidden = selector === "#no-think" || managed;
   });
+  // MTP can always be chosen; the benchmark resolves whether a model can be launched with it.
+  // A model Wattever loads is tried and skipped when it has no MTP head. An endpoint serves its
+  // models as it decides, so only its standard pass runs: see mtpPlan().
+  const mtpField = $("#mtp-field");
+  if (mtpField) {
+    mtpField.hidden = browserMode();
+    $("#mtp-note").textContent = genericHelper()
+      ? "This endpoint decides MTP itself, so Wattever cannot switch it: Compare both runs the standard pass and records that the MTP pass was not run. To launch models with MTP, choose Provider: LM Studio (managed) and click Connect."
+      : "Off is the standard benchmark. On and Compare both try each selected model with MTP and skip the ones without a bundled MTP head; Compare both runs every test twice.";
+  }
   if (!browserMode()) {
     const generic = genericHelper();
     ["#helper-url", "#helper-key", "#helper-model", "#helper-local"].forEach(selector => { const node = $(selector); if (node) (node.closest(".field") || node.closest("label") || node).hidden = !generic; });
@@ -379,12 +396,22 @@ function updateProviderControls() {
 }
 async function refreshOpenAiCatalog(config = helperEndpointConfig()) {
   if (browserMode() || config.provider !== "openai" || !config.endpoint_base_url) return false;
+  const attempt = state.connectionAttempt;
   const found = await api("/api/endpoint/check", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(config)});
+  if (attempt !== state.connectionAttempt) return false;  // the user connected something else meanwhile
+  // This computer's own LM Studio is not an external endpoint: connected as managed, its models
+  // can be loaded with a chosen context, GPU placement and MTP. The switch is shown and reversible.
+  if (found.helper_lmstudio && plainEndpoint() !== config.endpoint_base_url) {
+    let switched = null;
+    try { switched = await connectLmStudio(config.endpoint_base_url); }
+    catch (_) { /* LM Studio's own catalog did not answer: it stays a plain endpoint */ }
+    if (switched !== null) return switched;
+  }
   rememberEndpoint(found, config.provider);
   const models = Array.isArray(found) ? found : found.models || found.data || [];
   if (!models.length) throw new Error(found.error || "No model IDs found.");
   state.env = {...state.env, models, default_models: models.map((model) => model.id),
-    last_config: {...state.env.defaults, ...state.env.last_config, ...withoutCredentials(config), models: models.map(model => model.id)},
+    last_config: {...state.env.defaults, ...state.env.last_config, ...workloadChoices(), ...withoutCredentials(config), models: models.map(model => model.id)},
     lms: {server: true, cli: false}, capabilities: {...state.env.capabilities, context_planning: false}};
   state.providerNeedsConnection = false;
   state.endpointSignature = helperConnectionSignature();
@@ -398,8 +425,58 @@ async function refreshOpenAiCatalog(config = helperEndpointConfig()) {
   return true;
 }
 
+/* The workload already chosen in the form. Connecting changes where models come from, not what to measure. */
+function workloadChoices() {
+  if (!state.env || !state.sizes || !state.concurrencyLevels) return {};
+  return {sizes: [...state.sizes], concurrency_levels: [...state.concurrencyLevels].sort((a, b) => a - b),
+    repeats: Number($("#repeats")?.value) || 1, max_tokens: Number($("#max-tokens")?.value) || 256, mtp_modes: mtpModes()};
+}
+/* Connect LM Studio as managed. `switchedFrom` is the endpoint address that turned out to be this computer's LM Studio. */
+async function connectLmStudio(switchedFrom = "") {
+  const status = $("#helper-status"), keep = workloadChoices(), chosen = [...(state.models || [])];
+  const attempt = state.connectionAttempt;
+  // Ask for LM Studio's own catalog: plain /api/env answers for the last saved connection,
+  // so a saved endpoint that is offline would report LM Studio as having no models.
+  const env = await api("/api/env?provider=lmstudio");
+  if (attempt !== state.connectionAttempt) return false;  // the user connected something else meanwhile
+  if (switchedFrom) $("#helper-provider").value = "lmstudio";  // only once LM Studio has answered
+  rememberEndpoint(env,"lmstudio");
+  const served = new Set(env.models.filter(model => model.type !== "embeddings").map(model => model.id));
+  const models = chosen.filter(id => served.has(id));
+  env.last_config = {...env.defaults, ...keep, provider: "lmstudio", models: models.length ? models : env.default_models || []};
+  localStorage.setItem(HELPER_PROVIDER_STORAGE, "lmstudio");
+  state.env = env; renderEnv(); updateProviderControls();
+  state.providerNeedsConnection = false;
+  state.endpointSignature = helperConnectionSignature(); updatePlan();
+  status.textContent = "Ready · LM Studio · " + env.models.length + " model(s)";
+  status.dataset.state = "ready";
+  const note = $("#helper-switch-note");
+  if (note) {
+    note.hidden = !switchedFrom;
+    if (switchedFrom) {
+      note.dataset.endpoint = switchedFrom;
+      $("#helper-switch-text").textContent = switchedFrom + " is the LM Studio on this computer, so Wattever connected it as LM Studio (managed): context, GPU placement and MTP are yours to set.";
+    }
+  }
+  return true;
+}
+/* Opt out of the managed switch: measure this computer's LM Studio as served, like any other endpoint.
+ * Remembered for that address until LM Studio (managed) is connected by hand. */
+async function usePlainEndpoint() {
+  const note = $("#helper-switch-note"), chosen = [...state.models];
+  setPlainEndpoint(note.dataset.endpoint || "");
+  note.hidden = true;
+  $("#helper-provider").value = "openai"; $("#helper-url").value = plainEndpoint();
+  updateProviderControls();
+  await connectHelperEndpoint();
+  const served = chosen.filter(id => state.env.models.some(model => model.id === id));
+  if (genericHelper() && served.length) { state.models = new Set(served); renderModels(); updatePlan(); }
+}
+
 async function connectHelperEndpoint() {
   const status = $("#helper-status"), button = $("#helper-connect");
+  if ($("#helper-switch-note")) $("#helper-switch-note").hidden = true;
+  state.connectionAttempt = (state.connectionAttempt || 0) + 1;  // retires a boot-time connection still in flight
   status.dataset.state = "connecting";
   state.detectedEndpoint = null; state.providerNeedsConnection = true;
   button.disabled = true; status.textContent = "Connecting…";
@@ -409,11 +486,12 @@ async function connectHelperEndpoint() {
     if (config.provider === "openai") {
       const manual = $("#helper-model").value.trim();
       try {
-        await refreshOpenAiCatalog(config);
+        // Nothing more to do when it was this computer's LM Studio, now connected as managed.
+        if (!(await refreshOpenAiCatalog(config)) || !genericHelper()) return;
       } catch (error) {
         if (manual) {
           state.env = {...(state.env || {}), models: [{id: manual, type: "llm", state: "manual model ID; discovery unavailable"}],
-            last_config: {...state.env.defaults, ...state.env.last_config, ...withoutCredentials(config), models: [manual]},
+            last_config: {...state.env.defaults, ...state.env.last_config, ...workloadChoices(), ...withoutCredentials(config), models: [manual]},
             default_models: [manual], lms: {server: true, cli: false}};
           state.providerNeedsConnection = false;
           state.endpointSignature = helperConnectionSignature();
@@ -429,15 +507,8 @@ async function connectHelperEndpoint() {
       updatePlan();
       return;
     }
-    const env = await api("/api/env");
-    rememberEndpoint(env,"lmstudio");
-    env.last_config = {...env.defaults, provider: "lmstudio", models: env.default_models || []};
-    localStorage.setItem(HELPER_PROVIDER_STORAGE, "lmstudio");
-    state.env = env; renderEnv(); updateProviderControls();
-    state.providerNeedsConnection = false;
-    state.endpointSignature = helperConnectionSignature(); updatePlan();
-    status.textContent = "Ready · LM Studio · " + env.models.length + " model(s)";
-    status.dataset.state = "ready";
+    setPlainEndpoint("");  // choosing LM Studio (managed) by hand ends the plain-endpoint choice
+    await connectLmStudio();
   } catch (error) { status.textContent = "Connection failed: " + error.message; status.dataset.state = "error"; }
   finally { button.disabled = false; }
 }
@@ -640,8 +711,9 @@ async function importBrowserRun(event) {
 async function init() {
   if (!browserMode() && $("#helper-endpoint")) {
     $("#helper-endpoint").hidden = false;
-    $("#helper-provider").addEventListener("change", () => { state.providerNeedsConnection = true; state.detectedEndpoint=null; state.detectedEndpointProvider=null; updateProviderControls(); updatePlan(); });
+    $("#helper-provider").addEventListener("change", () => { state.providerNeedsConnection = true; state.connectionAttempt = (state.connectionAttempt || 0) + 1; state.detectedEndpoint=null; state.detectedEndpointProvider=null; if ($("#helper-switch-note")) $("#helper-switch-note").hidden = true; updateProviderControls(); updatePlan(); });
     $("#helper-connect").addEventListener("click", connectHelperEndpoint);
+    $("#helper-plain-endpoint")?.addEventListener("click", usePlainEndpoint);
     ["#helper-url", "#helper-key", "#helper-name-override", "#helper-local", "#helper-model"].forEach(selector => $(selector)?.addEventListener("input", updatePlan));
     updateProviderControls();
   }
@@ -823,11 +895,19 @@ async function init() {
   const saved = localStorage.getItem("gpu-bench-theme");
   if (saved) document.documentElement.dataset.theme = saved;
 
+  // The helper remembers the last benchmark's connection; this browser remembers the last Connect.
+  // When that was LM Studio, open on LM Studio instead of an endpoint that may no longer be running.
+  const reopenLmStudio = !browserMode() && localStorage.getItem(HELPER_PROVIDER_STORAGE) === "lmstudio";
   try {
-    state.env = await api("/api/env");
+    state.env = await api(reopenLmStudio ? "/api/env?provider=lmstudio" : "/api/env");
   } catch (e) {
     $("#env-banners").innerHTML = banner("err", browserMode() ? "Browser application unavailable" : "Cannot reach the local server", esc(e.message));
     return;
+  }
+  const savedConfig = state.env.last_config;
+  if (reopenLmStudio && savedConfig?.provider === "openai") {
+    const workload = Object.fromEntries(["sizes", "concurrency_levels", "repeats", "max_tokens"].filter(key => key in savedConfig).map(key => [key, savedConfig[key]]));
+    state.env.last_config = {...state.env.defaults, ...workload, provider: "lmstudio", models: state.env.default_models || []};
   }
   renderEnv();
   if (!browserMode()) {
@@ -871,7 +951,17 @@ function updateSystemPolling(active) {
     $("#system-stats").innerHTML = "";
     return;
   }
+  // The helper kept recording while System was hidden; fill that interval from its log.
+  systemDashboard?.activate();
   pollSystem(systemPollGeneration);
+}
+function systemHistory(start, end, maxPoints) {
+  return api(`/api/system/history?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&max_points=${encodeURIComponent(maxPoints)}`);
+}
+// A reading's clock time, with its date when it is not today.
+function clockStamp(seconds) {
+  const date = new Date(seconds * 1000);
+  return (date.toDateString() === new Date().toDateString() ? "" : date.toLocaleDateString(undefined, {month: "short", day: "numeric"}) + " ") + date.toLocaleTimeString();
 }
 async function pollSystem(generation) {
   try {
@@ -879,12 +969,15 @@ async function pollSystem(generation) {
     if (generation !== systemPollGeneration) return;
     const t = sample.telemetry;
     const age = t?.sample_age_s;
-    const stamp = Number.isFinite(sample.timestamp) ? new Date((sample.timestamp - (Number.isFinite(age) ? age : 0)) * 1000).toLocaleTimeString() : "";
+    const at = Number.isFinite(t?.t) ? t.t : Number.isFinite(sample.timestamp) ? sample.timestamp - (Number.isFinite(age) ? age : 0) : null;
+    const stamp = at === null ? "" : clockStamp(at);
     const stale = Number.isFinite(age) && age > Math.max(3, 3 * (sample.sampling_interval_ms || 1000) / 1000);
-    $("#system-status").textContent = (t ? (stale ? "Stale sample" : "Sample") + (stamp ? " \u00b7 " + stamp : "") + (Number.isFinite(age) ? ` \u00b7 ${fmt(age,1)} s old` : "") : "Warming up; waiting for the first sample.") + (sample.error ? " \u00b7 Some readings unavailable: " + sample.error : "");
+    const log = sample.capture?.log;
+    const capture = !log ? "" : log.mode === "owner" ? " \u00b7 Recording continuously; the last 24 h are kept on this computer" : log.reason ? " \u00b7 " + log.reason : "";
+    $("#system-status").textContent = (t ? (stale ? "Stale sample; no new reading since " : "Sample at ") + stamp : "Warming up; waiting for the first sample.") + (sample.error ? " \u00b7 Some readings unavailable: " + sample.error : "") + capture;
     const val = (v, divisor=1) => Number.isFinite(v) ? fmt(v/divisor, 1) : "\u2014";
     if (globalThis.WatteverSystemDashboard) {
-      if (!systemDashboard) systemDashboard = new WatteverSystemDashboard.Dashboard($("#system-stats"));
+      if (!systemDashboard) { systemDashboard = new WatteverSystemDashboard.Dashboard($("#system-stats")); systemDashboard.loader = systemHistory; systemDashboard.activate(); }
       systemDashboard.update(sample, t ? liveGpuCards(t) : "");
     } else {
     $("#system-stats").innerHTML = t ? [stat(t.gpus?.length ? "Monitored NVIDIA power" : "GPU/SoC sensor power",val(t.gpu_w),"W"),stat("System power",val(t.system_w_est),"W estimated"),stat(t.gpus?.length ? "Monitored NVIDIA load" : "GPU/SoC sensor load",val(t.gpu_util),"%"),stat(t.gpus?.length ? "Monitored NVIDIA memory used" : "GPU/SoC memory used",val(t.vram_mb,1024),"GiB"),stat("RAM used",val(t.system_memory_used_bytes,1073741824),"GiB"),stat("CPU load",val(t.cpu_util_percent ?? (Number.isFinite(t.cpu_util) ? t.cpu_util * 100 : null)),"%"),stat("GPU temperature",val(t.temp_c),"\u00b0C"),stat("CPU temperature",val(t.cpu_temp_c),"\u00b0C")].join("") + liveGpuCards(t) : "";
@@ -1688,6 +1781,16 @@ function mtpModes() {
   const choice = ($("#mtp-chips input:checked") || {}).value || "off";
   return choice === "both" ? ["off", "on"] : [choice];
 }
+/* What the MTP choice means for this connection: the modes asked for, the passes that can run,
+ * and what to tell the user. An endpoint decides MTP itself, so only its standard pass runs. */
+function mtpPlan() {
+  const asked = browserMode() ? ["off"] : mtpModes();
+  if (!genericHelper() || !asked.includes("on")) return {asked, passes: asked, notice: ""};
+  const passes = asked.filter(mode => mode === "off");
+  return {asked, passes, notice: passes.length
+    ? "MTP pass not run: this endpoint decides MTP itself."
+    : "This endpoint decides MTP itself, so an MTP-only benchmark cannot run on it. Choose Off or Compare both, or connect Provider: LM Studio (managed)."};
+}
 
 /* Guard the one thing the whole dataset rests on.
  *
@@ -1768,13 +1871,13 @@ function updateGeneratedMetadata() {
 
 function updatePlan() {
   updateGeneratedMetadata();
-  const modes = providerManaged() ? ["off"] : mtpModes();
-  const base = state.models.size * state.sizes.size * modes.length * Number($("#repeats").value || 1);
+  const mtp = mtpPlan();
+  const base = state.models.size * state.sizes.size * mtp.passes.length * Number($("#repeats").value || 1);
   const tests = base * state.concurrencyLevels.size;
   const requests = base * [...state.concurrencyLevels].reduce((a, b) => a + b, 0);
   $("#plan-summary").textContent = tests
-    ? `${state.models.size} model${state.models.size === 1 ? "" : "s"} / ${tests} tests / ${requests} queries`
-    : "Choose at least one model and workload.";
+    ? `${state.models.size} model${state.models.size === 1 ? "" : "s"} / ${tests} tests / ${requests} queries` + (mtp.notice ? " · " + mtp.notice : "")
+    : !mtp.passes.length ? mtp.notice : "Choose at least one model and workload.";
   const reconnect = !!state.providerNeedsConnection || (genericHelper() && state.endpointSignature !== helperConnectionSignature());
   $("#start-btn").disabled = !tests || reconnect;
   if ($("#run-condition-badges")) $("#run-condition-badges").innerHTML = engineBadgesMarkup({config:collectConfig()});
@@ -1804,7 +1907,7 @@ function collectConfig() {
     repeats: Number($("#repeats").value) || 1,
     gpu_offload: providerManaged() ? "provider_managed" : $("#offload").value,
     context_policy: providerManaged() ? "provider_managed" : ($("#context-policy")?.value || "per_test"),
-    mtp_modes: providerManaged() ? ["off"] : mtpModes(),
+    mtp_modes: mtpPlan().asked,  // the helper resolves what an endpoint cannot run
     fallback_on_failure: providerManaged() ? false : $("#fallback").checked,
     stop_model_after_failure: $("#stop-after-fail").checked,
     skip_after_timeout: providerManaged() ? false : !!$("#skip-after-timeout")?.checked,
@@ -2144,21 +2247,59 @@ function liveRowMetrics(r) {
   };
 }
 
+/* The headline columns of the live table; their means sit in the card title, in the column's colour. */
+const LIVE_AVERAGES = [
+  {key: "wall", tone: "wall", label: "Wall", unit: "s", digits: 2, column: "Batch wall s"},
+  {key: "prefillTime", tone: "prefill", label: "Prefill", unit: "s", digits: 2, column: "Prefill time s"},
+  {key: "prefill", tone: "prefill", label: "Prefill", unit: "tk/s", digits: 0, column: "Prefill tk/s"},
+  {key: "decodeTime", tone: "decode", label: "Decode", unit: "s", digits: 2, column: "Decode time s", approximate: m => m.decodeApprox},
+  {key: "decode", tone: "decode", label: "Decode", unit: "tk/s", digits: 1, column: "Total decode tk/s", approximate: m => m.estimated || m.decodeApprox},
+];
+/* Arithmetic mean of each headline column over the tests that completed; a test without that value is left out. */
+function liveAverages(results, metrics) {
+  const measured = metrics.filter((m, i) => results[i]?.status === "ok");
+  return LIVE_AVERAGES.map(item => {
+    const rows = measured.filter(m => typeof m[item.key] === "number" && Number.isFinite(m[item.key]));
+    return {...item, count: rows.length, tests: measured.length,
+      value: rows.length ? rows.reduce((total, m) => total + m[item.key], 0) / rows.length : null,
+      approximate: !!item.approximate && rows.some(item.approximate)};
+  });
+}
+function liveAveragesMarkup(averages) {
+  const shown = averages.filter(item => item.value !== null);
+  if (!shown.length) return "";
+  const tests = shown[0].tests;
+  const groups = [];
+  for (const item of shown) {
+    let group = groups.find(g => g.tone === item.tone);
+    if (!group) groups.push(group = {tone: item.tone, label: item.label, items: []});
+    group.items.push(item);
+  }
+  return `<span class="avg-lead" title="Arithmetic mean of each column over the tests that completed. Failed and skipped tests are left out.">Average · ${tests} test${tests === 1 ? "" : "s"}</span>${groups.map(group =>
+    `<span class="avg" data-tone="${group.tone}"><span class="avg-k">${group.label}</span>${group.items.map(item =>
+      `<span class="avg-v" title="Mean of ${esc(item.column)} over ${item.count} test${item.count === 1 ? "" : "s"}"><b>${fmt(item.value, item.digits)}${item.approximate ? "*" : ""}</b> ${item.unit}</span>`).join("")}</span>`).join("")}`;
+}
+
 function renderLiveTable() {
   const metrics = state.liveResults.map(liveRowMetrics);
-  const caption = `<caption>Decode excludes TTFT: scoped decode tokens divided by post-first-token decode time. Concurrent intervals are merged; overlap counts once and gaps without decoding are excluded. End-to-end output includes prefill and queueing.${metrics.some(m=>m.estimated) ? " * Output tokens estimated (server token usage unavailable)." : ""}${metrics.some(m=>m.decodeApprox && m.decode!==null) ? " * Decode boundary is approximate: streamed chunks can contain multiple tokens; legacy intervals may include unrecorded delivery tails." : ""}</caption>`;
+  const note = `Decode excludes TTFT: scoped decode tokens divided by post-first-token decode time. Concurrent intervals are merged; overlap counts once and gaps without decoding are excluded. End-to-end output includes prefill and queueing.${metrics.some(m=>m.estimated) ? " * Output tokens estimated (server token usage unavailable)." : ""}${metrics.some(m=>m.decodeApprox && m.decode!==null) ? " * Decode boundary is approximate: streamed chunks can contain multiple tokens; legacy intervals may include unrecorded delivery tails." : ""}`;
+  const noteBox = $("#live-table-note"), averagesBox = $("#live-averages");
+  if (noteBox) noteBox.textContent = note;
+  if (averagesBox) averagesBox.innerHTML = liveAveragesMarkup(liveAverages(state.liveResults, metrics));
   const rows = state.liveResults.map((r, i) => {
     const m = metrics[i], star = (v) => v != null && m.estimated ? "*" : "";
     const cardTip = (key, unit, f) => m.cards.length > 1 ? ` title="${esc(m.cards.map((c) => `${c.name}: ${f(c[key])} ${unit}`).join(" · "))}"` : "";
-    const lead = `<tr>
+    // Without a status column the row itself carries the outcome: a failed test is drawn in red.
+    const outcome = r.status && r.status !== "ok" ? r.status === "failed" ? (r.fail_kind || "failed").replace(/_/g, " ") : r.status : "";
+    const reason = r.status !== "ok" ? failureReason(r) || (outcome ? outcome[0].toUpperCase() + outcome.slice(1) : "") : "";
+    const lead = `<tr data-status="${esc(r.status || "")}"${outcome ? ` title="${esc(outcome)}"` : ""}>
       <td>${esc(r.model)}</td>
       <td class="num">${fmtTokens(r.target_tokens)}</td>
       <td>${providerManaged() ? '<span class="dim">provider controlled</span>' : r.mtp ? '<span class="badge accent">MTP</span>' : '<span class="dim">off</span>'}</td>
       <td class="num">${fmtInt(m.prompt)}</td>
-      <td>${statusCell(r)}</td>
       <td class="num">${m.n}</td>`;
     // A test without a measurement uses its empty cells to say why.
-    if (r.status !== "ok" && failureReason(r)) return `${lead}<td class="fail-reason" colspan="13">${esc(failureReason(r))}</td></tr>`;
+    if (reason) return `${lead}<td class="fail-reason" colspan="13">${esc(reason)}</td></tr>`;
     return `${lead}
       <td class="num">${fmtInt(m.totalPrompt)}</td><td class="num">${fmtInt(m.totalOutput)}${star(m.totalOutput)}</td><td class="num">${fmt(m.wall, 2)}</td>
       <td class="num">${fmt(m.prefillTime, 2)}</td><td class="num">${fmt(m.decodeTime, 2)}${m.decodeTime!==null && m.decodeApprox?'*':''}</td>
@@ -2172,12 +2313,12 @@ function renderLiveTable() {
       <td class="num"${cardTip("vram", "MB", fmtInt)}>${fmtInt(m.vram)}</td>
     </tr>`;
   }).join("");
-  $("#live-table").innerHTML = `${caption}<thead><tr>
-    <th>Model</th><th class="num">Target</th><th>MTP</th><th class="num" title="Median prompt tokens per request">Actual tk</th><th>Status</th><th class="num">Queries</th>
-    <th class="num">Total prompt tk</th><th class="num">Total output tk</th><th class="num">Batch wall s</th>
-    <th class="num" title="Union of client request-start to first-output intervals; includes queueing and network">Prefill time s (TTFT proxy)</th><th class="num" title="Union of post-first-token decode intervals; excludes TTFT and gaps outside those intervals">Decode time s</th>
-    <th class="num" title="Prompt tokens divided by union request-start to first-output intervals; client TTFT proxy includes queueing and network">Prefill tk/s (TTFT proxy)</th>
-    <th class="num" title="Scoped decode tokens divided by union post-first-token duration; TTFT excluded">Total decode tk/s</th>
+  $("#live-table").innerHTML = `<thead><tr>
+    <th>Model</th><th class="num">Target</th><th>MTP</th><th class="num" title="Median prompt tokens per request">Actual tk</th><th class="num">Queries</th>
+    <th class="num">Total prompt tk</th><th class="num">Total output tk</th><th class="num" data-tone="wall">Batch wall s</th>
+    <th class="num" data-tone="prefill" title="Union of client request-start to first-output intervals; includes queueing and network">Prefill time s (TTFT proxy)</th><th class="num" data-tone="decode" title="Union of post-first-token decode intervals; excludes TTFT and gaps outside those intervals">Decode time s</th>
+    <th class="num" data-tone="prefill" title="Prompt tokens divided by union request-start to first-output intervals; client TTFT proxy includes queueing and network">Prefill tk/s (TTFT proxy)</th>
+    <th class="num" data-tone="decode" title="Scoped decode tokens divided by union post-first-token duration; TTFT excluded">Total decode tk/s</th>
     <th class="num" title="Median individual request rate after the first token">Decode / request tk/s</th>
     <th class="num" title="Total completed output tokens divided by batch wall time, including prefill and queueing, at every query count">End-to-end output tk/s</th>
     <th class="num" title="Median time to first token per stream">TTFT / request s</th>
@@ -2458,7 +2599,7 @@ function sessionSettings(run) {
     const clocks = session.hardware?.memory?.configured_clock_mhz_reported || [];
     const conditions = (clocks.length || session.storage_condition ? `<p class="hint">${clocks.length ? "RAM firmware clock reports: " + clocks.map(esc).join(", ") + " MHz. " : ""}${session.storage_condition ? "Storage condition: " + esc(session.storage_condition) + "." : ""}</p>` : "") + (session.transfer_bandwidth ? transferBandwidthMarkup(session.transfer_bandwidth) : "") + (session.runtime_observations?.length ? `<details class="adv"><summary>Observed runtime configuration</summary><pre>${esc(JSON.stringify(session.runtime_observations, null, 2))}</pre></details>` : "");
 
-    return `<p class="hint"><b>Session ${index + 1} · ${esc(engine)}</b>${session.started_at ? ` / ${esc(session.started_at)}` : ""} / ${modelCount} models / ${esc(cfg.provider === "openai" ? "provider controlled technique; reported MTP " + (cfg.reported_mtp || "unknown") : modes.join(" + ") || "unknown technique")} / planner ${esc(cfg.context_planner_version ?? "legacy")} / ${esc(cfg.context_policy || "per_test")} / reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}%</p>${conditions}`;
+    return `<p class="hint"><b>Session ${index + 1} · ${esc(engine)}</b>${session.started_at ? ` / ${esc(session.started_at)}` : ""} / ${modelCount} models / ${esc(cfg.provider === "openai" ? "provider controlled technique; reported MTP " + (cfg.reported_mtp || "unknown") + (session.measurement_scope?.mtp_pass ? "; MTP pass requested but not run, the endpoint decides MTP itself" : "") : modes.join(" + ") || "unknown technique")} / planner ${esc(cfg.context_planner_version ?? "legacy")} / ${esc(cfg.context_policy || "per_test")} / reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}%</p>${conditions}`;
   }).join("")}</div></details>`;
 }
 

@@ -527,6 +527,13 @@ class BenchRunner:
         cfg["hardware_probe_policy"] = _hardware_probe_policy(cfg["hardware_probe_policy"])
         if "selected_cases" in cfg and resume_source is None:
             raise ValueError("Individual test selection requires an existing benchmark. Use Add / rerun tests.")
+        # An endpoint serves its models as it chooses; only a model the helper loads can be
+        # launched with MTP. Resolve the request here, before validate() files it as "off".
+        self._mtp_pass_not_run = False
+        if cfg.get("provider") == "openai" and isinstance(cfg.get("mtp_modes"), list) and True in _mtp_modes(cfg):
+            if False not in _mtp_modes(cfg):
+                raise ValueError(endpoints.MTP_NOT_LAUNCHABLE + " Choose Off or Compare both for this endpoint.")
+            self._mtp_pass_not_run = True
         endpoints.validate(cfg)
         endpoints.resolve_identity(cfg)
         self._runtime_config = cfg
@@ -596,6 +603,8 @@ class BenchRunner:
         }
         store.prepare_run(run)
         endpoints.describe_run(run, cfg)
+        if self._mtp_pass_not_run:
+            run["measurement_scope"]["mtp_pass"] = "requested but not run: " + endpoints.MTP_NOT_LAUNCHABLE
         from .identity import build_model_configuration
         run["model_configurations"] = [build_model_configuration(cfg, model=model, require_endpoint=False)
                                        for model in cfg["models"]]
@@ -749,6 +758,8 @@ class BenchRunner:
                 run['sessions'][-1].setdefault('measurement_scope', {}).update(sampler.measurement_scope())
         try:
             self.log("Run %s started on %s" % (run["id"], run["gpu"].get("name", "unknown GPU")))
+            if getattr(self, "_mtp_pass_not_run", False):
+                self.log("MTP pass not run; the standard pass continues. " + endpoints.MTP_NOT_LAUNCHABLE, level="warn")
             if cfg.get("provider") == "openai":
                 try:
                     self._endpoint_model_catalog = {m["id"]: m for m in endpoints.list_models(cfg)}

@@ -301,6 +301,61 @@ def is_loopback(base):
     try: return ipaddress.ip_address(hostname).is_loopback
     except ValueError: return False
 
+def _this_computer(hostname):
+    """Loopback, this computer's own name, or one of its own interface addresses."""
+    import socket
+    host = (hostname or "").lower()
+    try:
+        name = socket.gethostname()
+    except OSError:
+        name = ""
+    if host in ("localhost", name.lower()) and host:
+        return True
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        return False
+    if address.is_loopback:
+        return True
+    try:
+        return address in {ipaddress.ip_address(info[4][0].split("%")[0]) for info in socket.getaddrinfo(name, None)}
+    except (OSError, ValueError):
+        return False
+
+def is_helper_lmstudio(base):
+    """True when an address is where this helper's own LM Studio listens: this computer, LM Studio's port.
+
+    Addresses alone prove nothing about what answers there; helper_lmstudio() checks that."""
+    from .lmstudio import DEFAULT_BASE
+    try:
+        mine, theirs = (urllib.parse.urlsplit(normalize_base(value)) for value in (DEFAULT_BASE, base))
+        ports = [url.port or (443 if url.scheme == "https" else 80) for url in (mine, theirs)]
+    except ValueError:
+        return False
+    return (mine.scheme == theirs.scheme and ports[0] == ports[1]
+            and _this_computer(mine.hostname) and _this_computer(theirs.hostname))
+
+def helper_lmstudio(cfg, served):
+    """Whether an OpenAI-compatible connection is really the LM Studio this helper manages.
+
+    Then it is not an external endpoint: the helper can load its models itself, the only way
+    to choose their context, GPU placement and MTP. Requires this computer and LM Studio's
+    port, a working `lms` CLI, LM Studio's own catalog answering there and containing every
+    served model, and no API key (the managed path never sends one)."""
+    from . import lmstudio
+    if cfg.get("endpoint_api_key") or cfg.get("endpoint_api_key_env") or not is_helper_lmstudio(cfg.get("endpoint_base_url")):
+        return False
+    try:
+        if not lmstudio.LmsCli().available:
+            return False
+        catalog = {model.get("id") for model in lmstudio.list_models(timeout=4)}
+    except Exception:  # noqa: BLE001 - whatever answers there is not a usable LM Studio
+        return False
+    return bool(catalog) and {model.get("id") for model in served} <= catalog
+
+MTP_NOT_LAUNCHABLE = ("This endpoint decides MTP itself: Wattever can launch a model with MTP only when it "
+                      "loads the model, which is Provider: LM Studio (managed).")
+
 def api_key(cfg):
     """Bearer credential for one connection.
 

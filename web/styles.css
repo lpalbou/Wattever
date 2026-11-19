@@ -324,7 +324,6 @@ details.adv > div { padding-top: 14px; }
 .selection-heading .notes { margin: 10px 0; }
 .issue-reason { display: block; margin-top: 4px; color: var(--text-muted); overflow-wrap: anywhere; }
 td.fail-reason { color: var(--text-secondary); text-align: left; white-space: normal; overflow-wrap: anywhere; min-width: 260px; }
-#live-table .st { white-space: nowrap; }
 
 @media (max-width: 760px) {
   .topbar { flex-wrap: wrap; gap: 10px; }
@@ -449,6 +448,7 @@ main { max-width: 1480px; padding: 32px 40px 80px; }
 .chip[data-on="1"] { border-color: color-mix(in srgb, var(--accent) 65%, var(--border)); background: color-mix(in srgb, var(--accent) 12%, var(--surface-1)); color: var(--accent); }
 .chip input { display: block; position: absolute; opacity: 0; width: 1px; height: 1px; }
 .chip:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+#mtp-field .note { display: block; margin-top: 6px; }
 input[type="text"], input[type="number"], select { padding: 10px 12px; width: 100%; min-width: 0; background: var(--surface-0); }
 input::placeholder { color: var(--text-muted); opacity: .8; }
 .advanced-settings { border-top: 1px solid var(--border); margin-top: 8px; }
@@ -585,6 +585,38 @@ tfoot td { white-space: normal; font-size: 11px; text-align: left; }
 .fit-table .st { white-space: normal; font-size: 10px; }
 .fit-table details { white-space: normal; font-size: 10px; }
 .table-wrap { overflow: visible; min-width: 0; }
+
+/* Results this run: averages in the title, a header that stays put while the rows scroll, failures in red. */
+#live-results [data-tone="wall"] { --tone: var(--series-4); }
+#live-results [data-tone="prefill"] { --tone: var(--series-1); }
+#live-results [data-tone="decode"] { --tone: var(--series-3); }
+.live-averages { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; margin-left: 8px; }
+.live-averages:empty { display: none; }
+.avg-lead { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; cursor: help; }
+.avg { display: inline-flex; align-items: baseline; gap: 8px; padding: 3px 11px; border-radius: 20px; white-space: nowrap; font-size: 12px;
+  border: 1px solid color-mix(in srgb, var(--tone) 45%, transparent); background: color-mix(in srgb, var(--tone) 13%, transparent);
+  color: color-mix(in srgb, var(--tone) 72%, var(--text-primary)); }
+.avg-k { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+.avg-v { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 11px; }
+.avg-v b { font-size: 14px; font-weight: 600; }
+.avg-v + .avg-v { padding-left: 8px; border-left: 1px solid color-mix(in srgb, var(--tone) 40%, transparent); }
+.table-scroll { max-height: min(62vh, 640px); overflow-y: auto; border-bottom: 1px solid var(--border); }
+.table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* A collapsed border does not travel with a sticky cell, so the rule under the header is a shadow. */
+.table-scroll thead th { position: sticky; top: 0; z-index: 1; vertical-align: bottom; background: var(--surface-1); color: var(--text-primary); border-bottom: 0; box-shadow: inset 0 -1px 0 var(--border-strong); }
+.table-scroll thead th[data-tone] { box-shadow: inset 0 -2px 0 var(--tone); }
+.table-scroll tbody tr:last-child td { border-bottom: 0; }
+#live-table th:first-child { width: 13%; }
+#live-table tr[data-status="failed"] { background: color-mix(in srgb, var(--status-critical) 14%, transparent); }
+#live-table tr[data-status="failed"] td, #live-table tr[data-status="failed"] .dim { color: color-mix(in srgb, var(--status-critical) 66%, var(--text-primary)); }
+#live-table tr[data-status="failed"] td:first-child { box-shadow: inset 3px 0 0 var(--status-critical); }
+#live-table tr[data-status="skipped"] td, #live-table tr[data-status="cancelled"] td { color: var(--text-muted); }
+.table-note { margin: 10px 0 0; font-size: 11px; line-height: 1.5; }
+@media (max-width: 680px) {
+  .table-scroll { max-height: none; overflow: visible; border-bottom: 0; }
+  #live-table tr[data-status="failed"] { padding-left: 10px; border-left: 3px solid var(--status-critical); }
+  #live-table tr[data-status="failed"] td:first-child { box-shadow: none; }
+}
 .legend span, .legend-group > span { max-width: 100%; overflow-wrap: anywhere; }
 #results-all-measurements h4 { margin-top: 18px; overflow-wrap: anywhere; }
 @media (max-width: 1100px) { .result-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -1194,6 +1226,8 @@ input:not([type]), .endpoint-card input[type="password"] { padding: 10px 12px; w
 .observatory-inspect { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:12px 0; font-size:11px; color:var(--text-secondary); }
 .observatory-inspect label { display:flex; align-items:center; gap:10px; flex:1; min-width:180px; }
 .observatory-inspect input { flex:1; min-width:80px; accent-color:#38bdf8; }
+.observatory-inspect label.observatory-goto { flex:0 1 auto; min-width:0; }
+.observatory-inspect .observatory-goto input { flex:0 1 auto; min-width:0; max-width:100%; font:inherit; color:var(--text-primary); background:var(--surface-0); border:1px solid var(--border-strong); border-radius:7px; padding:6px 8px; }
 .observatory-readout { display:flex; flex-wrap:wrap; gap:12px 20px; padding:10px 0; }
 .observatory-readout span { display:flex; align-items:center; gap:7px; font-size:11px; color:var(--text-secondary); }
 .observatory-readout b { color:var(--metric-color); font-variant-numeric:tabular-nums; }

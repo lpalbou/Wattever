@@ -342,6 +342,65 @@ class StrataCompanionTests(unittest.TestCase):
                 self.assertEqual(endpoints.lookup_base_url("endpoint-local-abc123"), "http://127.0.0.1:8086/v1")
                 self.assertIsNone(endpoints.lookup_base_url("missing"))
 
+    def test_own_lm_studio_is_recognised_only_with_proof(self):
+        import socket
+        catalog = [{"id": "qwen/qwen3.8-27b"}, {"id": "embed"}]
+        served = [{"id": "qwen/qwen3.8-27b"}]
+        cli = MagicMock(available=True)
+        with patch.object(lmstudio, "DEFAULT_BASE", "http://127.0.0.1:1234"),              patch.object(socket, "gethostname", return_value="BenchBox"),              patch.object(socket, "getaddrinfo", return_value=[(2, 1, 6, "", ("192.168.1.46", 0))]),              patch.object(lmstudio, "LmsCli", return_value=cli),              patch.object(lmstudio, "list_models", return_value=catalog) as native:
+            for base in ("http://127.0.0.1:1234/v1", "http://localhost:1234", "http://192.168.1.46:1234/v1", "http://benchbox:1234/v1"):
+                with self.subTest(base=base):
+                    self.assertTrue(endpoints.helper_lmstudio({"endpoint_base_url": base}, served))
+            # Another port, another computer, another scheme or an unusable address is an endpoint.
+            for base in ("http://127.0.0.1:8086/v1", "http://192.168.1.47:1234/v1", "https://127.0.0.1:1234/v1", "nonsense", None):
+                with self.subTest(base=base):
+                    self.assertFalse(endpoints.helper_lmstudio({"endpoint_base_url": base}, served))
+            own = {"endpoint_base_url": "http://192.168.1.46:1234/v1"}
+            # The managed path never sends a key, so a keyed connection stays an endpoint.
+            self.assertFalse(endpoints.helper_lmstudio(dict(own, endpoint_api_key="typed-secret-key"), served))
+            self.assertFalse(endpoints.helper_lmstudio(dict(own, endpoint_api_key_env="SOME_KEY"), served))
+            # Something else answering on LM Studio's port serves models LM Studio does not have.
+            self.assertFalse(endpoints.helper_lmstudio(own, served + [{"id": "llama-server-model"}]))
+            native.side_effect = OSError("refused")
+            self.assertFalse(endpoints.helper_lmstudio(own, served))
+            native.side_effect = None; native.return_value = []
+            self.assertFalse(endpoints.helper_lmstudio(own, served))
+            native.return_value = catalog; cli.available = False
+            self.assertFalse(endpoints.helper_lmstudio(own, served))
+            # The check reaches the page through /api/endpoint/check, and a server on LM Studio's
+            # port answering with some other JSON must not break Connect.
+            cli.available = True
+            handler = server.Handler.__new__(server.Handler)
+            with patch.object(endpoints, "list_models", return_value=served), \
+                 patch.object(endpoints, "resolve_identity", side_effect=lambda cfg, **_: cfg.update(
+                     endpoint_identity={}, endpoint_id="endpoint-test", endpoint_label="Test endpoint")):
+                self.assertIs(server.Handler.endpoint_payload(handler, dict(own))["helper_lmstudio"], True)
+                native.side_effect = AttributeError("'str' object has no attribute 'get'")
+                payload = server.Handler.endpoint_payload(handler, dict(own))
+                self.assertTrue(payload["ok"]); self.assertIs(payload["helper_lmstudio"], False)
+
+    def test_lm_studio_catalog_survives_an_offline_saved_endpoint(self):
+        from types import SimpleNamespace
+        from wattever import bandwidth
+        saved = {"provider": "openai", "endpoint_id": "endpoint-local-abc123", "endpoint_label": "Strata local endpoint"}
+        catalog = [{"id": "qwen/qwen3.5-9b", "type": "llm"}, {"id": "other/model", "type": "llm"}, {"id": "embed", "type": "embeddings"}]
+        cli = SimpleNamespace(available=True, exe="fake", server_running=lambda: True, version=lambda: "test")
+        handler = SimpleNamespace(models_payload=lambda: list(catalog))
+        with patch.object(server.hardware, "inventory", return_value={}), \
+             patch.object(server.power, "gpu_info", return_value={}), patch.object(server.power, "list_gpus", return_value=[]), \
+             patch.object(server.lmstudio, "LmsCli", return_value=cli), patch.object(server.store, "host_info", return_value={}), \
+             patch.object(server.store, "load_config", return_value=saved), patch.object(server.store, "list_runs", return_value=[]), \
+             patch.object(server.corpus, "master_stats", return_value={}), patch.object(bandwidth, "latest", return_value={}), \
+             patch.object(endpoints, "lookup_base_url", return_value="http://127.0.0.1:8086/v1"), \
+             patch.object(endpoints, "list_models", side_effect=ValueError("endpoint offline")) as discovery:
+            self.assertEqual(server.Handler.env_payload(handler)["models"], [])
+            discovery.assert_called_once()
+            payload = server.Handler.env_payload(handler, "lmstudio")
+            discovery.assert_called_once()
+        self.assertEqual(payload["models"], catalog)
+        self.assertIsNone(payload["endpoint_connection"])
+        self.assertEqual(payload["default_models"], ["qwen/qwen3.5-9b"])
+
     def test_merge_adds_maya_catalog_when_gateway_omits_glm(self):
         class Handler(BaseHTTPRequestHandler):
             def log_message(self, *args): pass

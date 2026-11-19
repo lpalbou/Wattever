@@ -154,6 +154,10 @@ for (const row of bodyRows.slice(1)) {
   assert.match(row, /<td class="fail-reason" colspan="(\d+)">/);
   assert.equal(cells(row) - 1 + Number(row.match(/colspan="(\d+)"/)[1]), headers, 'the reason spans exactly the metric columns');
 }
+assert.match(bodyRows[0], /<tr data-status="ok">/);
+assert.match(bodyRows[1], /<tr data-status="failed" title="error">/, 'a failed test is marked on its row, which is drawn in red');
+assert.match(bodyRows[3], /<tr data-status="skipped" title="skipped">/);
+assert.doesNotMatch(table, /class="st /, 'the status column is gone');
 assert.match(bodyRows[2], /HTTP 409: Model &#39;drafter&#39; failed to load|HTTP 409: Model 'drafter' failed to load/);
 assert.match(bodyRows[3], /Skipped: the endpoint could not serve this model\./);
 

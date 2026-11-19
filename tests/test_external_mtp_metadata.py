@@ -6,10 +6,10 @@ from wattever import endpoints, runner
 
 
 class ExternalMtpMetadataTests(unittest.TestCase):
-    def start_fake(self, requested):
+    def start_fake(self, requested, **extra):
         cfg = dict(provider="openai", endpoint_base_url="http://127.0.0.1:8097/v1",
                    endpoint_inference_local=True, models=["example-model"], sizes=[512],
-                   concurrency_levels=[1], requested_mtp=requested, reported_mtp="on",
+                   concurrency_levels=[1], requested_mtp=requested, reported_mtp="on", **extra,
                    hardware_probe_policy="defer", endpoint_reasoning_effort="none",
                    reproducibility={"engine":"Maya","engine_version":"1.1.52",
                                     "quantization":"Mixed IQ1_S + IQ2_XXS","kv_cache_dtype":"int8"})
@@ -45,6 +45,19 @@ class ExternalMtpMetadataTests(unittest.TestCase):
                 self.assertEqual(row["mtp_source"],"unknown; externally managed")
                 self.assertEqual(row["model_configuration"]["mtp"]["requested"],intent)
                 self.assertEqual(row["model_configuration"]["mtp"]["effective"],"unknown")
+
+    def test_mtp_choice_is_resolved_instead_of_refused_or_measured_twice(self):
+        # Compare both: the standard pass runs, the MTP pass is recorded as not run.
+        value=self.start_fake("unknown",mtp_modes=["off","on"])
+        self.assertEqual(value.run["config"]["mtp_modes"],["off"])
+        self.assertEqual(runner.planned_cases(value._runtime_config),{("example-model",False,1,512,0)})
+        self.assertIn("requested but not run",value.run["measurement_scope"]["mtp_pass"])
+        self.assertIn("mtp_pass",value.run["sessions"][-1]["measurement_scope"])
+        # Off alone leaves no such note.
+        self.assertNotIn("mtp_pass",self.start_fake("unknown",mtp_modes=["off"]).run["measurement_scope"])
+        # MTP only has nothing an endpoint can run: say so before creating an empty benchmark.
+        with self.assertRaisesRegex(ValueError,"decides MTP itself.*Off or Compare both"):
+            self.start_fake("unknown",mtp_modes=["on"])
 
     def test_annotation_never_becomes_nonstandard_inference_argument(self):
         value=runner.BenchRunner()

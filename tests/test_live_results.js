@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const source = fs.readFileSync('web/app.js', 'utf8').replace(/\ninit\(\);\s*$/, '');
 const element=()=>({dataset:{},style:{},hidden:false,textContent:'',innerHTML:'',className:'',classList:{add(){},remove(){}}});
-const elements=Object.fromEntries(['#live-card','#live-card h3','#progress-bar','#live-phase','#live-deadline','#live-sample-note','#pill-power','#live-stats','#live-table'].map(key=>[key,element()]));
+const elements=Object.fromEntries(['#live-card','#live-card h3','#progress-bar','#live-phase','#live-deadline','#live-sample-note','#pill-power','#live-stats','#live-table','#live-averages','#live-table-note'].map(key=>[key,element()]));
 const context = {WatteverPhaseMetrics:require('../web/phase-metrics.js'),Charts:{fmtNum:String},document:{querySelector:s=>elements[s] || null},clearInterval:()=>{}};
 vm.createContext(context);
 vm.runInContext(source,context);
@@ -119,6 +119,36 @@ vm.runInContext(source,context);
   assert.match(one, />100</, 'Single GPU W = 1000 J / 10 s');
   assert.match(one, />3\.91</, 'Single J/out tk = 1000/256');
   assert.doesNotMatch(tableHtml, />—<\/td>/, 'All fields should have values, no blank dashes');
+
+  // The title carries the mean of the headline columns over the tests that completed; the outcome is the row's colour.
+  assert.doesNotMatch(one, /<th[^>]*>Status<\/th>|class="st /, 'The status column is gone');
+  assert.doesNotMatch(one, /<caption>/, 'The explanation sits under the table so the header can stay in place');
+  assert.match(elements['#live-table-note'].textContent, /^Decode excludes TTFT/);
+  vm.runInContext(`state.liveResults=[
+    {model:'m',target_tokens:512,concurrency:1,status:'ok',prompt_tokens:500,completion_tokens:101,wall_s:10,ttft_s:2,decode_s:5,decode_token_count:100,timing_scope:{phase_protocol:'observed-output-phases-v2',decode_end_boundary:'last_observed_nonempty_output'}},
+    {model:'m',target_tokens:5000,concurrency:1,status:'ok',prompt_tokens:4000,completion_tokens:101,wall_s:20,ttft_s:4,decode_s:10,decode_token_count:100,timing_scope:{phase_protocol:'observed-output-phases-v2',decode_end_boundary:'last_observed_nonempty_output'}},
+    {model:'m',target_tokens:10000,concurrency:1,status:'failed',fail_kind:'timeout',message:'Too <slow>',wall_s:900,ttft_s:800}
+  ];renderLiveTable();`,context);
+  const averages = JSON.parse(vm.runInContext('JSON.stringify(liveAverages(state.liveResults,state.liveResults.map(liveRowMetrics)))',context));
+  assert.deepEqual(averages.map(item=>[item.key,item.count,item.tests]), [['wall',2,2],['prefillTime',2,2],['prefill',2,2],['decodeTime',2,2],['decode',2,2]], 'A failed test is left out of every average');
+  const mean = Object.fromEntries(averages.map(item=>[item.key,item.value]));
+  assert.equal(mean.wall, 15);
+  assert.equal(mean.prefillTime, 3);
+  assert.equal(mean.prefill, (500/2+4000/4)/2);
+  assert.equal(mean.decodeTime, 7.5);
+  assert.equal(mean.decode, (100/5+100/10)/2);
+  const title = elements['#live-averages'].innerHTML;
+  assert.match(title, /Average · 2 tests/);
+  assert.match(title, /<span class="avg" data-tone="wall"><span class="avg-k">Wall<\/span><span class="avg-v"[^>]*><b>15\.00<\/b> s<\/span><\/span>/);
+  assert.match(title, /data-tone="prefill"><span class="avg-k">Prefill<\/span><span class="avg-v"[^>]*><b>3\.00<\/b> s<\/span><span class="avg-v"[^>]*><b>625<\/b> tk\/s<\/span>/);
+  assert.match(title, /data-tone="decode"><span class="avg-k">Decode<\/span><span class="avg-v"[^>]*><b>7\.50\*?<\/b> s<\/span><span class="avg-v"[^>]*><b>15\.0\*?<\/b> tk\/s<\/span>/);
+  const failed = elements['#live-table'].innerHTML;
+  assert.equal((failed.match(/<tr data-status="ok">/g)||[]).length, 2);
+  assert.match(failed, /<tr data-status="failed" title="timeout">[\s\S]*<td class="fail-reason" colspan="13">Too &lt;slow&gt;<\/td><\/tr>/, 'A failed test is marked on its row and says why');
+  for (const tone of ['wall','prefill','decode']) assert.match(failed, new RegExp('<th class="num" data-tone="'+tone+'"'), 'Averaged columns share the colour of their average');
+  vm.runInContext(`state.liveResults=[{model:'m',target_tokens:512,concurrency:1,status:'failed',fail_kind:'load_failed'},{model:'m',target_tokens:512,concurrency:1,status:'cancelled'}];renderLiveTable();`,context);
+  assert.equal(elements['#live-averages'].innerHTML, '', 'No completed test, no average');
+  assert.match(elements['#live-table'].innerHTML, /<tr data-status="cancelled" title="cancelled">[\s\S]*<td class="fail-reason" colspan="13">Cancelled<\/td>/, 'An outcome without a message is still named');
 
   vm.runInContext(`
     const base = {concurrency:2,status:'ok',aggregate_completion_tokens:999,requests:[{status:'ok',completion_tokens:50},{status:'ok',completion_tokens:50}],group_power:{scope:'all_cards',low_confidence:false,gpu_power_complete:true,gpu_energy_j:100,gpu_sampled_coverage_fraction:.9,gpus:[{vram_mb_max:10},{vram_mb_max:20}]}};

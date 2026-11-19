@@ -28,7 +28,8 @@ const Tables = (() => {
   function enhance(root = document) {
     root.querySelectorAll('table').forEach(table => {
       table.classList.add('fit-table');
-      if (!table.parentElement.classList.contains('table-component')) {
+      const holder = table.parentElement.classList;
+      if (!holder.contains('table-component') && !holder.contains('table-scroll')) {
         const wrapper = document.createElement('div');
         wrapper.className = 'table-component';
         const tools = document.createElement('div');
@@ -49,7 +50,16 @@ const Tables = (() => {
         });
         tools.append(feedback, button);
         table.before(wrapper);
-        wrapper.append(tools, table);
+        // A table that asks for it scrolls its rows under a header that stays in place.
+        if (table.hasAttribute('data-scroll-rows')) {
+          const scroll = document.createElement('div');
+          scroll.className = 'table-scroll';
+          scroll.tabIndex = 0;
+          scroll.setAttribute('role', 'region');
+          scroll.setAttribute('aria-label', 'Table rows, scrollable');
+          scroll.append(table);
+          wrapper.append(tools, scroll);
+        } else wrapper.append(tools, table);
       }
       const headers = Array.from(table.querySelectorAll('thead th')).map(cell => cell.textContent.trim());
       table.querySelectorAll('tbody tr').forEach(row => {

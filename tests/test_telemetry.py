@@ -193,7 +193,7 @@ class TelemetryTests(unittest.TestCase):
             self.assertEqual(sensor.sample(), 63)
             self.assertEqual(sensor.source, 'linux_hwmon:coretemp:Package id 0')
             self.assertNotIn(directory, sensor.source)
-        with patch.object(power, 'IS_LINUX', False):
+        with patch.object(power, 'IS_LINUX', False), patch.object(power, 'IS_WINDOWS', False):
             self.assertIsNone(power._CpuTemperature().sample())
 
 
