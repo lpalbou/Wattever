@@ -192,6 +192,8 @@ The default provider is `lmstudio`. `LMS_BASE_URL` selects its API (default `htt
 | `load_timeout_s`, `per_test_timeout_s`, `power_interval_ms` | 900, 1800, 150 |
 | `gpu_index` | 0 (primary GPU identity; all detected NVIDIA GPUs are monitored) |
 
+`gpu_offload` accepts `max`, `auto`, `off` or a fraction from `0.0` to `1.0`. With `fallback_on_failure: true`, a managed load that fails is retried as `auto`, then `0.5`, then `off`, and each result's `gpu_offload` holds the placement that loaded. Send `fallback_on_failure: false` to record a load that does not fit as a failure at the requested placement. See [automatic fallbacks and substitutions](measurements.md#automatic-fallbacks-and-substitutions).
+
 ## Model additions, repairs and removal
 
 `GET /api/bench/extend-plan?run_id=<id>` supplies managed extension options. For an external endpoint, use `POST /api/bench/extend-options` with `run_id` and a `connection` object containing fresh endpoint configuration. It returns the catalog, saved execution `config` and optional `engine_group_id`. Include the same connection and group ID in preview/start requests; keep connection credentials out of URLs. `POST /api/bench/extend-plan` previews a selection such as:

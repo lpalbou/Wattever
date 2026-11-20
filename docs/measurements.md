@@ -96,6 +96,43 @@ Storage alternatives appear only when actual alternative inference rows are pres
 **Table > All measurements** retains every selected repeat and exact query token counts/timings. Its **Export CSV** follows the selected conditions, models and query count. The Summary experiment's **Export both conditions CSV** exports the full frozen baseline and alternative, with per-query evidence in `request_metrics_json`. The helper's standard CSV API still exports primary measurements. Failed or unattempted cases never receive a paired speedup. See the [recorded 5060 Ti comparison](5060-ti-storage-comparison.md) for actual values, both 80k repeats and cache/placement conditions.
 
 
+## Automatic fallbacks and substitutions
+
+Wattever continues a benchmark when a test cannot run as requested, or when a sensor or count is missing. Each of these behaviors is recorded with the result, so a row always says how it was actually measured. Compare rows only when these fields match.
+
+### Placement fallback (managed LM Studio)
+
+**Model placement** (`gpu_offload`) is the placement you request; the default is **Prefer GPU** (`max`). With **Use CPU memory if needed** (`fallback_on_failure`, on by default), a model that fails to load is loaded again with less of it on the GPU, in this order:
+
+| Attempt | Placement | Meaning |
+| --- | --- | --- |
+| 1 | the requested placement, `max` by default | every layer on the GPU |
+| 2 | `auto` | LM Studio chooses the placement |
+| 3 | `0.5` | half of the layers on the GPU, the rest on the CPU |
+| 4 | `off` | CPU only |
+
+- The requested placement is not tried twice, and the ladder stops at the first load that succeeds. Each attempt is a complete load with its own load timeout (900 seconds by default).
+- Every result records the placement that loaded in `gpu_offload`. Results shows it as **Placement** in **Table > All measurements** and in the CSV export, and chart notes name any placement other than `auto`.
+- A result with `gpu_offload` `0.5` or `off` ran partly or wholly on the CPU. Its speed, power and memory describe that placement, so compare it only with rows that have the same `gpu_offload`. Loads that failed before the successful one appear in the helper log, not in the result.
+- When every attempt fails, the test is recorded as failed with `fail_kind: "load_failed"`.
+- Fallback loads can take much longer than the full-GPU tests around them: a large context that does not fit in VRAM usually runs very slowly on the CPU and can reach the per-test timeout. To measure GPU capacity only, turn **Use CPU memory if needed** off, or send `fallback_on_failure: false`. A load that does not fit is then recorded as a failure at the requested placement.
+- External endpoints have no placement fallback. The inference engine controls placement, and results record `gpu_offload` as `externally_managed`.
+
+### Other automatic behaviors
+
+| Behavior | When it applies | What Wattever does | How the result records it | Control |
+| --- | --- | --- | --- | --- |
+| Skip larger sizes after a capacity failure | A model fails to load, overflows its context or exceeds the model's context limit | Records the larger prompt sizes for that model, technique and query count as skipped | `status: "skipped"`, `fail_kind: "skipped_after_failure"` | **Skip larger sizes after a capacity failure** (`stop_model_after_failure`, on by default) |
+| Move on after a timeout | A test reaches the per-test timeout | Skips the remaining repeats and larger contexts for that model and query count | `status: "skipped"`, `fail_kind: "skipped_after_failure"`; the timed-out row keeps `fail_kind: "timeout"` | **Move on after a timeout** (`skip_after_timeout`, off by default) |
+| MTP pass without an MTP head | MTP is requested for a model whose file has no supported MTP head | Skips that model's MTP pass and keeps its standard pass; the placement ladder is not used | `status: "skipped"`, `fail_kind: "mtp_unsupported"` | Choose **Off** for MTP |
+| Context allocated by LM Studio | LM Studio rounds the requested context or limits it to the model's maximum | Runs the test with the context LM Studio allocated | `requested_total_context` (requested) and `context_length` (allocated) | Choose prompt sizes and query counts whose total fits the model's context limit |
+| Power source | No NVIDIA sensor is readable | Uses `powermetrics` on macOS, otherwise records no GPU power | `power_source`: `nvidia-smi`, `powermetrics` or `none`; `system_w_est` is always an estimate | None |
+| CPU temperature source | No CPU package sensor is readable | On Windows, reads HWiNFO, then LibreHardwareMonitor, then Core Temp, then a live ACPI thermal zone; otherwise reports no value | `cpu_temp_source` names the sensor; `cpu_temp_note` says why a value is missing | Run one of the sensor tools |
+| Output token count | The provider's stream carries no token usage | Leaves throughput unavailable instead of counting stream chunks | `metric_sources.completion_tokens`: `server_usage` or `unavailable`; an estimated count sets `completion_tokens_estimated` | Use a provider that reports usage |
+| Endpoint name | An endpoint exposes no recognized service metadata | Names it Local, Private or Remote endpoint | The endpoint label | Set the optional **Display name override** |
+
+See [troubleshooting](troubleshooting.md) for the matching symptoms and [API](api.md) for the request fields.
+
 ## Sessions and recovery
 
 Each benchmark has one JSON file in `results/runs/`. The local helper supports same-file additions and repairs for both LM Studio and external endpoints. Reconnect the original external endpoint before repairing its tests; URLs and credentials are not saved. A timeout stops the generic run because Wattever cannot verify provider-side cancellation or unload. Inspect the engine before continuing.

@@ -7,7 +7,7 @@
 - [Browser mode](browser.md): hosted setup, privacy, storage and measurement limits.
 - [Sharing results](sharing-results.md): shared catalog, contributions and completing a benchmark later.
 - [Getting started](getting-started.md): managed LM Studio or generic endpoint setup, authentication, manual model IDs and first benchmark.
-- [Measurements and sessions](measurements.md): client/provider metrics, cache provenance, hardware, compute claims, power boundaries and comparisons.
+- [Measurements and sessions](measurements.md): client/provider metrics, cache provenance, hardware, compute claims, power boundaries, comparisons, and every automatic fallback and substitution with the field that records it.
 - [Concurrency comparisons](concurrency.md): total versus per-request throughput, latency ranges, model-by-request-count maps, request timing evidence, matched-repeat scaling and energy.
 - [Prefill scheduling and execution strategies](prefill-scheduling-and-concurrency.md): measured fair-admission tradeoffs, independent GPU replicas, logical/physical batches, Q8-cache capacity and raw diagnostic evidence.
 - [RTX 5060 Ti storage comparison](5060-ti-storage-comparison.md): measured Strata results on Samsung SATA SSD and NVMe, both repeats, transfer rates and comparison settings.

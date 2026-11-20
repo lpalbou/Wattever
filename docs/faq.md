@@ -20,6 +20,10 @@ Older files remain readable. Compare protocol, model, corpus, settings, context 
 
 No. Failures and skipped cases are recorded and can be retried. See [troubleshooting](troubleshooting.md) for common causes.
 
+## Why does a result show placement `0.5` or `off` when I chose Prefer GPU?
+
+The model did not load fully on the GPU, and **Use CPU memory if needed** loaded it with fewer GPU layers. The result records the placement that loaded, and its speed describes that placement. Compare it only with rows that have the same placement, or turn the option off to measure GPU capacity alone. See [automatic fallbacks and substitutions](measurements.md#automatic-fallbacks-and-substitutions).
+
 ## Must a benchmark be complete before I share it?
 
 No. Partial sessions are useful contributions. Helper runs can add missing cases to the same file later, subject to compatibility checks. External engines require reconnecting the saved endpoint and operator model loading; browser experiments use new runs. See [sharing results](sharing-results.md).
