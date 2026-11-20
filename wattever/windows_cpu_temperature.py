@@ -1,19 +1,21 @@
 """Windows CPU temperature from sensors that are readable without elevation.
 
 Windows has no unprivileged API for the CPU package sensor (Intel/AMD keep it
-in model-specific registers that need a kernel driver). Wattever does not ship
-or install one. It reads, in order of trust:
+in model-specific registers that need a kernel driver). Wattever reads, in
+order of trust:
 
-  1. HWiNFO shared memory ("Shared Memory Support" enabled), CPU package/Tctl.
-  2. LibreHardwareMonitor's local web server (http://127.0.0.1:8085), CPU package/Tctl.
-  3. Core Temp shared memory: the hottest core, not a package sensor.
-  4. ACPI thermal zone performance counters: a firmware zone, not a CPU package
+  1. Wattever's own optional sensor: a read-only SYSTEM task that reads the
+     package sensor through the signed PawnIO driver. It exists only after the
+     user clicks "Enable CPU temperature" (see cpu_sensor_setup).
+  2. HWiNFO shared memory ("Shared Memory Support" enabled), CPU package/Tctl.
+  3. LibreHardwareMonitor's local web server (http://127.0.0.1:8085), CPU package/Tctl.
+  4. Core Temp shared memory: the hottest core, not a package sensor.
+  5. ACPI thermal zone performance counters: a firmware zone, not a CPU package
      sensor, reported only after it has been seen to change (many boards
      report a fixed placeholder).
 
-Those tools load their own drivers; when none is running and the firmware
-exposes no live thermal zone, CPU temperature stays unavailable and the
-reason is reported. Nothing is estimated.
+When none is available, CPU temperature stays unavailable and the reason is
+reported. Nothing is estimated.
 
 Sources are polled on a private daemon thread about once a second, so the
 sampler's tick only copies a cached reading and can never block on I/O.
@@ -30,9 +32,9 @@ import urllib.request
 FRESH_S = 5.0
 REFRESH_S = 1.0
 IDLE_EXIT_S = 30.0
-UNAVAILABLE_NOTE = ('No CPU temperature sensor is readable without elevation: the firmware exposes no live '
-                    'ACPI thermal zone and no HWiNFO (shared memory), LibreHardwareMonitor (web server) '
-                    'or Core Temp is running.')
+UNAVAILABLE_NOTE = ('Windows exposes no CPU temperature to ordinary programs on this computer. Choose '
+                    'Enable CPU temperature in System (one administrator approval), or run HWiNFO '
+                    '(shared memory), LibreHardwareMonitor (web server) or Core Temp.')
 
 
 def _sane(value):
@@ -262,6 +264,58 @@ class _PdhThermalZones:
 # Readers: read() -> (celsius, source) or None; may raise, the poller catches.
 # --------------------------------------------------------------------------
 
+def parse_wattever_sensor(text, now=None):
+    """Return (celsius, sensor) from Wattever's sensor file, else None; raise SensorError for a reported failure."""
+    document = json.loads(text)
+    if not isinstance(document, dict) or document.get('v') != 1:
+        return None
+    at = document.get('at')
+    now = time.time() if now is None else now
+    if not isinstance(at, (int, float)) or not -2.0 <= now - at <= FRESH_S:
+        return None
+    if document.get('error'):
+        raise SensorError(str(document['error'])[:300])
+    value, sensor = document.get('celsius'), str(document.get('sensor') or 'cpu')
+    return (float(value), sensor) if _sane(value) and re.fullmatch(r'[a-z_]{1,32}', sensor) else None
+
+
+class SensorError(Exception):
+    pass
+
+
+class WatteverSensorReader:
+    """The optional SYSTEM task's file; absent unless the user enabled it."""
+    retry_s = 1.0
+
+    def __init__(self, load=None):
+        self.load = load or self._load
+        self.error = None
+
+    @staticmethod
+    def _load():
+        from .cpu_sensor_setup import reading_path
+        try:
+            with open(reading_path(), encoding='utf-8-sig') as fh:
+                return fh.read(4096)
+        except FileNotFoundError:
+            return None
+
+    def read(self):
+        text = self.load()
+        self.retry_s = 1.0 if text else 15.0
+        self.error = None
+        if not text:
+            return None
+        try:
+            result = parse_wattever_sensor(text)
+        except SensorError as exc:
+            self.error = str(exc)
+            return None
+        except ValueError:  # half-written or foreign content
+            return None
+        return (result[0], 'windows_wattever_pawnio:%s' % result[1]) if result else None
+
+
 class HwinfoReader:
     retry_s = 5.0
 
@@ -326,7 +380,7 @@ class AcpiThermalZoneReader:
 
 
 def default_readers():
-    return [HwinfoReader(), LibreHardwareMonitorReader(), CoreTempReader(), AcpiThermalZoneReader()]
+    return [WatteverSensorReader(), HwinfoReader(), LibreHardwareMonitorReader(), CoreTempReader(), AcpiThermalZoneReader()]
 
 
 class WindowsCpuTemperature:
@@ -365,9 +419,11 @@ class WindowsCpuTemperature:
                     self._value, self._source, self._at, self._note = float(result[0]), result[1], now, None
                 return result
             self._retry[id(reader)] = now + getattr(reader, 'retry_s', 5.0)
+        # The installed sensor reporting a failure says more than the generic note.
+        sensor_error = next((r.error for r in self.readers if getattr(r, 'error', None)), None)
         with self._lock:
             self._value = self._at = self._source = None
-            self._note = UNAVAILABLE_NOTE
+            self._note = 'The Wattever CPU sensor reports: %s' % sensor_error if sensor_error else UNAVAILABLE_NOTE
         return None
 
     def _run(self):

@@ -31,6 +31,8 @@ GPU, memory, storage and engine-setting badges summarize recorded conditions. St
 
 The [two RTX 5070 Ti comparison](docs/two-5070-ti-comparison.md) records 180 normal cases across LM Studio and native Strata, with matched throughput, energy, drafting and per-card thermal observations.
 
+The [vLLM on two RTX 5070 Ti cards](docs/vllm-two-5070-ti.md) study serves NVIDIA's NVFP4 Qwen3.8-27B with vLLM against LM Studio, with the memory settings for a 188,832-token context pool, prefix reuse, tensor versus pipeline parallelism and energy per batch.
+
 The separate [prefill scheduling study](docs/prefill-scheduling-and-concurrency.md) measures fair-admission tradeoffs, independent GPU replicas and Q8-cache context capacity, with raw diagnostic timing/power evidence and reproducible configurations.
 
 The [GLM-5.3-Flash study](docs/glm53-flash-comparison.md) reports preliminary Maya-XS measurements from the existing NVMe, actual pinned expert memory and descriptive Flash-Next comparisons. Optimization and quality results remain separate.

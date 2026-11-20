@@ -20,6 +20,7 @@
 - [PNY RTX 5070 Ti plus ASUS RTX 5060 Ti](docs/5070-plus-5060-comparison.md): matched and supplemental LM Studio measurements, per-card/combined energy, transfer/compute probes, connection diagnostics and Strata coverage status.
 - [Multi-GPU communication and placement study](docs/dual-gpu-communication-and-placement.md): communication paths, transfer measurements, GPU execution strategies, profiling evidence and diagnostic protocol boundaries.
 - [Two RTX 5070 Ti cards](docs/two-5070-ti-comparison.md): 180 normal cases, matched single/mixed-card throughput and energy, native drafting and temperatures; separate three-repeat Flash expert-RAM tables at 40,960 and 131,072 context.
+- [vLLM on two RTX 5070 Ti cards](docs/vllm-two-5070-ti.md): NVFP4 Qwen3.8-27B in vLLM versus LM Studio Q4_K_M, context-pool memory settings, prefix reuse, tensor versus pipeline parallelism and energy.
 - [Two RTX 5070 Ti placement strategies](docs/two-5070-ti-placement.md): measured communication paths, standalone prefill/decode, independent instances, energy and profiling limits.
 - [Capability evaluation](docs/capabilities.md): visual score/coverage dashboard, question-by-repeat evidence explorer, pinned Core/GSM8K/ARC/MMLU-Pro suites and paired-comparison limits.
 - [Flash-Next task accuracy](docs/flash-next-quality.md): UD-IQ4_XS and IQ3_S on matched public-question samples, audit answers, coverage and generation conditions on two RTX 5070 Ti cards.

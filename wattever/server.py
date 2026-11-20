@@ -296,6 +296,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(self.env_payload((query.get("provider") or [None])[0]))
             if route == "/api/system":
                 return self._json(SYSTEM_MONITOR.snapshot())
+            if route == "/api/system/cpu-sensor":
+                from .cpu_sensor_setup import SETUP
+                return self._json(SETUP.status())
             if route == "/api/system/history":
                 def number(name, default=None):
                     raw = (query.get(name) or [None])[0]
@@ -413,6 +416,10 @@ class Handler(BaseHTTPRequestHandler):
             self.close_connection = True
             return self._error(403, denied)
         try:
+            if route == "/api/system/cpu-sensor":
+                # Optional and explicit: installs nothing until the user clicks and approves UAC.
+                from .cpu_sensor_setup import SETUP
+                return self._json(SETUP.start(self._body().get("action")))
             if route == "/api/hardware/gpu-setup":
                 with WORK_LOCK:
                     if _any_running():

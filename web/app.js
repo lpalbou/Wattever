@@ -976,6 +976,7 @@ async function pollSystem(generation) {
     const capture = !log ? "" : log.mode === "owner" ? " \u00b7 Recording continuously; the last 24 h are kept on this computer" : log.reason ? " \u00b7 " + log.reason : "";
     $("#system-status").textContent = (t ? (stale ? "Stale sample; no new reading since " : "Sample at ") + stamp : "Warming up; waiting for the first sample.") + (sample.error ? " \u00b7 Some readings unavailable: " + sample.error : "") + capture;
     const val = (v, divisor=1) => Number.isFinite(v) ? fmt(v/divisor, 1) : "\u2014";
+    updateCpuSensorSetup(t);
     if (globalThis.WatteverSystemDashboard) {
       if (!systemDashboard) { systemDashboard = new WatteverSystemDashboard.Dashboard($("#system-stats")); systemDashboard.loader = systemHistory; systemDashboard.activate(); }
       systemDashboard.update(sample, t ? liveGpuCards(t) : "");
@@ -989,6 +990,44 @@ async function pollSystem(generation) {
     if (!systemDashboard) $("#system-stats").innerHTML = "";
   }
   if (generation === systemPollGeneration) systemPollTimer = setTimeout(() => pollSystem(generation), 1000);
+}
+/* Optional Windows CPU sensor: offered only when no CPU temperature is readable; nothing installs until clicked. */
+let cpuSensor = { status: null, checkedAt: 0, pending: false };
+const CPU_SENSOR_BUSY = ["downloading", "waiting_for_approval"];
+function cpuSensorMarkup(status, telemetry) {
+  if (!status?.supported) return "";
+  const phase = status.phase || "idle", busy = CPU_SENSOR_BUSY.includes(phase);
+  const reading = Number.isFinite(telemetry?.cpu_temp_c), ours = String(telemetry?.cpu_temp_source || "").startsWith("windows_wattever_pawnio:");
+  const outcome = ["done", "failed", "cancelled"].includes(phase) && status.message
+    ? `<p class="hint ${phase === "failed" ? "error-text" : ""}" role="status">${esc(status.message)}</p>` : "";
+  if (busy) return `<p class="hint" role="status">${phase === "downloading" ? "Downloading and verifying PawnIO…" : "Approve the Windows administrator prompt to continue…"}</p>`;
+  if (status.installed) return `${outcome}<p class="hint">CPU temperature: ${ours && reading ? "read by the Wattever sensor (PawnIO driver, read-only)" : esc(telemetry?.cpu_temp_note || "the Wattever sensor is installed but has no reading yet.")} <button class="btn-sm" data-cpu-sensor="uninstall">Remove CPU sensor</button></p>`;
+  if (reading) return outcome;
+  return `${outcome}<div class="cpu-sensor-offer"><p><strong>CPU temperature is unavailable.</strong> Windows does not let ordinary programs read the CPU sensor.</p><p class="hint">Enabling it installs the signed <a href="https://pawnio.eu/" target="_blank" rel="noopener">PawnIO</a> driver and a small read-only Wattever task that reads only the CPU thermal registers. Windows asks for administrator approval once, and you can remove it here at any time.</p><button class="btn" data-cpu-sensor="install">Enable CPU temperature</button></div>`;
+}
+async function updateCpuSensorSetup(telemetry) {
+  const node = $("#cpu-sensor-setup");
+  if (!node || browserMode()) return;
+  const busy = CPU_SENSOR_BUSY.includes(cpuSensor.status?.phase);
+  if (!cpuSensor.pending && Date.now() - cpuSensor.checkedAt > (busy ? 1000 : 15000)) {
+    cpuSensor.pending = true;
+    try { cpuSensor.status = await api("/api/system/cpu-sensor"); } catch (e) { cpuSensor.status = null; }
+    cpuSensor.checkedAt = Date.now(); cpuSensor.pending = false;
+  }
+  const markup = cpuSensorMarkup(cpuSensor.status, telemetry);
+  node.hidden = !markup;
+  if (node.dataset.markup !== markup) {
+    node.dataset.markup = markup; node.innerHTML = markup;
+    node.querySelectorAll("[data-cpu-sensor]").forEach(button => button.onclick = async () => {
+      const action = button.dataset.cpuSensor;
+      if (action === "uninstall" && !confirm("Remove the Wattever CPU sensor? PawnIO is also removed if Wattever installed it.")) return;
+      button.disabled = true;
+      try {
+        cpuSensor.status = await api("/api/system/cpu-sensor", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action }) });
+      } catch (e) { cpuSensor.status = { ...(cpuSensor.status || {}), supported: true, phase: "failed", message: e.message }; }
+      cpuSensor.checkedAt = Date.now(); updateCpuSensorSetup(telemetry);
+    });
+  }
 }
 function exportVisibleGraphs() {
   const graphs = [...document.querySelectorAll("#panel-compare svg")].filter(svg => svg.getBoundingClientRect().width > 0);

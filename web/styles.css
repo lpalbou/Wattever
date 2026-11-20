@@ -1432,3 +1432,9 @@ svg.has-focus .chart-series:not(.is-focus) { opacity: .25; }
 /* A long selection scrolls; the decision stays in view. */
 .merge-actions { position: sticky; bottom: -22px; justify-content: flex-end; margin: 16px -22px -22px; padding: 14px 22px 18px; background: var(--surface-1); border-top: 1px solid var(--border); }
 .merge-actions .btn-primary { border-color: var(--ready-accent); background: var(--ready-accent); color: var(--surface-0); }
+
+/* Optional Windows CPU sensor setup (System > Live hardware). */
+.cpu-sensor-setup { margin: 0 0 12px; }
+.cpu-sensor-offer { border: 1px solid var(--border); border-left: 3px solid var(--status-warning); border-radius: var(--radius-sm); padding: 10px 12px; }
+.cpu-sensor-offer p { margin: 0 0 6px; }
+.cpu-sensor-setup .error-text { color: var(--status-critical); }
