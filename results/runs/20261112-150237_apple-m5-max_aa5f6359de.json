@@ -1,0 +1,1508 @@
+{
+ "id": "20261112-150237_apple-m5-max_aa5f6359de",
+ "created_at": "2026-11-12T15:02:37+00:00",
+ "label": "Apple M5 Max",
+ "notes": "Models: qwen/qwen3.8-27b\nPrompt tokens: 512, 5k, 10k, 20k, 40k\nSimultaneous queries: 1, 2, 3, 4, 5, 6, 7, 8\nAnswer: 256 tokens; repeats: 1\nPlacement: prefer GPU; CPU fallback: off\nReasoning: off; speculative decoding: off + on\nWarmup: on; skip larger sizes after failure: on\nContext allocation: matched to each test",
+ "gpu": {
+  "name": "Apple M5 Max",
+  "vram_total_mb": 131072.0,
+  "driver": "27.0.1",
+  "power_limit_w": null,
+  "pcie_gen": "",
+  "compute_cap": "40-core GPU",
+  "power_readable": false,
+  "power_source": "none",
+  "power_note": "sudo: a password is required",
+  "memory_architecture": "unified",
+  "vendor": "apple",
+  "model_identifier": "Mac17,7"
+ },
+ "host": {
+  "cpu": "Apple M5 Max",
+  "cores_physical": 18,
+  "cores_logical": 18,
+  "ram_gb": 128.0,
+  "os": "macOS 27.0.1",
+  "os_build": "Darwin Kernel Version 27.0.0: Tue Aug 11 21:06:40 PDT 2026; root:xnu-13432.1.9~1/RELEASE_ARM64_T6050",
+  "python": "3.12.13",
+  "platform": "macos",
+  "machine_model": "Mac17,7"
+ },
+ "lms_version": "commit 43d4b26",
+ "config": {
+  "provider": "lmstudio",
+  "endpoint_label": "LM Studio local endpoint",
+  "endpoint_inference_local": false,
+  "endpoint_reasoning_effort": "none",
+  "models": [
+   "qwen/qwen3.8-27b"
+  ],
+  "concurrency_levels": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8
+  ],
+  "sizes": [
+   512,
+   5000,
+   10000,
+   20000,
+   40000
+  ],
+  "max_tokens": 256,
+  "repeats": 1,
+  "gpu_offload": "max",
+  "fallback_on_failure": false,
+  "stop_model_after_failure": true,
+  "skip_after_timeout": false,
+  "context_headroom": 512,
+  "context_safety_fraction": 0.05,
+  "context_policy": "per_test",
+  "context_planner_version": 1,
+  "per_test_timeout_s": 1800,
+  "load_timeout_s": 900,
+  "warmup": true,
+  "disable_thinking": true,
+  "mtp_modes": [
+   "off",
+   "on"
+  ],
+  "power_interval_ms": 150,
+  "hardware_probe_policy": "auto",
+  "other_idle_w": 10.0,
+  "cpu_tdp_w": 25.0,
+  "label": "Apple M5 Max",
+  "notes": "Models: qwen/qwen3.8-27b\nPrompt tokens: 512, 5k, 10k, 20k, 40k\nSimultaneous queries: 1, 2, 3, 4, 5, 6, 7, 8\nAnswer: 256 tokens; repeats: 1\nPlacement: prefer GPU; CPU fallback: off\nReasoning: off; speculative decoding: off + on\nWarmup: on; skip larger sizes after failure: on\nContext allocation: matched to each test",
+  "gpu_index": 0,
+  "endpoint_id": "lm-studio-local-6cdd69ca3ce9",
+  "endpoint_name_override": "",
+  "reproducibility": {},
+  "performance_claims": [],
+  "canonical_model_id": "",
+  "reported_mtp": "unknown",
+  "reported_reasoning": "unknown",
+  "token_limit_field": "max_tokens",
+  "temperature": 0,
+  "runtime_gpu_placement": "",
+  "endpoint_identity": {
+   "id": "lm-studio-local-6cdd69ca3ce9",
+   "label": "LM Studio local endpoint",
+   "source": "inferred",
+   "service": "LM Studio",
+   "version": "unknown",
+   "location": "local",
+   "route_registry": "opaque_local_mapping",
+   "evidence": "declared_managed_provider",
+   "scope": "route identity; actual inference backend and host are not verified"
+  }
+ },
+ "status": "running",
+ "results": [
+  {
+   "model": "qwen/qwen3.8-27b",
+   "target_tokens": 512,
+   "mtp": false,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 1306,
+   "context_length": 1306,
+   "gpu_offload": "max",
+   "quantization": "4bit",
+   "quantization_source": "endpoint_reported",
+   "quantization_method": null,
+   "quantization_method_source": "unknown",
+   "architecture": "qwen3_5",
+   "params": "27B",
+   "load_s": 4.020154708006885,
+   "prompt_chars": 2349,
+   "corpus_wraps": 0,
+   "nonce": "dd1243ce5b6c",
+   "max_tokens": 256,
+   "reasoning_disabled": true,
+   "timestamp": "2026-11-12T15:02:45+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "ok",
+   "prompt_tokens": 519,
+   "completion_tokens": 223,
+   "completion_tokens_estimated": false,
+   "cached_prompt_tokens": null,
+   "metric_sources": {
+    "ttft_s": "client_monotonic_clock_to_first_observed_output",
+    "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+    "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+    "completion_tokens": "server_usage"
+   },
+   "reported_timings": {},
+   "timing_scope": {
+    "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+    "first_output_kind": "content",
+    "observed_output_kinds": [
+     "content"
+    ],
+    "empty_deltas_before_output": 0,
+    "reasoning_streamed": false,
+    "reasoning_token_count_source": "server_usage",
+    "requested_reasoning_effort": "none",
+    "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+    "decode_token_scope": "server_usage; no reasoning tokens reported",
+    "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk"
+   },
+   "decode_token_count": 222,
+   "reasoning_tokens": 0,
+   "target_error_pct": 1.3671875,
+   "ttft_s": 3.2575678330031224,
+   "decode_s": 8.574839291977696,
+   "wall_s": 11.832407124980818,
+   "prefill_tps": 159.3213178070765,
+   "decode_tps": 25.88969803873701,
+   "finish_reason": "stop",
+   "sample_text": "The October 2026 report on Agentic AI reveals that the industry has stabilized around a pragmatic architecture: a single capable model operating in a tight loop with well-defined tools, rather than complex multi-agent societies. Successful deployments rely on standard software engineering practices, including retries, audit logs, and human",
+   "vram_after_load_mb": null,
+   "vram_peak_mb": null,
+   "power": {
+    "scope": "benchmark_client_selected_gpu",
+    "gpu_indices": null,
+    "prefill_gpu_power_complete": false,
+    "decode_gpu_power_complete": false,
+    "available": false,
+    "low_confidence": true,
+    "source": "none",
+    "prefill_cpu_w": null,
+    "decode_cpu_w": null,
+    "prefill_gpu_w": null,
+    "prefill_gpu_w_max": null,
+    "decode_gpu_w": null,
+    "decode_gpu_w_max": null,
+    "prefill_system_w_est": null,
+    "decode_system_w_est": null,
+    "prefill_energy_j": null,
+    "decode_energy_j": null,
+    "prefill_system_energy_j_est": null,
+    "decode_system_energy_j_est": null,
+    "j_per_1k_prefill": null,
+    "j_per_1k_prefill_system_est": null,
+    "j_per_token_decode": null,
+    "j_per_token_decode_system_est": null,
+    "prefill_gpu_util": null,
+    "decode_gpu_util": null,
+    "prefill_cpu_util": 0.1736464402987168,
+    "decode_cpu_util": 0.19737610923987137,
+    "temp_c_max": null,
+    "clock_mhz_avg": null,
+    "samples": 77,
+    "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown"
+   },
+   "per_request_context_length": 1306,
+   "requested_total_context": 1306,
+   "load_parallel_capacity": 1,
+   "context_policy": "per_test",
+   "load_reused": false,
+   "chars_per_token_after": 4.5519,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen/qwen3.8-27b",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen/qwen3.8-27b",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "lm-studio-local-6cdd69ca3ce9",
+     "label": "LM Studio local endpoint",
+     "provider": "lmstudio",
+     "source": "inferred",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "4bit",
+     "source": "endpoint_reported",
+     "user_reported": "unknown"
+    },
+    "engine": {
+     "value": "LM Studio",
+     "source": "inferred"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "off",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "20806379625dada2809b945043d18767c2128cfb4034d71c501253adc99d8cb8"
+   },
+   "configuration_id": "20806379625dada2809b945043d18767c2128cfb4034d71c501253adc99d8cb8",
+   "session_id": "aa119774f821"
+  },
+  {
+   "model": "qwen/qwen3.8-27b",
+   "target_tokens": 5000,
+   "mtp": false,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 6018,
+   "context_length": 6018,
+   "gpu_offload": "max",
+   "quantization": "4bit",
+   "quantization_source": "endpoint_reported",
+   "quantization_method": null,
+   "quantization_method_source": "unknown",
+   "architecture": "qwen3_5",
+   "params": "27B",
+   "load_s": 4.044365790963639,
+   "prompt_chars": 22596,
+   "corpus_wraps": 0,
+   "nonce": "a5f2682e3c77",
+   "max_tokens": 256,
+   "reasoning_disabled": true,
+   "timestamp": "2026-11-12T15:03:02+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "ok",
+   "prompt_tokens": 4671,
+   "completion_tokens": 243,
+   "completion_tokens_estimated": false,
+   "cached_prompt_tokens": null,
+   "metric_sources": {
+    "ttft_s": "client_monotonic_clock_to_first_observed_output",
+    "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+    "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+    "completion_tokens": "server_usage"
+   },
+   "reported_timings": {},
+   "timing_scope": {
+    "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+    "first_output_kind": "content",
+    "observed_output_kinds": [
+     "content"
+    ],
+    "empty_deltas_before_output": 0,
+    "reasoning_streamed": false,
+    "reasoning_token_count_source": "server_usage",
+    "requested_reasoning_effort": "none",
+    "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+    "decode_token_scope": "server_usage; no reasoning tokens reported",
+    "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk"
+   },
+   "decode_token_count": 242,
+   "reasoning_tokens": 0,
+   "target_error_pct": -6.58,
+   "ttft_s": 25.702976958011277,
+   "decode_s": 11.70236912497785,
+   "wall_s": 37.405346082989126,
+   "prefill_tps": 181.72992208764796,
+   "decode_tps": 20.67957329114399,
+   "finish_reason": "stop",
+   "sample_text": "As of October 2026, agentic AI has stabilized around a single capable model operating in a tight loop with well-defined tools, rather than complex multi-agent societies. Success depends on robust engineering practices, including strict context management, sandboxing, and idempotent tool calls, rather than raw",
+   "vram_after_load_mb": null,
+   "vram_peak_mb": null,
+   "power": {
+    "scope": "benchmark_client_selected_gpu",
+    "gpu_indices": null,
+    "prefill_gpu_power_complete": false,
+    "decode_gpu_power_complete": false,
+    "available": false,
+    "low_confidence": true,
+    "source": "none",
+    "prefill_cpu_w": null,
+    "decode_cpu_w": null,
+    "prefill_gpu_w": null,
+    "prefill_gpu_w_max": null,
+    "decode_gpu_w": null,
+    "decode_gpu_w_max": null,
+    "prefill_system_w_est": null,
+    "decode_system_w_est": null,
+    "prefill_energy_j": null,
+    "decode_energy_j": null,
+    "prefill_system_energy_j_est": null,
+    "decode_system_energy_j_est": null,
+    "j_per_1k_prefill": null,
+    "j_per_1k_prefill_system_est": null,
+    "j_per_token_decode": null,
+    "j_per_token_decode_system_est": null,
+    "prefill_gpu_util": null,
+    "decode_gpu_util": null,
+    "prefill_cpu_util": 0.2223560355506375,
+    "decode_cpu_util": 0.3158592167155328,
+    "temp_c_max": null,
+    "clock_mhz_avg": null,
+    "samples": 244,
+    "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown"
+   },
+   "per_request_context_length": 6018,
+   "requested_total_context": 6018,
+   "load_parallel_capacity": 1,
+   "context_policy": "per_test",
+   "load_reused": false,
+   "chars_per_token_after": 4.7375,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen/qwen3.8-27b",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen/qwen3.8-27b",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "lm-studio-local-6cdd69ca3ce9",
+     "label": "LM Studio local endpoint",
+     "provider": "lmstudio",
+     "source": "inferred",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "4bit",
+     "source": "endpoint_reported",
+     "user_reported": "unknown"
+    },
+    "engine": {
+     "value": "LM Studio",
+     "source": "inferred"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "off",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "20806379625dada2809b945043d18767c2128cfb4034d71c501253adc99d8cb8"
+   },
+   "configuration_id": "20806379625dada2809b945043d18767c2128cfb4034d71c501253adc99d8cb8",
+   "session_id": "aa119774f821"
+  },
+  {
+   "model": "qwen/qwen3.8-27b",
+   "target_tokens": 10000,
+   "mtp": false,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 11268,
+   "context_length": 11268,
+   "gpu_offload": "max",
+   "quantization": "4bit",
+   "quantization_source": "endpoint_reported",
+   "quantization_method": null,
+   "quantization_method_source": "unknown",
+   "architecture": "qwen3_5",
+   "params": "27B",
+   "load_s": 4.181277791969478,
+   "prompt_chars": 47019,
+   "corpus_wraps": 0,
+   "nonce": "f710d2d04563",
+   "max_tokens": 256,
+   "reasoning_disabled": true,
+   "timestamp": "2026-11-12T15:03:45+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "ok",
+   "prompt_tokens": 9341,
+   "completion_tokens": 216,
+   "completion_tokens_estimated": false,
+   "cached_prompt_tokens": null,
+   "metric_sources": {
+    "ttft_s": "client_monotonic_clock_to_first_observed_output",
+    "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+    "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+    "completion_tokens": "server_usage"
+   },
+   "reported_timings": {},
+   "timing_scope": {
+    "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+    "first_output_kind": "content",
+    "observed_output_kinds": [
+     "content"
+    ],
+    "empty_deltas_before_output": 0,
+    "reasoning_streamed": false,
+    "reasoning_token_count_source": "server_usage",
+    "requested_reasoning_effort": "none",
+    "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+    "decode_token_scope": "server_usage; no reasoning tokens reported",
+    "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk"
+   },
+   "decode_token_count": 215,
+   "reasoning_tokens": 0,
+   "target_error_pct": -6.59,
+   "ttft_s": 56.28252616699319,
+   "decode_s": 12.549241000029724,
+   "wall_s": 68.83176716702292,
+   "prefill_tps": 165.96625340313912,
+   "decode_tps": 17.13251024500133,
+   "finish_reason": "stop",
+   "sample_text": "This report outlines the state of agentic AI in October 2026, highlighting a shift from complex multi-agent societies to a dominant architecture: a single capable model operating in a tight loop with well-defined tools and human oversight. The industry has standardized around four autonomy tiers, with \"bounded autonomous\"",
+   "vram_after_load_mb": null,
+   "vram_peak_mb": null,
+   "power": {
+    "scope": "benchmark_client_selected_gpu",
+    "gpu_indices": null,
+    "prefill_gpu_power_complete": false,
+    "decode_gpu_power_complete": false,
+    "available": false,
+    "low_confidence": true,
+    "source": "none",
+    "prefill_cpu_w": null,
+    "decode_cpu_w": null,
+    "prefill_gpu_w": null,
+    "prefill_gpu_w_max": null,
+    "decode_gpu_w": null,
+    "decode_gpu_w_max": null,
+    "prefill_system_w_est": null,
+    "decode_system_w_est": null,
+    "prefill_energy_j": null,
+    "decode_energy_j": null,
+    "prefill_system_energy_j_est": null,
+    "decode_system_energy_j_est": null,
+    "j_per_1k_prefill": null,
+    "j_per_1k_prefill_system_est": null,
+    "j_per_token_decode": null,
+    "j_per_token_decode_system_est": null,
+    "prefill_gpu_util": null,
+    "decode_gpu_util": null,
+    "prefill_cpu_util": 0.152358753445244,
+    "decode_cpu_util": 0.17022435729056248,
+    "temp_c_max": null,
+    "clock_mhz_avg": null,
+    "samples": 448,
+    "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown"
+   },
+   "per_request_context_length": 11268,
+   "requested_total_context": 11268,
+   "load_parallel_capacity": 1,
+   "context_policy": "per_test",
+   "load_reused": false,
+   "chars_per_token_after": 4.93,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen/qwen3.8-27b",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen/qwen3.8-27b",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "lm-studio-local-6cdd69ca3ce9",
+     "label": "LM Studio local endpoint",
+     "provider": "lmstudio",
+     "source": "inferred",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "4bit",
+     "source": "endpoint_reported",
+     "user_reported": "unknown"
+    },
+    "engine": {
+     "value": "LM Studio",
+     "source": "inferred"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "off",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "20806379625dada2809b945043d18767c2128cfb4034d71c501253adc99d8cb8"
+   },
+   "configuration_id": "20806379625dada2809b945043d18767c2128cfb4034d71c501253adc99d8cb8",
+   "session_id": "aa119774f821"
+  },
+  {
+   "model": "qwen/qwen3.8-27b",
+   "target_tokens": 20000,
+   "mtp": false,
+   "concurrency": 1,
+   "repeat": 0,
+   "requested_context": 21768,
+   "context_length": 21768,
+   "gpu_offload": "max",
+   "quantization": "4bit",
+   "quantization_source": "endpoint_reported",
+   "quantization_method": null,
+   "quantization_method_source": "unknown",
+   "architecture": "qwen3_5",
+   "params": "27B",
+   "load_s": 4.480412916978821,
+   "prompt_chars": 98252,
+   "corpus_wraps": 0,
+   "nonce": "7cf48bb96dc1",
+   "max_tokens": 256,
+   "reasoning_disabled": true,
+   "timestamp": "2026-11-12T15:04:59+00:00",
+   "timeout_budget_s": 1800.0,
+   "timeout_reason": "configured per-test timeout",
+   "status": "ok",
+   "prompt_tokens": 18925,
+   "completion_tokens": 239,
+   "completion_tokens_estimated": false,
+   "cached_prompt_tokens": null,
+   "metric_sources": {
+    "ttft_s": "client_monotonic_clock_to_first_observed_output",
+    "prefill_tps": "prompt_tokens_divided_by_client_ttft; includes queue/network/tokenization and any unobserved reasoning; cache state may be unknown",
+    "decode_tps": "decode_token_count_over_client_duration_after_first_observed_output; see timing_scope",
+    "completion_tokens": "server_usage"
+   },
+   "reported_timings": {},
+   "timing_scope": {
+    "boundary": "first observed nonempty content or reasoning text; not necessarily the first generated token",
+    "first_output_kind": "content",
+    "observed_output_kinds": [
+     "content"
+    ],
+    "empty_deltas_before_output": 0,
+    "reasoning_streamed": false,
+    "reasoning_token_count_source": "server_usage",
+    "requested_reasoning_effort": "none",
+    "reasoning_effort_effective": "unknown; request parameter does not verify engine behavior",
+    "decode_token_scope": "server_usage; no reasoning tokens reported",
+    "first_delta_token_count": "unknown; throughput convention subtracts one token, not one chunk"
+   },
+   "decode_token_count": 238,
+   "reasoning_tokens": 0,
+   "target_error_pct": -5.375,
+   "ttft_s": 164.53835345903644,
+   "decode_s": 22.101819041010458,
+   "wall_s": 186.6401725000469,
+   "prefill_tps": 115.01877587897206,
+   "decode_tps": 10.768344431668057,
+   "finish_reason": "stop",
+   "sample_text": "The October 2026 report on Agentic AI reveals that successful deployments rely on a single capable model operating in a tight loop with well-defined tools, rather than complex multi-agent societies. The industry has shifted focus from raw model scale to inference-time compute, context engineering, and robust scaffolding.",
+   "vram_after_load_mb": null,
+   "vram_peak_mb": null,
+   "power": {
+    "scope": "benchmark_client_selected_gpu",
+    "gpu_indices": null,
+    "prefill_gpu_power_complete": false,
+    "decode_gpu_power_complete": false,
+    "available": false,
+    "low_confidence": true,
+    "source": "none",
+    "prefill_cpu_w": null,
+    "decode_cpu_w": null,
+    "prefill_gpu_w": null,
+    "prefill_gpu_w_max": null,
+    "decode_gpu_w": null,
+    "decode_gpu_w_max": null,
+    "prefill_system_w_est": null,
+    "decode_system_w_est": null,
+    "prefill_energy_j": null,
+    "decode_energy_j": null,
+    "prefill_system_energy_j_est": null,
+    "decode_system_energy_j_est": null,
+    "j_per_1k_prefill": null,
+    "j_per_1k_prefill_system_est": null,
+    "j_per_token_decode": null,
+    "j_per_token_decode_system_est": null,
+    "prefill_gpu_util": null,
+    "decode_gpu_util": null,
+    "prefill_cpu_util": 0.14600742049012347,
+    "decode_cpu_util": 0.325262392274419,
+    "temp_c_max": null,
+    "clock_mhz_avg": null,
+    "samples": 1214,
+    "decode_energy_token_scope": "same timed token scope as decode_token_count; unavailable when hidden reasoning count is unknown"
+   },
+   "per_request_context_length": 21768,
+   "requested_total_context": 21768,
+   "load_parallel_capacity": 1,
+   "context_policy": "per_test",
+   "load_reused": false,
+   "chars_per_token_after": 5.1001,
+   "model_configuration": {
+    "fingerprint_version": "wattever-model-configuration-v1",
+    "model": {
+     "value": "qwen/qwen3.8-27b",
+     "source": "requested_model_identifier"
+    },
+    "request_model": {
+     "value": "qwen/qwen3.8-27b",
+     "source": "requested_model_identifier"
+    },
+    "endpoint": {
+     "id": "lm-studio-local-6cdd69ca3ce9",
+     "label": "LM Studio local endpoint",
+     "provider": "lmstudio",
+     "source": "inferred",
+     "scope": "public route identity; actual inference backend is not verified"
+    },
+    "quantization": {
+     "value": "4bit",
+     "source": "endpoint_reported",
+     "user_reported": "unknown"
+    },
+    "engine": {
+     "value": "LM Studio",
+     "source": "inferred"
+    },
+    "engine_version": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_revision": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "model_source": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "kv_cache_dtype": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "reasoning": {
+     "requested": "none",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "mtp": {
+     "requested": "off",
+     "effective": "unknown",
+     "effective_source": "unknown",
+     "user_reported": "unknown"
+    },
+    "context_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "mtp_draft_tokens": {
+     "value": "unknown",
+     "source": "unknown"
+    },
+    "configuration_id": "20806379625dada2809b945043d18767c2128cfb4034d71c501253adc99d8cb8"
+   },
+   "configuration_id": "20806379625dada2809b945043d18767c2128cfb4034d71c501253adc99d8cb8",
+   "session_id": "aa119774f821"
+  }
+ ],
+ "corpus": {
+  "chars": 407860,
+  "approx_tokens": 88665,
+  "sha256": "ce2a239612d5937d317532040bd62253d9949fb2869e82d49bcd13dcb18f6ee5"
+ },
+ "schema_version": 2,
+ "$schema": "../benchmark.schema.json",
+ "application": {
+  "name": "Wattever",
+  "version": "2.6.1",
+  "protocol_version": "2"
+ },
+ "hardware": {
+  "metadata_schema_version": 1,
+  "collection": {
+   "scope": "benchmark_client",
+   "inference_server_hardware_verified": false,
+   "captured_at": "2026-11-12T15:02:37.600553+00:00",
+   "python_version": "3.12.13",
+   "policy": "Read-only allow-listed OS/driver probes without elevation; no unique device IDs, host names, network addresses or user paths."
+  },
+  "memory": {
+   "modules": [],
+   "module_count": null,
+   "installed_capacity_bytes": 137438953472,
+   "configured_clock_mhz_reported": [],
+   "channel_count": null,
+   "channel_topology": {
+    "status": "unavailable",
+    "source": null,
+    "method": null,
+    "captured_at": "2026-11-12T15:02:37.606339+00:00",
+    "channel_count": null,
+    "active_channel_count": null,
+    "populated_channel_count": null,
+    "reason": "This platform does not expose channel topology through the built-in probe."
+   },
+   "measured_bandwidth_gb_s": null,
+   "source": "sysctl",
+   "note": "Channel topology includes its source and detection method; populated channels do not verify active controller mode. Module count does not establish channels. Clocks are firmware/OS reports; measured transfer probes are stored separately."
+  },
+  "motherboard": {
+   "manufacturer": null,
+   "model": null
+  },
+  "firmware": {
+   "vendor": null,
+   "version": null
+  },
+  "storage": [
+   {
+    "model": "APPLE SSD AP4096Z",
+    "capacity_bytes": 4002222325760,
+    "interface": "NVMe"
+   }
+  ],
+  "os": {
+   "name": "Darwin",
+   "release": "27.0.0",
+   "architecture": "arm64"
+  },
+  "cpu": {
+   "name": "Apple M5 Max",
+   "physical_cores": 18,
+   "logical_cores": 18,
+   "architecture": "arm64",
+   "socket_count": null,
+   "max_clock_mhz_reported": null,
+   "source": "sysctl"
+  },
+  "system": {
+   "manufacturer": "Apple",
+   "model": "Mac17,7",
+   "memory_bytes": 137438953472
+  },
+  "gpus": [
+   {
+    "name": "Apple M5 Max",
+    "vendor": "sppci_vendor_Apple",
+    "memory_bytes": 137438953472,
+    "driver": null,
+    "sensor_index": 0,
+    "pcie": {
+     "generation_current": null,
+     "width_current": null,
+     "generation_max_reported": null,
+     "width_max_reported": null,
+     "link_encoding_ceiling_bytes_per_second": null,
+     "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+     "measured_host_to_device_bytes_per_second": null,
+     "source": null,
+     "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+     "physical_slot": null,
+     "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+    },
+    "capabilities": {
+     "compute_capability_reported": null,
+     "power_limit_w_reported": null,
+     "compute_peaks": [],
+     "measured_memory_bandwidth_gb_s": null,
+     "note": "No FLOPS/TOPS or device-memory bandwidth measurement was performed. Model quantization bit width is not hardware arithmetic precision; peak compute also depends on operation, clock and sparsity."
+    },
+    "memory_architecture": "unified"
+   }
+  ],
+  "transfer_bandwidth": {
+   "schema_version": 1,
+   "captured_at": "2026-11-12T15:02:37.939714+00:00",
+   "scope": "benchmark_client",
+   "unit": "bytes_per_second",
+   "protocol": "wattever-transfer-v1",
+   "storage_to_ram": {
+    "status": "ok",
+    "bytes_per_second": 24694694763.9425,
+    "statistic": "median",
+    "samples": [
+     {
+      "bytes": 268435456,
+      "elapsed_s": 0.010870166996028274
+     },
+     {
+      "bytes": 268435456,
+      "elapsed_s": 0.010476791008841246
+     },
+     {
+      "bytes": 268435456,
+      "elapsed_s": 0.01154754200251773
+     }
+    ],
+    "method": "macos_f_nocache",
+    "file_bytes": 268435456,
+    "block_bytes": 8388608,
+    "queue_depth": 1,
+    "os_page_cache": "bypassed",
+    "storage_scope": "probe_directory_volume",
+    "volume": "results filesystem",
+    "note": "Sequential reads of a flushed temporary file on the selected volume (results volume by default). File creation is excluded. Device/controller caches may contribute; model files on other volumes need separate measurement."
+   },
+   "ram_copy_single": {
+    "status": "ok",
+    "bytes_per_second": 71240435630.1257,
+    "statistic": "median",
+    "samples": [
+     {
+      "bytes": 536870912,
+      "elapsed_s": 0.007740915985777974
+     },
+     {
+      "bytes": 536870912,
+      "elapsed_s": 0.007536041957791895
+     },
+     {
+      "bytes": 536870912,
+      "elapsed_s": 0.007531917013693601
+     }
+    ],
+    "method": "native_memmove_disjoint_buffers",
+    "workers": 1,
+    "buffer_bytes_per_worker": 67108864,
+    "working_set_bytes": 134217728,
+    "copies_per_sample": 8,
+    "verified_readback": true,
+    "byte_accounting": "copied_payload",
+    "note": "Native RAM copy payload throughput. Each payload byte requires a source read and destination write; 2x this rate is logical read+write bandwidth, not measured DRAM bus traffic. Cache/write-allocation effects and worker count influence results."
+   },
+   "ram_copy_parallel": {
+    "status": "ok",
+    "bytes_per_second": 145418757605.68057,
+    "statistic": "median",
+    "samples": [
+     {
+      "bytes": 4294967296,
+      "elapsed_s": 0.029535167035646737
+     },
+     {
+      "bytes": 4294967296,
+      "elapsed_s": 0.029648958006873727
+     },
+     {
+      "bytes": 4294967296,
+      "elapsed_s": 0.029371541982982308
+     }
+    ],
+    "method": "native_memmove_disjoint_buffers",
+    "workers": 8,
+    "buffer_bytes_per_worker": 67108864,
+    "working_set_bytes": 1073741824,
+    "copies_per_sample": 8,
+    "verified_readback": true,
+    "byte_accounting": "copied_payload",
+    "note": "Native RAM copy payload throughput. Each payload byte requires a source read and destination write; 2x this rate is logical read+write bandwidth, not measured DRAM bus traffic. Cache/write-allocation effects and worker count influence results."
+   },
+   "ram_to_vram_devices": [],
+   "ram_to_vram": {
+    "status": "unavailable",
+    "reason": "No NVIDIA sensor with a verified PCI bus mapping"
+   },
+   "provenance": "measured_before_session"
+  }
+ },
+ "measurement_scope": {
+  "power_gpu_sensor_index": 0,
+  "power_boundary": "selected GPU/SoC sensor; CPU/RAM are whole-client observations",
+  "runtime_gpu_placement": "unknown; managed by LM Studio",
+  "runtime_gpu_placement_source": "unknown",
+  "power_gpu_sensor_indices": [
+   0
+  ],
+  "gpu_telemetry_scope": "benchmark_client_selected_gpu",
+  "gpu_inventory_complete": false,
+  "system_power_boundary": "GPU board power plus CPU and other-system estimates; not a wall-meter measurement"
+ },
+ "classification": {
+  "hardware_class": "3ea50f7d90fb51c9e760",
+  "gpu_names": [
+   "Apple M5 Max"
+  ],
+  "platform": "macos"
+ },
+ "provider": {
+  "kind": "lmstudio",
+  "label": "LM Studio local endpoint",
+  "model_management": "lms_cli",
+  "inference_location": "local",
+  "context_control": true,
+  "mtp_control": true
+ },
+ "model_configurations": [
+  {
+   "fingerprint_version": "wattever-model-configuration-v1",
+   "model": {
+    "value": "qwen/qwen3.8-27b",
+    "source": "requested_model_identifier"
+   },
+   "request_model": {
+    "value": "qwen/qwen3.8-27b",
+    "source": "requested_model_identifier"
+   },
+   "endpoint": {
+    "id": "lm-studio-local-6cdd69ca3ce9",
+    "label": "LM Studio local endpoint",
+    "provider": "lmstudio",
+    "source": "inferred",
+    "scope": "public route identity; actual inference backend is not verified"
+   },
+   "quantization": {
+    "value": "4bit",
+    "source": "endpoint_reported",
+    "user_reported": "unknown"
+   },
+   "engine": {
+    "value": "LM Studio",
+    "source": "inferred"
+   },
+   "engine_version": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "model_revision": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "model_source": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "kv_cache_dtype": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "reasoning": {
+    "requested": "none",
+    "effective": "unknown",
+    "effective_source": "unknown",
+    "user_reported": "unknown"
+   },
+   "mtp": {
+    "requested": "off",
+    "effective": "unknown",
+    "effective_source": "unknown",
+    "user_reported": "unknown"
+   },
+   "context_tokens": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "mtp_draft_tokens": {
+    "value": "unknown",
+    "source": "unknown"
+   },
+   "configuration_id": "20806379625dada2809b945043d18767c2128cfb4034d71c501253adc99d8cb8"
+  }
+ ],
+ "reproducibility": {
+  "source": "user_reported",
+  "settings": {}
+ },
+ "performance_claims": [],
+ "measurement_mode": "helper",
+ "active_session_id": "aa119774f821",
+ "sessions": [
+  {
+   "id": "aa119774f821",
+   "started_at": "2026-11-12T15:02:37+00:00",
+   "status": "running",
+   "config": {
+    "provider": "lmstudio",
+    "endpoint_label": "LM Studio local endpoint",
+    "endpoint_inference_local": false,
+    "endpoint_reasoning_effort": "none",
+    "models": [
+     "qwen/qwen3.8-27b"
+    ],
+    "concurrency_levels": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8
+    ],
+    "sizes": [
+     512,
+     5000,
+     10000,
+     20000,
+     40000
+    ],
+    "max_tokens": 256,
+    "repeats": 1,
+    "gpu_offload": "max",
+    "fallback_on_failure": false,
+    "stop_model_after_failure": true,
+    "skip_after_timeout": false,
+    "context_headroom": 512,
+    "context_safety_fraction": 0.05,
+    "context_policy": "per_test",
+    "context_planner_version": 1,
+    "per_test_timeout_s": 1800,
+    "load_timeout_s": 900,
+    "warmup": true,
+    "disable_thinking": true,
+    "mtp_modes": [
+     "off",
+     "on"
+    ],
+    "power_interval_ms": 150,
+    "hardware_probe_policy": "auto",
+    "other_idle_w": 10.0,
+    "cpu_tdp_w": 25.0,
+    "label": "Apple M5 Max",
+    "notes": "Models: qwen/qwen3.8-27b\nPrompt tokens: 512, 5k, 10k, 20k, 40k\nSimultaneous queries: 1, 2, 3, 4, 5, 6, 7, 8\nAnswer: 256 tokens; repeats: 1\nPlacement: prefer GPU; CPU fallback: off\nReasoning: off; speculative decoding: off + on\nWarmup: on; skip larger sizes after failure: on\nContext allocation: matched to each test",
+    "gpu_index": 0,
+    "endpoint_id": "lm-studio-local-6cdd69ca3ce9",
+    "endpoint_name_override": "",
+    "reproducibility": {},
+    "performance_claims": [],
+    "canonical_model_id": "",
+    "reported_mtp": "unknown",
+    "reported_reasoning": "unknown",
+    "token_limit_field": "max_tokens",
+    "temperature": 0,
+    "runtime_gpu_placement": "",
+    "endpoint_identity": {
+     "id": "lm-studio-local-6cdd69ca3ce9",
+     "label": "LM Studio local endpoint",
+     "source": "inferred",
+     "service": "LM Studio",
+     "version": "unknown",
+     "location": "local",
+     "route_registry": "opaque_local_mapping",
+     "evidence": "declared_managed_provider",
+     "scope": "route identity; actual inference backend and host are not verified"
+    }
+   },
+   "application": {
+    "name": "Wattever",
+    "version": "2.6.1",
+    "protocol_version": "2"
+   },
+   "hardware": {
+    "metadata_schema_version": 1,
+    "collection": {
+     "scope": "benchmark_client",
+     "inference_server_hardware_verified": false,
+     "captured_at": "2026-11-12T15:02:37.600553+00:00",
+     "python_version": "3.12.13",
+     "policy": "Read-only allow-listed OS/driver probes without elevation; no unique device IDs, host names, network addresses or user paths."
+    },
+    "memory": {
+     "modules": [],
+     "module_count": null,
+     "installed_capacity_bytes": 137438953472,
+     "configured_clock_mhz_reported": [],
+     "channel_count": null,
+     "channel_topology": {
+      "status": "unavailable",
+      "source": null,
+      "method": null,
+      "captured_at": "2026-11-12T15:02:37.606339+00:00",
+      "channel_count": null,
+      "active_channel_count": null,
+      "populated_channel_count": null,
+      "reason": "This platform does not expose channel topology through the built-in probe."
+     },
+     "measured_bandwidth_gb_s": null,
+     "source": "sysctl",
+     "note": "Channel topology includes its source and detection method; populated channels do not verify active controller mode. Module count does not establish channels. Clocks are firmware/OS reports; measured transfer probes are stored separately."
+    },
+    "motherboard": {
+     "manufacturer": null,
+     "model": null
+    },
+    "firmware": {
+     "vendor": null,
+     "version": null
+    },
+    "storage": [
+     {
+      "model": "APPLE SSD AP4096Z",
+      "capacity_bytes": 4002222325760,
+      "interface": "NVMe"
+     }
+    ],
+    "os": {
+     "name": "Darwin",
+     "release": "27.0.0",
+     "architecture": "arm64"
+    },
+    "cpu": {
+     "name": "Apple M5 Max",
+     "physical_cores": 18,
+     "logical_cores": 18,
+     "architecture": "arm64",
+     "socket_count": null,
+     "max_clock_mhz_reported": null,
+     "source": "sysctl"
+    },
+    "system": {
+     "manufacturer": "Apple",
+     "model": "Mac17,7",
+     "memory_bytes": 137438953472
+    },
+    "gpus": [
+     {
+      "name": "Apple M5 Max",
+      "vendor": "sppci_vendor_Apple",
+      "memory_bytes": 137438953472,
+      "driver": null,
+      "sensor_index": 0,
+      "pcie": {
+       "generation_current": null,
+       "width_current": null,
+       "generation_max_reported": null,
+       "width_max_reported": null,
+       "link_encoding_ceiling_bytes_per_second": null,
+       "bandwidth_kind": "derived_one_direction_encoding_ceiling",
+       "measured_host_to_device_bytes_per_second": null,
+       "source": null,
+       "maximum_scope": "driver-reported platform/adapter limit; physical slot wiring and card lane capability are unverified",
+       "physical_slot": null,
+       "note": "Snapshot may show an idle downshift. Reported maxima can reflect platform limits and do not prove the card or physical slot supports that lane count. Encoding ceiling excludes packet/system overhead and is not measured transfer bandwidth."
+      },
+      "capabilities": {
+       "compute_capability_reported": null,
+       "power_limit_w_reported": null,
+       "compute_peaks": [],
+       "measured_memory_bandwidth_gb_s": null,
+       "note": "No FLOPS/TOPS or device-memory bandwidth measurement was performed. Model quantization bit width is not hardware arithmetic precision; peak compute also depends on operation, clock and sparsity."
+      },
+      "memory_architecture": "unified"
+     }
+    ]
+   },
+   "measurement_scope": {
+    "power_gpu_sensor_index": 0,
+    "power_boundary": "selected GPU/SoC sensor; CPU/RAM are whole-client observations",
+    "runtime_gpu_placement": "unknown; managed by LM Studio",
+    "runtime_gpu_placement_source": "unknown",
+    "power_gpu_sensor_indices": [
+     0
+    ],
+    "gpu_telemetry_scope": "benchmark_client_selected_gpu",
+    "gpu_inventory_complete": false,
+    "system_power_boundary": "GPU board power plus CPU and other-system estimates; not a wall-meter measurement"
+   },
+   "lms_version": "commit 43d4b26",
+   "retry_failed": false,
+   "rerun_existing": false,
+   "transfer_bandwidth": {
+    "schema_version": 1,
+    "captured_at": "2026-11-12T15:02:37.939714+00:00",
+    "scope": "benchmark_client",
+    "unit": "bytes_per_second",
+    "protocol": "wattever-transfer-v1",
+    "storage_to_ram": {
+     "status": "ok",
+     "bytes_per_second": 24694694763.9425,
+     "statistic": "median",
+     "samples": [
+      {
+       "bytes": 268435456,
+       "elapsed_s": 0.010870166996028274
+      },
+      {
+       "bytes": 268435456,
+       "elapsed_s": 0.010476791008841246
+      },
+      {
+       "bytes": 268435456,
+       "elapsed_s": 0.01154754200251773
+      }
+     ],
+     "method": "macos_f_nocache",
+     "file_bytes": 268435456,
+     "block_bytes": 8388608,
+     "queue_depth": 1,
+     "os_page_cache": "bypassed",
+     "storage_scope": "probe_directory_volume",
+     "volume": "results filesystem",
+     "note": "Sequential reads of a flushed temporary file on the selected volume (results volume by default). File creation is excluded. Device/controller caches may contribute; model files on other volumes need separate measurement."
+    },
+    "ram_copy_single": {
+     "status": "ok",
+     "bytes_per_second": 71240435630.1257,
+     "statistic": "median",
+     "samples": [
+      {
+       "bytes": 536870912,
+       "elapsed_s": 0.007740915985777974
+      },
+      {
+       "bytes": 536870912,
+       "elapsed_s": 0.007536041957791895
+      },
+      {
+       "bytes": 536870912,
+       "elapsed_s": 0.007531917013693601
+      }
+     ],
+     "method": "native_memmove_disjoint_buffers",
+     "workers": 1,
+     "buffer_bytes_per_worker": 67108864,
+     "working_set_bytes": 134217728,
+     "copies_per_sample": 8,
+     "verified_readback": true,
+     "byte_accounting": "copied_payload",
+     "note": "Native RAM copy payload throughput. Each payload byte requires a source read and destination write; 2x this rate is logical read+write bandwidth, not measured DRAM bus traffic. Cache/write-allocation effects and worker count influence results."
+    },
+    "ram_copy_parallel": {
+     "status": "ok",
+     "bytes_per_second": 145418757605.68057,
+     "statistic": "median",
+     "samples": [
+      {
+       "bytes": 4294967296,
+       "elapsed_s": 0.029535167035646737
+      },
+      {
+       "bytes": 4294967296,
+       "elapsed_s": 0.029648958006873727
+      },
+      {
+       "bytes": 4294967296,
+       "elapsed_s": 0.029371541982982308
+      }
+     ],
+     "method": "native_memmove_disjoint_buffers",
+     "workers": 8,
+     "buffer_bytes_per_worker": 67108864,
+     "working_set_bytes": 1073741824,
+     "copies_per_sample": 8,
+     "verified_readback": true,
+     "byte_accounting": "copied_payload",
+     "note": "Native RAM copy payload throughput. Each payload byte requires a source read and destination write; 2x this rate is logical read+write bandwidth, not measured DRAM bus traffic. Cache/write-allocation effects and worker count influence results."
+    },
+    "ram_to_vram_devices": [],
+    "ram_to_vram": {
+     "status": "unavailable",
+     "reason": "No NVIDIA sensor with a verified PCI bus mapping"
+    },
+    "provenance": "measured_before_session"
+   },
+   "idle": {
+    "gpu_w": null,
+    "system_w_est": null,
+    "cpu_util": 0.15282898384022714,
+    "cpu_w": null,
+    "vram_mb": null,
+    "source": "none",
+    "baseline_kind": "models unloaded"
+   },
+   "power_source": "none"
+  }
+ ],
+ "hardware_probe": {
+  "policy": "auto",
+  "status": "measured",
+  "source": "new_capture",
+  "measured_this_session": true,
+  "captured_at": "2026-11-12T15:02:37.939714+00:00"
+ },
+ "idle": {
+  "gpu_w": null,
+  "system_w_est": null,
+  "cpu_util": 0.15282898384022714,
+  "cpu_w": null,
+  "vram_mb": null,
+  "source": "none",
+  "baseline_kind": "models unloaded"
+ },
+ "power_source": "none",
+ "telemetry": {
+  "summary": {
+   "schema_version": 1,
+   "available": true,
+   "scope": "benchmark_client_selected_gpu",
+   "gpu_indices": [
+    0
+   ],
+   "gpu_count": 1,
+   "inventory_complete": false,
+   "gpu_power_aggregation": "sum of all monitored GPU board power; missing readings make the total unavailable",
+   "vram_aggregation": "sum of physical used/capacity readings; separate per-card allocations",
+   "gpu_util_aggregation": "unweighted mean of per-card utilization percentages",
+   "temperature_aggregation": "maximum reported GPU temperature",
+   "system_power_boundary": "GPU board power plus CPU and other-system estimates; not a wall-meter measurement",
+   "duration_s": 328.41503854095936,
+   "observations": 2125,
+   "source": "none",
+   "start": {
+    "elapsed_s": 0.006234958011191338,
+    "timestamp": "2026-11-12T15:02:37.718338+00:00",
+    "gpu_w": null,
+    "gpu_util": null,
+    "vram_mb": null,
+    "vram_total_mb": 131072.0,
+    "vram_percent": null,
+    "clock_mhz": null,
+    "temp_c": null,
+    "cpu_util": null,
+    "cpu_util_percent": null,
+    "cpu_w": null,
+    "cpu_temp_c": null,
+    "cpu_temp_source": null,
+    "system_memory_used_bytes": 61032644608,
+    "system_memory_total_bytes": 137438953472,
+    "system_memory_percent": 44.40709352493286,
+    "system_memory_source": "host_statistics:total_minus_free_and_inactive_pages_estimate",
+    "system_w_est": null,
+    "source": "none",
+    "scope": "benchmark_client_selected_gpu"
+   },
+   "end": {
+    "elapsed_s": 328.3529338329681,
+    "timestamp": "2026-11-12T15:08:06.065037+00:00",
+    "gpu_w": null,
+    "gpu_util": null,
+    "vram_mb": null,
+    "vram_total_mb": 131072.0,
+    "vram_percent": null,
+    "clock_mhz": null,
+    "temp_c": null,
+    "cpu_util": 0.28284671532846717,
+    "cpu_util_percent": 28.284671532846716,
+    "cpu_w": null,
+    "cpu_temp_c": null,
+    "cpu_temp_source": null,
+    "system_memory_used_bytes": 78612594688,
+    "system_memory_total_bytes": 137438953472,
+    "system_memory_percent": 57.198190689086914,
+    "system_memory_source": "host_statistics:total_minus_free_and_inactive_pages_estimate",
+    "system_w_est": null,
+    "source": "none",
+    "scope": "benchmark_client_selected_gpu"
+   },
+   "metrics": {
+    "system_memory_used_bytes": {
+     "mean": 80003018507.20377,
+     "min": 60454060032,
+     "max": 84171997184,
+     "count": 2125,
+     "first": 61032644608,
+     "last": 78612594688,
+     "time_weighted_mean": 79913254331.00449,
+     "coverage_s": 328.3466988749569,
+     "coverage_fraction": 0.9997919106679584,
+     "early_60s_mean": 76539727511.21243,
+     "late_60s_mean": 80444577571.44615,
+     "late_minus_early": 3904850060.233719
+    },
+    "system_memory_percent": {
+     "mean": 58.20985716651468,
+     "min": 43.98611783981323,
+     "max": 61.24318838119507,
+     "count": 2125,
+     "first": 44.40709352493286,
+     "last": 57.198190689086914,
+     "time_weighted_mean": 58.14454513238494,
+     "coverage_s": 328.3466988749569,
+     "coverage_fraction": 0.9997919106679584,
+     "early_60s_mean": 55.68998131727307,
+     "late_60s_mean": 58.53113367007329,
+     "late_minus_early": 2.841152352800215
+    },
+    "cpu_util_percent": {
+     "mean": 18.344358340155548,
+     "min": 3.2258064516129004,
+     "max": 79.71830985915493,
+     "count": 1657,
+     "first": 23.076923076923073,
+     "last": 28.284671532846716,
+     "time_weighted_mean": 18.53010539442034,
+     "coverage_s": 230.92602862458443,
+     "coverage_fraction": 0.7031530274938482,
+     "early_60s_mean": 23.39915860993421,
+     "late_60s_mean": 22.046501993944243,
+     "late_minus_early": -1.352656615989968
+    }
+   },
+   "drift_note": "Early/late windows can overlap on runs shorter than 120 seconds. Differences describe observed workloads/environment; they do not establish thermal throttling, sustained model speed or hardware capability.",
+   "coverage_note": "Time-weighted coverage excludes gaps longer than four sampling intervals or one second, whichever is larger. Peaks are maxima of observed samples, not guaranteed physical peaks. Ring eviction does not change all-run aggregates.",
+   "gpu_energy_sampled_j": null,
+   "gpu_energy_coverage_s": 0,
+   "energy_scope": "Covered intervals of the whole run including idle, loading and requests; phase energy is recorded per result."
+  }
+ }
+}
