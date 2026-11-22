@@ -144,6 +144,16 @@ const modelResponse=()=>({ok:true,json:async()=>({data:[{id:'test-model',quantiz
  assert.equal(ambiguous.prompt_tokens,0);assert.equal(ambiguous.prefill_tps,0);
  assert.equal(ambiguous.decode_token_count,null);assert.equal(ambiguous.decode_tps,null);
  assert.equal(ambiguous.timing_scope.empty_deltas_before_output,1);
+ // Current vLLM streams reasoning as `reasoning`, not `reasoning_content`; it still ends prefill.
+ packet=0;clock=1000;
+ packets.splice(0,packets.length,
+  [1500,'data: {"choices":[{"delta":{"content":""}}]}\n\n'],
+  [2000,'data: {"choices":[{"delta":{"reasoning":"a"}}]}\n\n'],
+  [3000,'data: {"choices":[{"delta":{"content":"b"},"finish_reason":"stop"}]}\n\n'],
+  [7000,'data: {"usage":{"prompt_tokens":0,"completion_tokens":10,"completion_tokens_details":{"reasoning_tokens":3}}}\n\n'],
+  [8000,'data: [DONE]\n\n']);
+ const vllmReasoning=await timedWindow.WatteverBrowser.testStream('test','prompt',{token_limit_field:'max_tokens',max_tokens:20,per_test_timeout_s:5},500);
+ assert.equal(vllmReasoning.timing_scope.empty_deltas_before_output,1);
  // A zero usage value is measured and terminal output after DONE is ignored.
  packet=0;clock=1000;
  packets.splice(0,packets.length,

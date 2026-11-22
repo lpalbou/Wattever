@@ -130,6 +130,16 @@ class StreamCaptureTests(unittest.TestCase):
         self.assertEqual(value["timing_scope"]["first_output_kind"], "reasoning_content")
         self.assertIsNotNone(value["ttft_s"])
 
+    def test_vllm_reasoning_field_counts_as_reasoning(self):
+        # Current vLLM streams the chain of thought as `delta.reasoning`, not `reasoning_content`.
+        value, _ = self.measure([choice({"role": "assistant"}), choice({"reasoning": "think"}),
+                                 choice({"reasoning": " more"}), choice(finish_reason="length"), usage(64, 64)])
+        self.assertTrue(value["output_capture"]["reasoning_observed"])
+        self.assertTrue(value["output_capture"]["observable_output_present"])
+        self.assertEqual(value["timing_scope"]["first_output_kind"], "reasoning_content")
+        self.assertTrue(value["timing_scope"]["reasoning_streamed"])
+        self.assertIsNotNone(value["ttft_s"])
+
     def test_blank_stop_retains_zero_usage_and_missing_observation(self):
         value, _ = self.measure([choice({"role": "assistant", "content": ""}),
                                  choice(finish_reason="stop"), usage(0, 0)])

@@ -328,7 +328,7 @@
         if (chunk.usage) usage = chunk.usage;
         for (const choice of (chunk.choices || []).slice(0,1)) {
           if (choice.delta != null && !object(choice.delta)) throw new Error('Invalid streamed output text.');
-          const delta=choice.delta || {}, content=delta.content, reasoningText=delta.reasoning_content;
+          const delta=choice.delta || {}, content=delta.content, reasoningText=delta.reasoning_content ?? delta.reasoning;
           if (content != null && typeof content !== 'string' || reasoningText != null && typeof reasoningText !== 'string') throw new Error('Invalid streamed output text.');
           if(reasoningText) reasoningSeen=true;
           if (content || reasoningText) { const observed = performance.now(); if (first === null) first = observed; end = observed; outputEvents++; }

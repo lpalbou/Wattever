@@ -270,7 +270,7 @@ def measure_completion(model, prompt, max_tokens, base=DEFAULT_BASE, timeout=180
     timed from the first token onward so prefill cost does not leak into the
     tk/s figure.
 
-    Reasoning models stream `reasoning_content` before any visible `content`;
+    Reasoning models stream `reasoning_content` (or `reasoning`, current vLLM) before any visible `content`;
     the first delta of *either* kind ends the prefill phase, otherwise TTFT on a
     thinking model would be wrong by the length of its whole chain of thought.
 
@@ -382,7 +382,10 @@ def measure_completion(model, prompt, max_tokens, base=DEFAULT_BASE, timeout=180
                 continue
             delta = choices[0].get("delta") or {}
             content = delta.get("content")
+            # LM Studio and older vLLM stream `reasoning_content`; current vLLM streams `reasoning`.
             reasoning = delta.get("reasoning_content")
+            if reasoning is None:
+                reasoning = delta.get("reasoning")
             if content is not None and not isinstance(content, str) or reasoning is not None and not isinstance(reasoning, str):
                 raise RuntimeError("Invalid streamed output text.")
             kinds = (["reasoning_content"] if reasoning else []) + (["content"] if content else [])
