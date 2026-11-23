@@ -735,6 +735,15 @@ async function init() {
     for (const type of ["change", "input", "click"]) $("#merge-content").addEventListener(type, mergeDialogChanged);
     $("#merge-start").addEventListener("click", startMerge);
   }
+  if ($("#meta-dialog")) {
+    document.addEventListener("click", event => {
+      const id = event.target.closest?.("[data-edit-run]")?.dataset.editRun;
+      if (id) openMetaDialog(id);
+    });
+    for (const id of ["#meta-close", "#meta-cancel"]) $(id).addEventListener("click", () => $("#meta-dialog").close());
+    $("#meta-dialog").addEventListener("close", () => { state.meta = null; });
+    $("#meta-form").addEventListener("submit", saveMeta);
+  }
   $("#extend-dialog").addEventListener("close", () => {
     // A queued close event can arrive after the dialog has already reopened.
     if (!$("#extend-dialog").open) state.extension = null;
@@ -1368,14 +1377,65 @@ function storageKind(disk) {
   return null;
 }
 
-function hardwareBadgesMarkup(source) {
-  const hw = source.hardware || {}, gpu = source.gpu || {}, host = source.host || {};
-  const remote = source.config?.provider === "openai" && source.config.endpoint_inference_local === false;
-  if (remote) return `<div class="condition-badges" aria-label="Machine">${conditionBadge("Remote hardware unknown")}</div>`;
+/* The machine a benchmark describes, from its recorded inventory. An endpoint
+ * benchmark saved without saying where inference ran keeps the inventory of the
+ * computer that sent the requests apart, under measurement_client. When that
+ * computer reached the endpoint at one of its own addresses, its inventory is
+ * the recorded machine, marked as not confirmed. Any other endpoint has none. */
+const HOST_UNCONFIRMED = "Inventory of the computer that ran this benchmark. It reached the endpoint at a local address, but the benchmark was saved without confirming that inference ran on this computer.";
+function machineRecord(run) {
+  const cfg = run.config || {};
+  const unattributed = run.classification?.hardware_class === "remote-unverified" || (cfg.provider === "openai" && cfg.endpoint_inference_local === false);
+  if (!unattributed) return {hardware: run.hardware || {}, gpu: run.gpu || {}, host: run.host || {}, confirmed: true};
+  const client = run.measurement_client;
+  if (run.provider?.inference_location !== "loopback" || !client?.hardware) return null;
+  return {hardware: client.hardware, gpu: client.gpu || {}, host: client.host || {}, confirmed: false};
+}
+/* Graphics cards of a recorded machine. Windows lists the adapters it draws a
+ * remote or fallback desktop with beside the real cards; they run no model. */
+function machineCards(record) {
+  const hw = record.hardware, gpu = record.gpu;
   const cards = hw.gpus?.length ? hw.gpus : gpu.name ? [{name:gpu.name, memory_bytes:gpu.vram_total_mb * 1048576, memory_architecture:gpu.memory_architecture}] : [];
+  const real = cards.filter(card => !/^Microsoft (?:Remote Display|Basic (?:Display|Render))/i.test(card.name || ""));
+  return real.length ? real : cards;
+}
+function machineRamBytes(record) {
+  return record.hardware.memory?.installed_capacity_bytes || record.hardware.system?.memory_bytes || record.host.ram_gb * 1073741824;
+}
+/* A benchmark's machine in a few badges, for the library: cards, their memory, RAM. */
+function machineSummaryMarkup(run) {
+  const record = machineRecord(run);
+  if (!record) return conditionBadge("Hardware not recorded", "This benchmark called an endpoint at another address. The machine that served it was not recorded.");
+  const gib = bytes => Number((bytes / 1073741824).toFixed(1)), kinds = new Map();
+  for (const card of machineCards(record)) {
+    const name = String(card.name || "GPU").replace(/^NVIDIA (?:GeForce\s+)?/, ""), unified = card.memory_architecture === "unified";
+    const key = JSON.stringify([name, card.memory_bytes > 0 ? gib(card.memory_bytes) : null, unified]);
+    kinds.set(key, {name, unified, memory: card.memory_bytes > 0 ? gib(card.memory_bytes) : null, count: (kinds.get(key)?.count || 0) + 1});
+  }
+  const groups = [...kinds.values()], times = group => group.count > 1 ? `${group.count}× ` : "";
+  const memory = group => `${group.memory} GiB ${group.unified ? "unified" : "VRAM"}`;
+  const memoryTitle = group => group.unified ? "Memory shared with the CPU" : group.count > 1 ? "Memory of each card; separate allocations, not one pool" : "Graphics card memory";
+  // Different cards each keep their memory beside their name; one kind of card reads as two facts.
+  const badges = groups.length > 1
+    ? groups.map(group => conditionBadge(times(group) + group.name + (group.memory ? ` · ${memory(group)}` : ""), group.memory ? memoryTitle(group) : "Graphics card", "gpu-badge"))
+    : groups.flatMap(group => [conditionBadge(times(group) + group.name, group.count > 1 ? `${group.count} graphics cards` : "Graphics card", "gpu-badge"),
+      ...(group.memory ? [conditionBadge(times(group) + memory(group), memoryTitle(group))] : [])]);
+  const ram = machineRamBytes(record), cpu = record.hardware.cpu?.name || record.host.cpu;
+  if (ram > 0 && !(groups.length && groups.every(group => group.unified))) badges.push(conditionBadge(`${gib(ram)} GiB RAM`, cpu ? `System memory · ${compactCpuName(cpu)}` : "System memory"));
+  if (!groups.length && cpu) badges.unshift(conditionBadge(compactCpuName(cpu), "No graphics card recorded"));
+  if (!badges.length) badges.push(conditionBadge("Hardware not recorded", "This benchmark has no machine inventory."));
+  if (!record.confirmed) badges.push(conditionBadge("Host not confirmed", HOST_UNCONFIRMED, "unconfirmed-badge"));
+  return badges.join("");
+}
+
+function hardwareBadgesMarkup(source) {
+  const record = machineRecord(source);
+  if (!record) return `<div class="condition-badges" aria-label="Machine">${conditionBadge("Remote hardware unknown")}</div>`;
+  const hw = record.hardware;
+  const cards = machineCards(record);
   const badges = cards.flatMap(card => [conditionBadge(String(card.name || "GPU").replace(/^NVIDIA (?:GeForce\s+)?/, ""), "Graphics card", "gpu-badge"),
     ...(card.memory_bytes > 0 ? [conditionBadge(`${Number((card.memory_bytes / 1073741824).toFixed(1))} GiB ${card.memory_architecture === "unified" ? "unified" : "VRAM"}`)] : [])]);
-  const ram = hw.memory?.installed_capacity_bytes || hw.system?.memory_bytes || host.ram_gb * 1073741824;
+  const ram = machineRamBytes(record);
   if (ram > 0) badges.push(conditionBadge(`${Number((ram / 1073741824).toFixed(1))} GiB RAM`));
   const clocks = hw.memory?.configured_clock_mhz_reported || [];
   if (clocks.length) badges.push(conditionBadge(`${clocks.join(" / ")} RAM clock`, "Firmware/OS reported value; not a measured memory clock"));
@@ -1390,6 +1450,7 @@ function hardwareBadgesMarkup(source) {
     names.push(disk.device_model || disk.model || "Storage type unavailable"); kinds.set(kind,names);
   }
   for (const [kind,names] of kinds) badges.push(conditionBadge(kind, [...new Set(names)].join("; "), "storage-badge"));
+  if (!record.confirmed) badges.push(conditionBadge("Host not confirmed", HOST_UNCONFIRMED, "unconfirmed-badge"));
   return `<div class="condition-badges" aria-label="Machine">${badges.join("")}</div>`;
 }
 
@@ -2398,9 +2459,10 @@ function renderRunsList() {
   }
   const groups = {};
   for (const run of state.runs) {
-    const key = (run.gpu && run.gpu.name) || "No GPU";
+    const key = machineRecord(run)?.gpu.name || (run.gpu && run.gpu.name) || "No GPU";
     (groups[key] = groups[key] || []).push(run);
   }
+  const locked = run => run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : browserMode() && run.status === "running" ? "Wait for this benchmark to finish" : "";
   $("#runs-list").innerHTML = Object.entries(groups).map(([gpu, runs]) => `
     <div class="run-group-label">${esc(gpu.replace(/^NVIDIA\s+/, ""))}</div>
     ${runs.map((run) => `
@@ -2412,7 +2474,7 @@ function renderRunsList() {
           <span class="s">${(run.models || []).length} model${(run.models || []).length === 1 ? "" : "s"} · ${run.n_results} test${run.n_results === 1 ? "" : "s"}</span>
           <span class="counts">
             ${run.community ? '<span class="badge accent badge-shared">Shared</span>' : ""}
-            <span class="badge" title="Tests that completed, out of ${run.n_results} recorded">${run.n_ok} test${run.n_ok === 1 ? "" : "s"} passed</span>
+            ${machineSummaryMarkup(run)}
             ${run.n_failed ? `<span class="badge">${run.n_failed} failed</span>` : ""}
             ${run.n_skipped ? `<span class="badge">${run.n_skipped} skipped</span>` : ""}
             ${run.n_cancelled ? `<span class="badge">${run.n_cancelled} cancelled</span>` : ""}
@@ -2420,7 +2482,7 @@ function renderRunsList() {
             ${run.status === "running" ? '<span class="badge badge-live">Live</span>' : run.status !== "completed" ? `<span class="badge">${esc(run.status)}</span>` : ""}
           </span>
         </span>
-      </button><button class="run-delete" data-delete="${esc(run.id)}" title="${run.status === "running" ? "This benchmark is still running" : run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""} aria-label="Delete ${esc(run.label || run.id)}"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 5h14M8 3h4m-7 2 1 12h8l1-12M8 8v6m4-6v6"/></svg><span>Delete</span></button></div>`).join("")}`).join("");
+      </button><button class="run-edit" data-edit-run="${esc(run.id)}" title="${esc(locked(run) || "Change this benchmark's name and description")}" ${locked(run) ? "disabled" : ""} aria-label="Rename ${esc(run.label || run.id)}"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 16h3l8.5-8.5-3-3L4 13v3Zm7-10 3 3"/></svg><span>Rename</span></button><button class="run-delete" data-delete="${esc(run.id)}" title="${run.status === "running" ? "This benchmark is still running" : run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""} aria-label="Delete ${esc(run.label || run.id)}"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 5h14M8 3h4m-7 2 1 12h8l1-12M8 8v6m4-6v6"/></svg><span>Delete</span></button></div>`).join("")}`).join("");
   $$("#runs-list .run").forEach((btn) => btn.addEventListener("click", () => selectRun(btn.dataset.id)));
   $$("#runs-list [data-run-select]").forEach((input) => input.addEventListener("change", async () => {
     if (state.conditions !== null && input.checked) {
@@ -2677,10 +2739,12 @@ function coverageLine(run) {
   const scope = resultLevels([run]), models = allModelsOf([run]).length;
   const span = (values, format) => values.length > 1 ? `${format(values[0])} to ${format(values[values.length - 1])}` : values.length ? format(values[0]) : "";
   const outcome = [`${count("ok")} passed`, count("failed") ? `${count("failed")} failed` : "", count("skipped") ? `${count("skipped")} skipped` : "", count("cancelled") ? `${count("cancelled")} cancelled` : ""].filter(Boolean).join(", ");
+  const tests = `${rows.length} test${rows.length === 1 ? "" : "s"}`;
   return [`${models} model${models === 1 ? "" : "s"}`,
     scope.prompts.length ? `prompts of ${span(scope.prompts, fmtTokens)} tokens` : "",
     scope.queries.length ? `${span(scope.queries, String)} concurrent quer${scope.queries.length === 1 && scope.queries[0] === 1 ? "y" : "ies"}` : "",
-    `${rows.length} test${rows.length === 1 ? "" : "s"}: ${outcome}`].filter(Boolean).join(" · ");
+    // The count is said once: every test passed, or the outcomes that differ.
+    rows.length && count("ok") === rows.length ? `${tests} passed` : `${tests}: ${outcome}`].filter(Boolean).join(" · ");
 }
 
 function renderRunDetail(run) {
@@ -2696,7 +2760,7 @@ function renderRunDetail(run) {
   const allocationNotice = allocationKeys.size > 1 ? '<p class="hint">Different context allocation settings: these benchmarks reserve different amounts of memory, which can affect speed. Check benchmark settings before comparing.</p>' : "";
   const liveNotice = active.length ? `<p class="live-result-notice" role="status"><span class="badge badge-live">Live</span> ${active.reduce((count, item) => count + (item.results || []).length, 0)} completed tests in the ongoing benchmark${active.length > 1 ? "s" : ""}. Results update as each test finishes.</p>` : "";
   if (state.compare.size > 1) {
-    $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>Comparing ${state.compare.size} benchmarks</h3></header>${liveNotice}${measurementNotice}${allocationNotice}<div class="ov-systems">${selectedRuns.map(item => `<div class="ov-system" style="--benchmark-color:${runColor(item.id)}"><div class="ov-system-name"><strong>${esc(item.label || item.id)}</strong><small>${esc(coverageLine(item))}</small></div>${hardwareBadgesMarkup(item)}${engineBadgesMarkup(item)}</div>`).join("")}</div></div>`;
+    $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>Comparing ${state.compare.size} benchmarks</h3></header>${liveNotice}${measurementNotice}${allocationNotice}<div class="ov-systems">${selectedRuns.map(item => `<div class="ov-system" style="--benchmark-color:${runColor(item.id)}"><div class="ov-system-name"><span class="ov-system-title"><strong>${esc(item.label || item.id)}</strong>${item.community || item.storage_alternative || item.storage_baseline || (browserMode() && item.status === "running") ? "" : `<button type="button" class="btn-sm" data-edit-run="${esc(item.parent_run_id || item.id)}" title="Change this benchmark's name and description">Rename</button>`}</span><small>${esc(coverageLine(item))}</small></div>${hardwareBadgesMarkup(item)}${engineBadgesMarkup(item)}</div>`).join("")}</div></div>`;
     return;
   }
   const sessionAllocationNotice = new Set(allocationConfigs(run).map(allocationKey)).size > 1
@@ -2707,7 +2771,7 @@ function renderRunDetail(run) {
   const ok = (run.results || []).filter((row) => row.status === "ok");
   const failureNotice = (run.results || []).length && !ok.length
     ? plainNote("failed", "warn", "No test in this benchmark completed", "No test in this benchmark completed. Open Tables & CSV, then All measurements, for the failure details.") : null;
-  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${testAction ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" || !testAction.ready ? "disabled" : ""} title="${esc(testAction.title)}">${esc(testAction.label)}</button>` : ""}<button class="btn-sm" id="rename-run" title="${run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : "Edit this benchmark name and notes"}" ${run.status === "running" || run.community ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="${run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""}>${run.community ? "Hide" : "Delete"}</button></header>${hardwareBadgesMarkup(run)}${engineBadgesMarkup(run)}${bandwidthBadgesMarkup(displayBandwidthProfile(run))}${mergeOriginMarkup(run)}${liveNotice}${sourceNotice}${measurementNotice}${notesStrip("detail", [failureNotice, sessionAllocationNotice, incompleteNote(run), ...unservedNotes(run.results)])}<p class="ov-coverage">${esc(coverageLine(run))}</p>${storageExperimentSummary(run)}<details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}${scientificMetadata(run)}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "per_session" ? "context, placement and techniques recorded per engine/session" : cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
+  $("#run-detail").innerHTML = `<div class="card selection-heading"><header><h3>${esc(run.label || run.id)}</h3>${testAction ? `<button class="btn-sm" id="extend-run" ${state.benchmarkRunning || run.status === "running" || !testAction.ready ? "disabled" : ""} title="${esc(testAction.title)}">${esc(testAction.label)}</button>` : ""}<button class="btn-sm" id="rename-run" data-edit-run="${esc(run.id)}" title="${run.community ? "Shared benchmarks are read-only; download and import a copy to edit" : browserMode() && run.status === "running" ? "Wait for this benchmark to finish" : "Change this benchmark's name and description"}" ${run.community || (browserMode() && run.status === "running") ? "disabled" : ""}>Rename</button><a class="btn-sm" href="/api/runs/${encodeURIComponent(run.id)}/download" title="Download this benchmark's JSON file">JSON</a><button class="btn-sm btn-danger" id="delete-run" title="${run.community ? "Hide this shared benchmark in this browser" : "Delete this benchmark from this computer"}" ${run.status === "running" ? "disabled" : ""}>${run.community ? "Hide" : "Delete"}</button></header>${hardwareBadgesMarkup(run)}${engineBadgesMarkup(run)}${bandwidthBadgesMarkup(displayBandwidthProfile(run))}${mergeOriginMarkup(run)}${liveNotice}${sourceNotice}${measurementNotice}${notesStrip("detail", [failureNotice, sessionAllocationNotice, incompleteNote(run), ...unservedNotes(run.results)])}<p class="ov-coverage">${esc(coverageLine(run))}</p>${storageExperimentSummary(run)}<details class="adv"><summary>Machine, settings &amp; notes</summary><div><p class="hint">${esc(gpu.name || "CPU")} / ${esc(host.cpu || "")} / ${esc(run.status)} / ${esc(run.created_at || "")}</p>${run.hardware ? hardwareMarkup(run.hardware) : ""}${scientificMetadata(run)}<p class="saved-notes">${esc(run.notes || "")}</p><p class="hint">Output ${esc(cfg.max_tokens)} tokens / reasoning ${cfg.disable_thinking == null ? "provider controlled" : cfg.disable_thinking === false ? "on" : "off"} / placement ${esc(cfg.gpu_offload === "provider_managed" ? "provider controlled" : cfg.gpu_offload || "auto")} / ${cfg.context_policy === "per_session" ? "context, placement and techniques recorded per engine/session" : cfg.context_policy === "provider_managed" ? "context and speculative decoding provider controlled" : `context allocation ${cfg.context_policy === "fixed" ? "one fixed load per model" : "matched to each test"} / context reserve ${esc(cfg.context_headroom ?? 512)} tokens + ${esc(100 * (cfg.context_safety_fraction ?? 0))}% / planner ${esc(cfg.context_planner_version ?? "legacy")}`}</p>${run.interrupted_note ? `<p class="hint">${esc(run.interrupted_note)}</p>` : ""}${sessionSettings(run)}</div></details></div>`;
   $("#extend-run")?.addEventListener("click", () => openExtendDialog(run));
   bindTelemetry($("#run-detail"),run);
   $("#delete-run").addEventListener("click", () => deleteRun(run));
@@ -2723,15 +2787,38 @@ function renderRunDetail(run) {
       });
     }
   }
-  $("#rename-run").addEventListener("click", async () => {
-    const label = prompt("Benchmark name", run.label || "");
-    if (label === null) return;
-    const notes = prompt("Notes", run.notes || "");
-    if (notes === null) return;
-    await api(`/api/runs/${encodeURIComponent(run.id)}/meta`, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({label, notes})});
-    delete state.runCache[run.id];
+}
+
+/* ---------------- renaming a benchmark ----------------
+ * One dialog edits a benchmark's name and description, opened from its library
+ * card or from its heading in Results: any [data-edit-run] button. */
+function openMetaDialog(id) {
+  const run = state.runs.find(item => item.id === id) || state.runCache[id];
+  if (!run || run.community) return;
+  state.meta = {id};
+  $("#meta-label").value = run.label || "";
+  $("#meta-notes").value = run.notes || "";
+  $("#meta-error").hidden = true;
+  $("#meta-save").disabled = false;
+  $("#meta-dialog").showModal();
+  $("#meta-label").select();
+}
+async function saveMeta(event) {
+  event.preventDefault();
+  const meta = state.meta, label = $("#meta-label").value.trim(), notes = $("#meta-notes").value.trim();
+  if (!meta || !label) return;
+  $("#meta-save").disabled = true;
+  try {
+    await api(`/api/runs/${encodeURIComponent(meta.id)}/meta`, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({label, notes})});
+    if (state.meta === meta) $("#meta-dialog").close();
+    delete state.runCache[meta.id];
     await loadRuns();
-  });
+  } catch (error) {
+    if (state.meta !== meta) return;
+    $("#meta-error").textContent = "Could not save: " + error.message;
+    $("#meta-error").hidden = false;
+    $("#meta-save").disabled = false;
+  }
 }
 
 function resultsConnectionKey() {

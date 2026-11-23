@@ -399,6 +399,8 @@ main { max-width: 1480px; padding: 32px 40px 80px; }
 .condition-badge { white-space: normal; line-height: 1.5; font-size: 11px; }
 .gpu-badge, .engine-badge { color: var(--text-primary); border-color: var(--border-strong); }
 .storage-badge { color: var(--accent); }
+.unconfirmed-badge { border-style: dashed; color: var(--text-muted); cursor: help; }
+.run .counts .condition-badge { font-size: 10px; padding: 1px 6px; white-space: nowrap; }
 .engine-badges { display: grid; gap: 6px; margin: 10px 0; }
 .bandwidth-badges .condition-badge { font-variant-numeric: tabular-nums; }
 .machine-badge-summary { margin: -14px 0 10px; }
@@ -480,8 +482,11 @@ input::placeholder { color: var(--text-muted); opacity: .8; }
 .run-item { position: relative; }
 .run-item .run { padding-right: 70px; }
 .run .t, .run .s { display: block; }
-.run-delete { position: absolute; right: 7px; top: 11px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 5px; border: 0; background: transparent; color: var(--text-muted); font-size: 10px; }
-.run-delete svg { height: 17px; width: 17px; }
+.run-edit, .run-delete { position: absolute; right: 7px; top: 8px; display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 44px; padding: 4px 5px; border: 0; background: transparent; color: var(--text-muted); font-size: 10px; }
+.run-delete { top: 48px; }
+.run-edit svg, .run-delete svg { height: 16px; width: 16px; }
+.run-edit:hover:not(:disabled) { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent) !important; }
+.run-item .run { min-height: 96px; }
 .run-delete:hover { color: #f78989; background: color-mix(in srgb, #f78989 10%, transparent) !important; }
 .run .counts { gap: 5px; flex-wrap: wrap; }
 .runs { max-height: 70vh; }
@@ -1350,6 +1355,14 @@ svg.has-focus .chart-series:not(.is-focus) { opacity: .25; }
 .ov-system { display: grid; gap: 6px; padding: 2px 0 2px 12px; border-left: 3px solid var(--benchmark-color, var(--border-strong)); }
 .ov-system-name { display: grid; gap: 2px; }
 .ov-system-name small { font-size: 11px; color: var(--text-muted); }
+.ov-system-title { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.ov-system-title .btn-sm { padding: 1px 8px; font-size: 10px; color: var(--text-muted); }
+.ov-system-title .btn-sm:hover { color: var(--accent); }
+
+/* Renaming a benchmark: its name and description, nothing else. */
+.meta-dialog { width: min(560px, calc(100% - 28px)); }
+.meta-dialog textarea { width: 100%; min-height: 130px; resize: vertical; background: var(--surface-0); font-size: 12px; line-height: 1.6; }
+.meta-error { margin: 0 0 12px; font-size: 12px; color: var(--status-critical); }
 .ov-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
 .ov-kpi { display: grid; gap: 6px; align-content: start; min-width: 0; padding: 14px 16px; background: var(--surface-1); border: 1px solid var(--border); border-top: 2px solid var(--kpi, var(--accent)); border-radius: var(--radius); }
 .ov-kpi[data-tone="blue"] { --kpi: var(--series-1); }

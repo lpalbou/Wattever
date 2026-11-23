@@ -154,7 +154,7 @@ class Handler(server.Handler):
             return self._json({'ok': True})
         if self.path == '/test/start':
             live = copy.deepcopy(run)
-            live.update(id='live', label='Ongoing benchmark', created_at='2026-11-01T12:00:00+00:00', status='running', results=[])
+            live.update(id='live', label='Ongoing benchmark', notes='', created_at='2026-11-01T12:00:00+00:00', status='running', results=[])
             server.BENCH.run = live
             server.BENCH.running = True
             server.BENCH.events = []

@@ -151,6 +151,66 @@ class StorageTests(unittest.TestCase):
                 httpd.server_close()
                 thread.join()
 
+    def test_rename_validates_and_reaches_a_running_benchmark(self):
+        self.run.update(label="Local endpoint", notes="generated")
+        store.save(self.run)
+        for bad in ({"label": ""}, {"label": "   "}, {"label": "x" * 161}, {"label": 7}, {"notes": "x" * 5001}, {"notes": ["a"]}):
+            with self.assertRaises(ValueError):
+                store.set_meta("sample", **bad)
+        self.assertEqual(store.load("sample")["label"], "Local endpoint")
+        saved = store.set_meta("sample", label="  vLLM 188k  ", notes=" two cards \n")
+        self.assertEqual((saved["label"], saved["notes"]), ("vLLM 188k", "two cards"))
+        self.assertEqual(store.set_meta("sample", notes="")["label"], "vLLM 188k", "an omitted field is kept")
+        self.assertIsNone(store.set_meta("missing", label="x"))
+
+        # The benchmark thread owns a running record: the edit goes to its copy,
+        # is served at once and reaches the file with that thread's next write.
+        live = copy.deepcopy(store.load("sample"))
+        live["status"] = "running"
+        store.save(live)
+        bench = SimpleNamespace(running=True, run=live, _start_lock=threading.Lock())
+        with patch.object(server, "BENCH", bench):
+            httpd = ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)
+            thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+            thread.start()
+            try:
+                base = "http://127.0.0.1:%d" % httpd.server_port
+                def post(body):
+                    return urllib.request.urlopen(urllib.request.Request(
+                        base + "/api/runs/sample/meta", data=json.dumps(body).encode(),
+                        headers={"Content-Type": "application/json", "Origin": base}, method="POST"))
+                with post({"label": "Strata 2 cards", "notes": "live edit"}) as response:
+                    self.assertEqual(json.load(response)["label"], "Strata 2 cards")
+                self.assertEqual((live["label"], live["notes"]), ("Strata 2 cards", "live edit"))
+                self.assertEqual(store.load("sample")["label"], "vLLM 188k", "the helper does not write beside the benchmark thread")
+                with urllib.request.urlopen(base + "/api/runs") as response:
+                    listed = json.load(response)["runs"][0]
+                self.assertEqual((listed["label"], listed["notes"], listed["status"]), ("Strata 2 cards", "live edit", "running"))
+                with urllib.request.urlopen(base + "/api/runs/sample") as response:
+                    self.assertEqual(json.load(response)["label"], "Strata 2 cards")
+                with self.assertRaises(urllib.error.HTTPError) as rejected:
+                    post({"label": ""})
+                self.assertEqual(rejected.exception.code, 400)
+                self.assertEqual(live["label"], "Strata 2 cards")
+                store.save(live)                     # the benchmark thread's next write
+                bench.running = False
+                with post({"notes": "after the run"}):
+                    pass
+                self.assertEqual((store.load("sample")["label"], store.load("sample")["notes"]), ("Strata 2 cards", "after the run"))
+            finally:
+                httpd.shutdown()
+                httpd.server_close()
+                thread.join()
+
+    def test_summary_carries_the_recorded_client_of_an_endpoint_benchmark(self):
+        client = {"hardware": {"gpus": [{"name": "GPU"}], "cpu": {}}, "host": {}, "gpu": {"name": "GPU"}}
+        self.run.update(provider={"kind": "openai", "inference_location": "loopback"}, measurement_client=client)
+        summary = store.summarise(self.run)
+        self.assertEqual(summary["provider"]["inference_location"], "loopback")
+        self.assertEqual(summary["measurement_client"], client)
+        del self.run["provider"], self.run["measurement_client"]
+        self.assertEqual((store.summarise(self.run)["provider"], store.summarise(self.run)["measurement_client"]), ({}, None))
+
     def test_json_downloads_preserve_legacy_wall_rate_as_recorded_evidence(self):
         source = "group_wall_clock; decode is sum(completion_tokens)/group_wall_s"
         self.run["results"] = [{"model": "model", "target_tokens": 512, "concurrency": 2,

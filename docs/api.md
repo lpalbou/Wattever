@@ -22,7 +22,7 @@ The log is kept in `results/.telemetry/` (override with `GPU_BENCH_TELEMETRY_DIR
 
 The environment's `hardware.transfer_coverage` reports detected/measured NVMe counts and incomplete or unverified physical-drive coverage. Transfer captures include per-volume `storage_volumes` evidence and `storage_discovery` counts; volume discovery itself performs no transfer I/O. `POST /api/hardware/bandwidth` includes mounted NVMe volumes automatically and returns `transfer_coverage` alongside the capture. Run it while inference is idle.
 
-`POST /api/bench/start` accepts benchmark configuration and starts inference. `/api/bench/cancel` requests cancellation. `POST /api/runs/<id>/meta` changes label and notes; `DELETE /api/runs/<id>` moves a run to local trash; `POST /api/shutdown` stops Wattever. An active run cannot be edited or deleted. Benchmark runs write results.
+`POST /api/bench/start` accepts benchmark configuration and starts inference. `/api/bench/cancel` requests cancellation. `POST /api/runs/<id>/meta` changes a benchmark's name and description with `{"label": "...", "notes": "..."}`: a name of 1 to 160 characters, a description of at most 5000, either field optional, measurements untouched. A running benchmark can be renamed; the edit is served at once and written with that benchmark's next result. `DELETE /api/runs/<id>` moves a run to local trash; `POST /api/shutdown` stops Wattever. An active run cannot be deleted. Benchmark runs write results.
 
 Both `POST /api/bench/cancel` and `POST /api/capabilities/cancel` accept optional
 `{"expected_run_id":"<owned-run-id>"}`. The helper checks that ID and requests

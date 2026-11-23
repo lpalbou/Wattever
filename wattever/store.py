@@ -260,6 +260,10 @@ def summarise(run):
         "gpu": run.get("gpu") or {},
         "host": run.get("host") or {},
         "hardware": run.get("hardware") or {},
+        # Where requests were sent and the computer that sent them, so the library
+        # can describe the machine of an endpoint benchmark saved as remote.
+        "provider": run.get("provider") or {},
+        "measurement_client": run.get("measurement_client"),
         "classification": run.get("classification") or {},
         "comparison_group": run.get("comparison_group"),
         "hardware_follow_ups": run.get("hardware_follow_ups", []),
@@ -324,15 +328,36 @@ def delete(run_id):
     return False
 
 
-def set_meta(run_id, label=None, notes=None):
-    run = load(run_id)
-    if not run:
-        return None
+LABEL_MAX, NOTES_MAX = 160, 5000
+
+
+def clean_meta(label=None, notes=None):
+    """Validate a benchmark name and description; None leaves a field unchanged."""
+    if label is not None:
+        if not isinstance(label, str) or not label.strip() or len(label.strip()) > LABEL_MAX:
+            raise ValueError("Benchmark name must contain 1..%d characters." % LABEL_MAX)
+        label = label.strip()
+    if notes is not None:
+        if not isinstance(notes, str) or len(notes.strip()) > NOTES_MAX:
+            raise ValueError("Description must contain at most %d characters." % NOTES_MAX)
+        notes = notes.strip()
+    return label, notes
+
+
+def apply_meta(run, label=None, notes=None):
+    label, notes = clean_meta(label, notes)
     if label is not None:
         run["label"] = label
     if notes is not None:
         run["notes"] = notes
-    return save(run)
+    return run
+
+
+def set_meta(run_id, label=None, notes=None):
+    run = load(run_id)
+    if not run:
+        return None
+    return save(apply_meta(run, label, notes))
 
 
 def save_config(cfg):

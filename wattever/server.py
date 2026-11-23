@@ -157,7 +157,9 @@ def _mark_interrupted(run):
     if not run or run.get("status") != "running":
         return run
     if BENCH.running and (BENCH.run or {}).get("id") == run.get("id"):
-        return run                      # this one really is in progress
+        # This one really is in progress. A name or description edited meanwhile
+        # is held by the benchmark thread until its next write.
+        return dict(run, **{key: BENCH.run[key] for key in ("label", "notes") if key in BENCH.run})
     run = dict(run)
     run["status"] = "interrupted"
     run["interrupted_note"] = ("The benchmark was stopped before it finished "
@@ -583,9 +585,16 @@ class Handler(BaseHTTPRequestHandler):
                 run_id = urllib.parse.unquote(route[len("/api/runs/"):-len("/meta")])
                 body = self._body()
                 with BENCH._start_lock:
-                    if BENCH.running and (BENCH.run or {}).get("id") == run_id:
+                    live = BENCH.run if BENCH.running and (BENCH.run or {}).get("id") == run_id else None
+                    if live is None:
+                        run = store.set_meta(run_id, body.get("label"), body.get("notes"))
+                    elif "label" not in live or "notes" not in live:
                         return self._error(409, "Wait for this benchmark to stop before editing it.")
-                    run = store.set_meta(run_id, body.get("label"), body.get("notes"))
+                    else:
+                        # The benchmark thread owns this record and writes the whole file
+                        # after each test. Replacing two existing values is safe beside
+                        # that write; saving from here would race it.
+                        run = store.apply_meta(live, body.get("label"), body.get("notes"))
                 return self._json(store.summarise(run)) if run else self._error(404, "no such run")
             if route == "/api/shutdown":
                 self._json({"ok": True})
