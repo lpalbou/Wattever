@@ -684,9 +684,11 @@ tfoot td { white-space: normal; font-size: 11px; text-align: left; }
   .results-controls > .color-control { position: static; justify-content: flex-end; padding-top: 14px; margin-bottom: 0; }
   .results-controls .result-tabs { padding-right: 0; }
 }
-/* The library follows the full height of the currently selected results view. */
+/* The library follows the full height of the currently selected results view,
+   and never less than the rest of the window: with nothing selected the view is
+   short, and the library is then the only way to browse the recorded benchmarks. */
 .results-grid { align-items: stretch; }
-.benchmark-library { position: static; display: flex; flex-direction: column; }
+.benchmark-library { position: static; display: flex; flex-direction: column; min-height: calc(100vh - 260px); }
 .benchmark-library .runs { flex: 1 1 0; contain: size; min-height: 240px; max-height: none; }
 .result-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .measure-selection { grid-column: 1 / -1; }
@@ -696,6 +698,7 @@ tfoot td { white-space: normal; font-size: 11px; text-align: left; }
 .measure-table + .measure-table { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
 .measure-table > header, .measure-table > h4 { margin-bottom: 12px; }
 @media (max-width: 760px) {
+  .benchmark-library { min-height: 0; }
   .benchmark-library .runs { contain: none; flex: none; min-height: 0; max-height: 340px; }
 }
 /* A single table: selected measures are columns; identity colors remain consistent. */
