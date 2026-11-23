@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Publishes four benchmarks on two RTX 5070 Ti cards: vLLM serving Qwen3.8 27B NVFP4 and Inkling 2 Mini (up to 260k-token prompts), and Strata 0.1.52 and Basalt 0.5.0 serving the same Qwen3.8 Flash-Next UD-IQ4_XS weights from NVMe. Adds [Engine tuning on two RTX 5070 Ti cards](docs/engine-tuning-two-5070-ti.md), which records what was changed in each engine, the measured effect of each change and the upstream tickets.
 - Fixes the benchmark library in Results shrinking to a few rows when no benchmark is selected. It now keeps at least the height of the window, so the recorded benchmarks stay browsable.
 - Adds **Rename** to every benchmark in Results: on its library card, beside its name when several are compared, and in its heading. One dialog edits the name and the description, including while the benchmark is still running. It replaces the two browser prompts that only an opened, finished benchmark offered.
 - Describes the machine on each library card (graphics cards, their memory and RAM) in place of the "N tests passed" badge, which repeated the test count on the line above; failed, skipped and cancelled counts remain. An endpoint benchmark saved as remote that was reached at a local address now shows the inventory of the computer that ran it, marked **Host not confirmed**, in the library and in Overview, and is listed with that computer's other benchmarks. Any other endpoint stays **Hardware not recorded**. Overview says "24 tests passed" once when every test passed.

@@ -18,6 +18,7 @@
 - [Multi-GPU communication and placement study](dual-gpu-communication-and-placement.md): communication paths, transfer measurements, placement strategies, profiling evidence and separate diagnostic protocols.
 - [Two RTX 5070 Ti cards](two-5070-ti-comparison.md): 180 normal cases, matched single/mixed-card comparisons, native drafting, energy and thermals; separate three-repeat Flash expert-RAM tables at 40,960 and 131,072 context.
 - [vLLM on two RTX 5070 Ti cards](vllm-two-5070-ti.md): NVFP4 Qwen3.8-27B served by vLLM against LM Studio, the per-card memory budget, a 188,832-token context pool with every feature on, partial prefix reuse, tensor versus pipeline parallelism and energy per batch.
+- [Engine tuning on two RTX 5070 Ti cards](engine-tuning-two-5070-ti.md): what was changed in vLLM, Strata and Basalt for long prompts, the measured effect of each change, the published benchmark of each engine and the upstream tickets.
 - [Two RTX 5070 Ti placement strategies](two-5070-ti-placement.md): host/cross-card transfers, 153 screening conditions, three profiles, Gemma layout and workload-specific recommendations.
 - [Capability evaluation](capabilities.md): visual score/coverage dashboard, question-by-repeat explorer, compatible paired comparisons, offline pinned suites and audit imports.
 - [Flash-Next task accuracy](flash-next-quality.md): UD-IQ4_XS and IQ3_S on the same ARC64, GSM64 and MMLU-Pro64 samples, with full answer evidence, coverage, generation controls and source lineage.

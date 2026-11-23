@@ -19,6 +19,7 @@ DOCUMENTS = ["README.md", "docs/README.md", "docs/getting-started.md", "docs/bro
              "docs/two-5070-ti-comparison.md",
              "docs/two-5070-ti-placement.md",
              "docs/vllm-two-5070-ti.md",
+             "docs/engine-tuning-two-5070-ti.md",
              "docs/architecture.md", "docs/api.md", "docs/faq.md", "docs/troubleshooting.md",
              "CONTRIBUTING.md", "SECURITY.md", "CODE_OF_CONDUCT.md", "CHANGELOG.md",
              "ACKNOWLEDGEMENTS.md", "LICENSE", "results/README.md"]
