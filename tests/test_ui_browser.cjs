@@ -256,6 +256,9 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     await evaluate('document.querySelector("#meta-label").value='+JSON.stringify(originalLabel)+';document.querySelector("#meta-notes").value="";document.querySelector("#meta-form").requestSubmit()');
     for(let attempt=0;attempt<80 && !await evaluate('state.runs[0].label==='+JSON.stringify(originalLabel)+' && !document.querySelector("#meta-dialog").open');attempt++)await delay(50);
     await check('state.runs[0].label==='+JSON.stringify(originalLabel)+' && !state.runs[0].notes', 'The heading Rename button edits the same benchmark');
+    // Saving redraws the heading last, after the benchmark is fetched again. Put the placed inventory back only then,
+    // or that fetch replaces it.
+    for(let attempt=0;attempt<160 && !await evaluate('state.selected!==state.runs[0].id || document.querySelector("#run-detail h3")?.textContent==='+JSON.stringify(originalLabel));attempt++)await delay(50);
     await evaluate('(async()=>{await ensureRuns([state.runs[0].id]);if(window.__placedHardware)state.runCache[state.runs[0].id].hardware=window.__placedHardware;state.detailSignature=null;await renderResultsView();})()');
     await evaluate('document.querySelector("#summary-body .ov-table tbody tr td:last-child .ov-link").click()');
     await delay(150);
