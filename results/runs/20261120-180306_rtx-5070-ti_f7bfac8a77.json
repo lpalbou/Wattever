@@ -1,8 +1,8 @@
 {
  "id": "20261120-180306_rtx-5070-ti_f7bfac8a77",
  "created_at": "2026-11-20T18:03:06+00:00",
- "label": "vllm context 81k",
- "notes": "Models: all 1 installed models\nPrompt tokens: 512, 5k, 10k, 20k, 40k, 80k\nSimultaneous queries: 1, 2, 3, 4, 5\nAnswer: 256 tokens; repeats: 1\nReasoning, context allocation, placement and speculative decoding: provider controlled\nPower monitoring: all detected NVIDIA GPUs, per card and combined (monitoring only; model placement is engine controlled)",
+ "label": "vLLM | Qwen3.8 27B NVFP4 | 2x RTX 5070 Ti | context 83k, 512-80k, 1-5 queries",
+ "notes": "Engine: vLLM in Docker (WSL2) on this computer, tensor parallel across both cards, serving NVIDIA NVFP4 Qwen3.8-27B. 82,960-token pool (automatic sizing).\n\nModels: all 1 installed models\nPrompt tokens: 512, 5k, 10k, 20k, 40k, 80k\nSimultaneous queries: 1, 2, 3, 4, 5\nAnswer: 256 tokens; repeats: 1\nReasoning, context allocation, placement and speculative decoding: provider controlled\nPower monitoring: all detected NVIDIA GPUs, per card and combined (monitoring only; model placement is engine controlled)",
  "gpu": {
   "name": "Remote endpoint: hardware unverified"
  },

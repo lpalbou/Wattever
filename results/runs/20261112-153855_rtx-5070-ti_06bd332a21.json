@@ -1,8 +1,8 @@
 {
  "id": "20261112-153855_rtx-5070-ti_06bd332a21",
  "created_at": "2026-11-12T15:38:55+00:00",
- "label": "Strata local endpoint",
- "notes": "Models: qwen3.8-flash-next-iq3_s\nPrompt tokens: 512, 5k, 10k, 20k, 40k\nSimultaneous queries: 1, 2\nAnswer: 256 tokens; repeats: 1\nReasoning, context allocation, placement and speculative decoding: provider controlled\nPower monitoring: all detected NVIDIA GPUs, per card and combined (monitoring only; model placement is engine controlled)",
+ "label": "Strata | Qwen3.8 Flash-Next IQ3_S | 2x RTX 5070 Ti | 512-40k, 1-2 queries, interrupted first run",
+ "notes": "First run of 2026-11-12, interrupted. Decode is about half that of the runs made 17 and 34 minutes later (35 against 70 tk/s at one query), so it is kept apart from them.\n\nModels: qwen3.8-flash-next-iq3_s\nPrompt tokens: 512, 5k, 10k, 20k, 40k\nSimultaneous queries: 1, 2\nAnswer: 256 tokens; repeats: 1\nReasoning, context allocation, placement and speculative decoding: provider controlled\nPower monitoring: all detected NVIDIA GPUs, per card and combined (monitoring only; model placement is engine controlled)",
  "gpu": {
   "name": "Remote endpoint: hardware unverified"
  },
