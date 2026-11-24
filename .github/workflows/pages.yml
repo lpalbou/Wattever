@@ -16,7 +16,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  # Build and deploy are separate jobs, as in GitHub's own Pages workflows. Deploying in the
+  # step right after the upload failed: the artifact service did not list the artifact yet
+  # ("No artifacts named github-pages were found"), 0.3 s after it was finalized.
+  build:
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'push' &&
@@ -24,9 +27,6 @@ jobs:
       github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,9 +39,23 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy site
         id: deployment
         uses: actions/deploy-pages@v5
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
