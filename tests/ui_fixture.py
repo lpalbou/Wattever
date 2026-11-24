@@ -124,10 +124,21 @@ class Handler(server.Handler):
                               'gpu_util': 50, 'vram_mb': 10000, 'vram_percent': 62.5, 'temp_c': 65, 'clock_mhz': 2700},
                              {'index': 1, 'name': 'NVIDIA GeForce RTX 5060 Ti', 'gpu_w': 70,
                               'gpu_util': 40, 'vram_mb': 8000, 'vram_percent': 50, 'temp_c': 59, 'clock_mhz': 2400}]}})
+        if self.path == '/test/env-requests':
+            return self._json(Handler.env_requests)
         if self.path == '/test/last-extension':
             return self._json(server.BENCH.last_extension)
         return super().do_GET()
     def do_POST(self):
+        if self.path == '/api/lmstudio/start':
+            # Never the real route: that would start LM Studio's server on this computer.
+            self._body()   # read the request, or it would be parsed as the next one on this connection
+            self.server.lmstudio_down = False
+            self.server.lmstudio_starts = getattr(self.server, 'lmstudio_starts', 0) + 1
+            return self._json({'ok': True, 'starts': self.server.lmstudio_starts})
+        if self.path == '/test/lmstudio-down':
+            self.server.lmstudio_down = bool(self._body().get('enabled'))
+            return self._json({'ok': True})
         if self.path == '/test/discovery-failure':
             self.server.discovery_failure = bool(self._body().get('enabled'))
             return self._json({'ok': True})
@@ -141,7 +152,7 @@ class Handler(server.Handler):
         if self.path == '/api/endpoint/check':
             checked = self._body()
             if getattr(self.server, 'discovery_failure', False):
-                return self._error(503, 'Fixture discovery unavailable')
+                return self._error(503, 'Model discovery failed: HTTP Error 404: Not Found. You can enter model IDs manually.')
             # Port 1234 plays this computer's own LM Studio reached through its OpenAI-compatible address.
             return self._json({'ok': True, 'helper_lmstudio': ':1234' in str(checked.get('endpoint_base_url')), 'models': [{'id': 'external/model', 'type': 'llm', 'quantization': 'IQ3_S', 'quantization_source': 'endpoint_reported', 'max_context_length': 32768}]})
         if self.path == '/test/merge-pair':
@@ -176,7 +187,17 @@ class Handler(server.Handler):
             return self._json({'ok': True})
         return super().do_POST()
 
-    def env_payload(self, provider=None):
+    env_requests = []
+    def env_payload(self, provider=None, connect=True):
+        # The page must ask without contacting an engine until Connect is clicked.
+        Handler.env_requests.append({'provider': provider, 'connect': connect})
+        payload = self.connected_env(provider)
+        if getattr(self.server, 'lmstudio_down', False):
+            payload.update(models=[], default_models=[], lms={'cli': True, 'server': False})
+        if not connect:
+            payload.update(models=[], default_models=[], lms={'cli': True, 'server': None})
+        return payload
+    def connected_env(self, provider=None):
         return {'gpu':run['gpu'], 'gpus':[], 'host':run['host'], 'hardware':{'os':{'name':'Windows'},'cpu':{'name':'Smoke CPU'},'system':{'memory_bytes':34359738368},'gpus':[{'name':'NVIDIA GeForce RTX 5060 Ti','sensor_index':0,'memory_bytes':17179869184}]}, 'lms':{'cli':True,'server':True},'power':{'source':'none'},'models':[{'id': name, 'type':'llm','max_context_length':300000, 'quantization':'Q4_K_M'} for name in ['model-a', 'model-b'] + ['publisher/qwen-large-instruct-model-%s-GGUF' % i for i in range(10)]], 'default_models':['model-a'],'missing_defaults':[],'corpus':{'approx_tokens':260000}, 'defaults':runner.DEFAULT_CONFIG,'last_config':getattr(self.server, 'last_config', None),'running':False, 'requested_provider':provider, 'capabilities':{'extend':True}}
 httpd=ThreadingHTTPServer(('127.0.0.1',0),Handler)
 print(httpd.server_port,flush=True)

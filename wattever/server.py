@@ -295,7 +295,10 @@ class Handler(BaseHTTPRequestHandler):
             if route.startswith("/static/"):
                 return self._static(route[len("/static/"):])
             if route == "/api/env":
-                return self._json(self.env_payload((query.get("provider") or [None])[0]))
+                # connect=0: describe this computer and the saved form without contacting any
+                # inference engine. The page asks this way; it connects only when told to.
+                connect = (query.get("connect") or ["1"])[0].lower() not in ("0", "false", "no")
+                return self._json(self.env_payload((query.get("provider") or [None])[0], connect=connect))
             if route == "/api/system":
                 return self._json(SYSTEM_MONITOR.snapshot())
             if route == "/api/system/cpu-sensor":
@@ -666,19 +669,23 @@ class Handler(BaseHTTPRequestHandler):
                     "endpoint_identity": dict(cfg["endpoint_identity"], id=cfg["endpoint_id"], label=cfg["endpoint_label"]),
                     "provider": endpoints.public_provider(cfg)}
 
-    def env_payload(self, provider=None):
+    def env_payload(self, provider=None, connect=True):
         """`provider="lmstudio"` asks for LM Studio's own catalog. Without it the last saved
-        connection decides, and a saved endpoint that is offline would empty the model list."""
+        connection decides, and a saved endpoint that is offline would empty the model list.
+
+        `connect=False` contacts no inference engine: no model is listed and whether LM Studio
+        is running is left unknown (`lms.server` is None). The saved endpoint address is still
+        returned so the form can be filled in."""
         from . import bandwidth, memory_topology, gpu_setup
         last = store.load_config() or {}
-        models = self.models_payload()
+        models = self.models_payload() if connect else []
         endpoint_connection = None
         saved_endpoint = provider != "lmstudio" and last.get("provider") == "openai"
         if saved_endpoint and last.get("endpoint_id"):
             base = endpoints.lookup_base_url(last.get("endpoint_id"))
             if base and endpoints._location(base) == "local":
                 endpoint_connection = {"base_url": base, "endpoint_id": last.get("endpoint_id")}
-                try:
+                if connect:
                     cfg = dict(runner.DEFAULT_CONFIG, provider="openai", endpoint_base_url=base,
                                endpoint_id=last.get("endpoint_id", ""),
                                endpoint_label=last.get("endpoint_label", ""))
@@ -686,17 +693,20 @@ class Handler(BaseHTTPRequestHandler):
                         cfg["endpoint_inference_local"] = last["endpoint_inference_local"]
                     if last.get("endpoint_reasoning_effort") is not None:
                         cfg["endpoint_reasoning_effort"] = last["endpoint_reasoning_effort"]
-                    models = endpoints.list_models(cfg)
-                    endpoints.resolve_identity(cfg, probe=False)
-                    endpoint_connection["endpoint_identity"] = cfg.get("endpoint_identity")
-                except ValueError:
-                    models = []
+                    try:
+                        models = endpoints.list_models(cfg)
+                        endpoints.resolve_identity(cfg, probe=False)
+                        endpoint_connection["endpoint_identity"] = cfg.get("endpoint_identity")
+                    except ValueError:
+                        models = []
         selected, missing = default_selection(models)
         if saved_endpoint and models:
             selected = [m["id"] for m in models if m.get("type") != "embeddings"]
             missing = []
+        if not connect:
+            selected, missing = [], []      # unknown until an engine is connected
         cli = lmstudio.LmsCli()
-        server_up = cli.server_running()
+        server_up = cli.server_running() if connect else None
         gpu = power.gpu_info(0)
         sensors = power.list_gpus()
         machine = hardware.inventory()
@@ -720,7 +730,7 @@ class Handler(BaseHTTPRequestHandler):
                              transfer_coverage=bandwidth.storage_coverage(machine, profile)),
             "hardware_follow_ups": memory_topology.pending(store.list_runs(full=True), sensors),
             "lms": {"cli": cli.available, "exe": cli.exe,
-                    "server": server_up, "version": cli.version()},
+                    "server": server_up, "version": cli.version() if connect else None},
             "models": models,
             "default_models": selected,
             "missing_defaults": missing,

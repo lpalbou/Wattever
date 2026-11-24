@@ -41,7 +41,7 @@
     $('#cap-identity').textContent = [meta.quantization ? 'Quantization: '+meta.quantization : 'Quantization unknown',
       'Requested reasoning: '+(cfg.endpoint_reasoning_effort || 'provider default'),
       'Reported reasoning: '+(cfg.reported_reasoning || 'unknown'),'Reported MTP: '+(cfg.reported_mtp || 'unknown')].join(' · ');
-    $('#cap-connection').textContent = ui.connection().endpoint_label || (ui.connection().provider === 'lmstudio' ? 'LM Studio' : 'Endpoint');
+    $('#cap-connection').textContent = !ui.browserMode() && !ui.ready() ? 'No engine connected' : ui.connection().endpoint_label || (ui.connection().provider === 'lmstudio' ? 'LM Studio' : 'Endpoint');
   }
   function suiteInfo() {
     const suite = state.suites.find(item=>(item.id || item.suite_id) === $('#cap-suite').value);
@@ -85,7 +85,11 @@
     if($('#cap-run-count'))$('#cap-run-count').textContent=String(state.runs.length);
   }
   async function load(id) {
-    if (!state.cache.has(id)) state.cache.set(id,await request('/runs/'+encodeURIComponent(id)));
+    if (!state.cache.has(id)) {
+      // Choosing another evaluation reads its file: nothing changed on screen meanwhile.
+      const loaded=ui.setBusy?.(document.querySelector('.cap-dashboard-workspace'),'Loading this evaluation…') || (()=>{});
+      try { state.cache.set(id,await request('/runs/'+encodeURIComponent(id))); } finally { loaded(); }
+    }
     return state.cache.get(id);
   }
   function descriptor(run) {
@@ -155,7 +159,7 @@
   async function start() {
     try {
       if(!state.runnerCompatible)throw new Error(UPDATE_MESSAGE);
-      if (!ui.ready()) throw new Error('Connect your endpoint in Run first.');
+      if (!ui.ready()) throw new Error('No inference engine is connected. Connect one in Benchmarks, then start the test.');
       const cfg=config();
       if (!cfg.model) throw new Error('Select a model.');
       $('#cap-start').disabled=true; message('Starting…');
@@ -164,9 +168,15 @@
     } catch(error) {message(error.message,true);$('#cap-start').disabled=ui.browserMode() || !state.runnerCompatible;}
   }
   async function activate() {
+    // The evaluation list and its dashboard are read from the helper: say so while they load.
+    const loaded=[ui.setBusy?.($('#cap-runs')?.closest?.('.card') || $('#cap-runs'),'Loading capability evaluations…') || (()=>{}),
+      state.focus && ui.setBusy?.(document.querySelector('.cap-dashboard-workspace'),'Loading the selected evaluation…') || (()=>{})];
+    try { await activateNow(); } finally { loaded.forEach(clear=>clear()); }
+  }
+  async function activateNow() {
     state.runnerCompatible=false;
     const selected=$('#cap-model').value, models=ui.models().filter(model=>model.type!=='embeddings');
-    $('#cap-model').innerHTML=models.map(model=>`<option value="${escape(model.id)}">${escape(model.id)}</option>`).join('');
+    $('#cap-model').innerHTML=models.map(model=>`<option value="${escape(model.id)}">${escape(model.id)}</option>`).join('') || '<option value="" disabled selected>Connect an engine in Benchmarks to list models</option>';
     if (models.some(model=>model.id===selected)) $('#cap-model').value=selected;
     else if (ui.selectedModels?.().length) $('#cap-model').value=ui.selectedModels()[0];
     $('#cap-unavailable').hidden=!ui.browserMode(); $('#cap-start').disabled=true;

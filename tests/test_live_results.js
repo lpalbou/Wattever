@@ -144,11 +144,11 @@ vm.runInContext(source,context);
   assert.match(title, /data-tone="decode"><span class="avg-k">Decode<\/span><span class="avg-v"[^>]*><b>7\.50\*?<\/b> s<\/span><span class="avg-v"[^>]*><b>15\.0\*?<\/b> tk\/s<\/span>/);
   const failed = elements['#live-table'].innerHTML;
   assert.equal((failed.match(/<tr data-status="ok">/g)||[]).length, 2);
-  assert.match(failed, /<tr data-status="failed" title="timeout">[\s\S]*<td class="fail-reason" colspan="13">Too &lt;slow&gt;<\/td><\/tr>/, 'A failed test is marked on its row and says why');
+  assert.match(failed, /<tr data-status="failed" title="timeout">[\s\S]*<td class="fail-reason" colspan="14">Too &lt;slow&gt;<\/td><\/tr>/, 'A failed test is marked on its row and says why');
   for (const tone of ['wall','prefill','decode']) assert.match(failed, new RegExp('<th class="num" data-tone="'+tone+'"'), 'Averaged columns share the colour of their average');
   vm.runInContext(`state.liveResults=[{model:'m',target_tokens:512,concurrency:1,status:'failed',fail_kind:'load_failed'},{model:'m',target_tokens:512,concurrency:1,status:'cancelled'}];renderLiveTable();`,context);
   assert.equal(elements['#live-averages'].innerHTML, '', 'No completed test, no average');
-  assert.match(elements['#live-table'].innerHTML, /<tr data-status="cancelled" title="cancelled">[\s\S]*<td class="fail-reason" colspan="13">Cancelled<\/td>/, 'An outcome without a message is still named');
+  assert.match(elements['#live-table'].innerHTML, /<tr data-status="cancelled" title="cancelled">[\s\S]*<td class="fail-reason" colspan="14">Cancelled<\/td>/, 'An outcome without a message is still named');
 
   vm.runInContext(`
     const base = {concurrency:2,status:'ok',aggregate_completion_tokens:999,requests:[{status:'ok',completion_tokens:50},{status:'ok',completion_tokens:50}],group_power:{scope:'all_cards',low_confidence:false,gpu_power_complete:true,gpu_energy_j:100,gpu_sampled_coverage_fraction:.9,gpus:[{vram_mb_max:10},{vram_mb_max:20}]}};

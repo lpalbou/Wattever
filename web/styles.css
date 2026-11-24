@@ -551,7 +551,7 @@ tfoot td { white-space: normal; font-size: 11px; text-align: left; }
 .models-card { display: flex; flex-direction: column; }
 .models-card .model-list { flex: 1 1 0; max-height: none; min-height: 240px; contain: size; }
 .results-workspace { min-width: 0; display: grid; gap: 16px; align-content: start; }
-.benchmark-library { position: sticky; top: 100px; }
+.benchmark-library { position: sticky; }
 .selection-heading > header { margin-bottom: 12px; }
 .selection-heading h3 { overflow-wrap: anywhere; font-size: 15px !important; }
 .selection-heading .hint { margin-bottom: 0; }
@@ -769,6 +769,24 @@ tfoot td { white-space: normal; font-size: 11px; text-align: left; }
 .connection-status { color: var(--connect-accent); font-size: 12px; }
 .connection-status[data-state="ready"] { color: var(--ready-accent); }
 .connection-status[data-state="error"] { color: var(--status-serious); }
+.connection-status[data-state="connecting"] { color: var(--text-secondary); }
+.connection-status[data-state="connecting"]::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 7px; vertical-align: -1px; border: 2px solid var(--border-strong); border-top-color: var(--connect-accent, var(--accent)); border-radius: 50%; animation: spin .8s linear infinite; }
+/* What the last Connect found, beside the button that caused it. */
+.connection-message { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 12px 0; padding: 9px 12px; border: 1px solid var(--border); border-left-width: 3px; border-radius: var(--radius-sm); background: var(--surface-1); font-size: 12px; line-height: 1.5; color: var(--text-secondary); overflow-wrap: anywhere; }
+.connection-message[data-tone="error"] { border-left-color: var(--status-serious); color: var(--text-primary); }
+.connection-message[data-tone="info"] { border-left-color: var(--connect-accent, var(--accent)); }
+
+/* ---------- loading ---------- */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { display: inline-block; flex: none; width: 16px; height: 16px; border: 2px solid var(--border-strong); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+.empty.loading h3 { display: flex; align-items: center; justify-content: center; gap: 10px; }
+@media (prefers-reduced-motion: reduce) {
+  .spinner, .connection-status[data-state="connecting"]::before { animation-duration: 2.4s; }
+  .dot.busy { animation: none; }
+}
+.loading-line { display: flex; align-items: center; gap: 9px; }
+.model-list .empty-note { margin: 4px 0; line-height: 1.5; }
+.model-list .empty-note:empty { display: none; }
 .local-assertion { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; }
 .workload-card { border-top: 2px solid var(--workload-accent); }
 .reasoning-field { margin-bottom: 18px; }
@@ -1074,7 +1092,7 @@ tfoot td { white-space: normal; font-size: 11px; text-align: left; }
 .hw-methods summary, .hw-probe-settings summary { font-size: 12px; cursor: pointer; }
 .hw-probe-settings .field { margin: 15px 0 0; }
 .probe-empty { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px; border: 1px dashed var(--border); border-radius: 9px; }
-input:not([type]), .endpoint-card input[type="password"] { padding: 10px 12px; width: 100%; min-width: 0; background: var(--surface-0); color: var(--text-primary); border: 1px solid var(--border-strong); border-radius: 7px; }
+input:not([type]), .endpoint-card input[type="password"], .endpoint-card input[type="url"] { padding: 10px 12px; width: 100%; min-width: 0; background: var(--surface-0); color: var(--text-primary); border: 1px solid var(--border-strong); border-radius: 7px; }
 @media (max-width: 760px) {
  .machine-header-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px 8px; }
  .machine-card > summary { align-items: flex-start; gap: 10px; }
@@ -1454,3 +1472,12 @@ svg.has-focus .chart-series:not(.is-focus) { opacity: .25; }
 .cpu-sensor-offer { border: 1px solid var(--border); border-left: 3px solid var(--status-warning); border-radius: var(--radius-sm); padding: 10px 12px; }
 .cpu-sensor-offer p { margin: 0 0 6px; }
 .cpu-sensor-setup .error-text { color: var(--status-critical); }
+
+/* A panel waiting for its data: its content stays in place under a veil, and a note that follows
+   the scroll says what is loading. Last in the sheet so that no panel's own position rule wins. */
+[data-loading] { position: relative !important; top: auto !important; }
+#model-list[data-loading], #runs-list[data-loading], #system-stats[data-loading], #cap-runs[data-loading] { min-height: 132px; }
+.busy-veil { position: absolute; inset: 0; z-index: 6; border-radius: inherit; background: color-mix(in srgb, var(--surface-0) 78%, transparent); }
+.busy-note { position: sticky; top: 120px; display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100% - 32px); margin: 38px auto; padding: 10px 14px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface-1); color: var(--text-primary); font-size: 13px; font-weight: 600; box-shadow: 0 6px 22px rgba(0, 0, 0, .28); }
+/* Models listed by a connection that the form no longer describes. */
+.model-list[data-stale] { opacity: .5; }

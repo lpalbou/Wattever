@@ -47,7 +47,20 @@ vm.createContext(context);vm.runInContext(fs.readFileSync('web/app.js','utf8').r
 const live=vm.runInContext('liveRowMetrics(row)',context);
 assert(Math.abs(live.decode-30.041806733)<1e-6);
 assert(Math.abs(live.outputTps-6.183336149837991)<1e-12);
-assert(Math.abs(live.perRequestDecode-32.1395854747)<1e-6);
+// The two requests decode one after the other, so one request gets the total rate: never more.
+assert(Math.abs(live.perRequestDecode-30.041806733)<1e-6);
+assert(live.perRequestDecode<=live.decode+1e-9 && live.decode<=2*live.perRequestDecode+1e-9,'per request <= total <= n x per request');
+assert(Math.abs(live.decodeStats.together-1)<1e-9 && live.decodeStats.slowest<live.perRequestDecode && live.decodeStats.fastest>live.perRequestDecode);
+// Two requests that decode together for their whole stream: total is their sum, 2 of 2 at once.
+context.pair={concurrency:2,status:'ok',wall_s:6,requests:[0,0.001].map(start=>({status:'ok',start_offset_s:start,ttft_s:1,decode_s:4,decode_token_count:100,completion_tokens:101,prompt_tokens:10,wall_s:5.1}))};
+const pair=vm.runInContext('liveRowMetrics(pair)',context);
+assert(Math.abs(pair.perRequestDecode-25)<1e-9 && Math.abs(pair.decode-200/4.001)<1e-9 && Math.abs(pair.decodeStats.together-8/4.001)<1e-9);
+// One stream stalls while the other prompt is read, then both decode: the old median (32.5) was above the total.
+context.stalled={concurrency:2,status:'ok',wall_s:31,requests:[{start_offset_s:0,ttft_s:13,decode_s:16,decode_token_count:208},{start_offset_s:0,ttft_s:25,decode_s:5,decode_token_count:260}].map(q=>({...q,status:'ok',completion_tokens:q.decode_token_count+1,prompt_tokens:10,wall_s:q.ttft_s+q.decode_s}))};
+const stalled=vm.runInContext('liveRowMetrics(stalled)',context);
+assert(Math.abs(stalled.decode-468/17)<1e-9 && Math.abs(stalled.perRequestDecode-468/21)<1e-9 && stalled.perRequestDecode<stalled.decode);
+assert(Math.abs(stalled.decode-stalled.perRequestDecode*stalled.decodeStats.together)<1e-9,'total = per request x decoding at once');
+assert.equal(stalled.decodeStats.slowest,13); assert.equal(stalled.decodeStats.fastest,52);
 vm.runInContext("row.model='qwen3.8-flash-next-iq3_s';row.target_tokens=40000;state.liveResults=[row];renderLiveTable()",context);
 assert.match(table.innerHTML,/Total decode tk\/s/);
 assert.match(table.innerHTML,/>30\.0\*<\/td>/);

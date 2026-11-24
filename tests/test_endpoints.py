@@ -401,6 +401,25 @@ class StrataCompanionTests(unittest.TestCase):
         self.assertIsNone(payload["endpoint_connection"])
         self.assertEqual(payload["default_models"], ["qwen/qwen3.5-9b"])
 
+    def test_environment_without_connect_contacts_no_engine(self):
+        """The page opens with connect=0: nothing is listed and no engine is asked anything."""
+        from types import SimpleNamespace
+        from wattever import bandwidth
+        saved = {"provider": "openai", "endpoint_id": "endpoint-local-abc123", "endpoint_label": "Strata local endpoint",
+                 "sizes": [512], "models": ["served/model"]}
+        refuse = lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("an engine was contacted"))
+        cli = SimpleNamespace(available=True, exe="fake", server_running=refuse, version=refuse)
+        handler = SimpleNamespace(models_payload=refuse)
+        with patch.object(server.hardware, "inventory", return_value={}),              patch.object(server.power, "gpu_info", return_value={}), patch.object(server.power, "list_gpus", return_value=[]),              patch.object(server.lmstudio, "LmsCli", return_value=cli), patch.object(server.store, "host_info", return_value={}),              patch.object(server.store, "load_config", return_value=saved), patch.object(server.store, "list_runs", return_value=[]),              patch.object(server.corpus, "master_stats", return_value={}), patch.object(bandwidth, "latest", return_value={}),              patch.object(endpoints, "lookup_base_url", return_value="http://127.0.0.1:8086/v1"),              patch.object(endpoints, "list_models", side_effect=refuse), patch.object(endpoints, "resolve_identity", side_effect=refuse):
+            payload = server.Handler.env_payload(handler, connect=False)
+            managed = server.Handler.env_payload(handler, "lmstudio", connect=False)
+        self.assertEqual((payload["models"], payload["default_models"], payload["missing_defaults"]), ([], [], []))
+        self.assertEqual(payload["lms"], {"cli": True, "exe": "fake", "server": None, "version": None})
+        # The saved address and form still come back, so the page can be filled in.
+        self.assertEqual(payload["endpoint_connection"], {"base_url": "http://127.0.0.1:8086/v1", "endpoint_id": "endpoint-local-abc123"})
+        self.assertEqual(payload["last_config"]["sizes"], [512])
+        self.assertEqual((managed["models"], managed["endpoint_connection"], managed["lms"]["server"]), ([], None, None))
+
     def test_merge_adds_maya_catalog_when_gateway_omits_glm(self):
         class Handler(BaseHTTPRequestHandler):
             def log_message(self, *args): pass

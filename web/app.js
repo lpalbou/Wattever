@@ -394,7 +394,147 @@ function updateProviderControls() {
     if ($("#helper-local-note")) $("#helper-local-note").hidden = !generic;
   }
 }
-async function refreshOpenAiCatalog(config = helperEndpointConfig()) {
+/* ---------------- loading states ----------------
+ * A panel that is waiting for data says so: setBusy() lays a spinner and a line of text over
+ * it, and returns the function that removes them. A wait shorter than `delay` shows nothing. */
+function setBusy(target, message, delay = 150) {
+  const node = typeof target === "string" ? $(target) : target;
+  if (!node || !node.dataset) return () => {};
+  const token = {};
+  let veil = null;
+  node.busyToken = token;
+  const show = () => {
+    if (node.busyToken !== token) return;
+    node.dataset.loading = message; node.setAttribute?.("aria-busy", "true"); node.inert = true;
+    if (typeof document !== "undefined" && document.createElement && node.appendChild) {
+      // A real element, so the note stays in view while a tall panel is scrolled.
+      veil = document.createElement("div"); veil.className = "busy-veil";
+      veil.innerHTML = `<p class="busy-note"><span class="spinner" aria-hidden="true"></span>${esc(message)}</p>`;
+      node.appendChild(veil);
+    }
+    announce(message);
+  };
+  const timer = delay > 0 && typeof setTimeout === "function" ? setTimeout(show, delay) : (show(), null);
+  return () => {
+    if (timer !== null) clearTimeout(timer);
+    veil?.remove?.(); veil = null;
+    if (node.busyToken !== token) return;   // a later wait owns the panel now
+    node.busyToken = null; node.inert = false;
+    delete node.dataset.loading;
+    node.removeAttribute?.("aria-busy");
+  };
+}
+/* A veiled panel is inert, so what it is waiting for is said in one live region outside it. */
+function announce(text) {
+  const live = $("#busy-announcer");
+  if (live && live.textContent !== text) live.textContent = text;
+}
+/* The same message for an area whose content is replaced while it loads. */
+function loadingState(title, body) {
+  return `<div class="empty loading" role="status"><h3><span class="spinner" aria-hidden="true"></span>${esc(title)}</h3><div>${esc(body)}</div></div>`;
+}
+
+/* ---------------- inference engine connection ----------------
+ * Nothing is contacted until Connect is clicked: the page opens on this computer's hardware
+ * and the saved form only. state.engine is what the page is connected to: "off" (nothing
+ * yet), "connecting", "on", or "error" (the last Connect failed; `message` says why). */
+function setEngine(status, detail = {}) {
+  state.engine = {status, label: "", models: 0, message: "", tone: "", ...detail};
+  // Start, the plan line and the engine badge depend on the connection: redraw them with it.
+  if (state.env && state.models && state.sizes && state.concurrencyLevels) updatePlan(); else renderConnection();
+}
+/* The form no longer matches what was connected, so Connect must be clicked again. */
+function connectionStale() {
+  return !!state.providerNeedsConnection || (genericHelper() && state.endpointSignature !== helperConnectionSignature());
+}
+function engineLive() {
+  return state.engine?.status === "on" && (browserMode() || !connectionStale());
+}
+function modelsEmptyText() {
+  const status = state.engine?.status || "off";
+  if (browserMode()) return status === "on" ? "This endpoint lists no language models." : "Connect your endpoint above to list its models.";
+  if (status === "connecting") return "";
+  if (engineLive()) return "This engine lists no language models.";
+  if (status === "error") return "No models to choose from yet. See the note in Inference engine above.";
+  return "No inference engine connected. Choose a provider in Inference engine above and click Connect to list its models.";
+}
+/* Write only what changed: these are live regions, and the form redraws on every keystroke. */
+function setText(node, text) { if (node && node.textContent !== text) node.textContent = text; }
+function renderConnection() {
+  const engine = state.engine || {status: "off"}, live = engineLive(), busy = engine.status === "connecting";
+  const stale = !browserMode() && engine.status === "on" && !live;   // connected, then the form was changed
+  const checked = live && !engine.unverified;
+  const pill = $("#pill-lms"), dot = pill?.querySelector?.(".dot"), text = pill?.querySelector?.("span:last-child");
+  if (dot && text) {
+    dot.className = "dot" + (checked || (!busy && !live && !stale && state.benchmarkRunning) ? " on" : busy ? " busy" : "");
+    setText(text, checked ? `${engine.label || "Inference engine"} connected` : live ? `${engine.label || "Inference engine"} · not checked` : busy ? "Connecting…"
+      : stale ? "Reconnect needed" : state.benchmarkRunning ? "Benchmark running" : "No engine connected");
+    pill.title = checked ? "The inference engine the next benchmark will use" : live ? "The engine did not list its models; the model ID is used as typed"
+      : busy ? "Contacting the inference engine" : stale ? "The connection form changed. Click Connect in Benchmarks."
+      : state.benchmarkRunning ? "A benchmark is running on the engine it was started with" : "No inference engine is connected. Connect one in Benchmarks.";
+  }
+  const list = $("#model-list");
+  setText(list?.querySelector?.(".empty-note"), modelsEmptyText());
+  if (browserMode()) return;
+  if (list?.dataset) { if (stale) list.dataset.stale = "1"; else delete list.dataset.stale; }
+  setText($("#models-hint"), stale ? "These models were listed by the previous connection. Click Connect to list the current ones." : "The models your connected engine serves. Tick the ones to measure.");
+  const status = $("#helper-status");
+  if (status) {
+    setText(status, busy ? "Connecting…" : checked ? `Connected · ${engine.label} · ${engine.models} model${engine.models === 1 ? "" : "s"}`
+      : live ? "Model ID used as typed · not checked" : stale ? "Form changed · click Connect" : engine.status === "error" ? "Connection failed" : "Not connected");
+    status.dataset.state = busy ? "connecting" : checked ? "ready" : engine.status === "error" ? "error" : "pending";
+  }
+  const message = $("#helper-message");
+  if (message) {
+    const show = !busy && !!engine.message && (engine.status === "error" || live);
+    message.hidden = !show;
+    setText($("#helper-message-text") || message, show ? engine.message : "");
+    message.dataset.tone = engine.tone || (engine.status === "error" ? "error" : "info");
+    const action = $("#helper-action");
+    if (action) { action.hidden = !(show && engine.action === "start-lmstudio"); action.disabled = false; }
+  }
+}
+/* Why an endpoint did not connect, sorted by what the user can do about it.
+ * `answered` says whether a server replied at that address at all. */
+function endpointProblem(error, url) {
+  const raw = String(error?.message || error || "");
+  const reason = raw.replace(/^Model discovery failed:\s*/i, "").replace(/\s*You can enter model IDs manually\.?$/i, "").replace(/\.+$/, "");
+  const http = Number((reason.match(/HTTP Error (\d{3})/) || [])[1]) || null;
+  const say = (kind, answered, message) => ({kind, answered, message});
+  if (/Failed to fetch|NetworkError|Load failed/i.test(raw)) return say("helper", false, "Wattever's own helper did not answer. Check that its window is still open, restart it, then reload this page.");
+  if (/must be an HTTP\(S\) base URL/i.test(reason)) return say("address", false, `“${url}” is not a complete address. Start it with http:// or https://, for example http://localhost:8000/v1, then click Connect.`);
+  if (/not an individual route/i.test(reason)) return say("address", false, "Enter the API base address (usually ending in /v1), not the address of one route such as …/chat/completions, then click Connect.");
+  if (http === 401 || http === 403) return say("auth", true, `${url} refused the request (HTTP ${http}). Enter the API key your engine expects under Connection options, then click Connect.`);
+  if (http === 404) return say("no-list", true, `${url} answered, but has no model list there (HTTP 404). Check that the address is the API base, usually ending in /v1. If your engine has no model list, enter a model ID under Connection options, then click Connect.`);
+  if (http) return say("http", true, `${url} answered with an error (HTTP ${http}), so its models could not be listed. Check the engine, then click Connect.`);
+  if (/No model IDs found/i.test(reason)) return say("empty", true, `${url} answered but serves no model yet. Load a model in your inference engine, then click Connect.`);
+  if (/Expected an OpenAI model list|Expecting value|JSON|SSL|closed connection without response/i.test(reason))
+    return say("not-openai", true, `${url} answered, but not with an OpenAI-style model list. Check that this is the API base address (usually ending in /v1) and that http or https matches your engine.`);
+  if (/refused|10061|10060|11001|ECONNREFUSED|timed out|unreachable|getaddrinfo|Name or service|No route/i.test(reason))
+    return say("unreachable", false, `Nothing answered at ${url}. Start your inference engine or correct the address, then click Connect.`);
+  return say("other", false, `The models at ${url} could not be listed: ${reason || "no reason was given"}. Check the address, then click Connect.`);
+}
+/* The one thing Wattever can do for the user about a stopped LM Studio, and only when asked. */
+async function startLmStudioServer() {
+  const action = $("#helper-action"), connect = $("#helper-connect");
+  // This click asks for LM Studio only. If the form is changed while its server starts,
+  // nothing else is contacted: connecting to another engine takes its own Connect click.
+  state.connectionAttempt = (state.connectionAttempt || 0) + 1;
+  const attempt = state.connectionAttempt;
+  if (action) action.disabled = true;
+  if (connect) connect.disabled = true;
+  setEngine("connecting");
+  updatePlan();
+  let failure = null;
+  try { await api("/api/lmstudio/start", {method: "POST", headers: {"Content-Type": "application/json"}, body: "{}"}); }
+  catch (error) { failure = error; }
+  if (connect) connect.disabled = false;
+  if (attempt !== state.connectionAttempt || genericHelper()) { if (state.engine?.status === "connecting") setEngine("off"); updatePlan(); return; }
+  if (failure) { setEngine("error", {message: "LM Studio's server could not be started from here: " + failure.message + ". Start it in LM Studio (Developer tab), then click Connect.", action: "start-lmstudio"}); updatePlan(); return; }
+  await connectHelperEndpoint();
+}
+
+async function refreshOpenAiCatalog(config = helperEndpointConfig(), signature = helperConnectionSignature()) {
   if (browserMode() || config.provider !== "openai" || !config.endpoint_base_url) return false;
   const attempt = state.connectionAttempt;
   const found = await api("/api/endpoint/check", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(config)});
@@ -414,31 +554,51 @@ async function refreshOpenAiCatalog(config = helperEndpointConfig()) {
     last_config: {...state.env.defaults, ...state.env.last_config, ...workloadChoices(), ...withoutCredentials(config), models: models.map(model => model.id)},
     lms: {server: true, cli: false}, capabilities: {...state.env.capabilities, context_planning: false}};
   state.providerNeedsConnection = false;
-  state.endpointSignature = helperConnectionSignature();
+  state.endpointSignature = signature;
   renderEnv();
   updateProviderControls();
-  const status = $("#helper-status");
-  if (status) {
-    status.textContent = "Ready · " + (helperEndpointConfig().endpoint_label || "OpenAI-compatible endpoint") + " · " + models.length + " model(s)";
-    status.dataset.state = "ready";
-  }
+  setEngine("on", {label: helperEndpointConfig().endpoint_label || "OpenAI-compatible endpoint", models: models.filter(model => model.type !== "embeddings").length});
   return true;
 }
 
 /* The workload already chosen in the form. Connecting changes where models come from, not what to measure. */
 function workloadChoices() {
   if (!state.env || !state.sizes || !state.concurrencyLevels) return {};
-  return {sizes: [...state.sizes], concurrency_levels: [...state.concurrencyLevels].sort((a, b) => a - b),
+  return {...formSettings(), sizes: [...state.sizes], concurrency_levels: [...state.concurrencyLevels].sort((a, b) => a - b),
     repeats: Number($("#repeats")?.value) || 1, max_tokens: Number($("#max-tokens")?.value) || 256, mtp_modes: mtpModes()};
+}
+/* The other settings in the form, as typed: the fields applyLastConfig() writes. Read from the
+ * controls themselves, not from collectConfig(), whose values depend on the provider. */
+function formSettings() {
+  const value = (selector, cast = text => text) => { const node = $(selector); return node && node.value != null && node.value !== "" ? cast(node.value) : undefined; };
+  const checked = selector => { const node = $(selector); return node ? !!node.checked : undefined; };
+  const settings = {gpu_index: value("#gpu-index", Number), runtime_gpu_placement: $("#runtime-gpu-placement")?.value?.trim(), gpu_offload: value("#offload"),
+    per_test_timeout_s: value("#per-test-timeout", Number), load_timeout_s: value("#load-timeout", Number), context_headroom: value("#headroom", Number),
+    context_policy: value("#context-policy"), skip_after_timeout: checked("#skip-after-timeout"), fallback_on_failure: checked("#fallback"),
+    stop_model_after_failure: checked("#stop-after-fail"), warmup: checked("#warmup"), disable_thinking: checked("#no-think")};
+  return Object.fromEntries(Object.entries(settings).filter(([, item]) => item !== undefined && !(typeof item === "number" && !Number.isFinite(item))));
 }
 /* Connect LM Studio as managed. `switchedFrom` is the endpoint address that turned out to be this computer's LM Studio. */
 async function connectLmStudio(switchedFrom = "") {
-  const status = $("#helper-status"), keep = workloadChoices(), chosen = [...(state.models || [])];
+  // Before the first Connect nothing is ticked: the models of the saved form are the choice then.
+  const keep = workloadChoices(), chosen = state.models?.size ? [...state.models] : [...(state.env?.last_config?.models || [])];
   const attempt = state.connectionAttempt;
   // Ask for LM Studio's own catalog: plain /api/env answers for the last saved connection,
   // so a saved endpoint that is offline would report LM Studio as having no models.
   const env = await api("/api/env?provider=lmstudio");
   if (attempt !== state.connectionAttempt) return false;  // the user connected something else meanwhile
+  // LM Studio lists its models through its local server. Not running is not "no models".
+  const languageModels = (env.models || []).filter(model => model.type !== "embeddings").length;
+  const problem = !env.lms?.cli ? "LM Studio's command-line tool (lms) was not found. Install LM Studio, run “lms bootstrap” once, then click Connect. Wattever uses it to load models with the context and GPU placement you choose."
+    : !env.lms.server ? "LM Studio's local server is not answering, so its models cannot be listed. Start it in LM Studio (Developer tab) or with the button here, then click Connect."
+    : !languageModels ? "LM Studio answered but returned no language model. If you have models downloaded, check that they appear under My Models in LM Studio, then click Connect." : "";
+  if (problem) {
+    if (!switchedFrom) {   // an endpoint that turned out not to be a usable LM Studio stays a plain endpoint
+      state.env = {...state.env, models: [], default_models: [], lms: env.lms};
+      state.models = new Set(); renderModels(); updatePlan();
+    }
+    throw Object.assign(new Error(problem), {action: env.lms?.cli && !env.lms.server ? "start-lmstudio" : ""});
+  }
   if (switchedFrom) $("#helper-provider").value = "lmstudio";  // only once LM Studio has answered
   rememberEndpoint(env,"lmstudio");
   const served = new Set(env.models.filter(model => model.type !== "embeddings").map(model => model.id));
@@ -448,8 +608,7 @@ async function connectLmStudio(switchedFrom = "") {
   state.env = env; renderEnv(); updateProviderControls();
   state.providerNeedsConnection = false;
   state.endpointSignature = helperConnectionSignature(); updatePlan();
-  status.textContent = "Ready · LM Studio · " + env.models.length + " model(s)";
-  status.dataset.state = "ready";
+  setEngine("on", {label: "LM Studio", models: languageModels});
   const note = $("#helper-switch-note");
   if (note) {
     note.hidden = !switchedFrom;
@@ -474,34 +633,43 @@ async function usePlainEndpoint() {
 }
 
 async function connectHelperEndpoint() {
-  const status = $("#helper-status"), button = $("#helper-connect");
+  const button = $("#helper-connect");
   if ($("#helper-switch-note")) $("#helper-switch-note").hidden = true;
-  state.connectionAttempt = (state.connectionAttempt || 0) + 1;  // retires a boot-time connection still in flight
-  status.dataset.state = "connecting";
+  state.connectionAttempt = (state.connectionAttempt || 0) + 1;  // retires a connection still in flight
+  const attempt = state.connectionAttempt;
   state.detectedEndpoint = null; state.providerNeedsConnection = true;
-  button.disabled = true; status.textContent = "Connecting…";
+  button.disabled = true;
+  const signature = helperConnectionSignature();   // the form as clicked; edits made meanwhile need a new Connect
+  setEngine("connecting");
+  updatePlan();   // Start is not available while the connection is being made
+  const listed = setBusy($("#model-list")?.closest?.(".card") || "#model-list", "Listing the engine's models…", 0);
+  let openai = false, address = "";
   try {
     const config = helperEndpointConfig();
-    if (config.provider === "openai" && !config.endpoint_base_url) throw new Error("Enter your endpoint URL.");
+    openai = config.provider === "openai"; address = config.endpoint_base_url || "";
+    if (openai && !address) { openai = false; throw new Error("Enter the address of your inference engine's API, for example http://localhost:8000/v1, then click Connect."); }
     if (config.provider === "openai") {
       const manual = $("#helper-model").value.trim();
       try {
         // Nothing more to do when it was this computer's LM Studio, now connected as managed.
-        if (!(await refreshOpenAiCatalog(config)) || !genericHelper()) return;
+        if (!(await refreshOpenAiCatalog(config, signature)) || !genericHelper()) return;
       } catch (error) {
-        if (manual) {
+        // A typed model ID stands in for a missing model list only when the engine answered
+        // and did not refuse the key. It never makes an unreachable address look connected.
+        const found = endpointProblem(error, address);
+        if (manual && found.answered && found.kind !== "auth") {
           state.env = {...(state.env || {}), models: [{id: manual, type: "llm", state: "manual model ID; discovery unavailable"}],
             last_config: {...state.env.defaults, ...state.env.last_config, ...workloadChoices(), ...withoutCredentials(config), models: [manual]},
             default_models: [manual], lms: {server: true, cli: false}};
           state.providerNeedsConnection = false;
-          state.endpointSignature = helperConnectionSignature();
+          state.endpointSignature = signature;
           renderEnv();
           updateProviderControls();
-          status.textContent = "Manual model ID ready; discovery unavailable. Availability is checked when a request is sent.";
-          status.dataset.state = "ready";
+          setEngine("on", {label: config.endpoint_label || "OpenAI-compatible endpoint", models: 1, tone: "info", unverified: true,
+            message: `${address} answered but gave no usable model list, so “${manual}” is used as typed. The first request will show whether it is served.`});
         } else throw error;
       }
-      state.env.last_config = {...state.env.defaults, ...withoutCredentials(config), models: state.env.default_models};
+      state.env.last_config = {...state.env.defaults, ...workloadChoices(), ...withoutCredentials(config), models: state.env.default_models};
       localStorage.setItem(OPENAI_URL_STORAGE, config.endpoint_base_url);
       localStorage.setItem(HELPER_PROVIDER_STORAGE, "openai");
       updatePlan();
@@ -509,8 +677,20 @@ async function connectHelperEndpoint() {
     }
     setPlainEndpoint("");  // choosing LM Studio (managed) by hand ends the plain-endpoint choice
     await connectLmStudio();
-  } catch (error) { status.textContent = "Connection failed: " + error.message; status.dataset.state = "error"; }
-  finally { button.disabled = false; }
+  } catch (error) {
+    if (attempt === state.connectionAttempt) {
+      // Nothing is connected now, whatever was before: its models are not offered and Start is off.
+      state.providerNeedsConnection = true;
+      state.env = {...state.env, models: [], default_models: []}; state.models = new Set(); renderModels();
+      setEngine("error", {message: openai ? endpointProblem(error, address).message : error.message, action: error.action || ""});
+      updatePlan();
+    }
+  } finally {
+    listed();
+    button.disabled = false;
+    // Superseded (the provider was changed meanwhile) or ended without an answer: nothing is connected.
+    if (state.engine?.status === "connecting") { setEngine("off"); updatePlan(); }
+  }
 }
 
 function updateBrowserStorageWarning(data) {
@@ -557,11 +737,11 @@ const METRICS = {
   decode_tps: {
     label: "Total decode throughput", kind: "line", unit: "tk/s", better: "high",
     get: r => r._metricValues?.decode_tps ?? decodeRate(r),
-    blurb: "Scoped decode tokens divided by the union of post-first-token decode intervals. Excludes TTFT and gaps with no decoding request; overlapping intervals count once.",
+    blurb: "Decode tokens of all requests divided by the time at least one request was between its first and last token. Time to first token is excluded and overlap counts once. A stream that has started but waits while another prompt is read still counts.",
   },
   per_request_decode_tps: {
-    label: "Decode per request (median)",kind:"line",unit:"tk/s",better:"high",get:r=>r._metricValues?.per_request_decode_tps ?? requestDecodeRate(r),
-    blurb:"Median recorded per-request generation speed after the first token. Time to first token is excluded.",
+    label: "Decode per request",kind:"line",unit:"tk/s",better:"high",get:r=>r._metricValues?.per_request_decode_tps ?? requestDecodeRate(r),
+    blurb:"The same decode tokens divided by the sum of each request's own first-to-last-token time: the speed one request gets. Never above total decode; with one query the two are equal.",
   },
   decode_s: {label:"Decode time",kind:"line",unit:"s",better:"low",get:r=>r._metricValues?.decode_s ?? phaseMetrics()?.decodePhase(r)?.decode_s ?? null,
     blurb:"Duration of post-first-token decode intervals, merged across concurrent requests. TTFT and gaps outside all decode intervals are excluded."},
@@ -668,8 +848,14 @@ async function connectBrowser() {
     const found = await window.WatteverBrowser.connect();
     $("#browser-key").value = "";
     state.env = await api("/api/env"); rememberEndpoint(found,"openai"); if(!state.detectedEndpoint) rememberEndpoint(state.env,"openai"); renderEnv();
-    status.textContent = "Ready · " + (helperEndpointConfig().endpoint_label || "OpenAI-compatible endpoint");
-  } catch (error) { status.textContent = "Connection failed: " + error.message + ". Check the endpoint, CORS and local network permission."; }
+    const label = helperEndpointConfig().endpoint_label || "OpenAI-compatible endpoint";
+    setEngine(state.env.lms?.server ? "on" : "off", {label, models: (state.env.models || []).length});
+    status.textContent = "Connected · " + label;
+  } catch (error) {
+    try { state.env = await api("/api/env"); renderEnv(); } catch (_) { /* the page keeps what it had */ }
+    setEngine("error"); updatePlan();
+    status.textContent = "Connection failed: " + error.message + ". Check the endpoint, CORS and local network permission.";
+  }
   finally { button.disabled = false; }
 }
 function benchmarkFilename(id) {
@@ -711,8 +897,9 @@ async function importBrowserRun(event) {
 async function init() {
   if (!browserMode() && $("#helper-endpoint")) {
     $("#helper-endpoint").hidden = false;
-    $("#helper-provider").addEventListener("change", () => { state.providerNeedsConnection = true; state.connectionAttempt = (state.connectionAttempt || 0) + 1; state.detectedEndpoint=null; state.detectedEndpointProvider=null; if ($("#helper-switch-note")) $("#helper-switch-note").hidden = true; updateProviderControls(); updatePlan(); });
+    $("#helper-provider").addEventListener("change", () => { state.providerNeedsConnection = true; state.connectionAttempt = (state.connectionAttempt || 0) + 1; state.detectedEndpoint=null; state.detectedEndpointProvider=null; if ($("#helper-switch-note")) $("#helper-switch-note").hidden = true; if (["error", "connecting"].includes(state.engine?.status)) setEngine("off"); updateProviderControls(); updatePlan(); });
     $("#helper-connect").addEventListener("click", connectHelperEndpoint);
+    $("#helper-action")?.addEventListener("click", startLmStudioServer);
     $("#helper-plain-endpoint")?.addEventListener("click", usePlainEndpoint);
     ["#helper-url", "#helper-key", "#helper-name-override", "#helper-local", "#helper-model"].forEach(selector => $(selector)?.addEventListener("input", updatePlan));
     updateProviderControls();
@@ -823,7 +1010,7 @@ async function init() {
   $("#results-all-measurements").parentElement.addEventListener("toggle", renderAllMeasurements);
   $("#start-btn").addEventListener("click", startBench);
   $("#cancel-btn").addEventListener("click", cancelBench);
-  $("#refresh-runs").addEventListener("click", async () => { if (browserMode()) { await window.WatteverBrowser.loadCommunity(true); for (const [id, run] of Object.entries(state.runCache)) if (run.community) delete state.runCache[id]; state.detailSignature = null; } await loadRuns(); });
+  $("#refresh-runs").addEventListener("click", async () => { if (browserMode()) { await window.WatteverBrowser.loadCommunity(true); for (const [id, run] of Object.entries(state.runCache)) if (run.community) delete state.runCache[id]; state.detailSignature = null; } await loadRuns({busy: true}); });
   $("#live-issues")?.addEventListener("click", event => {
     const id = event.target.closest?.("[data-continue-run]")?.dataset.continueRun;
     if (!id) return;
@@ -905,25 +1092,33 @@ async function init() {
   if (saved) document.documentElement.dataset.theme = saved;
 
   // The helper remembers the last benchmark's connection; this browser remembers the last Connect.
-  // When that was LM Studio, open on LM Studio instead of an endpoint that may no longer be running.
+  // When that was LM Studio, the form opens on LM Studio instead of an endpoint address.
+  // Either way no inference engine is contacted here: that happens when Connect is clicked.
   const reopenLmStudio = !browserMode() && localStorage.getItem(HELPER_PROVIDER_STORAGE) === "lmstudio";
+  state.providerNeedsConnection = !browserMode();
+  state.engine = {status: "off", label: "", models: 0, message: "", tone: ""};
+  const booted = [setBusy("#panel-run", "Reading this computer's hardware and your saved settings…", 0),
+    setBusy($("#runs-list")?.closest?.(".card") || "#runs-list", "Loading your benchmarks…", 0)];
   try {
-    state.env = await api(reopenLmStudio ? "/api/env?provider=lmstudio" : "/api/env");
+    state.env = await api(browserMode() ? "/api/env" : "/api/env?connect=0");
   } catch (e) {
+    booted.forEach(clear => clear());
     $("#env-banners").innerHTML = banner("err", browserMode() ? "Browser application unavailable" : "Cannot reach the local server", esc(e.message));
     return;
   }
+  // Nothing is listed until Connect is clicked, whatever the helper answered: a helper started
+  // before this page was updated ignores connect=0 and still reports models.
+  if (!browserMode()) state.env = {...state.env, models: [], default_models: [], missing_defaults: [], lms: {...state.env.lms, server: null}};
   const savedConfig = state.env.last_config;
   if (reopenLmStudio && savedConfig?.provider === "openai") {
     const workload = Object.fromEntries(["sizes", "concurrency_levels", "repeats", "max_tokens"].filter(key => key in savedConfig).map(key => [key, savedConfig[key]]));
-    state.env.last_config = {...state.env.defaults, ...workload, provider: "lmstudio", models: state.env.default_models || []};
+    state.env.last_config = {...state.env.defaults, ...workload, provider: "lmstudio", models: []};
   }
   renderEnv();
-  if (!browserMode()) {
-    try { await refreshOpenAiCatalog(); } catch (_) { /* user can connect manually */ }
-  }
+  booted[0]();
   renderMetricSeg();
-  await loadRuns();
+  state.afterRunsListed = booted[1];
+  try { await loadRuns(); } finally { booted[1](); }
   const hash = location.hash.slice(1);
   if (!hash && browserMode()) showPanel("results", false);
   if (["summary", "run", "system", "results", "compare", "capabilities", "share"].includes(hash)) {
@@ -950,11 +1145,11 @@ function toggleTheme() {
   if ($("#panel-results").classList.contains("active")) renderResultsView();
 }
 
-let systemPollTimer = null, systemPollGeneration = 0, systemDashboard = null;
+let systemPollTimer = null, systemPollGeneration = 0, systemDashboard = null, systemFirstSample = null;
 function updateSystemPolling(active) {
   systemPollGeneration++;
   clearTimeout(systemPollTimer); systemPollTimer = null;
-  if (!active || document.hidden) return;
+  if (!active || document.hidden) { systemFirstSample?.(); systemFirstSample = null; return; }
   if (browserMode()) {
     $("#system-status").textContent = "Live hardware readings require the desktop helper. Browser mode cannot access local telemetry.";
     $("#system-stats").innerHTML = "";
@@ -962,6 +1157,7 @@ function updateSystemPolling(active) {
   }
   // The helper kept recording while System was hidden; fill that interval from its log.
   systemDashboard?.activate();
+  if (!systemDashboard && !systemFirstSample) systemFirstSample = setBusy($("#system-stats")?.closest?.(".card") || "#system-stats", "Reading this computer's sensors…");
   pollSystem(systemPollGeneration);
 }
 function systemHistory(start, end, maxPoints) {
@@ -976,6 +1172,7 @@ async function pollSystem(generation) {
   try {
     const sample = await api("/api/system");
     if (generation !== systemPollGeneration) return;
+    systemFirstSample?.(); systemFirstSample = null;
     const t = sample.telemetry;
     const age = t?.sample_age_s;
     const at = Number.isFinite(t?.t) ? t.t : Number.isFinite(sample.timestamp) ? sample.timestamp - (Number.isFinite(age) ? age : 0) : null;
@@ -994,6 +1191,7 @@ async function pollSystem(generation) {
     }
   } catch (error) {
     if (generation !== systemPollGeneration) return;
+    systemFirstSample?.(); systemFirstSample = null;
     $("#system-status").textContent = "Live readings unavailable: " + error.message;
     systemDashboard?.tick();
     if (!systemDashboard) $("#system-stats").innerHTML = "";
@@ -1054,9 +1252,17 @@ function exportVisibleGraphs() {
   const link = document.createElement("a"); link.href=url; link.download="wattever-graphs.svg"; link.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 async function shareBenchmarks() {
-  const ids = [...state.compare];
-  if (!ids.length) { $("#share-status").textContent = "Select one or more benchmarks in Results first."; return; }
-  try { const bundle = await api("/api/export.json?ids=" + ids.map(encodeURIComponent).join(",")); downloadBlob(JSON.stringify(bundle, null, 2), "wattever-benchmarks.json", "application/json"); $("#share-status").textContent = "Bundle downloaded. For contributions, use the individual download buttons or split the bundle into separate files."; } catch (error) { $("#share-status").textContent = "Export failed: " + error.message; }
+  const ids = [...state.compare], button = $("#share-benchmarks"), status = $("#share-status");
+  if (!ids.length) { status.textContent = "Select one or more benchmarks in Results first."; return; }
+  // Large benchmarks take a while to bundle: say so, and do not take a second click meanwhile.
+  if (button) button.disabled = true;
+  status.textContent = ids.length > 1 ? `Preparing a bundle of ${ids.length} benchmarks…` : "Preparing the bundle…";
+  try {
+    const bundle = await api("/api/export.json?ids=" + ids.map(encodeURIComponent).join(","));
+    downloadBlob(JSON.stringify(bundle, null, 2), "wattever-benchmarks.json", "application/json");
+    status.textContent = "Bundle downloaded. For contributions, use the individual download buttons or split the bundle into separate files.";
+  } catch (error) { status.textContent = "Export failed: " + error.message; }
+  finally { if (button) button.disabled = false; }
 }
 
 function renderShareRuns() {
@@ -1105,8 +1311,12 @@ async function renderResultsView() {
   const ids = [...state.compare];
   if (ids.some(id => !state.runCache[id])) {
     // Figures from the benchmark shown before must not sit under the new name while it loads.
-    const loading = emptyState("Loading benchmark", "Reading its measurements.");
-    for (const selector of ["#run-detail", "#summary-body", "#compare-body", "#results-table"]) if ($(selector)) $(selector).innerHTML = loading;
+    // Name what is loading: the line above must not keep the previous benchmark's name meanwhile.
+    const names = ids.map(id => state.runs.find(run => run.id === id)?.label || id);
+    if ($("#result-selection-summary")) $("#result-selection-summary").textContent = names.join(" · ");
+    const loading = loadingState(ids.length > 1 ? `Loading ${ids.length} benchmarks` : `Loading ${names[0]}`, "Reading the measurements. Large benchmarks take a few seconds.");
+    // One message per view: Overview shows #run-detail and #summary-body together.
+    for (const [selector, markup] of [["#run-detail", loading], ["#summary-body", ""], ["#compare-body", loading], ["#results-table", loading]]) if ($(selector)) $(selector).innerHTML = markup;
     if ($("#chart-key")) $("#chart-key").innerHTML = "";
     state.detailSignature = null;
   }
@@ -1173,26 +1383,16 @@ function renderEnv() {
   gpuPill.querySelector(".dot").className = "dot " + (gpu.name ? "on" : "off");
   gpuPill.querySelector("span:last-child").textContent = gpu.name
     ? gpu.name.replace(/^NVIDIA\s+/, "") : "no NVIDIA GPU";
-  const lmsPill = $("#pill-lms");
-  lmsPill.querySelector(".dot").className = "dot " + (env.lms.server ? "on" : "off");
-  lmsPill.querySelector("span:last-child").textContent = env.lms.server ? (providerManaged() ? "Endpoint connected" : "LM Studio ready") : (providerManaged() ? "Not connected" : "LM Studio off");
+  renderConnection();
 
   const unified = gpu.memory_architecture === "unified";
   const src = (env.power || {}).source;
   $("#machine-stats").innerHTML = conditionBadge((env.power || {}).readable ? "Power telemetry available" : "Power telemetry unavailable",src || "No supported power source")
     + conditionBadge((env.corpus || {}).approx_tokens == null ? "Corpus unknown" : fmtTokens(env.corpus.approx_tokens)+" corpus tokens");
 
+  // These banners describe this computer. What an inference engine answered, or that none
+  // is connected, is said in the Endpoint card, beside the Connect button.
   const banners = [];
-  if (providerManaged()) {
-    // Browser connections are made explicitly and do not control LM Studio.
-  } else if (!env.lms.cli) {
-    banners.push(banner("err", "The lms CLI was not found",
-      "Install LM Studio, then run <code>lms bootstrap</code> once and relaunch. " +
-      "Context length and GPU offload can only be set through the CLI."));
-  } else if (!env.lms.server) {
-    banners.push(banner("warn", "LM Studio's local server is not running",
-      "It will be started automatically when the benchmark begins."));
-  }
   if (!browserMode() && !gpu.name) {
     banners.push(banner("warn", "No supported accelerator detected",
       "The benchmark still runs on CPU, but wattage and VRAM will be blank."));
@@ -1205,9 +1405,6 @@ function renderEnv() {
   } else if (!browserMode() && !gpu.power_readable) {
     banners.push(banner("warn", "This GPU does not report power draw",
       "Speed will be measured; watts and joules will be blank."));
-  }
-  if (!browserMode() && !env.models.length) {
-    banners.push(banner("err", genericHelper() ? "No served model selected" : "LM Studio has no models indexed", genericHelper() ? "Connect to an endpoint or enter its model ID." : "Download at least one model first."));
   }
   $("#env-banners").innerHTML = banners.join("");
 
@@ -1245,7 +1442,7 @@ function renderModels() {
         ${m.arch ? `<span class="badge">${esc(m.arch)}</span>` : ""}
         <span class="badge">${m.max_context_length?'ctx '+fmtTokens(m.max_context_length):'Context unknown'}</span>
       </span></label>`;
-  }).join("") || '<p class="dim">No language models indexed.</p>';
+  }).join("") || `<p class="dim empty-note">${esc(modelsEmptyText())}</p>`;
   $$("#model-list input").forEach((input) => input.addEventListener("change", () => {
     if (input.checked) state.models.add(input.value); else state.models.delete(input.value);
     input.closest(".model").dataset.on = input.checked ? "1" : "0";
@@ -1549,14 +1746,24 @@ function decodeApproximate(row) {
   const phase=phaseMetrics()?.decodePhase(row);
   return !phase || phase.estimated_boundary || phase.legacy_boundary;
 }
-function requestDecodeRate(row) {
+/* What one request gets while it decodes: the decode tokens of all requests divided by the sum of
+ * each request's own first-to-last-token time. Total decode divides the same tokens by the time at
+ * least one request was decoding, so with n requests: per request <= total <= n x per request, and
+ * total = per request x the average number of requests decoding at once (`together`).
+ * A median of the individual rates does not keep that relation: when one stream stalls while the
+ * engine reads another prompt, the median of two rates is a speed neither request had. */
+function requestDecodeStats(row) {
   const requests = Array.isArray(row.requests) && row.requests.length ? row.requests : (row.concurrency || 1) === 1 ? [row] : [];
-  const values = requests.filter(request => request.status === "ok" || (request === row && row.status === "ok"))
-    .map(request => phaseMetrics()?.decodePhase({...request,concurrency:1})?.tps).filter(value => Number.isFinite(value) && value >= 0);
-  if (values.length !== requests.length) return null;
-  values.sort((a,b) => a-b);
-  return values.length ? (values[Math.floor((values.length-1)/2)] + values[Math.floor(values.length/2)]) / 2 : null;
+  const phases = requests.filter(request => request.status === "ok" || (request === row && row.status === "ok"))
+    .map(request => phaseMetrics()?.decodePhase({...request,concurrency:1})).filter(phase => phase && Number.isFinite(phase.tps) && phase.tps >= 0);
+  if (!phases.length || phases.length !== requests.length) return null;
+  const tokens = phases.reduce((sum, phase) => sum + phase.decode_tokens, 0), seconds = phases.reduce((sum, phase) => sum + phase.decode_s, 0);
+  if (!(seconds > 0) || !Number.isFinite(tokens / seconds)) return null;
+  const rates = phases.map(phase => phase.tps), union = phaseMetrics()?.decodePhase(row)?.decode_s;
+  return {tps: tokens / seconds, slowest: Math.min(...rates), fastest: Math.max(...rates), requests: phases.length,
+    together: Number.isFinite(union) && union > 0 ? seconds / union : null};
 }
+function requestDecodeRate(row) { return requestDecodeStats(row)?.tps ?? null; }
 function storageMetricValue(row,metric) {
   if (row.status !== "ok") return null;
   if (metric === "wall_s") return Number.isFinite(row.wall_s) && row.wall_s > 0 ? row.wall_s : null;
@@ -1976,12 +2183,14 @@ function updatePlan() {
   const tests = base * state.concurrencyLevels.size;
   const requests = base * [...state.concurrencyLevels].reduce((a, b) => a + b, 0);
   $("#plan-summary").textContent = tests
-    ? `${state.models.size} model${state.models.size === 1 ? "" : "s"} / ${tests} tests / ${requests} queries` + (mtp.notice ? " · " + mtp.notice : "")
-    : !mtp.passes.length ? mtp.notice : "Choose at least one model and workload.";
-  const reconnect = !!state.providerNeedsConnection || (genericHelper() && state.endpointSignature !== helperConnectionSignature());
-  $("#start-btn").disabled = !tests || reconnect;
-  if ($("#run-condition-badges")) $("#run-condition-badges").innerHTML = engineBadgesMarkup({config:collectConfig()});
-  if (reconnect && $("#helper-status")) { $("#helper-status").textContent = "Connect to apply changes."; $("#helper-status").dataset.state = "pending"; }
+    ? (!browserMode() && state.engine?.status === "on" && connectionStale() ? "Click Connect to apply the changed connection, then start. "
+      : "") + `${state.models.size} model${state.models.size === 1 ? "" : "s"} / ${tests} tests / ${requests} queries` + (mtp.notice ? " · " + mtp.notice : "")
+    : !mtp.passes.length ? mtp.notice : !browserMode() && !engineLive() ? "Connect an inference engine to choose its models." : "Choose at least one model and workload.";
+  const reconnect = connectionStale() || (!browserMode() && state.engine?.status === "connecting");
+  $("#start-btn").disabled = !tests || reconnect || !!state.benchmarkRunning;
+  // The engine is named once it is connected, not from the provider menu.
+  if ($("#run-condition-badges")) $("#run-condition-badges").innerHTML = browserMode() || engineLive() || state.benchmarkRunning ? engineBadgesMarkup({config:collectConfig()}) : "";
+  renderConnection();
   checkComparability();
 }
 
@@ -2058,6 +2267,7 @@ function enterRunningUi() {
   $("#cancel-btn").disabled = false;
   $("#start-btn").disabled = true;
   $("#pill-power").hidden = false;
+  renderConnection();
 }
 
 function leaveRunningUi() {
@@ -2339,7 +2549,7 @@ function liveRowMetrics(r) {
     prompt: num(r.prompt_tokens) ?? median(ok.map((q) => q.prompt_tokens)),
     prefill: collectiveRate(partial, "prefill_tps", { partial: true }) ?? collectiveRate(r, "prefill_tps", { partial: true }),
     decode: decodeRate(r),decodeApprox:decodeApproximate(r),
-    perRequestDecode: requestDecodeRate(r),
+    perRequestDecode: requestDecodeRate(r), decodeStats: requestDecodeStats(r),
     outputTps: outTokens !== null && num(r.wall_s) > 0 ? outTokens / r.wall_s : null,
     ttft: num(r.ttft_s) ?? median(ok.map((q) => q.ttft_s)),
     jPerTok: energy !== null && outTokens && !estimated ? energy / outTokens : null,
@@ -2382,7 +2592,7 @@ function liveAveragesMarkup(averages) {
 
 function renderLiveTable() {
   const metrics = state.liveResults.map(liveRowMetrics);
-  const note = `Decode excludes TTFT: scoped decode tokens divided by post-first-token decode time. Concurrent intervals are merged; overlap counts once and gaps without decoding are excluded. End-to-end output includes prefill and queueing.${metrics.some(m=>m.estimated) ? " * Output tokens estimated (server token usage unavailable)." : ""}${metrics.some(m=>m.decodeApprox && m.decode!==null) ? " * Decode boundary is approximate: streamed chunks can contain multiple tokens; legacy intervals may include unrecorded delivery tails." : ""}`;
+  const note = `Decode excludes TTFT. Total decode is the decode tokens of all requests divided by the time at least one request was between its first and last token; Decode / request divides the same tokens by the sum of each request's own first-to-last-token time. Total decode = Decode / request × Decoding at once. A stream that has started but waits while the engine reads another prompt still counts as decoding, so with long prompts requests can decode mostly one after the other. End-to-end output includes prefill and queueing.${metrics.some(m=>m.estimated) ? " * Output tokens estimated (server token usage unavailable)." : ""}${metrics.some(m=>m.decodeApprox && m.decode!==null) ? " * Decode boundary is approximate: streamed chunks can contain multiple tokens; legacy intervals may include unrecorded delivery tails." : ""}`;
   const noteBox = $("#live-table-note"), averagesBox = $("#live-averages");
   if (noteBox) noteBox.textContent = note;
   if (averagesBox) averagesBox.innerHTML = liveAveragesMarkup(liveAverages(state.liveResults, metrics));
@@ -2399,13 +2609,15 @@ function renderLiveTable() {
       <td class="num">${fmtInt(m.prompt)}</td>
       <td class="num">${m.n}</td>`;
     // A test without a measurement uses its empty cells to say why.
-    if (reason) return `${lead}<td class="fail-reason" colspan="13">${esc(reason)}</td></tr>`;
+    if (reason) return `${lead}<td class="fail-reason" colspan="14">${esc(reason)}</td></tr>`;
+    const stats = m.decodeStats, spread = stats && stats.requests > 1 ? ` title="Slowest request ${fmt(stats.slowest, 1)} tk/s, fastest ${fmt(stats.fastest, 1)} tk/s"` : "";
     return `${lead}
       <td class="num">${fmtInt(m.totalPrompt)}</td><td class="num">${fmtInt(m.totalOutput)}${star(m.totalOutput)}</td><td class="num">${fmt(m.wall, 2)}</td>
       <td class="num">${fmt(m.prefillTime, 2)}</td><td class="num">${fmt(m.decodeTime, 2)}${m.decodeTime!==null && m.decodeApprox?'*':''}</td>
       <td class="num">${fmt(m.prefill, 0)}</td>
       <td class="num">${fmt(m.decode, 1)}${m.decode!==null && (m.estimated || m.decodeApprox)?'*':''}</td>
-      <td class="num">${fmt(m.perRequestDecode, 1)}${m.perRequestDecode!==null && (m.estimated || m.decodeApprox)?'*':''}</td>
+      <td class="num"${spread}>${fmt(m.perRequestDecode, 1)}${m.perRequestDecode!==null && (m.estimated || m.decodeApprox)?'*':''}</td>
+      <td class="num">${m.n > 1 && stats?.together != null ? `${fmt(stats.together, 2)} of ${m.n}` : "—"}</td>
       <td class="num">${fmt(m.outputTps, 1)}${star(m.outputTps)}</td>
       <td class="num">${fmt(m.ttft, 2)}</td>
       <td class="num"${cardTip("w", "W", (v) => fmt(v, 0))}>${fmt(m.watts, 0)}</td>
@@ -2418,8 +2630,9 @@ function renderLiveTable() {
     <th class="num">Total prompt tk</th><th class="num">Total output tk</th><th class="num" data-tone="wall">Batch wall s</th>
     <th class="num" data-tone="prefill" title="Union of client request-start to first-output intervals; includes queueing and network">Prefill time s (TTFT proxy)</th><th class="num" data-tone="decode" title="Union of post-first-token decode intervals; excludes TTFT and gaps outside those intervals">Decode time s</th>
     <th class="num" data-tone="prefill" title="Prompt tokens divided by union request-start to first-output intervals; client TTFT proxy includes queueing and network">Prefill tk/s (TTFT proxy)</th>
-    <th class="num" data-tone="decode" title="Scoped decode tokens divided by union post-first-token duration; TTFT excluded">Total decode tk/s</th>
-    <th class="num" title="Median individual request rate after the first token">Decode / request tk/s</th>
+    <th class="num" data-tone="decode" title="Decode tokens of all requests ÷ the time at least one request was between its first and last token. Overlap counts once; TTFT excluded">Total decode tk/s</th>
+    <th class="num" title="The same decode tokens ÷ the sum of each request's own first-to-last-token time: the speed one request gets. Never above Total decode. Point at a value for the slowest and fastest request">Decode / request tk/s</th>
+    <th class="num" title="Average number of requests between their first and last token at the same time. Total decode = Decode / request × this value">Decoding at once</th>
     <th class="num" title="Total completed output tokens divided by batch wall time, including prefill and queueing, at every query count">End-to-end output tk/s</th>
     <th class="num" title="Median time to first token per stream">TTFT / request s</th>
     <th class="num" title="Average GPU power over the whole case, all cards combined">GPU W</th>
@@ -2429,18 +2642,25 @@ function renderLiveTable() {
 }
 
 /* ---------------- results tab ---------------- */
-async function loadRuns() {
-  const {runs} = await api("/api/runs");
+async function loadRuns({busy = false} = {}) {
+  // Only a refresh the user asked for is veiled: a running benchmark refreshes the list after
+  // every test, and the list must stay usable then. The first load has the page's start-up note.
+  const listed = busy ? setBusy($("#runs-list")?.closest?.(".card") || "#runs-list", "Refreshing your benchmarks…") : () => {};
+  let runs;
+  try { ({runs} = await api("/api/runs")); } finally { listed(); }
   state.runs = runs;
   for (const summary of runs) {
     const cached = state.runCache[summary.id];
     if (cached && ((cached.results || []).length !== summary.n_results || cached.status !== summary.status || (cached.label || "") !== (summary.label || "") || (cached.notes || "") !== (summary.notes || "") || JSON.stringify(cached.hardware?.memory) !== JSON.stringify(summary.hardware?.memory))) delete state.runCache[summary.id];
   }
+  state.runsLoaded = true;
   state.compare = new Set([...state.compare].filter((id) => runs.some((run) => run.id === id)));
   if ((!state.selectionInitialized || (state.selected && !runs.some((run) => run.id === state.selected))) && runs.length) state.compare.add(runs[0].id);
   state.selectionInitialized = true;
   if (!state.compare.has(state.selected)) state.selected = [...state.compare][0] || null;
   renderRunsList();
+  // The list can be used as soon as it is drawn; the first benchmark's file may still be loading.
+  state.afterRunsListed?.(); state.afterRunsListed = null;
   checkComparability();
   refreshMergeSuggestions();
   await renderResultsView();
@@ -2564,7 +2784,7 @@ function renderMergeBar() {
 async function openMergeDialog(ids) {
   if (!mergeAvailable()) return;
   state.merge = {ids: new Set(ids), assumed: new Set(), left: new Map(), label: "", labelEdited: false, plan: null, error: "", busy: false, revision: 0};
-  $("#merge-content").innerHTML = '<p class="hint">Checking these benchmarks…</p>';
+  $("#merge-content").innerHTML = '<p class="hint loading-line" role="status"><span class="spinner" aria-hidden="true"></span>Checking whether these benchmarks ran on one machine…</p>';
   $("#merge-start").disabled = true; $("#merge-start").textContent = "Merge";
   $("#merge-dialog").showModal();
   await refreshMergePlan();
@@ -2749,7 +2969,8 @@ function coverageLine(run) {
 
 function renderRunDetail(run) {
   if (!run) {
-    $("#run-detail").innerHTML = emptyState("Select a benchmark", "Click a name or tick benchmarks in the list on the left.");
+    $("#run-detail").innerHTML = state.runsLoaded ? emptyState("Select a benchmark", "Click a name or tick benchmarks in the list on the left.")
+      : loadingState("Loading your benchmarks", "Reading the list of saved benchmarks.");
     return;
   }
   const active = [...state.compare].map(id => state.runCache[id]).filter(item => item && item.status === "running");
@@ -2833,7 +3054,7 @@ function resultsTestAction(run) {
   if (!newBenchmark && !state.env?.capabilities?.extend) return null;
   const ready = resultsConnectionReady();
   return {newBenchmark, ready, label: newBenchmark ? "New benchmark on connected endpoint" : "Add / rerun tests",
-    title: !ready ? "Connect the endpoint in Run first" : newBenchmark ? "Fetch models from the current connection and review a new benchmark; saved results stay unchanged" : "Add or rerun tests in this benchmark"};
+    title: !ready ? "Connect an inference engine in Benchmarks first" : newBenchmark ? "Fetch models from the current connection and review a new benchmark; saved results stay unchanged" : "Add or rerun tests in this benchmark"};
 }
 function updateExtendAvailability() {
   updateModelRerunAvailability();
@@ -2866,7 +3087,7 @@ async function resultsConnectedCatalog(connection) {
 }
 function renderResultsCatalog() {
   const extension = state.extension;
-  $("#extend-content").innerHTML = `<p class="hint">Models from <b>${esc(extension.catalogLabel)}</b>. Choose models, then review the workload in Run. This creates a new benchmark; the selected historical result stays unchanged.</p>${extension.warning ? banner("warn", "Model discovery", esc(extension.warning)) : ""}<div class="extend-models">${extension.models.map((model,index) => `<label class="model" title="Use ${esc(model.id)} in a new benchmark"><input type="checkbox" data-catalog-model="${index}" ${extension.selectedModels.has(model.id)?"checked":""}><span class="name">${esc(model.id)}</span><span class="meta"><span class="badge" title="${model.quantization_source === "model_identifier" ? "Quantization inferred from the model ID" : "Quantization reported by the endpoint, when available"}">${esc(quantizationLabel(model))}</span><span class="badge">${model.max_context_length ? "ctx " + fmtTokens(model.max_context_length) : "Context unknown"}</span>${model.loaded_context_length ? `<span class="badge">loaded ctx ${esc(fmtTokens(model.loaded_context_length))}</span>` : ""}</span></label>`).join("") || '<p class="hint">No served language models were discovered on the current connection.</p>'}</div><p class="hint">Model loading, context, placement and MTP remain controlled by the selected provider.</p>`;
+  $("#extend-content").innerHTML = `<p class="hint">Models from <b>${esc(extension.catalogLabel)}</b>. Choose models, then review the workload in Benchmarks. This creates a new benchmark; the selected historical result stays unchanged.</p>${extension.warning ? banner("warn", "Model discovery", esc(extension.warning)) : ""}<div class="extend-models">${extension.models.map((model,index) => `<label class="model" title="Use ${esc(model.id)} in a new benchmark"><input type="checkbox" data-catalog-model="${index}" ${extension.selectedModels.has(model.id)?"checked":""}><span class="name">${esc(model.id)}</span><span class="meta"><span class="badge" title="${model.quantization_source === "model_identifier" ? "Quantization inferred from the model ID" : "Quantization reported by the endpoint, when available"}">${esc(quantizationLabel(model))}</span><span class="badge">${model.max_context_length ? "ctx " + fmtTokens(model.max_context_length) : "Context unknown"}</span>${model.loaded_context_length ? `<span class="badge">loaded ctx ${esc(fmtTokens(model.loaded_context_length))}</span>` : ""}</span></label>`).join("") || '<p class="hint">No served language models were discovered on the current connection.</p>'}</div><p class="hint">Model loading, context, placement and MTP remain controlled by the selected provider.</p>`;
   $("#extend-preview").textContent = "Review a new benchmark; no inference starts from this dialog.";
   $("#extend-start").textContent = "Review new benchmark";
   $("#extend-start").disabled = !extension.selectedModels.size;
@@ -2937,14 +3158,14 @@ async function openExtendDialog(run, modelId = null, selectedCase = null) {
   const action = resultsTestAction(run), connectionKey = resultsConnectionKey();
   const pending = {};
   state.extension = pending;
-  $("#extend-content").innerHTML = '<p class="hint">Fetching models from the current connection...</p>';
+  $("#extend-content").innerHTML = '<p class="hint loading-line" role="status"><span class="spinner" aria-hidden="true"></span>Listing the models of the connected engine…</p>';
   $("#extend-title").textContent = action?.newBenchmark ? "New benchmark on connected endpoint" : modelId ? "Rerun selected model" : "Add or rerun tests";
   $("#extend-preview").textContent = "";
   $("#extend-start").disabled = true;
   $("#extend-start").textContent = "Add tests";
   dialog.showModal();
   try {
-    if (!action?.ready) throw new Error("Connect the endpoint in Run before selecting new tests.");
+    if (!action?.ready) throw new Error("Connect an inference engine in Benchmarks before selecting new tests.");
     if (action.newBenchmark) {
       const connection = helperEndpointConfig(), catalog = await resultsConnectedCatalog(connection);
       if (!dialog.open || state.extension !== pending) return;
@@ -3144,7 +3365,7 @@ async function startExtension() {
   const extension = state.extension;
   $("#extend-start").disabled = true;
   if (!resultsConnectionReady() || extension.connectionKey !== resultsConnectionKey()) {
-    $("#extend-preview").innerHTML = banner("err", "Endpoint changed", "Reconnect in Run and select tests again. No benchmark was started.");
+    $("#extend-preview").innerHTML = banner("err", "Endpoint changed", "Click Connect in Benchmarks and select tests again. No benchmark was started.");
     return;
   }
   if (extension.mode === "new") {
@@ -3188,7 +3409,8 @@ function detailedResultsTable(run) {
     ["Placement", row => row.gpu_offload], ["Time to first token (s)", row => row.ttft_s],
     ["Prefill (tk/s)", row => collectiveRate(row, "prefill_tps")], ["Total decode (tk/s)", row => decodeRate(row)],
     ["End-to-end output (tk/s)",row=>phaseMetrics()?.outputRate(row) ?? null],
-    ["Decode per request (median tk/s)",row=>requestDecodeRate(row)],
+    ["Decode per request (tk/s)",row=>requestDecodeRate(row)],
+    ["Requests decoding at once (average)",row=>(row.concurrency || 1) > 1 ? requestDecodeStats(row)?.together ?? null : null],
     ["Prefill time (client TTFT proxy, s)",row=>phaseMetrics()?.prefillPhase(row)?.prefill_s ?? null],
     ["Decode time (s)",row=>phaseMetrics()?.decodePhase(row)?.decode_s ?? null],
     ["Scoped decode tokens",row=>phaseMetrics()?.decodePhase(row)?.decode_tokens ?? null],
@@ -4226,6 +4448,7 @@ function compareTable(tracks, models, keys = selectedMetricKeys()) {
 }
 
 if (typeof window !== "undefined") window.WatteverUI = {
+  setBusy,
   api, connection:helperEndpointConfig, metadata:publicRunMetadata, config:collectConfig, browserMode, showPanel,
   telemetryMarkup,bindTelemetry,
   models:()=>state.env?.models || [],
